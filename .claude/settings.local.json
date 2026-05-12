@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(head -50)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\albertirgi\\\\Documents\\\\WORK\\\\ppi-backoffice\\\\resources\\\\views\" -Recurse)",
+      "Bash(Select-Object FullName)"
+    ]
+  }
+}
