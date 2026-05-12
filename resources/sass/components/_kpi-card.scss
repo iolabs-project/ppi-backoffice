@@ -1,0 +1,54 @@
+.kpi-card {
+  padding: 18px 20px;
+  overflow: hidden;
+}
+
+.kpi-card__hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.kpi-card__body { min-width: 0; }
+
+.kpi-card__label {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+
+.kpi-card__value {
+  font-size: 28px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.kpi-card__suffix {
+  font-size: 18px;
+  font-weight: 600;
+  margin-left: 3px;
+}
+
+.kpi-card__delta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.kpi-card__period {
+  font-size: 11.5px;
+}
+
+// Accent (dark) variant
+.kpi-card--accent {
+  background: var(--ink);
+  color: var(--paper);
+
+  .kpi-card__label { color: rgba(252,250,245,.55); }
+  .kpi-card__period { color: rgba(252,250,245,.55); }
+  .kpi-card__suffix { color: rgba(252,250,245,.55); }
+}

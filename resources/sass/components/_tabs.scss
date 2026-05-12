@@ -1,0 +1,57 @@
+// utab — underline tab bar (container + items)
+.utab {
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid var(--line);
+}
+
+.utab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 4px;
+  color: var(--ink-4);
+  font-weight: 500;
+  font-size: 13.5px;
+  cursor: pointer;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  background: none;
+  font-family: inherit;
+  transition: color .12s ease, border-color .12s ease;
+  text-decoration: none;
+
+  & + .utab-item { margin-left: 22px; }
+  &:hover { color: var(--ink-2); }
+}
+
+.utab-active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+// nav-tab — pill-style horizontal tabs
+.nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  color: var(--ink-3);
+  font-weight: 500;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all .12s ease;
+  border: 1px solid transparent;
+
+  &:hover { color: var(--ink); background: var(--bg-2); }
+  &.active {
+    color: var(--ink);
+    background: var(--paper);
+    border-color: var(--line);
+    box-shadow: var(--shadow-1);
+  }
+}

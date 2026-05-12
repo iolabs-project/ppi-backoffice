@@ -7,12 +7,12 @@
   kontakForm: { nama:'', tipe:'klien', email:'', telepon:'', alamat:'', kota:'' },
   akunForm:   { kode:'', nama:'', tipe:'', saldo:0 },
   gudangForm: { kode:'', nama:'', kota:'', kapasitas:0, PIC:'' },
-}" style="padding:24px 28px 60px; display:grid; gap:16px;">
+}" class="master-page">
 
-  <div style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+  <div class="master-hd">
     <div>
-      <h1 class="display" style="margin:0; font-size:26px; font-weight:700; letter-spacing:-0.02em;">Master Data</h1>
-      <div style="font-size:13px; color:var(--ink-4); margin-top:4px;">Kelola data referensi untuk seluruh modul ERP</div>
+      <h1 class="order-title display">Master Data</h1>
+      <div class="order-sub">Kelola data referensi untuk seluruh modul ERP</div>
     </div>
     <div>
       <button class="btn btn-primary" x-on:click="modal = 'add_' + tab">
@@ -32,10 +32,10 @@
   {{-- =================== PRODUK =================== --}}
   <div x-show="tab === 'produk'" x-cloak>
     <div class="card" style="overflow:hidden;">
-      <div style="padding:10px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px;">
-        <div style="position:relative; flex:1; max-width:320px;">
-          <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%);"><x-erp.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
-          <input class="input" style="padding-left:32px;" placeholder="Cari produk..." />
+      <div class="master-toolbar">
+        <div class="master-search">
+          <span class="master-search__icon"><x-erp.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
+          <input class="input master-search__input" placeholder="Cari produk..." />
         </div>
         <button class="btn btn-ghost btn-sm"><x-erp.icon name="filter" :size="13" />Filter</button>
       </div>
@@ -75,10 +75,10 @@
   {{-- =================== KONTAK =================== --}}
   <div x-show="tab === 'kontak'" x-cloak>
     <div class="card" style="overflow:hidden;">
-      <div style="padding:10px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px;">
-        <div style="position:relative; flex:1; max-width:320px;">
-          <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%);"><x-erp.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
-          <input class="input" style="padding-left:32px;" placeholder="Cari kontak..." />
+      <div class="master-toolbar">
+        <div class="master-search">
+          <span class="master-search__icon"><x-erp.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
+          <input class="input master-search__input" placeholder="Cari kontak..." />
         </div>
         <button class="btn btn-ghost btn-sm"><x-erp.icon name="filter" :size="13" />Filter</button>
       </div>
@@ -98,7 +98,7 @@
               </div>
             </td>
             <td>
-              <span class="chip" style="{{ strtolower($k['tipe']) === 'vendor' ? 'background:var(--accent-3); color:var(--accent);' : '' }}">
+              <span class="chip {{ strtolower($k['tipe']) === 'vendor' ? 'chip-accent' : '' }}">
                 {{ $k['tipe'] }}
               </span>
             </td>
@@ -120,10 +120,10 @@
   {{-- =================== AKUN / COA =================== --}}
   <div x-show="tab === 'akun'" x-cloak>
     <div class="card" style="overflow:hidden;">
-      <div style="padding:10px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px;">
-        <div style="position:relative; flex:1; max-width:320px;">
-          <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%);"><x-erp.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
-          <input class="input" style="padding-left:32px;" placeholder="Cari akun..." />
+      <div class="master-toolbar">
+        <div class="master-search">
+          <span class="master-search__icon"><x-erp.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
+          <input class="input master-search__input" placeholder="Cari akun..." />
         </div>
       </div>
       <table class="tbl">
@@ -140,10 +140,8 @@
             $groupNames = ['1'=>'Aset','2'=>'Liabilitas','3'=>'Ekuitas','4'=>'Pendapatan','5'=>'Beban Pokok','6'=>'Beban Operasional'];
           @endphp
           @foreach($akunGroups as $prefix => $items)
-          <tr style="background:var(--bg-2);">
-            <td colspan="5" style="font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-4); padding:8px 16px;">
-              {{ $groupNames[$prefix] ?? 'Lainnya' }}
-            </td>
+          <tr class="coa-group-row">
+            <td colspan="5">{{ $groupNames[$prefix] ?? 'Lainnya' }}</td>
           </tr>
           @foreach($items as $a)
           <tr class="row-tap">
@@ -166,34 +164,34 @@
 
   {{-- =================== GUDANG =================== --}}
   <div x-show="tab === 'gudang'" x-cloak>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px;">
+    <div class="gudang-grid">
       @foreach($gudang as $g)
-      <div class="card" style="padding:20px 22px; display:grid; gap:12px;">
-        <div style="display:flex; align-items:flex-start; justify-content:space-between;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div style="width:38px; height:38px; border-radius:10px; background:var(--accent-3); display:grid; place-items:center;">
+      <div class="card gudang-card">
+        <div class="gudang-card__hd">
+          <div class="gudang-card__info">
+            <div class="gudang-card__icon">
               <x-erp.icon name="building" :size="18" stroke="var(--accent)" />
             </div>
             <div>
-              <div style="font-weight:700; font-size:14px; line-height:1.2;">{{ $g['nama'] }}</div>
-              <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:2px;">{{ $g['kode'] }}</div>
+              <div class="gudang-card__name">{{ $g['nama'] }}</div>
+              <div class="gudang-card__code mono">{{ $g['kode'] }}</div>
             </div>
           </div>
           <button class="btn btn-ghost btn-icon btn-sm" style="border:none;">
             <x-erp.icon name="more" :size="15" />
           </button>
         </div>
-        <div style="display:grid; gap:6px; font-size:12.5px; color:var(--ink-3);">
-          <div style="display:flex; align-items:center; gap:6px;">
+        <div class="gudang-card__meta">
+          <div class="gudang-card__meta-row">
             <x-erp.icon name="building" :size="12" stroke="var(--ink-4)" />{{ $g['kota'] ?? '—' }}
           </div>
           @if(!empty($g['PIC']))
-          <div style="display:flex; align-items:center; gap:6px;">
+          <div class="gudang-card__meta-row">
             <x-erp.icon name="users" :size="12" stroke="var(--ink-4)" />PIC: {{ $g['PIC'] }}
           </div>
           @endif
           @if(!empty($g['kapasitas']))
-          <div style="display:flex; align-items:center; gap:6px;">
+          <div class="gudang-card__meta-row">
             <x-erp.icon name="layers" :size="12" stroke="var(--ink-4)" />Kapasitas: {{ fmt_num($g['kapasitas']) }} unit
           </div>
           @endif
@@ -202,12 +200,10 @@
       @endforeach
 
       {{-- Add new gudang card --}}
-      <div class="card" style="padding:20px 22px; display:grid; place-items:center; min-height:140px; border-style:dashed; cursor:pointer; opacity:.5; transition:opacity .15s;"
-           onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='.5'"
-           x-on:click="modal = 'add_gudang'">
-        <div style="text-align:center;">
+      <div class="card gudang-add-card" x-on:click="modal = 'add_gudang'">
+        <div>
           <x-erp.icon name="plus" :size="24" stroke="var(--ink-3)" />
-          <div style="font-size:13px; color:var(--ink-4); margin-top:8px;">Tambah Gudang</div>
+          <div class="gudang-add-label">Tambah Gudang</div>
         </div>
       </div>
     </div>
@@ -215,8 +211,8 @@
 
   {{-- Modal: Tambah Produk --}}
   <x-erp.modal title="Tambah Produk Baru" show="modal === 'add_produk'" close-handler="modal = null">
-    <div style="display:grid; gap:14px;">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+    <div class="form-body">
+      <div class="form-grid-2">
         <x-erp.field label="Kode Produk" :required="true">
           <input class="input mono" placeholder="cth. TPG-003" />
         </x-erp.field>
@@ -227,7 +223,7 @@
       <x-erp.field label="Nama Produk" :required="true">
         <input class="input" placeholder="Nama lengkap produk" />
       </x-erp.field>
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+      <div class="form-grid-3">
         <x-erp.field label="Satuan">
           <input class="input" placeholder="Sak, Kg, Liter..." />
         </x-erp.field>
@@ -247,11 +243,11 @@
 
   {{-- Modal: Tambah Kontak --}}
   <x-erp.modal title="Tambah Kontak Baru" show="modal === 'add_kontak'" close-handler="modal = null">
-    <div style="display:grid; gap:14px;">
+    <div class="form-body">
       <x-erp.field label="Nama" :required="true">
         <input class="input" placeholder="Nama perusahaan / individu" />
       </x-erp.field>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="form-grid-2">
         <x-erp.field label="Tipe" :required="true">
           <select class="input">
             <option>Klien</option><option>Vendor</option><option>Keduanya</option>
@@ -261,7 +257,7 @@
           <input class="input" placeholder="Jakarta, Surabaya..." />
         </x-erp.field>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="form-grid-2">
         <x-erp.field label="Email">
           <input class="input" type="email" placeholder="kontak@perusahaan.com" />
         </x-erp.field>
@@ -281,8 +277,8 @@
 
   {{-- Modal: Tambah Akun --}}
   <x-erp.modal title="Tambah Akun Baru" show="modal === 'add_akun'" close-handler="modal = null">
-    <div style="display:grid; gap:14px;">
-      <div style="display:grid; grid-template-columns:1fr 2fr; gap:14px;">
+    <div class="form-body">
+      <div class="form-grid-1-2">
         <x-erp.field label="Kode Akun" :required="true">
           <input class="input mono" placeholder="1-xxx" />
         </x-erp.field>
@@ -290,7 +286,7 @@
           <input class="input" placeholder="Nama akun" />
         </x-erp.field>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="form-grid-2">
         <x-erp.field label="Tipe Akun">
           <select class="input">
             <option>Aset</option><option>Liabilitas</option><option>Ekuitas</option>
@@ -310,8 +306,8 @@
 
   {{-- Modal: Tambah Gudang --}}
   <x-erp.modal title="Tambah Gudang Baru" show="modal === 'add_gudang'" close-handler="modal = null">
-    <div style="display:grid; gap:14px;">
-      <div style="display:grid; grid-template-columns:1fr 2fr; gap:14px;">
+    <div class="form-body">
+      <div class="form-grid-1-2">
         <x-erp.field label="Kode Gudang" :required="true">
           <input class="input mono" placeholder="GDG-xxx" />
         </x-erp.field>
@@ -319,7 +315,7 @@
           <input class="input" placeholder="Gudang Bekasi, dll." />
         </x-erp.field>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="form-grid-2">
         <x-erp.field label="Kota / Lokasi">
           <input class="input" placeholder="Bekasi, Surabaya..." />
         </x-erp.field>

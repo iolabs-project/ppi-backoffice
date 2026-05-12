@@ -6,28 +6,28 @@
   $ppn        = $subtotal * 0.11;
   $total      = $subtotal + $biayaKirim + $ppn;
 @endphp
-<div style="padding:24px 28px 60px; display:grid; gap:16px;">
+<div class="order-page">
   <div>
     <a href="{{ route('erp.pembelian.show', $po['id']) }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
       <x-erp.icon name="chev-left" :size="13" />Kembali ke {{ $po['id'] }}
     </a>
-    <div style="display:flex; align-items:center; gap:12px;">
-      <h1 class="display" style="margin:0; font-size:26px; font-weight:700; letter-spacing:-0.02em;">Buat Tagihan dari Vendor</h1>
+    <div class="order-title-row">
+      <h1 class="order-title display">Buat Tagihan dari Vendor</h1>
       <x-erp.status-badge status="draft" />
     </div>
-    <div style="font-size:13px; color:var(--ink-4); margin-top:6px;">
+    <div class="order-sub">
       Tagihan akan otomatis membentuk jurnal umum. <strong style="color:var(--ink);">HPP final akan menyesuaikan biaya pengiriman aktual</strong> dari vendor.
     </div>
   </div>
 
-  <div class="card" style="padding:22px 24px; display:grid; gap:18px;">
-    <div class="display" style="font-weight:700; font-size:15px;">Informasi Tagihan</div>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px;">
+  <div class="card card-bd--form">
+    <div class="display card-hd-title">Informasi Tagihan</div>
+    <div class="order-form-grid-3">
       <x-erp.field label="Vendor" :required="true">
-        <div class="input" style="display:flex; align-items:center; gap:10px; background:var(--bg-2);">
+        <div class="input input--readonly" style="display:flex; align-items:center; gap:10px;">
           <x-erp.avatar :name="$po['vendor']" />
           <span style="flex:1; font-weight:500;">{{ $po['vendor'] }}</span>
-          <span style="font-size:10.5px; color:var(--ink-4); text-transform:uppercase; letter-spacing:.06em;">Auto</span>
+          <span class="auto-tag">Auto</span>
         </div>
       </x-erp.field>
       <x-erp.field label="No. Invoice"><input class="input mono" placeholder="cth. INV-BFM-23104" /></x-erp.field>
@@ -37,16 +37,16 @@
         </div>
       </x-erp.field>
       <x-erp.field label="Nomor Pengiriman" :required="true">
-        <div class="input mono" style="display:flex; align-items:center; background:var(--bg-2);">
+        <div class="input mono input--readonly" style="display:flex; align-items:center;">
           <span style="flex:1; font-weight:600;">GRN-2026-0072</span>
-          <span style="font-size:10.5px; color:var(--ink-4); text-transform:uppercase; letter-spacing:.06em;">Auto</span>
+          <span class="auto-tag">Auto</span>
         </div>
       </x-erp.field>
       <x-erp.field label="Gudang" :required="true">
-        <div class="input" style="display:flex; align-items:center; gap:8px; background:var(--bg-2);">
+        <div class="input input--readonly" style="display:flex; align-items:center; gap:8px;">
           <x-erp.icon name="building" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">{{ $po['gudang'] }}</span>
-          <span style="font-size:10.5px; color:var(--ink-4); text-transform:uppercase; letter-spacing:.06em;">Auto</span>
+          <span class="auto-tag">Auto</span>
         </div>
       </x-erp.field>
       <x-erp.field label="Tanggal Jatuh Tempo">
@@ -62,8 +62,8 @@
   </div>
 
   <div class="card" style="overflow:hidden;">
-    <div style="padding:14px 22px; border-bottom:1px solid var(--line);">
-      <div class="display" style="font-weight:700; font-size:15px;">Daftar Produk</div>
+    <div class="card-hd">
+      <div class="display card-hd-title">Daftar Produk</div>
     </div>
     <table class="tbl">
       <thead><tr>
@@ -87,21 +87,21 @@
         @endforeach
       </tbody>
     </table>
-    <div style="display:grid; grid-template-columns:1fr 360px; border-top:1px solid var(--line);">
+    <div class="order-items-split">
       <div style="padding:18px 22px; font-size:12.5px; color:var(--ink-3); max-width:480px;">
         HPP final akan disesuaikan otomatis berdasarkan biaya pengiriman fix di atas. Variance dengan estimasi awal akan dicatat ke jurnal.
       </div>
-      <div style="padding:22px; background:var(--bg-2); border-left:1px solid var(--line); display:grid; gap:8px;">
+      <div class="order-summary">
         @foreach([['Subtotal Produk',$subtotal],['Biaya Pengiriman',$biayaKirim],['PPN 11%',$ppn]] as [$lbl,$val])
-          <div style="display:flex; justify-content:space-between; font-size:13px;">
-            <span style="color:var(--ink-3);">{{ $lbl }}</span>
+          <div class="order-summary__row">
+            <span class="order-summary__label">{{ $lbl }}</span>
             <span class="num" style="font-weight:500;">{{ fmt_rp($val) }}</span>
           </div>
         @endforeach
-        <div style="height:1px; background:var(--line-2); margin:4px 0;"></div>
-        <div style="display:flex; justify-content:space-between; align-items:baseline;">
-          <span style="font-size:13px; font-weight:600;">Total Tagihan</span>
-          <span class="display num" style="font-size:22px; font-weight:700; color:var(--accent);">{{ fmt_rp($total) }}</span>
+        <div class="order-summary__divider"></div>
+        <div class="order-summary__total">
+          <span class="order-summary__total-label">Total Tagihan</span>
+          <span class="order-summary__total-value display num">{{ fmt_rp($total) }}</span>
         </div>
       </div>
     </div>

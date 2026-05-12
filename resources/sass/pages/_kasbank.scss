@@ -1,0 +1,177 @@
+.kasbank-page {
+  padding: 24px 28px 60px;
+  display: grid;
+  gap: 16px;
+}
+
+// Total saldo hero card
+.saldo-hero {
+  padding: 22px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.saldo-hero__label {
+  font-size: 12px;
+  opacity: .6;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 6px;
+}
+
+.saldo-hero__value {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.saldo-hero__sub {
+  font-size: 12px;
+  opacity: .5;
+  margin-top: 4px;
+}
+
+.saldo-hero__icon {
+  opacity: .15;
+}
+
+// Account cards grid
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.account-card {
+  padding: 20px 22px;
+  display: grid;
+  gap: 12px;
+  cursor: pointer;
+  transition: box-shadow .15s;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+}
+
+.account-card__hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.account-card__info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.account-card__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--accent-3);
+  display: grid;
+  place-items: center;
+}
+
+.account-card__name {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.account-card__bank {
+  font-size: 11.5px;
+  color: var(--ink-4);
+  margin-top: 2px;
+}
+
+.account-card__pct {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--accent);
+  background: var(--accent-3);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.account-card__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.account-card__bar {
+  margin-top: 8px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.account-card__bar-fill {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.account-card__ft {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ink-4);
+}
+
+.account-card__link {
+  color: var(--ink-3);
+}
+
+// Account detail stat cards
+.stat-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+}
+
+.stat-card { padding: 20px 22px; }
+
+.stat-card--dark {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.stat-card__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  opacity: .55;
+  margin-bottom: 8px;
+}
+
+.stat-card__value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.stat-card--dark .stat-card__value { font-size: 26px; }
+
+.stat-card--good {
+  .stat-card__label { color: var(--good); opacity: 1; }
+  .stat-card__value { color: var(--good); }
+}
+
+.stat-card--bad {
+  .stat-card__label { color: var(--bad); opacity: 1; }
+  .stat-card__value { color: var(--bad); }
+}
+
+.stat-card__sub {
+  font-size: 11.5px;
+  color: var(--ink-4);
+  margin-top: 4px;
+}

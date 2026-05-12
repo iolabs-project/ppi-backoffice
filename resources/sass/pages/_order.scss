@@ -1,0 +1,277 @@
+// Shared styles for penjualan (SO) and pembelian (PO) pages
+.order-page {
+  padding: 24px 28px 60px;
+  display: grid;
+  gap: 16px;
+}
+
+.order-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+
+  &--start { align-items: flex-start; }
+}
+
+.order-hd__start { }
+
+.order-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.order-sub {
+  font-size: 13px;
+  color: var(--ink-4);
+  margin-top: 4px;
+}
+
+.order-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.order-actions {
+  display: flex;
+  gap: 8px;
+}
+
+// Filter pills
+.filter-pills {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--paper);
+  color: var(--ink-3);
+  font-family: inherit;
+  transition: background .12s, color .12s, border-color .12s;
+}
+
+.filter-pill__count {
+  font-size: 11px;
+  opacity: .7;
+}
+
+// Order detail meta strip
+.order-meta {
+  padding: 18px 22px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 24px;
+}
+
+.order-meta__label { margin-bottom: 6px; }
+
+.order-meta__value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+// Form card sections
+.order-form-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.order-form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+// Items table split (extras left + summary right)
+.order-items-split {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  border-top: 1px solid var(--line);
+}
+
+.order-extras {
+  padding: 18px 22px;
+  display: grid;
+  gap: 14px;
+}
+
+.order-extras__title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.order-extras__grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.order-info-note {
+  font-size: 11.5px;
+  color: var(--ink-4);
+  padding: 8px 12px;
+  background: var(--accent-3);
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.order-summary {
+  padding: 22px;
+  background: var(--bg-2);
+  border-left: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.order-summary__title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.order-summary__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.order-summary__label { color: var(--ink-3); }
+
+.order-summary__divider {
+  height: 1px;
+  background: var(--line-2);
+  margin: 8px 0;
+}
+
+.order-summary__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.order-summary__total-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.order-summary__total-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+// Sticky action footer
+.order-form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  position: sticky;
+  bottom: 0;
+  padding: 12px 0;
+}
+
+// Product row icon
+.product-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--bg-2);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+// Notes / comments panel (show pages)
+.order-notes {
+  padding: 18px 22px;
+}
+
+.order-notes__text {
+  font-size: 13px;
+  color: var(--ink-3);
+  max-width: 480px;
+}
+
+// Detail summary right panel (show pages)
+.order-detail-summary {
+  padding: 18px 22px;
+  background: var(--bg-2);
+  border-left: 1px solid var(--line);
+}
+
+// Auto-fill tag
+.auto-tag {
+  font-size: 10.5px;
+  color: var(--ink-4);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+// Shipping form info header
+.shipping-form-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.shipping-form-info__sub {
+  font-size: 11.5px;
+  color: var(--ink-4);
+}
+
+// Shipping driver info
+.shipping-driver {
+  padding: 18px 22px;
+}
+
+.shipping-driver__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.shipping-driver__name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+// HPP summary panel (pengiriman/tagihan masuk)
+.hpp-summary {
+  padding: 22px;
+  background: var(--bg-2);
+  border-left: 1px solid var(--line);
+}
+
+.hpp-summary__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.hpp-summary__sub {
+  font-size: 11.5px;
+  color: var(--ink-4);
+  margin-top: 8px;
+}

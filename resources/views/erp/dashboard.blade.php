@@ -20,25 +20,22 @@
 
         $pipelineMax = max(array_column($pipeline, 'value'));
     @endphp
-    <div style="padding:24px 28px 60px; display:grid; gap:20px;">
+    <div class="dash">
 
         {{-- Greeting --}}
-        <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div class="dash-greeting">
             <div>
-                <div
-                    style="font-size:13px; color:var(--ink-4); margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+                <div class="dash-greeting__date">
                     <x-erp.icon name="sun" :size="14" /> Kamis, 8 Mei 2026
                 </div>
-                <h1 class="display"
-                    style="margin:0; font-size:34px; font-weight:700; letter-spacing:-0.025em; line-height:1.1;">Selamat
-                    pagi, Albert.</h1>
-                <div style="font-size:14px; color:var(--ink-3); margin-top:6px;">
+                <h1 class="dash-greeting__title display">Selamat pagi, Albert.</h1>
+                <div class="dash-greeting__sub">
                     Margin tertimbang minggu ini naik <strong style="color:var(--ink);">1.6 poin</strong>. Ada <strong
                         style="color:var(--ink);">3 SO</strong> menunggu pengiriman dan <strong style="color:var(--ink);">2
                         tagihan</strong> jatuh tempo dalam 48 jam.
                 </div>
             </div>
-            <div style="display:flex; gap:8px;">
+            <div class="order-actions">
                 <button class="btn btn-ghost"><x-erp.icon name="download" :size="14" />Ekspor</button>
                 <a href="{{ route('erp.penjualan.create') }}" class="btn btn-primary"><x-erp.icon name="plus"
                         :size="15" />Buat SO Baru</a>
@@ -46,7 +43,7 @@
         </div>
 
         {{-- KPI row --}}
-        <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:14px;">
+        <div class="dash-kpi-grid">
             <x-erp.kpi-card label="Total Penjualan" :value="fmt_rp_short($kpis['penjualan']['value'])" :delta="$kpis['penjualan']['delta']" :sparkline="$kpis['penjualan']['sparkline']"
                 :accent="true" />
             <x-erp.kpi-card label="Total Pembelian" :value="fmt_rp_short($kpis['pembelian']['value'])" :delta="$kpis['pembelian']['delta']" :sparkline="$kpis['pembelian']['sparkline']" />
@@ -56,20 +53,21 @@
         </div>
 
         {{-- Chart + Pipeline --}}
-        <div style="display:grid; grid-template-columns:1.6fr 1fr; gap:14px;">
+        <div class="dash-charts">
             {{-- Bar Chart --}}
             <div class="card" style="padding:22px 24px;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px;">
+                <div class="chart-hd">
                     <div>
-                        <div class="display" style="font-size:18px; font-weight:700;">Penjualan vs Pembelian</div>
-                        <div style="font-size:12px; color:var(--ink-4); margin-top:2px;">12 bulan terakhir · dalam Juta
-                            Rupiah</div>
+                        <div class="chart-title display">Penjualan vs Pembelian</div>
+                        <div class="chart-sub">12 bulan terakhir · dalam Juta Rupiah</div>
                     </div>
-                    <div style="display:flex; gap:14px; align-items:center; font-size:12px;">
-                        <span style="display:inline-flex; align-items:center; gap:6px;"><span
-                                style="width:10px; height:10px; border-radius:3px; background:var(--accent); display:inline-block;"></span>Penjualan</span>
-                        <span style="display:inline-flex; align-items:center; gap:6px;"><span
-                                style="width:10px; height:10px; border-radius:3px; background:var(--ink-2); display:inline-block;"></span>Pembelian</span>
+                    <div class="chart-legend">
+                        <span class="chart-legend-item">
+                            <span class="chart-legend-dot" style="background:var(--accent);"></span>Penjualan
+                        </span>
+                        <span class="chart-legend-item">
+                            <span class="chart-legend-dot" style="background:var(--ink-2);"></span>Pembelian
+                        </span>
                     </div>
                 </div>
                 {{-- SVG bar chart --}}
@@ -117,25 +115,21 @@
                         <div style="display:grid; grid-template-columns:140px 1fr 110px; align-items:center; gap:14px;">
                             <div>
                                 <div style="font-size:13px; font-weight:600;">{{ $s['stage'] }}</div>
-                                <div style="font-size:11px; color:var(--ink-4);" class="mono">{{ $s['count'] }} dokumen
-                                </div>
+                                <div style="font-size:11px; color:var(--ink-4);" class="mono">{{ $s['count'] }} dokumen</div>
                             </div>
                             <div style="height:32px; background:var(--bg-2); border-radius:8px; overflow:hidden;">
-                                <div style="width:{{ $w }}%; height:100%; background:{{ $s['color'] }};">
-                                </div>
+                                <div style="width:{{ $w }}%; height:100%; background:{{ $s['color'] }};"></div>
                             </div>
                             <div class="num" style="font-size:13px; font-weight:600; text-align:right;">
                                 {{ fmt_rp_short($s['value']) }}</div>
                         </div>
                     @endforeach
                 </div>
-                <div
-                    style="margin-top:18px; padding:14px; background:var(--bg-2); border-radius:12px; display:flex; gap:12px; align-items:center;">
-                    <div
-                        style="width:34px; height:34px; border-radius:10px; background:var(--accent); color:var(--accent-ink); display:grid; place-items:center; flex:0 0 34px;">
+                <div class="pipeline-insight">
+                    <div class="pipeline-insight__icon">
                         <x-erp.icon name="trend" :size="16" />
                     </div>
-                    <div style="flex:1; font-size:12.5px; color:var(--ink-2); line-height:1.45;">
+                    <div class="pipeline-insight__text">
                         Konversi SO → Lunas <strong>78.5%</strong>. Tagihan ≥ 30 hari turun <strong>–Rp 42 Jt</strong>
                         minggu ini.
                     </div>
@@ -144,18 +138,18 @@
         </div>
 
         {{-- Coverage + Klien --}}
-        <div style="display:grid; grid-template-columns:1fr 1.6fr; gap:14px;">
+        <div class="dash-bottom">
             {{-- Coverage ring --}}
             <div class="card" style="padding:22px 24px;">
                 <x-erp.section-title title="Kelengkapan Data"
                     subtitle="Rata-rata {{ $dataPct }}% di seluruh master" />
-                <div style="display:flex; align-items:center; gap:18px; padding:8px 0 14px;">
+                <div class="coverage-ring">
                     @php
                         $r = (84 - 9) / 2;
                         $c = 2 * M_PI * $r;
                         $dash = ($dataPct / 100) * $c;
                     @endphp
-                    <div style="position:relative; flex-shrink:0;">
+                    <div class="coverage-ring__svg">
                         <svg width="84" height="84">
                             <circle cx="42" cy="42" r="{{ $r }}" fill="none"
                                 stroke="var(--bg-3)" stroke-width="9" />
@@ -164,32 +158,28 @@
                                 stroke-dasharray="{{ round($dash, 1) }} {{ round($c, 1) }}"
                                 transform="rotate(-90 42 42)" />
                         </svg>
-                        <div style="position:absolute; inset:0; display:grid; place-items:center;">
-                            <div class="display num" style="font-size:22px; font-weight:700;">{{ $dataPct }}%</div>
+                        <div class="coverage-ring__pct">
+                            <div class="coverage-ring__label display num">{{ $dataPct }}%</div>
                         </div>
                     </div>
-                    <div style="flex:1; display:grid; gap:10px;">
+                    <div class="coverage-bars">
                         @foreach ($dataCoverage as $d)
                             @php $barColor = $d['pct'] >= 80 ? 'var(--ok)' : ($d['pct'] >= 60 ? 'var(--warn)' : 'var(--bad)'); @endphp
                             <div>
-                                <div
-                                    style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                                <div class="coverage-bar__row">
                                     <span style="color:var(--ink-2);">{{ $d['label'] }}</span>
                                     <span class="mono" style="color:var(--ink-4);">{{ $d['items'] }}</span>
                                 </div>
-                                <div style="height:5px; background:var(--bg-3); border-radius:999px;">
-                                    <div
-                                        style="width:{{ $d['pct'] }}%; height:100%; background:{{ $barColor }}; border-radius:999px;">
-                                    </div>
+                                <div class="coverage-bar__track">
+                                    <div style="width:{{ $d['pct'] }}%; height:100%; background:{{ $barColor }}; border-radius:999px;"></div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 </div>
-                <div style="border-top:1px solid var(--line); padding-top:14px; font-size:12px; color:var(--ink-3);">
+                <div class="coverage-footer">
                     <strong style="color:var(--ink);">22 produk</strong> belum punya foto.
-                    <a href="{{ route('erp.master.index') }}"
-                        style="color:var(--accent); font-weight:600; text-decoration:none;">Lengkapi sekarang →</a>
+                    <a href="{{ route('erp.master.index') }}" class="coverage-footer__link">Lengkapi sekarang →</a>
                 </div>
             </div>
 
@@ -198,7 +188,7 @@
                 <x-erp.section-title title="Daftar Klien & Vendor Aktif"
                     subtitle="Diurutkan berdasarkan omzet 30 hari terakhir">
                     <x-slot:action>
-                        <div style="display:flex; gap:6px;">
+                        <div class="order-actions">
                             <button class="btn btn-ghost btn-sm"><x-erp.icon name="filter"
                                     :size="13" />Filter</button>
                             <a href="{{ route('erp.master.index') }}" class="btn btn-ghost btn-sm">Lihat Semua<x-erp.icon
@@ -230,9 +220,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td><span class="chip"
-                                            style="background:var(--bg-2); color:var(--ink-3);">{{ $k['jenis'] }}</span>
-                                    </td>
+                                    <td><span class="chip">{{ $k['jenis'] }}</span></td>
                                     <td class="num" style="text-align:right; font-weight:600;">
                                         {{ fmt_rp_short($k['omzet']) }}</td>
                                     <td class="num"

@@ -1,0 +1,38 @@
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-1);
+}
+
+.card-hd {
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-hd-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.card-bd {
+  padding: 22px 24px;
+}
+
+.card-bd--form {
+  padding: 22px 24px;
+  display: grid;
+  gap: 18px;
+}
+
+.card-ft {
+  padding: 14px 22px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: var(--bg);
+}

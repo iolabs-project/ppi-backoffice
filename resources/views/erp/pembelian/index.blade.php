@@ -1,25 +1,24 @@
 @extends('layouts.erp')
 @section('content')
-<div x-data="{ filter: 'semua' }" style="padding:24px 28px 60px; display:grid; gap:16px;">
-  <div style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+<div x-data="{ filter: 'semua' }" class="order-page">
+  <div class="order-hd">
     <div>
-      <h1 class="display" style="margin:0; font-size:26px; font-weight:700; letter-spacing:-0.02em;">Purchase Order</h1>
-      <div style="font-size:13px; color:var(--ink-4); margin-top:4px;">{{ count($purchaseOrders) }} dokumen · Periode Mei 2026</div>
+      <h1 class="order-title display">Purchase Order</h1>
+      <div class="order-sub">{{ count($purchaseOrders) }} dokumen · Periode Mei 2026</div>
     </div>
-    <div style="display:flex; gap:8px;">
+    <div class="order-actions">
       <button class="btn btn-ghost"><x-erp.icon name="download" :size="14" />Ekspor</button>
       <a href="{{ route('erp.pembelian.create') }}" class="btn btn-primary"><x-erp.icon name="plus" :size="15" />Tambah PO</a>
     </div>
   </div>
 
-  <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+  <div class="filter-pills">
     @php $statuses = [['semua','Semua'],['pending','Pending'],['dikirim','Dikirim'],['tagihan','Tagihan'],['lunas','Lunas']]; @endphp
     @foreach($statuses as [$id,$lbl])
       @php $cnt = $id === 'semua' ? count($purchaseOrders) : count(array_filter($purchaseOrders, fn($s) => $s['status'] === $id)); @endphp
       <button x-on:click="filter = '{{ $id }}'"
-              :style="filter === '{{ $id }}' ? 'background:var(--ink); color:var(--paper); border-color:var(--ink);' : 'background:var(--paper); color:var(--ink-3); border-color:var(--line);'"
-              style="height:32px; padding:0 14px; border-radius:999px; font-size:12.5px; font-weight:600; border:1px solid; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
-        {{ $lbl }}<span class="mono" style="font-size:11px; opacity:.7;">{{ $cnt }}</span>
+              :class="filter === '{{ $id }}' ? 'filter-pill filter-pill--active' : 'filter-pill'">
+        {{ $lbl }}<span class="filter-pill__count mono">{{ $cnt }}</span>
       </button>
     @endforeach
     <div style="flex:1;"></div>

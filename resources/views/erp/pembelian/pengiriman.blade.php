@@ -5,44 +5,44 @@
   $totalSusut    = array_sum(array_column($poDetailItems, 'susut'));
   $estHpp        = array_sum(array_map(fn($i) => $i['qtyDiterima'] * $i['harga'], $poDetailItems)) + 2_400_000;
 @endphp
-<div style="padding:24px 28px 60px; display:grid; gap:16px;">
+<div class="order-page">
   <div>
     <a href="{{ route('erp.pembelian.show', $po['id']) }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
       <x-erp.icon name="chev-left" :size="13" />Kembali ke {{ $po['id'] }}
     </a>
-    <div style="display:flex; align-items:center; gap:12px;">
-      <h1 class="display" style="margin:0; font-size:26px; font-weight:700; letter-spacing:-0.02em;">Buat Pengiriman Masuk</h1>
+    <div class="order-title-row">
+      <h1 class="order-title display">Buat Pengiriman Masuk</h1>
       <x-erp.status-badge status="draft" />
     </div>
-    <div style="font-size:13px; color:var(--ink-4); margin-top:6px;">
+    <div class="order-sub">
       Pengiriman yang berhasil disimpan akan otomatis membentuk jurnal umum dan <strong style="color:var(--ink);">menambah stok</strong> di gudang tujuan.
     </div>
   </div>
 
-  <div class="card" style="padding:22px 24px; display:grid; gap:18px;">
-    <div style="display:flex; justify-content:space-between; align-items:baseline;">
-      <div class="display" style="font-weight:700; font-size:15px;">Informasi Pengiriman</div>
-      <div style="font-size:11.5px; color:var(--ink-4);"><span style="color:var(--accent);">*</span> Field terisi otomatis dari PO</div>
+  <div class="card card-bd--form">
+    <div class="shipping-form-info">
+      <div class="display card-hd-title">Informasi Pengiriman</div>
+      <div class="shipping-form-info__sub"><span style="color:var(--accent);">*</span> Field terisi otomatis dari PO</div>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px;">
+    <div class="order-form-grid-3">
       <x-erp.field label="Vendor" :required="true">
-        <div class="input" style="display:flex; align-items:center; gap:10px; background:var(--bg-2);">
+        <div class="input input--readonly" style="display:flex; align-items:center; gap:10px;">
           <x-erp.avatar :name="$po['vendor']" />
           <span style="flex:1; font-weight:500;">{{ $po['vendor'] }}</span>
-          <span style="font-size:10.5px; color:var(--ink-4); text-transform:uppercase; letter-spacing:.06em;">Auto</span>
+          <span class="auto-tag">Auto</span>
         </div>
       </x-erp.field>
       <x-erp.field label="No. Pemesanan" :required="true">
-        <div class="input mono" style="display:flex; align-items:center; background:var(--bg-2);">
+        <div class="input mono input--readonly" style="display:flex; align-items:center;">
           <span style="flex:1; font-weight:600;">{{ $po['id'] }}</span>
-          <span style="font-size:10.5px; color:var(--ink-4); text-transform:uppercase; letter-spacing:.06em;">Auto</span>
+          <span class="auto-tag">Auto</span>
         </div>
       </x-erp.field>
       <x-erp.field label="Gudang" :required="true">
-        <div class="input" style="display:flex; align-items:center; gap:8px; background:var(--bg-2);">
+        <div class="input input--readonly" style="display:flex; align-items:center; gap:8px;">
           <x-erp.icon name="building" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">{{ $po['gudang'] }}</span>
-          <span style="font-size:10.5px; color:var(--ink-4); text-transform:uppercase; letter-spacing:.06em;">Auto</span>
+          <span class="auto-tag">Auto</span>
         </div>
       </x-erp.field>
       <x-erp.field label="Nomor Pengiriman"><input class="input mono" value="GRN-2026-0072" /></x-erp.field>
@@ -59,8 +59,8 @@
   </div>
 
   <div class="card" style="overflow:hidden;">
-    <div style="padding:14px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between;">
-      <div class="display" style="font-weight:700; font-size:15px;">Produk dari PO</div>
+    <div class="card-hd">
+      <div class="display card-hd-title">Produk dari PO</div>
       <div style="font-size:11.5px; color:var(--ink-4);">Total diterima <strong style="color:var(--ink);">{{ $totalDiterima }}</strong> · Susut <strong style="color:var(--bad);">{{ $totalSusut }}</strong></div>
     </div>
     <table class="tbl">
@@ -87,7 +87,7 @@
         @endforeach
       </tbody>
     </table>
-    <div style="display:grid; grid-template-columns:1fr 360px; border-top:1px solid var(--line);">
+    <div class="order-items-split">
       <div style="padding:18px 22px;">
         <x-erp.field label="Estimasi Biaya Pengiriman">
           <input class="input num" style="text-align:right;" value="2400000" />
@@ -96,10 +96,10 @@
           Estimasi ini akan dipakai untuk menghitung HPP awal. Nilai final akan diperbarui saat tagihan dari vendor diterbitkan.
         </div>
       </div>
-      <div style="padding:22px; background:var(--bg-2); border-left:1px solid var(--line);">
+      <div class="hpp-summary">
         <div class="label" style="margin-bottom:6px;">Estimasi HPP Total</div>
-        <div class="display num" style="font-size:22px; font-weight:700; color:var(--accent);">{{ fmt_rp($estHpp) }}</div>
-        <div style="font-size:11.5px; color:var(--ink-4); margin-top:8px;">
+        <div class="hpp-summary__value display num">{{ fmt_rp($estHpp) }}</div>
+        <div class="hpp-summary__sub">
           {{ $totalDiterima }} unit diterima · HPP/unit ≈ <span class="mono">{{ fmt_rp(round($estHpp / max($totalDiterima,1))) }}</span>
         </div>
       </div>

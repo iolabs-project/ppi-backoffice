@@ -1,0 +1,129 @@
+.master-page {
+  padding: 24px 28px 60px;
+  display: grid;
+  gap: 16px;
+}
+
+.master-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+// Table toolbar (search + filter row)
+.master-toolbar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.master-search {
+  position: relative;
+  flex: 1;
+  max-width: 320px;
+}
+
+.master-search__icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.master-search__input {
+  padding-left: 32px;
+}
+
+// Gudang cards
+.gudang-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.gudang-card {
+  padding: 20px 22px;
+  display: grid;
+  gap: 12px;
+}
+
+.gudang-card__hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.gudang-card__info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gudang-card__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--accent-3);
+  display: grid;
+  place-items: center;
+}
+
+.gudang-card__name {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.gudang-card__code {
+  font-size: 11px;
+  color: var(--ink-4);
+  margin-top: 2px;
+}
+
+.gudang-card__meta {
+  display: grid;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.gudang-card__meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// Add new (dashed) card
+.gudang-add-card {
+  padding: 20px 22px;
+  display: grid;
+  place-items: center;
+  min-height: 140px;
+  border-style: dashed;
+  cursor: pointer;
+  opacity: .5;
+  transition: opacity .15s;
+  text-align: center;
+
+  &:hover { opacity: .8; }
+}
+
+.gudang-add-label {
+  font-size: 13px;
+  color: var(--ink-4);
+  margin-top: 8px;
+}
+
+// COA group header row
+.coa-group-row td {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--ink-4);
+  padding: 8px 16px;
+  background: var(--bg-2);
+}

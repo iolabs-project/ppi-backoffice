@@ -1,0 +1,22 @@
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.section-title__text {}
+
+.section-title__heading {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.section-title__sub {
+  font-size: 12.5px;
+  color: var(--ink-4);
+  margin-top: 2px;
+}

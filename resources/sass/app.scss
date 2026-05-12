@@ -1,36 +1,30 @@
-// Prevent horizontal scrolling
-html, body {
-    overflow-x: hidden;
-    max-width: 100%;
-}
+// Foundation
+@import 'variables';
+@import 'base';
+@import 'typography';
+@import 'utilities';
 
-* {
-    box-sizing: border-box;
-}
+// Components
+@import 'components/buttons';
+@import 'components/card';
+@import 'components/chips';
+@import 'components/forms';
+@import 'components/table';
+@import 'components/tabs';
+@import 'components/modal';
+@import 'components/avatar';
+@import 'components/kpi-card';
+@import 'components/section-title';
 
-// Ensure all containers stay within viewport
-.container, 
-.container-fluid,
-[class*="container"] {
-    max-width: 100%;
-    overflow-x: hidden;
-}
+// Layout
+@import 'layout/erp';
+@import 'layout/sidebar';
+@import 'layout/topbar';
 
-// Prevent images and media from causing horizontal overflow
-img, 
-video, 
-iframe, 
-object, 
-embed {
-    max-width: 100%;
-    height: auto;
-}
-
-// Prevent text overflow
-pre, 
-code {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    white-space: pre-wrap;
-}
-
+// Pages
+@import 'pages/dashboard';
+@import 'pages/order';
+@import 'pages/kasbank';
+@import 'pages/laporan';
+@import 'pages/master';
+@import 'pages/coming-soon';

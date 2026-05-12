@@ -10,33 +10,31 @@
     ['id'=>'jurnal',     'label'=>'Jurnal Umum'],
   ];
 
-  // Simplified CoA groups for Neraca
-  $aset     = array_filter($chartOfAccounts, fn($a) => str_starts_with($a['kode'], '1'));
+  $aset       = array_filter($chartOfAccounts, fn($a) => str_starts_with($a['kode'], '1'));
   $liabilitas = array_filter($chartOfAccounts, fn($a) => str_starts_with($a['kode'], '2'));
-  $ekuitas  = array_filter($chartOfAccounts, fn($a) => str_starts_with($a['kode'], '3'));
+  $ekuitas    = array_filter($chartOfAccounts, fn($a) => str_starts_with($a['kode'], '3'));
   $pendapatan = array_filter($chartOfAccounts, fn($a) => str_starts_with($a['kode'], '4'));
-  $beban    = array_filter($chartOfAccounts, fn($a) => str_starts_with($a['kode'], '5') || str_starts_with($a['kode'], '6'));
+  $beban      = array_filter($chartOfAccounts, fn($a) => str_starts_with($a['kode'], '5') || str_starts_with($a['kode'], '6'));
 
-  $totalAset   = array_sum(array_column(array_values($aset), 'saldo'));
-  $totalLiab   = array_sum(array_column(array_values($liabilitas), 'saldo'));
-  $totalEkuitas = array_sum(array_column(array_values($ekuitas), 'saldo'));
+  $totalAset       = array_sum(array_column(array_values($aset), 'saldo'));
+  $totalLiab       = array_sum(array_column(array_values($liabilitas), 'saldo'));
+  $totalEkuitas    = array_sum(array_column(array_values($ekuitas), 'saldo'));
   $totalPendapatan = array_sum(array_column(array_values($pendapatan), 'saldo'));
-  $totalBeban  = array_sum(array_column(array_values($beban), 'saldo'));
-  $labaRugi    = $totalPendapatan - $totalBeban;
+  $totalBeban      = array_sum(array_column(array_values($beban), 'saldo'));
+  $labaRugi        = $totalPendapatan - $totalBeban;
 
-  // Monthly data for Arus Kas chart
-  $months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  $months     = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
   $monthlyIn  = [820,950,1100,880,1240,1050,960,1300,1150,1080,1420,1600];
   $monthlyOut = [720,830,980,800,1100,920,840,1180,1020,960,1280,1450];
 @endphp
-<div x-data="{ tab: 'neraca' }" style="padding:24px 28px 60px; display:grid; gap:16px;">
+<div x-data="{ tab: 'neraca' }" class="laporan-page">
 
-  <div style="display:flex; justify-content:space-between; align-items:center;">
+  <div class="laporan-hd">
     <div>
-      <h1 class="display" style="margin:0; font-size:26px; font-weight:700; letter-spacing:-0.02em;">Laporan Keuangan</h1>
-      <div style="font-size:13px; color:var(--ink-4); margin-top:4px;">Periode Januari – Mei 2026</div>
+      <h1 class="order-title display">Laporan Keuangan</h1>
+      <div class="order-sub">Periode Januari – Mei 2026</div>
     </div>
-    <div style="display:flex; gap:8px;">
+    <div class="order-actions">
       <button class="btn btn-ghost"><x-erp.icon name="print" :size="14" />Cetak</button>
       <button class="btn btn-ghost"><x-erp.icon name="download" :size="14" />Ekspor</button>
     </div>
@@ -51,10 +49,10 @@
 
   {{-- =================== NERACA =================== --}}
   <div x-show="tab === 'neraca'" x-cloak>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+    <div class="neraca-grid">
       {{-- Aset --}}
       <div class="card" style="overflow:hidden;">
-        <div style="padding:14px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+        <div class="neraca-card-hd">
           <div class="display" style="font-weight:700; font-size:14px;">Aset</div>
           <div class="num" style="font-weight:700; color:var(--accent);">{{ fmt_rp($totalAset) }}</div>
         </div>
@@ -72,9 +70,9 @@
       </div>
 
       {{-- Liabilitas + Ekuitas --}}
-      <div style="display:grid; gap:14px; align-content:start;">
+      <div class="neraca-side">
         <div class="card" style="overflow:hidden;">
-          <div style="padding:14px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+          <div class="neraca-card-hd">
             <div class="display" style="font-weight:700; font-size:14px;">Liabilitas</div>
             <div class="num" style="font-weight:700; color:var(--bad);">{{ fmt_rp($totalLiab) }}</div>
           </div>
@@ -91,7 +89,7 @@
           </table>
         </div>
         <div class="card" style="overflow:hidden;">
-          <div style="padding:14px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+          <div class="neraca-card-hd">
             <div class="display" style="font-weight:700; font-size:14px;">Ekuitas</div>
             <div class="num" style="font-weight:700; color:var(--good);">{{ fmt_rp($totalEkuitas) }}</div>
           </div>
@@ -107,7 +105,7 @@
             </tbody>
           </table>
         </div>
-        <div class="card" style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+        <div class="card neraca-total-row">
           <span style="font-size:13px; font-weight:600;">Total Liabilitas + Ekuitas</span>
           <span class="num" style="font-size:16px; font-weight:700; color:var(--accent);">{{ fmt_rp($totalLiab + $totalEkuitas) }}</span>
         </div>
@@ -117,45 +115,45 @@
 
   {{-- =================== ARUS KAS =================== --}}
   <div x-show="tab === 'aruskas'" x-cloak>
-    <div style="display:grid; gap:14px;">
+    <div class="form-body">
       {{-- Bar chart --}}
-      <div class="card" style="padding:22px 24px;">
-        <div class="display" style="font-weight:700; font-size:14px; margin-bottom:16px;">Arus Kas Bulanan 2026</div>
+      <div class="aruskas-chart card">
+        <div class="display report-chart-title">Arus Kas Bulanan 2026</div>
         @php
           $maxVal = max(array_merge($monthlyIn, $monthlyOut));
           $chartH = 120;
         @endphp
-        <div style="display:flex; align-items:flex-end; gap:6px; height:{{ $chartH }}px; padding-bottom:0;">
+        <div class="aruskas-bars" style="height:{{ $chartH }}px;">
           @foreach($months as $mi => $m)
           @php
             $inH  = round($monthlyIn[$mi]  / $maxVal * $chartH);
             $outH = round($monthlyOut[$mi] / $maxVal * $chartH);
           @endphp
-          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; height:{{ $chartH }}px; justify-content:flex-end;">
-            <div style="display:flex; align-items:flex-end; gap:2px; width:100%;">
-              <div style="flex:1; height:{{ $inH }}px; background:var(--good); border-radius:3px 3px 0 0; opacity:.75;"></div>
-              <div style="flex:1; height:{{ $outH }}px; background:var(--bad); border-radius:3px 3px 0 0; opacity:.75;"></div>
+          <div class="aruskas-bar-group" style="height:{{ $chartH }}px;">
+            <div class="aruskas-bar-pair">
+              <div class="aruskas-bar-in" style="height:{{ $inH }}px;"></div>
+              <div class="aruskas-bar-out" style="height:{{ $outH }}px;"></div>
             </div>
           </div>
           @endforeach
         </div>
-        <div style="display:flex; gap:6px; margin-top:6px;">
+        <div class="aruskas-labels">
           @foreach($months as $m)
-          <div style="flex:1; text-align:center; font-size:10px; color:var(--ink-4);">{{ $m }}</div>
+          <div class="aruskas-month">{{ $m }}</div>
           @endforeach
         </div>
-        <div style="display:flex; gap:16px; margin-top:14px;">
-          <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-3);">
-            <div style="width:10px; height:10px; border-radius:2px; background:var(--good); opacity:.75;"></div>Kas Masuk
+        <div class="aruskas-legend">
+          <div class="aruskas-legend-item">
+            <div class="aruskas-legend-dot" style="background:var(--good);"></div>Kas Masuk
           </div>
-          <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-3);">
-            <div style="width:10px; height:10px; border-radius:2px; background:var(--bad); opacity:.75;"></div>Kas Keluar
+          <div class="aruskas-legend-item">
+            <div class="aruskas-legend-dot" style="background:var(--bad);"></div>Kas Keluar
           </div>
         </div>
       </div>
 
       {{-- Summary --}}
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px;">
+      <div class="aruskas-summary">
         @php
           $totalIn  = array_sum($monthlyIn)  * 1_000_000;
           $totalOut = array_sum($monthlyOut) * 1_000_000;
@@ -166,7 +164,7 @@
           ['Kas Keluar YTD', $totalOut, 'var(--bad)'],
           ['Net Kas', $netCash, $netCash >= 0 ? 'var(--good)' : 'var(--bad)'],
         ] as [$lbl, $val, $clr])
-        <div class="card" style="padding:20px 22px;">
+        <div class="card stat-card">
           <div class="label" style="margin-bottom:8px; color:{{ $clr }};">{{ $lbl }}</div>
           <div class="display num" style="font-size:22px; font-weight:700; color:{{ $clr }};">{{ fmt_rp(abs($val)) }}</div>
         </div>
@@ -177,10 +175,10 @@
 
   {{-- =================== LABA RUGI =================== --}}
   <div x-show="tab === 'labarugi'" x-cloak>
-    <div style="display:grid; grid-template-columns:2fr 1fr; gap:14px; align-items:start;">
-      <div style="display:grid; gap:14px;">
+    <div class="labarugi-grid">
+      <div class="labarugi-tables">
         <div class="card" style="overflow:hidden;">
-          <div style="padding:14px 20px; border-bottom:1px solid var(--line);">
+          <div class="neraca-card-hd">
             <div class="display" style="font-weight:700; font-size:14px;">Pendapatan</div>
           </div>
           <table class="tbl">
@@ -200,7 +198,7 @@
           </table>
         </div>
         <div class="card" style="overflow:hidden;">
-          <div style="padding:14px 20px; border-bottom:1px solid var(--line);">
+          <div class="neraca-card-hd">
             <div class="display" style="font-weight:700; font-size:14px;">Beban</div>
           </div>
           <table class="tbl">
@@ -221,15 +219,15 @@
         </div>
       </div>
 
-      <div style="display:grid; gap:14px; align-content:start;">
-        <div class="card" style="padding:22px;">
+      <div class="labarugi-summary">
+        <div class="labarugi-summary-card card">
           <div class="label" style="margin-bottom:16px;">Ringkasan</div>
           @foreach([
             ['Pendapatan', $totalPendapatan, false],
             ['Beban', -$totalBeban, false],
             ['Laba Bersih', $labaRugi, true],
           ] as [$lbl, $val, $bold])
-          <div style="display:flex; justify-content:space-between; padding:8px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line); margin-top:6px; padding-top:14px;' : '' }}">
+          <div class="labarugi-summary-row" style="font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line); margin-top:6px; padding-top:14px;' : '' }}">
             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
             <span class="num" style="color:{{ $val >= 0 ? 'var(--good)' : 'var(--bad)' }};">
               {{ $val < 0 ? '–' : '' }}{{ fmt_rp(abs($val)) }}
@@ -237,7 +235,7 @@
           </div>
           @endforeach
         </div>
-        <div class="card" style="padding:22px; background:{{ $labaRugi >= 0 ? 'var(--good-bg, #f0faf0)' : 'var(--bad-bg, #fff0f0)' }};">
+        <div class="card labarugi-summary-card" style="background:{{ $labaRugi >= 0 ? 'var(--good-bg, #f0faf0)' : 'var(--bad-bg, #fff0f0)' }};">
           <div class="label" style="margin-bottom:6px;">Margin Bersih</div>
           @php $margin = $totalPendapatan > 0 ? round($labaRugi / $totalPendapatan * 100, 1) : 0; @endphp
           <div class="display num" style="font-size:32px; font-weight:700; color:{{ $labaRugi >= 0 ? 'var(--good)' : 'var(--bad)' }};">{{ $margin }}%</div>
@@ -248,11 +246,11 @@
 
   {{-- =================== EKSEKUTIF =================== --}}
   <div x-show="tab === 'eksekutif'" x-cloak>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:14px;">
+    <div class="eksekutif-kpi">
       @foreach([
-        ['Total Aset',    $totalAset,        'var(--accent)'],
-        ['Laba Bersih',   $labaRugi,         $labaRugi >= 0 ? 'var(--good)' : 'var(--bad)'],
-        ['Total Liabitas',$totalLiab,        'var(--bad)'],
+        ['Total Aset',    $totalAset,  'var(--accent)'],
+        ['Laba Bersih',   $labaRugi,   $labaRugi >= 0 ? 'var(--good)' : 'var(--bad)'],
+        ['Total Liabilitas', $totalLiab, 'var(--bad)'],
       ] as [$lbl, $val, $clr])
       <div class="card" style="padding:22px;">
         <div class="label" style="margin-bottom:8px;">{{ $lbl }}</div>
@@ -260,8 +258,8 @@
       </div>
       @endforeach
     </div>
-    <div class="card" style="padding:22px 24px;">
-      <div class="display" style="font-weight:700; font-size:14px; margin-bottom:16px;">Kinerja Bulanan (Pendapatan vs Beban)</div>
+    <div class="eksekutif-chart card">
+      <div class="display report-chart-title">Kinerja Bulanan (Pendapatan vs Beban)</div>
       @php
         $months5 = ['Jan','Feb','Mar','Apr','Mei'];
         $rev5 = [8_200_000_000, 9_500_000_000, 11_000_000_000, 8_800_000_000, 12_400_000_000];
@@ -269,23 +267,23 @@
         $maxE = max(array_merge($rev5, $exp5));
         $hE   = 100;
       @endphp
-      <div style="display:flex; align-items:flex-end; gap:18px; height:{{ $hE }}px; padding-bottom:0;">
+      <div class="eksekutif-bars" style="height:{{ $hE }}px;">
         @foreach($months5 as $mi => $m)
         @php
           $rH = round($rev5[$mi] / $maxE * $hE);
           $eH = round($exp5[$mi] / $maxE * $hE);
         @endphp
-        <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
-          <div style="display:flex; align-items:flex-end; gap:3px; width:100%; justify-content:center;">
-            <div style="flex:1; height:{{ $rH }}px; background:var(--good); border-radius:3px 3px 0 0; opacity:.8;"></div>
-            <div style="flex:1; height:{{ $eH }}px; background:var(--bad); border-radius:3px 3px 0 0; opacity:.8;"></div>
+        <div class="eksekutif-bar-group">
+          <div class="eksekutif-bar-pair">
+            <div class="eksekutif-bar-rev" style="height:{{ $rH }}px;"></div>
+            <div class="eksekutif-bar-exp" style="height:{{ $eH }}px;"></div>
           </div>
         </div>
         @endforeach
       </div>
-      <div style="display:flex; gap:18px; margin-top:6px;">
+      <div class="eksekutif-labels">
         @foreach($months5 as $m)
-        <div style="flex:1; text-align:center; font-size:11px; color:var(--ink-4);">{{ $m }}</div>
+        <div class="eksekutif-month">{{ $m }}</div>
         @endforeach
       </div>
     </div>
@@ -305,9 +303,9 @@
         ['nama'=>'CV Agro Sejahtera','ref'=>'INV-AGR-00891','jatuhTempo'=>'18 Mei 2026','jumlah'=>24_800_000,'umur'=>-6],
       ];
     @endphp
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+    <div class="utang-grid">
       <div class="card" style="overflow:hidden;">
-        <div style="padding:14px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+        <div class="utang-card-hd">
           <div class="display" style="font-weight:700; font-size:14px;">Piutang Dagang</div>
           <span style="font-size:12px; color:var(--ink-4);">{{ count($piutang) }} tagihan</span>
         </div>
@@ -326,14 +324,14 @@
             @endforeach
           </tbody>
         </table>
-        <div style="padding:12px 20px; background:var(--bg-2); border-top:1px solid var(--line); display:flex; justify-content:space-between;">
+        <div class="utang-card-ft">
           <span style="font-size:13px; font-weight:600;">Total Piutang</span>
           <span class="num" style="font-weight:700; color:var(--good);">{{ fmt_rp(array_sum(array_column($piutang, 'jumlah'))) }}</span>
         </div>
       </div>
 
       <div class="card" style="overflow:hidden;">
-        <div style="padding:14px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+        <div class="utang-card-hd">
           <div class="display" style="font-weight:700; font-size:14px;">Utang Dagang</div>
           <span style="font-size:12px; color:var(--ink-4);">{{ count($utang) }} tagihan</span>
         </div>
@@ -352,7 +350,7 @@
             @endforeach
           </tbody>
         </table>
-        <div style="padding:12px 20px; background:var(--bg-2); border-top:1px solid var(--line); display:flex; justify-content:space-between;">
+        <div class="utang-card-ft">
           <span style="font-size:13px; font-weight:600;">Total Utang</span>
           <span class="num" style="font-weight:700; color:var(--bad);">{{ fmt_rp(array_sum(array_column($utang, 'jumlah'))) }}</span>
         </div>
@@ -363,8 +361,8 @@
   {{-- =================== JURNAL UMUM =================== --}}
   <div x-show="tab === 'jurnal'" x-cloak>
     <div class="card" style="overflow:hidden;">
-      <div style="padding:14px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between;">
-        <div class="display" style="font-weight:700; font-size:15px;">Jurnal Umum</div>
+      <div class="card-hd">
+        <div class="display card-hd-title">Jurnal Umum</div>
         <button class="btn btn-ghost btn-sm"><x-erp.icon name="download" :size="13" />Ekspor</button>
       </div>
       <table class="tbl">

@@ -11,19 +11,19 @@
   addItem()   { this.items.push({ kode:'', nama:'', qty:1, satuan:'', harga:0 }); },
   removeItem(idx) { this.items.splice(idx,1); },
   fmt(n)  { return 'Rp ' + Math.round(n).toLocaleString('id-ID'); },
-}" style="padding:24px 28px 60px; display:grid; gap:16px;">
+}" class="order-page">
 
   <div>
     <a href="{{ route('erp.pembelian.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
       <x-erp.icon name="chev-left" :size="13" />Kembali
     </a>
-    <h1 class="display" style="margin:0; font-size:26px; font-weight:700; letter-spacing:-0.02em;">Tambah Purchase Order</h1>
-    <div style="font-size:13px; color:var(--ink-4); margin-top:4px;">Buat dokumen PO baru. Stok akan ditambah otomatis saat pengiriman diterima.</div>
+    <h1 class="order-title display">Tambah Purchase Order</h1>
+    <div class="order-sub">Buat dokumen PO baru. Stok akan ditambah otomatis saat pengiriman diterima.</div>
   </div>
 
-  <div class="card" style="padding:22px 24px; display:grid; gap:18px;">
-    <div class="display" style="font-weight:700; font-size:15px;">Informasi Order</div>
-    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px;">
+  <div class="card card-bd--form">
+    <div class="display card-hd-title">Informasi Order</div>
+    <div class="order-form-grid-4">
       <x-erp.field label="Pilih Vendor" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
           <x-erp.avatar name="PT Bogasari Flour Mills" />
@@ -64,8 +64,8 @@
   </div>
 
   <div class="card" style="overflow:hidden;">
-    <div style="padding:14px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between;">
-      <div class="display" style="font-weight:700; font-size:15px;">Daftar Produk</div>
+    <div class="card-hd">
+      <div class="display card-hd-title">Daftar Produk</div>
       <button class="btn btn-ghost btn-sm" x-on:click="addItem()"><x-erp.icon name="plus" :size="13" />Tambah Baris</button>
     </div>
     <table class="tbl">
@@ -81,7 +81,7 @@
             <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
             <td>
               <div style="display:flex; align-items:center; gap:10px;">
-                <div style="width:36px; height:36px; border-radius:8px; background:var(--bg-2); display:grid; place-items:center; flex-shrink:0;">
+                <div class="product-icon">
                   <x-erp.icon name="box" :size="16" stroke="var(--ink-3)" />
                 </div>
                 <div style="flex:1;">
@@ -99,27 +99,27 @@
         </template>
       </tbody>
     </table>
-    <div style="display:grid; grid-template-columns:1fr 360px; border-top:1px solid var(--line);">
-      <div style="padding:18px 22px; display:grid; gap:14px;">
-        <div class="display" style="font-weight:700; font-size:14px;">Estimasi Biaya Tambahan</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+    <div class="order-items-split">
+      <div class="order-extras">
+        <div class="display order-extras__title">Estimasi Biaya Tambahan</div>
+        <div class="order-extras__grid-3">
           <x-erp.field label="Diskon"><input class="input num" style="text-align:right;" x-model.number="diskon" /></x-erp.field>
           <x-erp.field label="Est. Ongkos Kirim"><input class="input num" style="text-align:right;" x-model.number="ongkir" /></x-erp.field>
           <x-erp.field label="Biaya Lain-lain"><input class="input num" style="text-align:right;" x-model.number="biayaLain" /></x-erp.field>
         </div>
-        <div style="font-size:11.5px; color:var(--ink-4); padding:8px 12px; background:var(--accent-3); border-radius:8px; line-height:1.5;">
+        <div class="order-info-note">
           Estimasi HPP akan dihitung dari kuantitas riil + biaya kirim aktual saat pengiriman diterima.
         </div>
       </div>
-      <div style="padding:22px; background:var(--bg-2); border-left:1px solid var(--line); display:grid; gap:8px; align-content:start;">
-        <div class="display" style="font-weight:700; font-size:14px; margin-bottom:6px;">Ringkasan</div>
-        <div style="display:flex; justify-content:space-between; font-size:13px;"><span style="color:var(--ink-3);">Subtotal</span><span class="num" x-text="fmt(subtotal)"></span></div>
-        <div style="display:flex; justify-content:space-between; font-size:13px;"><span style="color:var(--ink-3);">Diskon</span><span class="num" x-text="'–' + fmt(diskon)"></span></div>
-        <div style="display:flex; justify-content:space-between; font-size:13px;"><span style="color:var(--ink-3);">Est. Ongkir</span><span class="num" x-text="fmt(ongkir)"></span></div>
-        <div style="height:1px; background:var(--line-2); margin:8px 0;"></div>
-        <div style="display:flex; justify-content:space-between; align-items:baseline;">
-          <span style="font-size:13px; font-weight:600;">Total Pesanan</span>
-          <span class="display num" style="font-size:22px; font-weight:700; color:var(--accent);" x-text="fmt(total)"></span>
+      <div class="order-summary">
+        <div class="display order-summary__title">Ringkasan</div>
+        <div class="order-summary__row"><span class="order-summary__label">Subtotal</span><span class="num" x-text="fmt(subtotal)"></span></div>
+        <div class="order-summary__row"><span class="order-summary__label">Diskon</span><span class="num" x-text="'–' + fmt(diskon)"></span></div>
+        <div class="order-summary__row"><span class="order-summary__label">Est. Ongkir</span><span class="num" x-text="fmt(ongkir)"></span></div>
+        <div class="order-summary__divider"></div>
+        <div class="order-summary__total">
+          <span class="order-summary__total-label">Total Pesanan</span>
+          <span class="order-summary__total-value display num" x-text="fmt(total)"></span>
         </div>
       </div>
     </div>

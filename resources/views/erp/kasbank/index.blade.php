@@ -6,14 +6,14 @@
   kirim: { akun: '', penerima: '', bank: '', norek: '', jumlah: '', keterangan: '' },
   terima: { akun: '', pengirim: '', jumlah: '', ref: '', keterangan: '' },
   tambah: { nama: '', bank: '', norek: '', saldo: '', keterangan: '' },
-}" style="padding:24px 28px 60px; display:grid; gap:16px;">
+}" class="kasbank-page">
 
-  <div style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+  <div class="order-hd">
     <div>
-      <h1 class="display" style="margin:0; font-size:26px; font-weight:700; letter-spacing:-0.02em;">Kas &amp; Bank</h1>
-      <div style="font-size:13px; color:var(--ink-4); margin-top:4px;">{{ count($akunKas) }} rekening aktif · Total saldo</div>
+      <h1 class="order-title display">Kas &amp; Bank</h1>
+      <div class="order-sub">{{ count($akunKas) }} rekening aktif · Total saldo</div>
     </div>
-    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <div class="order-actions">
       <button class="btn btn-ghost" x-on:click="modal = 'transfer'">
         <x-erp.icon name="swap" :size="14" />Transfer Dana
       </button>
@@ -30,53 +30,48 @@
   </div>
 
   {{-- Total saldo card --}}
-  <div class="card" style="padding:22px 26px; display:flex; align-items:center; justify-content:space-between; background:var(--ink); color:var(--paper);">
+  <div class="card saldo-hero">
     <div>
-      <div style="font-size:12px; opacity:.6; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px;">Total Saldo Tersedia</div>
-      <div class="display num" style="font-size:32px; font-weight:700; letter-spacing:-0.03em;">{{ fmt_rp($totalSaldo) }}</div>
-      <div style="font-size:12px; opacity:.5; margin-top:4px;">{{ count($akunKas) }} rekening · diperbarui hari ini</div>
+      <div class="saldo-hero__label">Total Saldo Tersedia</div>
+      <div class="saldo-hero__value display num">{{ fmt_rp($totalSaldo) }}</div>
+      <div class="saldo-hero__sub">{{ count($akunKas) }} rekening · diperbarui hari ini</div>
     </div>
-    <div style="opacity:.15;">
+    <div class="saldo-hero__icon">
       <x-erp.icon name="bank" :size="56" />
     </div>
   </div>
 
   {{-- Account cards --}}
-  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:14px;">
+  <div class="account-grid">
     @foreach($akunKas as $ak)
     @php
       $pct = $totalSaldo > 0 ? round($ak['saldo'] / $totalSaldo * 100) : 0;
       $isKas = str_contains(strtolower($ak['nama']), 'kas');
     @endphp
-    <a href="{{ route('erp.kasbank.show', $ak['id']) }}" style="text-decoration:none; color:inherit;">
-      <div class="card" style="padding:20px 22px; display:grid; gap:12px; cursor:pointer; transition:box-shadow .15s;"
-           onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow=''">
-        <div style="display:flex; align-items:flex-start; justify-content:space-between;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div style="width:38px; height:38px; border-radius:10px; background:var(--accent-3); display:grid; place-items:center;">
-              <x-erp.icon :name="$isKas ? 'wallet' : 'bank'" :size="18" stroke="var(--accent)" />
-            </div>
-            <div>
-              <div style="font-weight:700; font-size:14px; line-height:1.2;">{{ $ak['nama'] }}</div>
-              <div style="font-size:11.5px; color:var(--ink-4); margin-top:2px;">{{ $ak['bank'] }}
-                @if($ak['norek'])<span class="mono"> · {{ $ak['norek'] }}</span>@endif
-              </div>
+    <a href="{{ route('erp.kasbank.show', $ak['id']) }}" class="card account-card">
+      <div class="account-card__hd">
+        <div class="account-card__info">
+          <div class="account-card__icon">
+            <x-erp.icon :name="$isKas ? 'wallet' : 'bank'" :size="18" stroke="var(--accent)" />
+          </div>
+          <div>
+            <div class="account-card__name">{{ $ak['nama'] }}</div>
+            <div class="account-card__bank">{{ $ak['bank'] }}
+              @if($ak['norek'])<span class="mono"> · {{ $ak['norek'] }}</span>@endif
             </div>
           </div>
-          <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:var(--accent); background:var(--accent-3); padding:3px 8px; border-radius:999px;">
-            {{ $pct }}%
-          </span>
         </div>
-        <div>
-          <div class="num display" style="font-size:22px; font-weight:700; color:var(--ink);">{{ fmt_rp($ak['saldo']) }}</div>
-          <div style="margin-top:8px; height:4px; border-radius:2px; background:var(--line);">
-            <div style="height:4px; border-radius:2px; background:var(--accent); width:{{ $pct }}%;"></div>
-          </div>
+        <span class="account-card__pct">{{ $pct }}%</span>
+      </div>
+      <div>
+        <div class="account-card__value display num">{{ fmt_rp($ak['saldo']) }}</div>
+        <div class="account-card__bar">
+          <div class="account-card__bar-fill" style="width:{{ $pct }}%;"></div>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--ink-4);">
-          <span>{{ $ak['transaksi'] ?? 0 }} transaksi bulan ini</span>
-          <span style="color:var(--ink-3);">Lihat detail →</span>
-        </div>
+      </div>
+      <div class="account-card__ft">
+        <span>{{ $ak['transaksi'] ?? 0 }} transaksi bulan ini</span>
+        <span class="account-card__link">Lihat detail →</span>
       </div>
     </a>
     @endforeach
@@ -84,8 +79,8 @@
 
   {{-- Recent transactions --}}
   <div class="card" style="overflow:hidden;">
-    <div style="padding:14px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between;">
-      <div class="display" style="font-weight:700; font-size:15px;">Transaksi Terbaru</div>
+    <div class="card-hd">
+      <div class="display card-hd-title">Transaksi Terbaru</div>
       <button class="btn btn-ghost btn-sm"><x-erp.icon name="download" :size="13" />Ekspor</button>
     </div>
     <table class="tbl">
@@ -116,8 +111,8 @@
 
   {{-- Modal: Transfer Dana --}}
   <x-erp.modal title="Transfer Dana" show="modal === 'transfer'" close-handler="modal = null">
-    <div style="display:grid; gap:14px;">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+    <div class="form-body">
+      <div class="form-grid-2">
         <x-erp.field label="Dari Rekening" :required="true">
           <select class="input"><option>Pilih rekening...</option>
             @foreach($akunKas as $ak)<option>{{ $ak['nama'] }}</option>@endforeach
@@ -144,13 +139,13 @@
 
   {{-- Modal: Kirim Dana --}}
   <x-erp.modal title="Kirim Dana ke Pihak Luar" show="modal === 'kirim'" close-handler="modal = null">
-    <div style="display:grid; gap:14px;">
+    <div class="form-body">
       <x-erp.field label="Dari Rekening" :required="true">
         <select class="input"><option>Pilih rekening...</option>
           @foreach($akunKas as $ak)<option>{{ $ak['nama'] }}</option>@endforeach
         </select>
       </x-erp.field>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="form-grid-2">
         <x-erp.field label="Nama Penerima" :required="true">
           <input class="input" placeholder="Nama vendor / individu" />
         </x-erp.field>
@@ -176,7 +171,7 @@
 
   {{-- Modal: Terima Dana --}}
   <x-erp.modal title="Terima Dana dari Pihak Luar" show="modal === 'terima'" close-handler="modal = null">
-    <div style="display:grid; gap:14px;">
+    <div class="form-body">
       <x-erp.field label="Ke Rekening" :required="true">
         <select class="input"><option>Pilih rekening...</option>
           @foreach($akunKas as $ak)<option>{{ $ak['nama'] }}</option>@endforeach
@@ -185,7 +180,7 @@
       <x-erp.field label="Nama Pengirim" :required="true">
         <input class="input" placeholder="Nama klien / individu" />
       </x-erp.field>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="form-grid-2">
         <x-erp.field label="Jumlah" :required="true">
           <input class="input num" style="text-align:right;" placeholder="0" />
         </x-erp.field>
@@ -205,11 +200,11 @@
 
   {{-- Modal: Tambah Rekening --}}
   <x-erp.modal title="Tambah Kas &amp; Bank" show="modal === 'tambah'" close-handler="modal = null">
-    <div style="display:grid; gap:14px;">
+    <div class="form-body">
       <x-erp.field label="Nama Rekening" :required="true">
         <input class="input" placeholder="cth. BCA Operasional" />
       </x-erp.field>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="form-grid-2">
         <x-erp.field label="Nama Bank">
           <input class="input" placeholder="BCA, BRI, Kas..." />
         </x-erp.field>

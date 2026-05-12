@@ -1,0 +1,238 @@
+.laporan-page {
+  padding: 24px 28px 60px;
+  display: grid;
+  gap: 16px;
+}
+
+.laporan-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// Neraca / Balance Sheet
+.neraca-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.neraca-side {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.neraca-card-hd {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.neraca-total-row {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// Arus Kas / Cash Flow
+.aruskas-chart {
+  padding: 22px 24px;
+}
+
+.aruskas-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.aruskas-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  justify-content: flex-end;
+}
+
+.aruskas-bar-pair {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 100%;
+}
+
+.aruskas-labels {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.aruskas-month {
+  flex: 1;
+  text-align: center;
+  font-size: 10px;
+  color: var(--ink-4);
+}
+
+.aruskas-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.aruskas-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.aruskas-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  opacity: .75;
+}
+
+.aruskas-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+// Laba Rugi / P&L
+.labarugi-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.labarugi-tables { display: grid; gap: 14px; }
+
+.labarugi-summary {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.labarugi-summary-card {
+  padding: 22px;
+}
+
+.labarugi-summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+// Eksekutif
+.eksekutif-kpi {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.eksekutif-chart {
+  padding: 22px 24px;
+}
+
+.eksekutif-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+}
+
+.eksekutif-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.eksekutif-bar-pair {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  width: 100%;
+  justify-content: center;
+}
+
+.eksekutif-labels {
+  display: flex;
+  gap: 18px;
+  margin-top: 6px;
+}
+
+.eksekutif-month {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-4);
+}
+
+// Generic report card/chart title
+.report-chart-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+// Arus Kas bars
+.aruskas-bar-in {
+  flex: 1;
+  background: var(--good);
+  border-radius: 3px 3px 0 0;
+  opacity: .75;
+}
+
+.aruskas-bar-out {
+  flex: 1;
+  background: var(--bad);
+  border-radius: 3px 3px 0 0;
+  opacity: .75;
+}
+
+// Eksekutif chart bars
+.eksekutif-bar-rev {
+  flex: 1;
+  background: var(--good);
+  border-radius: 3px 3px 0 0;
+  opacity: .8;
+}
+
+.eksekutif-bar-exp {
+  flex: 1;
+  background: var(--bad);
+  border-radius: 3px 3px 0 0;
+  opacity: .8;
+}
+
+// Utang & Piutang
+.utang-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.utang-card-hd {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.utang-card-ft {
+  padding: 12px 20px;
+  background: var(--bg-2);
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+}
