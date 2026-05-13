@@ -6,7 +6,7 @@
     <div class="modal-hd">
       <h3 class="modal-title display">{{ $title }}</h3>
       <button class="btn btn-ghost btn-icon btn-sm" x-on:click="{{ $closeHandler ?? 'modal=null' }}" style="border:none;">
-        <x-erp.icon name="x" :size="16" />
+        <x-misc.icon name="x" :size="16" />
       </button>
     </div>
     <div class="modal-bd">{{ $slot }}</div>

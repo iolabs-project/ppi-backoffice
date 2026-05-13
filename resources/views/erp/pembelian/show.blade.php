@@ -1,4 +1,4 @@
-@extends('layouts.erp')
+@extends('layouts.app')
 @section('content')
 @php
   $subtotal = array_sum(array_map(fn($i) => $i['qty'] * $i['harga'], $poDetailItems));
@@ -9,8 +9,8 @@
 <div class="order-page">
   <div class="order-hd order-hd--start">
     <div>
-      <a href="{{ route('erp.pembelian.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
-        <x-erp.icon name="chev-left" :size="13" />Kembali ke Daftar PO
+      <a href="{{ route('pembelian.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
+        <x-misc.icon name="chev-left" :size="13" />Kembali ke Daftar PO
       </a>
       <div class="order-title-row">
         <h1 class="order-title display">{{ $po['id'] }}</h1>
@@ -21,12 +21,12 @@
       </div>
     </div>
     <div class="order-actions">
-      <button class="btn btn-ghost"><x-erp.icon name="x" :size="14" />Batal Pemesanan</button>
-      <a href="{{ route('erp.pembelian.pengiriman', $po['id']) }}" class="btn btn-dark">
-        <x-erp.icon name="truck" :size="14" />Buat Pengiriman
+      <button class="btn btn-ghost"><x-misc.icon name="x" :size="14" />Batal Pemesanan</button>
+      <a href="{{ route('pembelian.pengiriman', $po['id']) }}" class="btn btn-dark">
+        <x-misc.icon name="truck" :size="14" />Buat Pengiriman
       </a>
-      <a href="{{ route('erp.pembelian.tagihan', $po['id']) }}" class="btn btn-primary">
-        <x-erp.icon name="receipt" :size="14" />Buat Tagihan
+      <a href="{{ route('pembelian.tagihan', $po['id']) }}" class="btn btn-primary">
+        <x-misc.icon name="receipt" :size="14" />Buat Tagihan
       </a>
     </div>
   </div>

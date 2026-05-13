@@ -1,5 +1,5 @@
 @props(['breadcrumb' => []])
-@php $user = ['name' => 'Albert Irgi', 'role' => 'Direktur Operasional']; @endphp
+@php $user = ['name' => 'Albert Irgi', 'role' => 'Superadmin']; @endphp
 <header class="topbar">
     <div class="topbar__inner">
 
@@ -7,7 +7,7 @@
         <div class="topbar__breadcrumb">
             @foreach ($breadcrumb as $i => $crumb)
                 @if ($i > 0)
-                    <x-erp.icon name="chev-right" :size="14" stroke="var(--ink-5)" />
+                    <x-misc.icon name="chev-right" :size="14" stroke="var(--ink-5)" />
                 @endif
                 @if (isset($crumb['url']))
                     <a href="{{ $crumb['url'] }}"
@@ -25,18 +25,12 @@
 
         {{-- Right side --}}
         <div class="topbar__right">
-            <div class="topbar__search">
-                <input placeholder="Cari transaksi, kontak, produk…" class="topbar__search-input"
-                    onfocus="this.style.borderColor='var(--ink-4)'" onblur="this.style.borderColor='var(--line)'" />
-                <div class="topbar__search-icon">
-                    <x-erp.icon name="search" :size="15" stroke="var(--ink-4)" />
-                </div>
-                <kbd class="topbar__search-kbd">⌘K</kbd>
+            <div class="topbar__clock" aria-live="polite" aria-label="Current date and time">
+                <div class="circle"></div>
+                <div class="topbar__clock-date" data-topbar-clock-date></div>
+                <div class="topbar__clock-time" data-topbar-clock-time></div>
             </div>
 
-            <button class="btn btn-ghost btn-icon" style="height:36px; width:36px; border:none;">
-                <x-erp.icon name="bell" :size="16" />
-            </button>
 
             <div class="topbar__user">
                 <x-erp.avatar :name="$user['name']" />
@@ -48,3 +42,39 @@
         </div>
     </div>
 </header>
+
+@once
+    @push('scripts')
+        <script>
+            (() => {
+                const dateFormatter = new Intl.DateTimeFormat('id-ID', {
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                });
+
+                const updateClock = () => {
+                    const now = new Date();
+                    const dateValue = dateFormatter.format(now);
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    const timeValue = `${hours}:${minutes}:${seconds}`;
+
+                    document.querySelectorAll('[data-topbar-clock-date]').forEach((element) => {
+                        element.textContent = dateValue;
+                    });
+
+                    document.querySelectorAll('[data-topbar-clock-time]').forEach((element) => {
+                        element.textContent = timeValue;
+                    });
+                };
+
+                updateClock();
+                setInterval(updateClock, 1000);
+            })
+            ();
+        </script>
+    @endpush
+@endonce

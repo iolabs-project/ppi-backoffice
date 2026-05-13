@@ -8,11 +8,11 @@ use App\Http\Controllers\Erp\KasBankController;
 use App\Http\Controllers\Erp\LaporanController;
 use App\Http\Controllers\Erp\MasterController;
 
-Route::get('/', function () {
-    return view('pages.home');
-});
+// Route::get('/', function () {
+//     return view('pages.home');
+// });
 
-Route::prefix('erp')->name('erp.')->group(function () {
+// Route::prefix('erp')->name('')->group(function () {
 
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -48,7 +48,7 @@ Route::prefix('erp')->name('erp.')->group(function () {
 
     // Coming-soon placeholders
     Route::get('/biaya', function () {
-        return view('erp.coming-soon', [
+        return view('coming-soon', [
             'currentPage' => 'biaya',
             'breadcrumb'  => [['label' => 'Biaya']],
             'title'       => 'Manajemen Biaya',
@@ -57,7 +57,7 @@ Route::prefix('erp')->name('erp.')->group(function () {
     })->name('biaya.index');
 
     Route::get('/pengaturan', function () {
-        return view('erp.coming-soon', [
+        return view('coming-soon', [
             'currentPage' => 'pengaturan',
             'breadcrumb'  => [['label' => 'Pengaturan']],
             'title'       => 'Pengaturan',
@@ -66,11 +66,11 @@ Route::prefix('erp')->name('erp.')->group(function () {
     })->name('pengaturan.index');
 
     Route::get('/bantuan', function () {
-        return view('erp.coming-soon', [
+        return view('coming-soon', [
             'currentPage' => 'bantuan',
             'breadcrumb'  => [['label' => 'Bantuan']],
             'title'       => 'Pusat Bantuan',
             'description' => 'Dokumentasi dan dukungan pengguna akan tersedia di sini.',
         ]);
     })->name('bantuan.index');
-});
+// });

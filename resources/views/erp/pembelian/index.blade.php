@@ -1,4 +1,4 @@
-@extends('layouts.erp')
+@extends('layouts.app')
 @section('content')
 <div x-data="{ filter: 'semua' }" class="order-page">
   <div class="order-hd">
@@ -7,8 +7,8 @@
       <div class="order-sub">{{ count($purchaseOrders) }} dokumen · Periode Mei 2026</div>
     </div>
     <div class="order-actions">
-      <button class="btn btn-ghost"><x-erp.icon name="download" :size="14" />Ekspor</button>
-      <a href="{{ route('erp.pembelian.create') }}" class="btn btn-primary"><x-erp.icon name="plus" :size="15" />Tambah PO</a>
+      <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
+      <a href="{{ route('pembelian.create') }}" class="btn btn-primary"><x-misc.icon name="plus" :size="15" />Tambah PO</a>
     </div>
   </div>
 
@@ -22,8 +22,8 @@
       </button>
     @endforeach
     <div style="flex:1;"></div>
-    <button class="btn btn-ghost btn-sm"><x-erp.icon name="sort" :size="13" />Tanggal</button>
-    <button class="btn btn-ghost btn-sm"><x-erp.icon name="filter" :size="13" />Filter</button>
+    <button class="btn btn-ghost btn-sm"><x-misc.icon name="sort" :size="13" />Tanggal</button>
+    <button class="btn btn-ghost btn-sm"><x-misc.icon name="filter" :size="13" />Filter</button>
   </div>
 
   <div class="card" style="overflow:hidden;">
@@ -37,7 +37,7 @@
         @foreach($purchaseOrders as $s)
           <tr class="row-tap"
               x-show="filter === 'semua' || filter === '{{ $s['status'] }}'"
-              x-on:click="window.location='{{ route('erp.pembelian.show', $s['id']) }}'">
+              x-on:click="window.location='{{ route('pembelian.show', $s['id']) }}'">
             <td x-on:click.stop><input type="checkbox" /></td>
             <td class="mono" style="font-weight:600;">{{ $s['id'] }}</td>
             <td style="color:var(--ink-3);">{{ $s['tanggal'] }}</td>
@@ -51,7 +51,7 @@
             <td style="color:var(--ink-3);">{{ $s['jatuhTempo'] }}</td>
             <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($s['total']) }}</td>
             <td><x-erp.status-badge :status="$s['status']" /></td>
-            <td x-on:click.stop><button class="btn btn-ghost btn-icon btn-sm" style="border:none;"><x-erp.icon name="more" :size="15" /></button></td>
+            <td x-on:click.stop><button class="btn btn-ghost btn-icon btn-sm" style="border:none;"><x-misc.icon name="more" :size="15" /></button></td>
           </tr>
         @endforeach
       </tbody>

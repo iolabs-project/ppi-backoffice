@@ -1,4 +1,4 @@
-@extends('layouts.erp')
+@extends('layouts.app')
 @section('content')
 @php
   $masukTotal  = array_sum(array_column(array_filter($transaksiKas, fn($t) => $t['masuk'] > 0), 'masuk'));
@@ -8,8 +8,8 @@
 
   <div class="order-hd order-hd--start">
     <div>
-      <a href="{{ route('erp.kasbank.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
-        <x-erp.icon name="chev-left" :size="13" />Kembali ke Kas &amp; Bank
+      <a href="{{ route('kasbank.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
+        <x-misc.icon name="chev-left" :size="13" />Kembali ke Kas &amp; Bank
       </a>
       <h1 class="order-title display">{{ $akun['nama'] }}</h1>
       <div class="order-sub">
@@ -17,7 +17,7 @@
       </div>
     </div>
     <div class="order-actions">
-      <button class="btn btn-ghost"><x-erp.icon name="download" :size="14" />Ekspor</button>
+      <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
     </div>
   </div>
 

@@ -1,17 +1,17 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<!doctype html>
+<html lang="id">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>@yield('title')</title>
-
-    <!-- Favicon -->
-    {{-- <link rel="icon" type="image/x-icon" href="{{ asset('assets/components/icon.png') }}"> --}}
-
-    {{-- Main CSS File - Production build --}}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <title>{{ $pageTitle ?? 'Putra Pangan Indonesia' }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    {{-- @vite(['resources/sass/app.scss', 'resources/js/app.js']) --}}
     @php
         $manifestPath = base_path('public/build/manifest.json');
         $manifest = file_exists($manifestPath) ? json_decode(file_get_contents($manifestPath), true) : [];
@@ -27,20 +27,30 @@
 </head>
 
 <body>
-    @yield('content')
+    <div id="root">
+        <div class="erp-shell">
 
-    {{-- Main JS File - Production build --}}
-    @php
-        $manifestPath = base_path('public/build/manifest.json');
-        $manifest = file_exists($manifestPath) ? json_decode(file_get_contents($manifestPath), true) : [];
-        $jsFile = $manifest['resources/js/app.js']['file'] ?? null;
-    @endphp
-    @if ($jsFile)
-        <script type="module" src="/build/{{ $jsFile }}"></script>
-    @else
-        <!-- Fallback: manifest not found or JS not in manifest -->
-        <script type="module" src="/build/assets/app-BGoPVvf_.js"></script>
-    @endif
+            {{-- Sidebar --}}
+            <x-navbar.sidebar :current-page="$currentPage ?? 'dashboard'" />
+
+            {{-- Main area --}}
+            <main class="erp-main">
+
+                {{-- Top bar --}}
+                <x-navbar.topbar :breadcrumb="$breadcrumb ?? [['label' => 'PPI']]" />
+
+                {{-- Page content --}}
+                <div class="erp-scroll">
+                    @yield('content')
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    {{-- Alpine.js --}}
+    <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    @stack('scripts')
 </body>
 
 </html>

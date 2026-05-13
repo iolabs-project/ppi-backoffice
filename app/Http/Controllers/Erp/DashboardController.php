@@ -11,7 +11,7 @@ class DashboardController extends Controller
     {
         $data = ErpDataService::getData();
 
-        return view('erp.dashboard', array_merge($data, [
+        return view('pages.dashboard', array_merge($data, [
             'currentPage' => 'dashboard',
             'breadcrumb'  => [['label' => 'Dashboard']],
         ]));

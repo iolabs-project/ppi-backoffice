@@ -9,7 +9,7 @@ class MasterController extends Controller
 {
     public function index()
     {
-        return view('erp.master.index', [
+        return view('master.index', [
             'currentPage'      => 'master',
             'breadcrumb'       => [['label' => 'Master Data']],
             'produk'           => ErpDataService::produk(),

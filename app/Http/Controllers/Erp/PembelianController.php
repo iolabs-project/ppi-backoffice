@@ -9,9 +9,9 @@ class PembelianController extends Controller
 {
     public function index()
     {
-        return view('erp.pembelian.index', [
+        return view('pembelian.index', [
             'currentPage'    => 'pembelian',
-            'breadcrumb'     => [['label' => 'Pembelian', 'url' => route('erp.pembelian.index')]],
+            'breadcrumb'     => [['label' => 'Pembelian', 'url' => route('pembelian.index')]],
             'purchaseOrders' => ErpDataService::purchaseOrders(),
         ]);
     }
@@ -21,10 +21,10 @@ class PembelianController extends Controller
         $po = collect(ErpDataService::purchaseOrders())->firstWhere('id', $id)
               ?? ErpDataService::purchaseOrders()[0];
 
-        return view('erp.pembelian.show', [
+        return view('pembelian.show', [
             'currentPage'    => 'pembelian',
             'breadcrumb'     => [
-                ['label' => 'Pembelian', 'url' => route('erp.pembelian.index')],
+                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
                 ['label' => $po['id']],
             ],
             'po'            => $po,
@@ -34,10 +34,10 @@ class PembelianController extends Controller
 
     public function create()
     {
-        return view('erp.pembelian.create', [
+        return view('pembelian.create', [
             'currentPage' => 'pembelian',
             'breadcrumb'  => [
-                ['label' => 'Pembelian', 'url' => route('erp.pembelian.index')],
+                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
                 ['label' => 'Tambah PO'],
             ],
             'produk' => ErpDataService::produk(),
@@ -51,11 +51,11 @@ class PembelianController extends Controller
         $po = collect(ErpDataService::purchaseOrders())->firstWhere('id', $id)
               ?? ErpDataService::purchaseOrders()[0];
 
-        return view('erp.pembelian.pengiriman', [
+        return view('pembelian.pengiriman', [
             'currentPage'   => 'pembelian',
             'breadcrumb'    => [
-                ['label' => 'Pembelian', 'url' => route('erp.pembelian.index')],
-                ['label' => $po['id'], 'url' => route('erp.pembelian.show', $po['id'])],
+                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
+                ['label' => $po['id'], 'url' => route('pembelian.show', $po['id'])],
                 ['label' => 'Buat Pengiriman'],
             ],
             'po'            => $po,
@@ -68,11 +68,11 @@ class PembelianController extends Controller
         $po = collect(ErpDataService::purchaseOrders())->firstWhere('id', $id)
               ?? ErpDataService::purchaseOrders()[0];
 
-        return view('erp.pembelian.tagihan', [
+        return view('pembelian.tagihan', [
             'currentPage'   => 'pembelian',
             'breadcrumb'    => [
-                ['label' => 'Pembelian', 'url' => route('erp.pembelian.index')],
-                ['label' => $po['id'], 'url' => route('erp.pembelian.show', $po['id'])],
+                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
+                ['label' => $po['id'], 'url' => route('pembelian.show', $po['id'])],
                 ['label' => 'Buat Tagihan'],
             ],
             'po'            => $po,

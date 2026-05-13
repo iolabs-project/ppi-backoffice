@@ -1,4 +1,4 @@
-@extends('layouts.erp')
+@extends('layouts.app')
 @section('content')
 @php
   $totalDiterima = array_sum(array_column($poDetailItems, 'qtyDiterima'));
@@ -7,8 +7,8 @@
 @endphp
 <div class="order-page">
   <div>
-    <a href="{{ route('erp.pembelian.show', $po['id']) }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
-      <x-erp.icon name="chev-left" :size="13" />Kembali ke {{ $po['id'] }}
+    <a href="{{ route('pembelian.show', $po['id']) }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
+      <x-misc.icon name="chev-left" :size="13" />Kembali ke {{ $po['id'] }}
     </a>
     <div class="order-title-row">
       <h1 class="order-title display">Buat Pengiriman Masuk</h1>
@@ -40,7 +40,7 @@
       </x-erp.field>
       <x-erp.field label="Gudang" :required="true">
         <div class="input input--readonly" style="display:flex; align-items:center; gap:8px;">
-          <x-erp.icon name="building" :size="14" stroke="var(--ink-4)" />
+          <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">{{ $po['gudang'] }}</span>
           <span class="auto-tag">Auto</span>
         </div>
@@ -48,7 +48,7 @@
       <x-erp.field label="Nomor Pengiriman"><input class="input mono" value="GRN-2026-0072" /></x-erp.field>
       <x-erp.field label="Tanggal Pengiriman">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-erp.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">12 Mei 2026</span>
+          <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">12 Mei 2026</span>
         </div>
       </x-erp.field>
       <x-erp.field label="Surat Jalan Vendor"><input class="input mono" placeholder="cth. SJ-BFM-9842" /></x-erp.field>
@@ -107,8 +107,8 @@
   </div>
 
   <div style="display:flex; justify-content:flex-end; gap:10px;">
-    <a href="{{ route('erp.pembelian.show', $po['id']) }}" class="btn btn-ghost">Batal</a>
-    <button class="btn btn-primary"><x-erp.icon name="check" :size="14" />Simpan Pengiriman</button>
+    <a href="{{ route('pembelian.show', $po['id']) }}" class="btn btn-ghost">Batal</a>
+    <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Pengiriman</button>
   </div>
 </div>
 @endsection

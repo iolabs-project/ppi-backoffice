@@ -1,4 +1,4 @@
-@extends('layouts.erp')
+@extends('layouts.app')
 @section('content')
 @php
   $subtotal   = array_sum(array_map(fn($i) => $i['qtyDiterima'] * $i['harga'], $poDetailItems));
@@ -8,8 +8,8 @@
 @endphp
 <div class="order-page">
   <div>
-    <a href="{{ route('erp.pembelian.show', $po['id']) }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
-      <x-erp.icon name="chev-left" :size="13" />Kembali ke {{ $po['id'] }}
+    <a href="{{ route('pembelian.show', $po['id']) }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
+      <x-misc.icon name="chev-left" :size="13" />Kembali ke {{ $po['id'] }}
     </a>
     <div class="order-title-row">
       <h1 class="order-title display">Buat Tagihan dari Vendor</h1>
@@ -33,7 +33,7 @@
       <x-erp.field label="No. Invoice"><input class="input mono" placeholder="cth. INV-BFM-23104" /></x-erp.field>
       <x-erp.field label="Tanggal Transaksi" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-erp.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">12 Mei 2026</span>
+          <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">12 Mei 2026</span>
         </div>
       </x-erp.field>
       <x-erp.field label="Nomor Pengiriman" :required="true">
@@ -44,14 +44,14 @@
       </x-erp.field>
       <x-erp.field label="Gudang" :required="true">
         <div class="input input--readonly" style="display:flex; align-items:center; gap:8px;">
-          <x-erp.icon name="building" :size="14" stroke="var(--ink-4)" />
+          <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">{{ $po['gudang'] }}</span>
           <span class="auto-tag">Auto</span>
         </div>
       </x-erp.field>
       <x-erp.field label="Tanggal Jatuh Tempo">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-erp.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">26 Mei 2026</span>
+          <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">26 Mei 2026</span>
         </div>
       </x-erp.field>
       <x-erp.field label="Biaya Pengiriman (Fixed)">
@@ -108,8 +108,8 @@
   </div>
 
   <div style="display:flex; justify-content:flex-end; gap:10px;">
-    <a href="{{ route('erp.pembelian.show', $po['id']) }}" class="btn btn-ghost">Batal</a>
-    <button class="btn btn-primary"><x-erp.icon name="check" :size="14" />Simpan Tagihan</button>
+    <a href="{{ route('pembelian.show', $po['id']) }}" class="btn btn-ghost">Batal</a>
+    <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Tagihan</button>
   </div>
 </div>
 @endsection

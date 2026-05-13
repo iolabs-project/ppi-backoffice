@@ -24,7 +24,7 @@
 }
 
 .topbar__crumb {
-  font-size: 13.5px;
+  font-size: 16px;
   text-decoration: none;
 
   &--last { font-weight: 600; color: var(--ink); }
@@ -37,44 +37,91 @@
   gap: 10px;
 }
 
-.topbar__search {
+.topbar__clock {
   position: relative;
-  width: 340px;
-  height: 36px;
-}
-
-.topbar__search-input {
-  width: 100%;
-  height: 36px;
-  padding-left: 34px;
-  padding-right: 52px;
-  border-radius: 10px;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  font-size: 13px;
-  font-family: inherit;
-  color: var(--ink);
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color .15s;
-
-  &:focus { border-color: var(--ink-4); }
-}
-
-.topbar__search-icon {
-  position: absolute;
-  left: 11px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
   display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
+  padding-left: 40px;
+  border-radius: 9999px;
+  background: #000;
 }
 
-.topbar__search-kbd {
+.topbar__clock-date {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.topbar__clock-time {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #fff;
+  letter-spacing: .02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.circle {
   position: absolute;
-  right: 10px;
+  left: 10%;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateX(-50%) translateY(-50%);
+  width: 10px;
+  height: 10px;
+
+  &:before {
+    content: "";
+    position: relative;
+    display: block;
+    width: 250%;
+    height: 250%;
+    box-sizing: border-box;
+    margin-left: -75%;
+    margin-top: -75%;
+    border-radius: 45px;
+    background-color: var(--accent);
+    animation: pulse 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  }
+
+  &:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: var(--accent);
+    border-radius: 50px;
+    animation: circle 1.25s cubic-bezier(0.455, 0.03, 0.515, 0.955) -0.4s infinite;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.33);
+  }
+  80%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes circle {
+  0% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.8);
+  }
 }
 
 .topbar__user {

@@ -1,4 +1,4 @@
-@extends('layouts.erp')
+@extends('layouts.app')
 @section('content')
 <div x-data="{
   tab: 'produk',
@@ -16,7 +16,7 @@
     </div>
     <div>
       <button class="btn btn-primary" x-on:click="modal = 'add_' + tab">
-        <x-erp.icon name="plus" :size="14" />
+        <x-misc.icon name="plus" :size="14" />
         <span x-text="{ produk:'Tambah Produk', kontak:'Tambah Kontak', akun:'Tambah Akun', gudang:'Tambah Gudang' }[tab]"></span>
       </button>
     </div>
@@ -34,10 +34,10 @@
     <div class="card" style="overflow:hidden;">
       <div class="master-toolbar">
         <div class="master-search">
-          <span class="master-search__icon"><x-erp.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
+          <span class="master-search__icon"><x-misc.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
           <input class="input master-search__input" placeholder="Cari produk..." />
         </div>
-        <button class="btn btn-ghost btn-sm"><x-erp.icon name="filter" :size="13" />Filter</button>
+        <button class="btn btn-ghost btn-sm"><x-misc.icon name="filter" :size="13" />Filter</button>
       </div>
       <table class="tbl">
         <thead><tr>
@@ -62,7 +62,7 @@
             <td class="num" style="text-align:right; font-size:13px;">{{ $p['stok'] ?? 0 }}</td>
             <td x-on:click.stop>
               <button class="btn btn-ghost btn-icon btn-sm" style="border:none;">
-                <x-erp.icon name="more" :size="15" />
+                <x-misc.icon name="more" :size="15" />
               </button>
             </td>
           </tr>
@@ -77,10 +77,10 @@
     <div class="card" style="overflow:hidden;">
       <div class="master-toolbar">
         <div class="master-search">
-          <span class="master-search__icon"><x-erp.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
+          <span class="master-search__icon"><x-misc.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
           <input class="input master-search__input" placeholder="Cari kontak..." />
         </div>
-        <button class="btn btn-ghost btn-sm"><x-erp.icon name="filter" :size="13" />Filter</button>
+        <button class="btn btn-ghost btn-sm"><x-misc.icon name="filter" :size="13" />Filter</button>
       </div>
       <table class="tbl">
         <thead><tr>
@@ -107,7 +107,7 @@
             <td style="font-size:13px; color:var(--ink-3);">{{ $k['kota'] ?? '—' }}</td>
             <td x-on:click.stop>
               <button class="btn btn-ghost btn-icon btn-sm" style="border:none;">
-                <x-erp.icon name="more" :size="15" />
+                <x-misc.icon name="more" :size="15" />
               </button>
             </td>
           </tr>
@@ -122,7 +122,7 @@
     <div class="card" style="overflow:hidden;">
       <div class="master-toolbar">
         <div class="master-search">
-          <span class="master-search__icon"><x-erp.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
+          <span class="master-search__icon"><x-misc.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
           <input class="input master-search__input" placeholder="Cari akun..." />
         </div>
       </div>
@@ -151,7 +151,7 @@
             <td class="num" style="text-align:right; font-weight:600; font-size:13px;">{{ fmt_rp($a['saldo']) }}</td>
             <td x-on:click.stop>
               <button class="btn btn-ghost btn-icon btn-sm" style="border:none;">
-                <x-erp.icon name="more" :size="15" />
+                <x-misc.icon name="more" :size="15" />
               </button>
             </td>
           </tr>
@@ -170,7 +170,7 @@
         <div class="gudang-card__hd">
           <div class="gudang-card__info">
             <div class="gudang-card__icon">
-              <x-erp.icon name="building" :size="18" stroke="var(--accent)" />
+              <x-misc.icon name="building" :size="18" stroke="var(--accent)" />
             </div>
             <div>
               <div class="gudang-card__name">{{ $g['nama'] }}</div>
@@ -178,21 +178,21 @@
             </div>
           </div>
           <button class="btn btn-ghost btn-icon btn-sm" style="border:none;">
-            <x-erp.icon name="more" :size="15" />
+            <x-misc.icon name="more" :size="15" />
           </button>
         </div>
         <div class="gudang-card__meta">
           <div class="gudang-card__meta-row">
-            <x-erp.icon name="building" :size="12" stroke="var(--ink-4)" />{{ $g['kota'] ?? '—' }}
+            <x-misc.icon name="building" :size="12" stroke="var(--ink-4)" />{{ $g['kota'] ?? '—' }}
           </div>
           @if(!empty($g['PIC']))
           <div class="gudang-card__meta-row">
-            <x-erp.icon name="users" :size="12" stroke="var(--ink-4)" />PIC: {{ $g['PIC'] }}
+            <x-misc.icon name="users" :size="12" stroke="var(--ink-4)" />PIC: {{ $g['PIC'] }}
           </div>
           @endif
           @if(!empty($g['kapasitas']))
           <div class="gudang-card__meta-row">
-            <x-erp.icon name="layers" :size="12" stroke="var(--ink-4)" />Kapasitas: {{ fmt_num($g['kapasitas']) }} unit
+            <x-misc.icon name="layers" :size="12" stroke="var(--ink-4)" />Kapasitas: {{ fmt_num($g['kapasitas']) }} unit
           </div>
           @endif
         </div>
@@ -202,7 +202,7 @@
       {{-- Add new gudang card --}}
       <div class="card gudang-add-card" x-on:click="modal = 'add_gudang'">
         <div>
-          <x-erp.icon name="plus" :size="24" stroke="var(--ink-3)" />
+          <x-misc.icon name="plus" :size="24" stroke="var(--ink-3)" />
           <div class="gudang-add-label">Tambah Gudang</div>
         </div>
       </div>
@@ -237,7 +237,7 @@
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-      <button class="btn btn-primary"><x-erp.icon name="check" :size="14" />Simpan Produk</button>
+      <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Produk</button>
     </x-slot:footer>
   </x-erp.modal>
 
@@ -271,7 +271,7 @@
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-      <button class="btn btn-primary"><x-erp.icon name="check" :size="14" />Simpan Kontak</button>
+      <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Kontak</button>
     </x-slot:footer>
   </x-erp.modal>
 
@@ -300,7 +300,7 @@
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-      <button class="btn btn-primary"><x-erp.icon name="check" :size="14" />Simpan Akun</button>
+      <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Akun</button>
     </x-slot:footer>
   </x-erp.modal>
 
@@ -329,7 +329,7 @@
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-      <button class="btn btn-primary"><x-erp.icon name="check" :size="14" />Simpan Gudang</button>
+      <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Gudang</button>
     </x-slot:footer>
   </x-erp.modal>
 

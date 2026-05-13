@@ -1,4 +1,4 @@
-@extends('layouts.erp')
+@extends('layouts.app')
 @section('content')
 <div x-data="{
   modal: null,
@@ -15,16 +15,16 @@
     </div>
     <div class="order-actions">
       <button class="btn btn-ghost" x-on:click="modal = 'transfer'">
-        <x-erp.icon name="swap" :size="14" />Transfer Dana
+        <x-misc.icon name="swap" :size="14" />Transfer Dana
       </button>
       <button class="btn btn-ghost" x-on:click="modal = 'kirim'">
-        <x-erp.icon name="send" :size="14" />Kirim Dana
+        <x-misc.icon name="send" :size="14" />Kirim Dana
       </button>
       <button class="btn btn-ghost" x-on:click="modal = 'terima'">
-        <x-erp.icon name="inbox" :size="14" />Terima Dana
+        <x-misc.icon name="inbox" :size="14" />Terima Dana
       </button>
       <button class="btn btn-primary" x-on:click="modal = 'tambah'">
-        <x-erp.icon name="plus" :size="14" />Tambah Rekening
+        <x-misc.icon name="plus" :size="14" />Tambah Rekening
       </button>
     </div>
   </div>
@@ -37,7 +37,7 @@
       <div class="saldo-hero__sub">{{ count($akunKas) }} rekening · diperbarui hari ini</div>
     </div>
     <div class="saldo-hero__icon">
-      <x-erp.icon name="bank" :size="56" />
+      <x-misc.icon name="bank" :size="56" />
     </div>
   </div>
 
@@ -48,11 +48,11 @@
       $pct = $totalSaldo > 0 ? round($ak['saldo'] / $totalSaldo * 100) : 0;
       $isKas = str_contains(strtolower($ak['nama']), 'kas');
     @endphp
-    <a href="{{ route('erp.kasbank.show', $ak['id']) }}" class="card account-card">
+    <a href="{{ route('kasbank.show', $ak['id']) }}" class="card account-card">
       <div class="account-card__hd">
         <div class="account-card__info">
           <div class="account-card__icon">
-            <x-erp.icon :name="$isKas ? 'wallet' : 'bank'" :size="18" stroke="var(--accent)" />
+            <x-misc.icon :name="$isKas ? 'wallet' : 'bank'" :size="18" stroke="var(--accent)" />
           </div>
           <div>
             <div class="account-card__name">{{ $ak['nama'] }}</div>
@@ -81,7 +81,7 @@
   <div class="card" style="overflow:hidden;">
     <div class="card-hd">
       <div class="display card-hd-title">Transaksi Terbaru</div>
-      <button class="btn btn-ghost btn-sm"><x-erp.icon name="download" :size="13" />Ekspor</button>
+      <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
     </div>
     <table class="tbl">
       <thead><tr>
@@ -133,7 +133,7 @@
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-      <button class="btn btn-primary"><x-erp.icon name="check" :size="14" />Proses Transfer</button>
+      <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Proses Transfer</button>
     </x-slot:footer>
   </x-erp.modal>
 
@@ -165,7 +165,7 @@
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-      <button class="btn btn-primary"><x-erp.icon name="send" :size="14" />Kirim Dana</button>
+      <button class="btn btn-primary"><x-misc.icon name="send" :size="14" />Kirim Dana</button>
     </x-slot:footer>
   </x-erp.modal>
 
@@ -194,7 +194,7 @@
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-      <button class="btn btn-primary"><x-erp.icon name="inbox" :size="14" />Catat Penerimaan</button>
+      <button class="btn btn-primary"><x-misc.icon name="inbox" :size="14" />Catat Penerimaan</button>
     </x-slot:footer>
   </x-erp.modal>
 
@@ -221,7 +221,7 @@
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-      <button class="btn btn-primary"><x-erp.icon name="check" :size="14" />Simpan Rekening</button>
+      <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Rekening</button>
     </x-slot:footer>
   </x-erp.modal>
 

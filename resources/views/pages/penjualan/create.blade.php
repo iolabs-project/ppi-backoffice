@@ -1,4 +1,4 @@
-@extends('layouts.erp')
+@extends('layouts.app')
 @section('content')
 <div x-data="{
   items: [
@@ -14,8 +14,8 @@
 }" class="order-page">
 
   <div>
-    <a href="{{ route('erp.penjualan.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
-      <x-erp.icon name="chev-left" :size="13" />Kembali
+    <a href="{{ route('penjualan.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
+      <x-misc.icon name="chev-left" :size="13" />Kembali
     </a>
     <h1 class="order-title display">Tambah Sales Order</h1>
     <div class="order-sub">Buat dokumen SO baru. Stok akan dipotong otomatis saat pengiriman dibuat.</div>
@@ -29,7 +29,7 @@
         <div class="input" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
           <x-erp.avatar name="PT Roti Sumber Rejeki" />
           <span style="flex:1; font-weight:500;">PT Roti Sumber Rejeki</span>
-          <x-erp.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
+          <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
         </div>
       </x-erp.field>
       <x-erp.field label="Nomor SO" :required="true">
@@ -37,19 +37,19 @@
       </x-erp.field>
       <x-erp.field label="Tanggal" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-erp.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">08 Mei 2026</span>
+          <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">08 Mei 2026</span>
         </div>
       </x-erp.field>
       <x-erp.field label="Jatuh Tempo" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-erp.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">22 Mei 2026</span>
+          <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">22 Mei 2026</span>
         </div>
       </x-erp.field>
       <x-erp.field label="Gudang" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-erp.icon name="building" :size="14" stroke="var(--ink-4)" />
+          <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">Gudang Bekasi</span>
-          <x-erp.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
+          <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
         </div>
       </x-erp.field>
       <x-erp.field label="Sales Person">
@@ -61,7 +61,7 @@
       <x-erp.field label="Termin Pembayaran">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <span style="flex:1;">Net 14 hari</span>
-          <x-erp.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
+          <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
         </div>
       </x-erp.field>
       <x-erp.field label="Nomor Referensi">
@@ -75,7 +75,7 @@
     <div class="card-hd">
       <div class="display card-hd-title">Daftar Produk</div>
       <button class="btn btn-ghost btn-sm" x-on:click="addItem()">
-        <x-erp.icon name="plus" :size="13" />Tambah Baris
+        <x-misc.icon name="plus" :size="13" />Tambah Baris
       </button>
     </div>
     <table class="tbl">
@@ -94,7 +94,7 @@
             <td>
               <div style="display:flex; align-items:center; gap:10px;">
                 <div class="product-icon">
-                  <x-erp.icon name="box" :size="16" stroke="var(--ink-3)" />
+                  <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
                 </div>
                 <div style="flex:1;">
                   <input class="input" style="height:32px; padding:0 10px;" x-model="it.nama" />
@@ -108,7 +108,7 @@
             <td class="num" style="text-align:right; font-weight:600;" x-text="fmt(it.qty * it.harga)"></td>
             <td>
               <button class="btn btn-ghost btn-icon btn-sm" style="border:none;" x-on:click="removeItem(i)">
-                <x-erp.icon name="trash" :size="14" stroke="var(--ink-4)" />
+                <x-misc.icon name="trash" :size="14" stroke="var(--ink-4)" />
               </button>
             </td>
           </tr>
@@ -162,9 +162,9 @@
   </div>
 
   <div class="order-form-footer">
-    <a href="{{ route('erp.penjualan.index') }}" class="btn btn-ghost">Batal</a>
+    <a href="{{ route('penjualan.index') }}" class="btn btn-ghost">Batal</a>
     <button class="btn btn-ghost" style="border-style:dashed;">Simpan Draft</button>
-    <button class="btn btn-primary"><x-erp.icon name="check" :size="14" />Simpan SO</button>
+    <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan SO</button>
   </div>
 </div>
 @endsection

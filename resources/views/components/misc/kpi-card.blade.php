@@ -23,6 +23,6 @@
                 <span class="kpi-card__period">vs bulan lalu</span>
             </div>
         </div>
-        <x-erp.sparkline :data="$sparkline" :color="$spColor" :w="88" :h="36" />
+        <x-misc.sparkline :data="$sparkline" :color="$spColor" :w="159" :h="95" />
     </div>
 </div>

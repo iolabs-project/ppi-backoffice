@@ -1,15 +1,15 @@
 @props(['currentPage' => 'dashboard'])
 @php
     $items = [
-        ['id' => 'dashboard', 'icon' => 'grid', 'label' => 'Dashboard', 'url' => route('erp.dashboard')],
-        ['id' => 'penjualan', 'icon' => 'sales', 'label' => 'Penjualan', 'url' => route('erp.penjualan.index')],
-        ['id' => 'pembelian', 'icon' => 'cart', 'label' => 'Pembelian', 'url' => route('erp.pembelian.index')],
-        ['id' => 'kasbank', 'icon' => 'wallet', 'label' => 'Kas & Bank', 'url' => route('erp.kasbank.index')],
-        ['id' => 'master', 'icon' => 'box', 'label' => 'Master Data', 'url' => route('erp.master.index')],
-        ['id' => 'laporan', 'icon' => 'book', 'label' => 'Laporan', 'url' => route('erp.laporan.index')],
+        ['id' => 'dashboard', 'icon' => 'grid', 'label' => 'Dashboard', 'url' => route('dashboard')],
+        ['id' => 'penjualan', 'icon' => 'sales', 'label' => 'Penjualan', 'url' => route('penjualan.index')],
+        ['id' => 'pembelian', 'icon' => 'cart', 'label' => 'Pembelian', 'url' => route('pembelian.index')],
+        ['id' => 'kasbank', 'icon' => 'wallet', 'label' => 'Kas & Bank', 'url' => route('kasbank.index')],
+        ['id' => 'master', 'icon' => 'box', 'label' => 'Master Data', 'url' => route('master.index')],
+        ['id' => 'laporan', 'icon' => 'book', 'label' => 'Laporan', 'url' => route('laporan.index')],
     ];
     $bottom = [
-        // ['id'=>'pengaturan', 'icon'=>'settings','label'=>'Pengaturan', 'url'=>route('erp.pengaturan.index')],
+        // ['id'=>'pengaturan', 'icon'=>'settings','label'=>'Pengaturan', 'url'=>route('pengaturan.index')],
     ];
 @endphp
 <aside class="sidebar">
@@ -22,7 +22,7 @@
             <a href="{{ $item['url'] }}" title="{{ $item['label'] }}"
                 class="sidebar-item"
                 @if($active) data-active @endif>
-                <x-erp.icon :name="$item['icon']" :size="18" sw="1.7" />
+                <x-misc.icon :name="$item['icon']" :size="18" sw="1.7" />
             </a>
         @endforeach
     </nav>
@@ -33,7 +33,7 @@
             <a href="{{ $item['url'] }}" title="{{ $item['label'] }}"
                 class="sidebar-item"
                 @if($active) data-active @endif>
-                <x-erp.icon :name="$item['icon']" :size="18" sw="1.7" />
+                <x-misc.icon :name="$item['icon']" :size="18" sw="1.7" />
             </a>
         @endforeach
     </nav>

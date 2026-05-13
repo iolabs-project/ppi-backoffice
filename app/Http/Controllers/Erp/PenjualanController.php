@@ -9,9 +9,9 @@ class PenjualanController extends Controller
 {
     public function index()
     {
-        return view('erp.penjualan.index', [
+        return view('pages.penjualan.index', [
             'currentPage'  => 'penjualan',
-            'breadcrumb'   => [['label' => 'Penjualan', 'url' => route('erp.penjualan.index')]],
+            'breadcrumb'   => [['label' => 'Penjualan', 'url' => route('penjualan.index')]],
             'salesOrders'  => ErpDataService::salesOrders(),
         ]);
     }
@@ -21,10 +21,10 @@ class PenjualanController extends Controller
         $so    = collect(ErpDataService::salesOrders())->firstWhere('id', $id)
                  ?? ErpDataService::salesOrders()[0];
 
-        return view('erp.penjualan.show', [
+        return view('penjualan.show', [
             'currentPage'   => 'penjualan',
             'breadcrumb'    => [
-                ['label' => 'Penjualan', 'url' => route('erp.penjualan.index')],
+                ['label' => 'Penjualan', 'url' => route('penjualan.index')],
                 ['label' => $so['id']],
             ],
             'so'            => $so,
@@ -34,10 +34,10 @@ class PenjualanController extends Controller
 
     public function create()
     {
-        return view('erp.penjualan.create', [
+        return view('penjualan.create', [
             'currentPage' => 'penjualan',
             'breadcrumb'  => [
-                ['label' => 'Penjualan', 'url' => route('erp.penjualan.index')],
+                ['label' => 'Penjualan', 'url' => route('penjualan.index')],
                 ['label' => 'Tambah SO'],
             ],
             'produk'  => ErpDataService::produk(),
@@ -51,11 +51,11 @@ class PenjualanController extends Controller
         $so = collect(ErpDataService::salesOrders())->firstWhere('id', $id)
               ?? ErpDataService::salesOrders()[0];
 
-        return view('erp.penjualan.pengiriman', [
+        return view('penjualan.pengiriman', [
             'currentPage'   => 'penjualan',
             'breadcrumb'    => [
-                ['label' => 'Penjualan', 'url' => route('erp.penjualan.index')],
-                ['label' => $so['id'], 'url' => route('erp.penjualan.show', $so['id'])],
+                ['label' => 'Penjualan', 'url' => route('penjualan.index')],
+                ['label' => $so['id'], 'url' => route('penjualan.show', $so['id'])],
                 ['label' => 'Buat Pengiriman'],
             ],
             'so'            => $so,

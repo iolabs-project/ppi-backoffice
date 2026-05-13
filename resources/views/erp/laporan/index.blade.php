@@ -1,4 +1,4 @@
-@extends('layouts.erp')
+@extends('layouts.app')
 @section('content')
 @php
   $tabs = [
@@ -35,8 +35,8 @@
       <div class="order-sub">Periode Januari – Mei 2026</div>
     </div>
     <div class="order-actions">
-      <button class="btn btn-ghost"><x-erp.icon name="print" :size="14" />Cetak</button>
-      <button class="btn btn-ghost"><x-erp.icon name="download" :size="14" />Ekspor</button>
+      <button class="btn btn-ghost"><x-misc.icon name="print" :size="14" />Cetak</button>
+      <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
     </div>
   </div>
 
@@ -363,7 +363,7 @@
     <div class="card" style="overflow:hidden;">
       <div class="card-hd">
         <div class="display card-hd-title">Jurnal Umum</div>
-        <button class="btn btn-ghost btn-sm"><x-erp.icon name="download" :size="13" />Ekspor</button>
+        <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
       </div>
       <table class="tbl">
         <thead><tr>
