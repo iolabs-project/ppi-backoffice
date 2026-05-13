@@ -25,48 +25,48 @@
   <div class="card card-bd--form">
     <div class="display card-hd-title">Informasi Order</div>
     <div class="order-form-grid-4">
-      <x-erp.field label="Pilih Customer" :required="true">
+      <x-misc.field label="Pilih Customer" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-          <x-erp.avatar name="PT Roti Sumber Rejeki" />
+          <x-misc.avatar name="PT Roti Sumber Rejeki" />
           <span style="flex:1; font-weight:500;">PT Roti Sumber Rejeki</span>
           <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
         </div>
-      </x-erp.field>
-      <x-erp.field label="Nomor SO" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Nomor SO" :required="true">
         <input class="input mono" value="SO-2026-0143" />
-      </x-erp.field>
-      <x-erp.field label="Tanggal" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Tanggal" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">08 Mei 2026</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Jatuh Tempo" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Jatuh Tempo" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">22 Mei 2026</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Gudang" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Gudang" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">Gudang Bekasi</span>
           <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
         </div>
-      </x-erp.field>
-      <x-erp.field label="Sales Person">
+      </x-misc.field>
+      <x-misc.field label="Sales Person">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-erp.avatar name="Reza Pratama" />
+          <x-misc.avatar name="Reza Pratama" />
           <span style="flex:1; font-weight:500;">Reza Pratama</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Termin Pembayaran">
+      </x-misc.field>
+      <x-misc.field label="Termin Pembayaran">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <span style="flex:1;">Net 14 hari</span>
           <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
         </div>
-      </x-erp.field>
-      <x-erp.field label="Nomor Referensi">
+      </x-misc.field>
+      <x-misc.field label="Nomor Referensi">
         <input class="input mono" placeholder="(opsional)" />
-      </x-erp.field>
+      </x-misc.field>
     </div>
   </div>
 
@@ -120,19 +120,19 @@
       <div class="order-extras">
         <div class="display order-extras__title">Biaya Tambahan</div>
         <div class="order-extras__grid-3">
-          <x-erp.field label="Diskon">
+          <x-misc.field label="Diskon">
             <input class="input num" style="text-align:right;" x-model.number="diskon" />
-          </x-erp.field>
-          <x-erp.field label="Ongkos Kirim">
+          </x-misc.field>
+          <x-misc.field label="Ongkos Kirim">
             <input class="input num" style="text-align:right;" x-model.number="ongkir" />
-          </x-erp.field>
-          <x-erp.field label="Biaya Lain-lain">
+          </x-misc.field>
+          <x-misc.field label="Biaya Lain-lain">
             <input class="input num" style="text-align:right;" x-model.number="biayaLain" />
-          </x-erp.field>
+          </x-misc.field>
         </div>
-        <x-erp.field label="Catatan Internal">
+        <x-misc.field label="Catatan Internal">
           <textarea class="input" rows="2" placeholder="Tulis catatan untuk tim gudang/pengiriman…"></textarea>
-        </x-erp.field>
+        </x-misc.field>
       </div>
       <div class="order-summary">
         <div class="display order-summary__title">Ringkasan</div>

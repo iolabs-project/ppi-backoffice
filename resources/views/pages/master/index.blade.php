@@ -93,7 +93,7 @@
             <td x-on:click.stop><input type="checkbox" /></td>
             <td>
               <div style="display:flex; align-items:center; gap:10px;">
-                <x-erp.avatar :name="$k['nama']" :size="32" />
+                <x-misc.avatar :name="$k['nama']" :size="32" />
                 <span style="font-weight:600; font-size:13px;">{{ $k['nama'] }}</span>
               </div>
             </td>
@@ -210,128 +210,128 @@
   </div>
 
   {{-- Modal: Tambah Produk --}}
-  <x-erp.modal title="Tambah Produk Baru" show="modal === 'add_produk'" close-handler="modal = null">
+  <x-misc.modal title="Tambah Produk Baru" show="modal === 'add_produk'" close-handler="modal = null">
     <div class="form-body">
       <div class="form-grid-2">
-        <x-erp.field label="Kode Produk" :required="true">
+        <x-misc.field label="Kode Produk" :required="true">
           <input class="input mono" placeholder="cth. TPG-003" />
-        </x-erp.field>
-        <x-erp.field label="Kategori">
+        </x-misc.field>
+        <x-misc.field label="Kategori">
           <input class="input" placeholder="Tepung, Gula, Minyak..." />
-        </x-erp.field>
+        </x-misc.field>
       </div>
-      <x-erp.field label="Nama Produk" :required="true">
+      <x-misc.field label="Nama Produk" :required="true">
         <input class="input" placeholder="Nama lengkap produk" />
-      </x-erp.field>
+      </x-misc.field>
       <div class="form-grid-3">
-        <x-erp.field label="Satuan">
+        <x-misc.field label="Satuan">
           <input class="input" placeholder="Sak, Kg, Liter..." />
-        </x-erp.field>
-        <x-erp.field label="Harga Beli">
+        </x-misc.field>
+        <x-misc.field label="Harga Beli">
           <input class="input num" style="text-align:right;" placeholder="0" />
-        </x-erp.field>
-        <x-erp.field label="Harga Jual">
+        </x-misc.field>
+        <x-misc.field label="Harga Jual">
           <input class="input num" style="text-align:right;" placeholder="0" />
-        </x-erp.field>
+        </x-misc.field>
       </div>
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
       <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Produk</button>
     </x-slot:footer>
-  </x-erp.modal>
+  </x-misc.modal>
 
   {{-- Modal: Tambah Kontak --}}
-  <x-erp.modal title="Tambah Kontak Baru" show="modal === 'add_kontak'" close-handler="modal = null">
+  <x-misc.modal title="Tambah Kontak Baru" show="modal === 'add_kontak'" close-handler="modal = null">
     <div class="form-body">
-      <x-erp.field label="Nama" :required="true">
+      <x-misc.field label="Nama" :required="true">
         <input class="input" placeholder="Nama perusahaan / individu" />
-      </x-erp.field>
+      </x-misc.field>
       <div class="form-grid-2">
-        <x-erp.field label="Tipe" :required="true">
+        <x-misc.field label="Tipe" :required="true">
           <select class="input">
             <option>Klien</option><option>Vendor</option><option>Keduanya</option>
           </select>
-        </x-erp.field>
-        <x-erp.field label="Kota">
+        </x-misc.field>
+        <x-misc.field label="Kota">
           <input class="input" placeholder="Jakarta, Surabaya..." />
-        </x-erp.field>
+        </x-misc.field>
       </div>
       <div class="form-grid-2">
-        <x-erp.field label="Email">
+        <x-misc.field label="Email">
           <input class="input" type="email" placeholder="kontak@perusahaan.com" />
-        </x-erp.field>
-        <x-erp.field label="Telepon">
+        </x-misc.field>
+        <x-misc.field label="Telepon">
           <input class="input" placeholder="08xx-xxxx-xxxx" />
-        </x-erp.field>
+        </x-misc.field>
       </div>
-      <x-erp.field label="Alamat">
+      <x-misc.field label="Alamat">
         <textarea class="input" rows="2" placeholder="Alamat lengkap..."></textarea>
-      </x-erp.field>
+      </x-misc.field>
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
       <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Kontak</button>
     </x-slot:footer>
-  </x-erp.modal>
+  </x-misc.modal>
 
   {{-- Modal: Tambah Akun --}}
-  <x-erp.modal title="Tambah Akun Baru" show="modal === 'add_akun'" close-handler="modal = null">
+  <x-misc.modal title="Tambah Akun Baru" show="modal === 'add_akun'" close-handler="modal = null">
     <div class="form-body">
       <div class="form-grid-1-2">
-        <x-erp.field label="Kode Akun" :required="true">
+        <x-misc.field label="Kode Akun" :required="true">
           <input class="input mono" placeholder="1-xxx" />
-        </x-erp.field>
-        <x-erp.field label="Nama Akun" :required="true">
+        </x-misc.field>
+        <x-misc.field label="Nama Akun" :required="true">
           <input class="input" placeholder="Nama akun" />
-        </x-erp.field>
+        </x-misc.field>
       </div>
       <div class="form-grid-2">
-        <x-erp.field label="Tipe Akun">
+        <x-misc.field label="Tipe Akun">
           <select class="input">
             <option>Aset</option><option>Liabilitas</option><option>Ekuitas</option>
             <option>Pendapatan</option><option>Beban</option>
           </select>
-        </x-erp.field>
-        <x-erp.field label="Saldo Awal">
+        </x-misc.field>
+        <x-misc.field label="Saldo Awal">
           <input class="input num" style="text-align:right;" placeholder="0" />
-        </x-erp.field>
+        </x-misc.field>
       </div>
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
       <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Akun</button>
     </x-slot:footer>
-  </x-erp.modal>
+  </x-misc.modal>
 
   {{-- Modal: Tambah Gudang --}}
-  <x-erp.modal title="Tambah Gudang Baru" show="modal === 'add_gudang'" close-handler="modal = null">
+  <x-misc.modal title="Tambah Gudang Baru" show="modal === 'add_gudang'" close-handler="modal = null">
     <div class="form-body">
       <div class="form-grid-1-2">
-        <x-erp.field label="Kode Gudang" :required="true">
+        <x-misc.field label="Kode Gudang" :required="true">
           <input class="input mono" placeholder="GDG-xxx" />
-        </x-erp.field>
-        <x-erp.field label="Nama Gudang" :required="true">
+        </x-misc.field>
+        <x-misc.field label="Nama Gudang" :required="true">
           <input class="input" placeholder="Gudang Bekasi, dll." />
-        </x-erp.field>
+        </x-misc.field>
       </div>
       <div class="form-grid-2">
-        <x-erp.field label="Kota / Lokasi">
+        <x-misc.field label="Kota / Lokasi">
           <input class="input" placeholder="Bekasi, Surabaya..." />
-        </x-erp.field>
-        <x-erp.field label="Kapasitas (unit)">
+        </x-misc.field>
+        <x-misc.field label="Kapasitas (unit)">
           <input class="input num" style="text-align:right;" placeholder="0" />
-        </x-erp.field>
+        </x-misc.field>
       </div>
-      <x-erp.field label="PIC (Penanggung Jawab)">
+      <x-misc.field label="PIC (Penanggung Jawab)">
         <input class="input" placeholder="Nama PIC" />
-      </x-erp.field>
+      </x-misc.field>
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
       <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Gudang</button>
     </x-slot:footer>
-  </x-erp.modal>
+  </x-misc.modal>
 
 </div>
 @endsection

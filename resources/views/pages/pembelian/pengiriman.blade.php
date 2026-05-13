@@ -12,7 +12,7 @@
     </a>
     <div class="order-title-row">
       <h1 class="order-title display">Buat Pengiriman Masuk</h1>
-      <x-erp.status-badge status="draft" />
+      <x-misc.status-badge status="draft" />
     </div>
     <div class="order-sub">
       Pengiriman yang berhasil disimpan akan otomatis membentuk jurnal umum dan <strong style="color:var(--ink);">menambah stok</strong> di gudang tujuan.
@@ -25,37 +25,37 @@
       <div class="shipping-form-info__sub"><span style="color:var(--accent);">*</span> Field terisi otomatis dari PO</div>
     </div>
     <div class="order-form-grid-3">
-      <x-erp.field label="Vendor" :required="true">
+      <x-misc.field label="Vendor" :required="true">
         <div class="input input--readonly" style="display:flex; align-items:center; gap:10px;">
-          <x-erp.avatar :name="$po['vendor']" />
+          <x-misc.avatar :name="$po['vendor']" />
           <span style="flex:1; font-weight:500;">{{ $po['vendor'] }}</span>
           <span class="auto-tag">Auto</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="No. Pemesanan" :required="true">
+      </x-misc.field>
+      <x-misc.field label="No. Pemesanan" :required="true">
         <div class="input mono input--readonly" style="display:flex; align-items:center;">
           <span style="flex:1; font-weight:600;">{{ $po['id'] }}</span>
           <span class="auto-tag">Auto</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Gudang" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Gudang" :required="true">
         <div class="input input--readonly" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">{{ $po['gudang'] }}</span>
           <span class="auto-tag">Auto</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Nomor Pengiriman"><input class="input mono" value="GRN-2026-0072" /></x-erp.field>
-      <x-erp.field label="Tanggal Pengiriman">
+      </x-misc.field>
+      <x-misc.field label="Nomor Pengiriman"><input class="input mono" value="GRN-2026-0072" /></x-misc.field>
+      <x-misc.field label="Tanggal Pengiriman">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">12 Mei 2026</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Surat Jalan Vendor"><input class="input mono" placeholder="cth. SJ-BFM-9842" /></x-erp.field>
+      </x-misc.field>
+      <x-misc.field label="Surat Jalan Vendor"><input class="input mono" placeholder="cth. SJ-BFM-9842" /></x-misc.field>
     </div>
-    <x-erp.field label="Notes">
+    <x-misc.field label="Notes">
       <textarea class="input" rows="2">2 sak Cakra Kembar robek; foto sudah dikirim ke claim Bogasari. Disepakati menjadi susut.</textarea>
-    </x-erp.field>
+    </x-misc.field>
   </div>
 
   <div class="card" style="overflow:hidden;">
@@ -89,9 +89,9 @@
     </table>
     <div class="order-items-split">
       <div style="padding:18px 22px;">
-        <x-erp.field label="Estimasi Biaya Pengiriman">
+        <x-misc.field label="Estimasi Biaya Pengiriman">
           <input class="input num" style="text-align:right;" value="2400000" />
-        </x-erp.field>
+        </x-misc.field>
         <div style="font-size:11.5px; color:var(--ink-4); margin-top:8px; line-height:1.5; max-width:380px;">
           Estimasi ini akan dipakai untuk menghitung HPP awal. Nilai final akan diperbarui saat tagihan dari vendor diterbitkan.
         </div>

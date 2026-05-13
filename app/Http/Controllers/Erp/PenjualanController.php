@@ -21,7 +21,7 @@ class PenjualanController extends Controller
         $so    = collect(ErpDataService::salesOrders())->firstWhere('id', $id)
                  ?? ErpDataService::salesOrders()[0];
 
-        return view('penjualan.show', [
+        return view('pages.penjualan.show', [
             'currentPage'   => 'penjualan',
             'breadcrumb'    => [
                 ['label' => 'Penjualan', 'url' => route('penjualan.index')],
@@ -34,7 +34,7 @@ class PenjualanController extends Controller
 
     public function create()
     {
-        return view('penjualan.create', [
+        return view('pages.penjualan.create', [
             'currentPage' => 'penjualan',
             'breadcrumb'  => [
                 ['label' => 'Penjualan', 'url' => route('penjualan.index')],
@@ -51,7 +51,7 @@ class PenjualanController extends Controller
         $so = collect(ErpDataService::salesOrders())->firstWhere('id', $id)
               ?? ErpDataService::salesOrders()[0];
 
-        return view('penjualan.pengiriman', [
+        return view('pages.penjualan.pengiriman', [
             'currentPage'   => 'penjualan',
             'breadcrumb'    => [
                 ['label' => 'Penjualan', 'url' => route('penjualan.index')],

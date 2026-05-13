@@ -14,7 +14,7 @@
       </a>
       <div class="order-title-row">
         <h1 class="order-title display">{{ $po['id'] }}</h1>
-        <x-erp.status-badge :status="$po['status']" />
+        <x-misc.status-badge :status="$po['status']" />
       </div>
       <div class="order-sub">
         Dibuat {{ $po['tanggal'] }} · Estimasi HPP akan dihitung dari kuantitas riil + biaya kirim aktual
@@ -36,7 +36,7 @@
       <div>
         <div class="label order-meta__label">{{ $lbl }}</div>
         <div class="order-meta__value">
-          @if($av)<x-erp.avatar :name="$val" />@endif
+          @if($av)<x-misc.avatar :name="$val" />@endif
           <span>{{ $val }}</span>
         </div>
       </div>

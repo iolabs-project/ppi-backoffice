@@ -13,7 +13,7 @@
     </a>
     <div class="order-title-row">
       <h1 class="order-title display">Buat Tagihan dari Vendor</h1>
-      <x-erp.status-badge status="draft" />
+      <x-misc.status-badge status="draft" />
     </div>
     <div class="order-sub">
       Tagihan akan otomatis membentuk jurnal umum. <strong style="color:var(--ink);">HPP final akan menyesuaikan biaya pengiriman aktual</strong> dari vendor.
@@ -23,41 +23,41 @@
   <div class="card card-bd--form">
     <div class="display card-hd-title">Informasi Tagihan</div>
     <div class="order-form-grid-3">
-      <x-erp.field label="Vendor" :required="true">
+      <x-misc.field label="Vendor" :required="true">
         <div class="input input--readonly" style="display:flex; align-items:center; gap:10px;">
-          <x-erp.avatar :name="$po['vendor']" />
+          <x-misc.avatar :name="$po['vendor']" />
           <span style="flex:1; font-weight:500;">{{ $po['vendor'] }}</span>
           <span class="auto-tag">Auto</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="No. Invoice"><input class="input mono" placeholder="cth. INV-BFM-23104" /></x-erp.field>
-      <x-erp.field label="Tanggal Transaksi" :required="true">
+      </x-misc.field>
+      <x-misc.field label="No. Invoice"><input class="input mono" placeholder="cth. INV-BFM-23104" /></x-misc.field>
+      <x-misc.field label="Tanggal Transaksi" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">12 Mei 2026</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Nomor Pengiriman" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Nomor Pengiriman" :required="true">
         <div class="input mono input--readonly" style="display:flex; align-items:center;">
           <span style="flex:1; font-weight:600;">GRN-2026-0072</span>
           <span class="auto-tag">Auto</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Gudang" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Gudang" :required="true">
         <div class="input input--readonly" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">{{ $po['gudang'] }}</span>
           <span class="auto-tag">Auto</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Tanggal Jatuh Tempo">
+      </x-misc.field>
+      <x-misc.field label="Tanggal Jatuh Tempo">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">26 Mei 2026</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Biaya Pengiriman (Fixed)">
+      </x-misc.field>
+      <x-misc.field label="Biaya Pengiriman (Fixed)">
         <input class="input num" style="text-align:right;" value="{{ $biayaKirim }}" />
-      </x-erp.field>
-      <x-erp.field label="No. Faktur Pajak"><input class="input mono" placeholder="010.xxx-xx.xxxxxxxx" /></x-erp.field>
+      </x-misc.field>
+      <x-misc.field label="No. Faktur Pajak"><input class="input mono" placeholder="010.xxx-xx.xxxxxxxx" /></x-misc.field>
     </div>
   </div>
 

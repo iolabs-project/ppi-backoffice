@@ -110,120 +110,120 @@
   </div>
 
   {{-- Modal: Transfer Dana --}}
-  <x-erp.modal title="Transfer Dana" show="modal === 'transfer'" close-handler="modal = null">
+  <x-misc.modal title="Transfer Dana" show="modal === 'transfer'" close-handler="modal = null">
     <div class="form-body">
       <div class="form-grid-2">
-        <x-erp.field label="Dari Rekening" :required="true">
+        <x-misc.field label="Dari Rekening" :required="true">
           <select class="input"><option>Pilih rekening...</option>
             @foreach($akunKas as $ak)<option>{{ $ak['nama'] }}</option>@endforeach
           </select>
-        </x-erp.field>
-        <x-erp.field label="Ke Rekening" :required="true">
+        </x-misc.field>
+        <x-misc.field label="Ke Rekening" :required="true">
           <select class="input"><option>Pilih rekening...</option>
             @foreach($akunKas as $ak)<option>{{ $ak['nama'] }}</option>@endforeach
           </select>
-        </x-erp.field>
+        </x-misc.field>
       </div>
-      <x-erp.field label="Jumlah" :required="true">
+      <x-misc.field label="Jumlah" :required="true">
         <input class="input num" style="text-align:right;" placeholder="0" />
-      </x-erp.field>
-      <x-erp.field label="Keterangan">
+      </x-misc.field>
+      <x-misc.field label="Keterangan">
         <input class="input" placeholder="(opsional)" />
-      </x-erp.field>
+      </x-misc.field>
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
       <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Proses Transfer</button>
     </x-slot:footer>
-  </x-erp.modal>
+  </x-misc.modal>
 
   {{-- Modal: Kirim Dana --}}
-  <x-erp.modal title="Kirim Dana ke Pihak Luar" show="modal === 'kirim'" close-handler="modal = null">
+  <x-misc.modal title="Kirim Dana ke Pihak Luar" show="modal === 'kirim'" close-handler="modal = null">
     <div class="form-body">
-      <x-erp.field label="Dari Rekening" :required="true">
+      <x-misc.field label="Dari Rekening" :required="true">
         <select class="input"><option>Pilih rekening...</option>
           @foreach($akunKas as $ak)<option>{{ $ak['nama'] }}</option>@endforeach
         </select>
-      </x-erp.field>
+      </x-misc.field>
       <div class="form-grid-2">
-        <x-erp.field label="Nama Penerima" :required="true">
+        <x-misc.field label="Nama Penerima" :required="true">
           <input class="input" placeholder="Nama vendor / individu" />
-        </x-erp.field>
-        <x-erp.field label="Bank Penerima">
+        </x-misc.field>
+        <x-misc.field label="Bank Penerima">
           <input class="input" placeholder="BCA, BRI, Mandiri..." />
-        </x-erp.field>
+        </x-misc.field>
       </div>
-      <x-erp.field label="No. Rekening Tujuan" :required="true">
+      <x-misc.field label="No. Rekening Tujuan" :required="true">
         <input class="input mono" placeholder="xxxx-xxxx-xxxx" />
-      </x-erp.field>
-      <x-erp.field label="Jumlah" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Jumlah" :required="true">
         <input class="input num" style="text-align:right;" placeholder="0" />
-      </x-erp.field>
-      <x-erp.field label="Keterangan">
+      </x-misc.field>
+      <x-misc.field label="Keterangan">
         <input class="input" placeholder="Pembayaran tagihan, dll." />
-      </x-erp.field>
+      </x-misc.field>
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
       <button class="btn btn-primary"><x-misc.icon name="send" :size="14" />Kirim Dana</button>
     </x-slot:footer>
-  </x-erp.modal>
+  </x-misc.modal>
 
   {{-- Modal: Terima Dana --}}
-  <x-erp.modal title="Terima Dana dari Pihak Luar" show="modal === 'terima'" close-handler="modal = null">
+  <x-misc.modal title="Terima Dana dari Pihak Luar" show="modal === 'terima'" close-handler="modal = null">
     <div class="form-body">
-      <x-erp.field label="Ke Rekening" :required="true">
+      <x-misc.field label="Ke Rekening" :required="true">
         <select class="input"><option>Pilih rekening...</option>
           @foreach($akunKas as $ak)<option>{{ $ak['nama'] }}</option>@endforeach
         </select>
-      </x-erp.field>
-      <x-erp.field label="Nama Pengirim" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Nama Pengirim" :required="true">
         <input class="input" placeholder="Nama klien / individu" />
-      </x-erp.field>
+      </x-misc.field>
       <div class="form-grid-2">
-        <x-erp.field label="Jumlah" :required="true">
+        <x-misc.field label="Jumlah" :required="true">
           <input class="input num" style="text-align:right;" placeholder="0" />
-        </x-erp.field>
-        <x-erp.field label="No. Referensi">
+        </x-misc.field>
+        <x-misc.field label="No. Referensi">
           <input class="input mono" placeholder="REF/INV..." />
-        </x-erp.field>
+        </x-misc.field>
       </div>
-      <x-erp.field label="Keterangan">
+      <x-misc.field label="Keterangan">
         <input class="input" placeholder="(opsional)" />
-      </x-erp.field>
+      </x-misc.field>
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
       <button class="btn btn-primary"><x-misc.icon name="inbox" :size="14" />Catat Penerimaan</button>
     </x-slot:footer>
-  </x-erp.modal>
+  </x-misc.modal>
 
   {{-- Modal: Tambah Rekening --}}
-  <x-erp.modal title="Tambah Kas &amp; Bank" show="modal === 'tambah'" close-handler="modal = null">
+  <x-misc.modal title="Tambah Kas &amp; Bank" show="modal === 'tambah'" close-handler="modal = null">
     <div class="form-body">
-      <x-erp.field label="Nama Rekening" :required="true">
+      <x-misc.field label="Nama Rekening" :required="true">
         <input class="input" placeholder="cth. BCA Operasional" />
-      </x-erp.field>
+      </x-misc.field>
       <div class="form-grid-2">
-        <x-erp.field label="Nama Bank">
+        <x-misc.field label="Nama Bank">
           <input class="input" placeholder="BCA, BRI, Kas..." />
-        </x-erp.field>
-        <x-erp.field label="No. Rekening">
+        </x-misc.field>
+        <x-misc.field label="No. Rekening">
           <input class="input mono" placeholder="(opsional untuk kas)" />
-        </x-erp.field>
+        </x-misc.field>
       </div>
-      <x-erp.field label="Saldo Awal">
+      <x-misc.field label="Saldo Awal">
         <input class="input num" style="text-align:right;" placeholder="0" />
-      </x-erp.field>
-      <x-erp.field label="Keterangan">
+      </x-misc.field>
+      <x-misc.field label="Keterangan">
         <input class="input" placeholder="(opsional)" />
-      </x-erp.field>
+      </x-misc.field>
     </div>
     <x-slot:footer>
       <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
       <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Rekening</button>
     </x-slot:footer>
-  </x-erp.modal>
+  </x-misc.modal>
 
 </div>
 @endsection

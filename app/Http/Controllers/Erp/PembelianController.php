@@ -9,7 +9,7 @@ class PembelianController extends Controller
 {
     public function index()
     {
-        return view('pembelian.index', [
+        return view('pages.pembelian.index', [
             'currentPage'    => 'pembelian',
             'breadcrumb'     => [['label' => 'Pembelian', 'url' => route('pembelian.index')]],
             'purchaseOrders' => ErpDataService::purchaseOrders(),
@@ -21,7 +21,7 @@ class PembelianController extends Controller
         $po = collect(ErpDataService::purchaseOrders())->firstWhere('id', $id)
               ?? ErpDataService::purchaseOrders()[0];
 
-        return view('pembelian.show', [
+        return view('pages.pembelian.show', [
             'currentPage'    => 'pembelian',
             'breadcrumb'     => [
                 ['label' => 'Pembelian', 'url' => route('pembelian.index')],
@@ -34,7 +34,7 @@ class PembelianController extends Controller
 
     public function create()
     {
-        return view('pembelian.create', [
+        return view('pages.pembelian.create', [
             'currentPage' => 'pembelian',
             'breadcrumb'  => [
                 ['label' => 'Pembelian', 'url' => route('pembelian.index')],
@@ -51,7 +51,7 @@ class PembelianController extends Controller
         $po = collect(ErpDataService::purchaseOrders())->firstWhere('id', $id)
               ?? ErpDataService::purchaseOrders()[0];
 
-        return view('pembelian.pengiriman', [
+        return view('pages.pembelian.pengiriman', [
             'currentPage'   => 'pembelian',
             'breadcrumb'    => [
                 ['label' => 'Pembelian', 'url' => route('pembelian.index')],
@@ -68,7 +68,7 @@ class PembelianController extends Controller
         $po = collect(ErpDataService::purchaseOrders())->firstWhere('id', $id)
               ?? ErpDataService::purchaseOrders()[0];
 
-        return view('pembelian.tagihan', [
+        return view('pages.pembelian.tagihan', [
             'currentPage'   => 'pembelian',
             'breadcrumb'    => [
                 ['label' => 'Pembelian', 'url' => route('pembelian.index')],

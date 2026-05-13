@@ -33,7 +33,7 @@
 
 
             <div class="topbar__user">
-                <x-erp.avatar :name="$user['name']" />
+                <x-misc.avatar :name="$user['name']" />
                 <div style="line-height:1.1;">
                     <div class="topbar__user-name">{{ $user['name'] }}</div>
                     <div class="topbar__user-role">{{ $user['role'] }}</div>

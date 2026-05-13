@@ -7,7 +7,7 @@
     </a>
     <div class="order-title-row">
       <h1 class="order-title display">Buat Pengiriman</h1>
-      <x-erp.status-badge status="draft" />
+      <x-misc.status-badge status="draft" />
     </div>
     <div class="order-sub">
       Pengiriman yang berhasil dibuat akan otomatis membentuk jurnal umum dan mengurangi stok di gudang asal.
@@ -23,46 +23,46 @@
       </div>
     </div>
     <div class="order-form-grid-3">
-      <x-erp.field label="Customer" :required="true">
+      <x-misc.field label="Customer" :required="true">
         <div class="input input--readonly" style="display:flex; align-items:center; gap:10px;">
-          <x-erp.avatar :name="$so['customer']" />
+          <x-misc.avatar :name="$so['customer']" />
           <span style="flex:1; font-weight:500;">{{ $so['customer'] }}</span>
           <span class="auto-tag">Auto</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="No. Pemesanan" :required="true">
+      </x-misc.field>
+      <x-misc.field label="No. Pemesanan" :required="true">
         <div class="input mono input--readonly" style="display:flex; align-items:center;">
           <span style="flex:1; font-weight:600;">{{ $so['id'] }}</span>
           <span class="auto-tag">Auto</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Gudang" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Gudang" :required="true">
         <div class="input input--readonly" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">{{ $so['gudang'] }}</span>
           <span class="auto-tag">Auto</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Nomor Pengiriman">
+      </x-misc.field>
+      <x-misc.field label="Nomor Pengiriman">
         <input class="input mono" value="DO-2026-0089" />
-      </x-erp.field>
-      <x-erp.field label="Tanggal Pengiriman">
+      </x-misc.field>
+      <x-misc.field label="Tanggal Pengiriman">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">09 Mei 2026</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Ekspedisi">
+      </x-misc.field>
+      <x-misc.field label="Ekspedisi">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="truck" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">Internal – Truk Box L300</span>
           <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
         </div>
-      </x-erp.field>
+      </x-misc.field>
     </div>
-    <x-erp.field label="Notes">
+    <x-misc.field label="Notes">
       <textarea class="input" rows="2">Muat dari rak A-3 dan B-1. Konfirmasi ke Pak Tarno sebelum berangkat. Surat jalan rangkap 3.</textarea>
-    </x-erp.field>
+    </x-misc.field>
   </div>
 
   {{-- Products --}}
@@ -99,7 +99,7 @@
       <div class="shipping-driver">
         <div class="label">Driver</div>
         <div class="shipping-driver__row">
-          <x-erp.avatar name="Sutrisno Hadi" />
+          <x-misc.avatar name="Sutrisno Hadi" />
           <div>
             <div class="shipping-driver__name">Sutrisno Hadi</div>
             <div class="mono" style="font-size:11px; color:var(--ink-4);">B 9821 KAB · ETA 14:30</div>
@@ -107,9 +107,9 @@
         </div>
       </div>
       <div class="hpp-summary">
-        <x-erp.field label="Biaya Pengiriman">
+        <x-misc.field label="Biaya Pengiriman">
           <input class="input num" style="text-align:right;" value="1800000" />
-        </x-erp.field>
+        </x-misc.field>
         <div style="font-size:11.5px; color:var(--ink-4); margin-top:8px; line-height:1.5;">
           Akan dicatat sebagai <strong style="color:var(--ink);">HPP – Biaya Pengiriman</strong> dan masuk ke jurnal umum saat pengiriman disimpan.
         </div>

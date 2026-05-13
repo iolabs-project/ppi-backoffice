@@ -15,7 +15,7 @@
       </a>
       <div class="order-title-row">
         <h1 class="order-title display">{{ $so['id'] }}</h1>
-        <x-erp.status-badge :status="$so['status']" />
+        <x-misc.status-badge :status="$so['status']" />
       </div>
       <div class="order-sub">
         Dibuat {{ $so['tanggal'] }} oleh Albert Irgi · Terakhir diperbarui 8 jam lalu
@@ -36,7 +36,7 @@
       <div>
         <div class="label order-meta__label">{{ $lbl }}</div>
         <div class="order-meta__value">
-          @if($av)<x-erp.avatar :name="$val" />@endif
+          @if($av)<x-misc.avatar :name="$val" />@endif
           <span>{{ $val }}</span>
         </div>
       </div>

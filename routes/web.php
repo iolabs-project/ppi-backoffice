@@ -8,69 +8,62 @@ use App\Http\Controllers\Erp\KasBankController;
 use App\Http\Controllers\Erp\LaporanController;
 use App\Http\Controllers\Erp\MasterController;
 
-// Route::get('/', function () {
-//     return view('pages.home');
-// });
+// Dashboard
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-// Route::prefix('erp')->name('')->group(function () {
+// Penjualan (Sales Orders)
+Route::prefix('penjualan')->name('penjualan.')->group(function () {
+    Route::get('/',              [PenjualanController::class, 'index'])->name('index');
+    Route::get('/create',        [PenjualanController::class, 'create'])->name('create');
+    Route::get('/{id}',          [PenjualanController::class, 'show'])->name('show');
+    Route::get('/{id}/pengiriman', [PenjualanController::class, 'pengiriman'])->name('pengiriman');
+});
 
-    // Dashboard
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+// Pembelian (Purchase Orders)
+Route::prefix('pembelian')->name('pembelian.')->group(function () {
+    Route::get('/',              [PembelianController::class, 'index'])->name('index');
+    Route::get('/create',        [PembelianController::class, 'create'])->name('create');
+    Route::get('/{id}',          [PembelianController::class, 'show'])->name('show');
+    Route::get('/{id}/pengiriman', [PembelianController::class, 'pengiriman'])->name('pengiriman');
+    Route::get('/{id}/tagihan',  [PembelianController::class, 'tagihan'])->name('tagihan');
+});
 
-    // Penjualan (Sales Orders)
-    Route::prefix('penjualan')->name('penjualan.')->group(function () {
-        Route::get('/',              [PenjualanController::class, 'index'])->name('index');
-        Route::get('/create',        [PenjualanController::class, 'create'])->name('create');
-        Route::get('/{id}',          [PenjualanController::class, 'show'])->name('show');
-        Route::get('/{id}/pengiriman', [PenjualanController::class, 'pengiriman'])->name('pengiriman');
-    });
+// Kas & Bank
+Route::prefix('kasbank')->name('kasbank.')->group(function () {
+    Route::get('/',      [KasBankController::class, 'index'])->name('index');
+    Route::get('/{id}',  [KasBankController::class, 'show'])->name('show');
+});
 
-    // Pembelian (Purchase Orders)
-    Route::prefix('pembelian')->name('pembelian.')->group(function () {
-        Route::get('/',              [PembelianController::class, 'index'])->name('index');
-        Route::get('/create',        [PembelianController::class, 'create'])->name('create');
-        Route::get('/{id}',          [PembelianController::class, 'show'])->name('show');
-        Route::get('/{id}/pengiriman', [PembelianController::class, 'pengiriman'])->name('pengiriman');
-        Route::get('/{id}/tagihan',  [PembelianController::class, 'tagihan'])->name('tagihan');
-    });
+// Laporan Keuangan
+Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
 
-    // Kas & Bank
-    Route::prefix('kasbank')->name('kasbank.')->group(function () {
-        Route::get('/',      [KasBankController::class, 'index'])->name('index');
-        Route::get('/{id}',  [KasBankController::class, 'show'])->name('show');
-    });
+// Master Data
+Route::get('/master', [MasterController::class, 'index'])->name('master.index');
 
-    // Laporan Keuangan
-    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+// Coming-soon placeholders
+Route::get('/biaya', function () {
+    return view('coming-soon', [
+        'currentPage' => 'biaya',
+        'breadcrumb'  => [['label' => 'Biaya']],
+        'title'       => 'Manajemen Biaya',
+        'description' => 'Modul pencatatan dan alokasi biaya operasional sedang dalam pengembangan.',
+    ]);
+})->name('biaya.index');
 
-    // Master Data
-    Route::get('/master', [MasterController::class, 'index'])->name('master.index');
+Route::get('/pengaturan', function () {
+    return view('coming-soon', [
+        'currentPage' => 'pengaturan',
+        'breadcrumb'  => [['label' => 'Pengaturan']],
+        'title'       => 'Pengaturan',
+        'description' => 'Konfigurasi sistem, pengguna, dan preferensi perusahaan.',
+    ]);
+})->name('pengaturan.index');
 
-    // Coming-soon placeholders
-    Route::get('/biaya', function () {
-        return view('coming-soon', [
-            'currentPage' => 'biaya',
-            'breadcrumb'  => [['label' => 'Biaya']],
-            'title'       => 'Manajemen Biaya',
-            'description' => 'Modul pencatatan dan alokasi biaya operasional sedang dalam pengembangan.',
-        ]);
-    })->name('biaya.index');
-
-    Route::get('/pengaturan', function () {
-        return view('coming-soon', [
-            'currentPage' => 'pengaturan',
-            'breadcrumb'  => [['label' => 'Pengaturan']],
-            'title'       => 'Pengaturan',
-            'description' => 'Konfigurasi sistem, pengguna, dan preferensi perusahaan.',
-        ]);
-    })->name('pengaturan.index');
-
-    Route::get('/bantuan', function () {
-        return view('coming-soon', [
-            'currentPage' => 'bantuan',
-            'breadcrumb'  => [['label' => 'Bantuan']],
-            'title'       => 'Pusat Bantuan',
-            'description' => 'Dokumentasi dan dukungan pengguna akan tersedia di sini.',
-        ]);
-    })->name('bantuan.index');
-// });
+Route::get('/bantuan', function () {
+    return view('coming-soon', [
+        'currentPage' => 'bantuan',
+        'breadcrumb'  => [['label' => 'Bantuan']],
+        'title'       => 'Pusat Bantuan',
+        'description' => 'Dokumentasi dan dukungan pengguna akan tersedia di sini.',
+    ]);
+})->name('bantuan.index');

@@ -11,12 +11,14 @@ class KasBankController extends Controller
     {
         $akunKas = ErpDataService::akunKas();
         $total   = array_sum(array_column($akunKas, 'saldo'));
+        $transaksiKas = ErpDataService::transaksiKas();
 
-        return view('kasbank.index', [
+        return view('pages.kasbank.index', [
             'currentPage' => 'kasbank',
             'breadcrumb'  => [['label' => 'Kas & Bank', 'url' => route('kasbank.index')]],
             'akunKas'     => $akunKas,
             'totalSaldo'  => $total,
+            'transaksiKas'=> $transaksiKas,
         ]);
     }
 
@@ -25,7 +27,7 @@ class KasBankController extends Controller
         $akun = collect(ErpDataService::akunKas())->firstWhere('id', $id)
                 ?? ErpDataService::akunKas()[0];
 
-        return view('kasbank.show', [
+        return view('pages.kasbank.show', [
             'currentPage'  => 'kasbank',
             'breadcrumb'   => [
                 ['label' => 'Kas & Bank', 'url' => route('kasbank.index')],

@@ -24,42 +24,42 @@
   <div class="card card-bd--form">
     <div class="display card-hd-title">Informasi Order</div>
     <div class="order-form-grid-4">
-      <x-erp.field label="Pilih Vendor" :required="true">
+      <x-misc.field label="Pilih Vendor" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-          <x-erp.avatar name="PT Bogasari Flour Mills" />
+          <x-misc.avatar name="PT Bogasari Flour Mills" />
           <span style="flex:1; font-weight:500;">PT Bogasari Flour Mills</span>
           <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
         </div>
-      </x-erp.field>
-      <x-erp.field label="Nomor PO" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Nomor PO" :required="true">
         <input class="input mono" value="PO-2026-0095" />
-      </x-erp.field>
-      <x-erp.field label="Tanggal" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Tanggal" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">12 Mei 2026</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Jatuh Tempo" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Jatuh Tempo" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">26 Mei 2026</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Gudang Tujuan" :required="true">
+      </x-misc.field>
+      <x-misc.field label="Gudang Tujuan" :required="true">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
           <span style="flex:1;">Gudang Bekasi</span>
           <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
         </div>
-      </x-erp.field>
-      <x-erp.field label="Pembeli">
+      </x-misc.field>
+      <x-misc.field label="Pembeli">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-erp.avatar name="Nadia Rahmawati" /><span style="flex:1; font-weight:500;">Nadia Rahmawati</span>
+          <x-misc.avatar name="Nadia Rahmawati" /><span style="flex:1; font-weight:500;">Nadia Rahmawati</span>
         </div>
-      </x-erp.field>
-      <x-erp.field label="Termin Pembayaran">
+      </x-misc.field>
+      <x-misc.field label="Termin Pembayaran">
         <div class="input" style="display:flex; align-items:center; gap:8px;"><span style="flex:1;">Net 14 hari</span><x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" /></div>
-      </x-erp.field>
-      <x-erp.field label="No. Referensi Vendor"><input class="input mono" placeholder="(opsional)" /></x-erp.field>
+      </x-misc.field>
+      <x-misc.field label="No. Referensi Vendor"><input class="input mono" placeholder="(opsional)" /></x-misc.field>
     </div>
   </div>
 
@@ -103,9 +103,9 @@
       <div class="order-extras">
         <div class="display order-extras__title">Estimasi Biaya Tambahan</div>
         <div class="order-extras__grid-3">
-          <x-erp.field label="Diskon"><input class="input num" style="text-align:right;" x-model.number="diskon" /></x-erp.field>
-          <x-erp.field label="Est. Ongkos Kirim"><input class="input num" style="text-align:right;" x-model.number="ongkir" /></x-erp.field>
-          <x-erp.field label="Biaya Lain-lain"><input class="input num" style="text-align:right;" x-model.number="biayaLain" /></x-erp.field>
+          <x-misc.field label="Diskon"><input class="input num" style="text-align:right;" x-model.number="diskon" /></x-misc.field>
+          <x-misc.field label="Est. Ongkos Kirim"><input class="input num" style="text-align:right;" x-model.number="ongkir" /></x-misc.field>
+          <x-misc.field label="Biaya Lain-lain"><input class="input num" style="text-align:right;" x-model.number="biayaLain" /></x-misc.field>
         </div>
         <div class="order-info-note">
           Estimasi HPP akan dihitung dari kuantitas riil + biaya kirim aktual saat pengiriman diterima.

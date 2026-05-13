@@ -1,6 +1,9 @@
 @extends('layouts.app')
 @section('content')
     @php
+        $authUser = auth()->user();
+        $userName = $authUser?->name ?? 'User';
+
         $pendapatan = 4287650000;
         $hpp = 3412900000;
         $dataPct = (int) round(array_sum(array_column($dataCoverage, 'pct')) / count($dataCoverage));
@@ -28,10 +31,12 @@
                 <div class="dash-greeting__date">
                     <x-misc.icon name="sun" :size="14" /> <span data-dashboard-date></span>
                 </div>
-                <h1 class="dash-greeting__title display">Selamat pagi, Albert.</h1>
+                <h1 class="dash-greeting__title display">
+                    <span data-dashboard-greeting>Selamat pagi</span>, {{ $userName }}.
+                </h1>
                 <div class="dash-greeting__sub">
-                    Ada <strong style="color:var(--ink);">3 SO</strong> menunggu pengiriman dan <strong
-                        style="color:var(--ink);">2
+                    Ada <strong class="dash-greeting__strong">3 SO</strong> menunggu pengiriman dan <strong
+                        class="dash-greeting__strong">2
                         tagihan</strong> jatuh tempo dalam 48 jam.
                 </div>
             </div>
@@ -49,7 +54,7 @@
         {{-- Chart + Pipeline --}}
         <div class="dash-charts">
             {{-- Bar Chart --}}
-            <div class="card" style="padding:22px 24px;">
+            <div class="card card-chart">
                 <div class="chart-hd">
                     <div>
                         <div class="chart-title display">Penjualan vs Pembelian</div>
@@ -57,10 +62,10 @@
                     </div>
                     <div class="chart-legend">
                         <span class="chart-legend-item">
-                            <span class="chart-legend-dot" style="background:var(--accent);"></span>Penjualan
+                            <span class="chart-legend-dot chart-legend-dot--accent"></span>Penjualan
                         </span>
                         <span class="chart-legend-item">
-                            <span class="chart-legend-dot" style="background:var(--ink-2);"></span>Pembelian
+                            <span class="chart-legend-dot chart-legend-dot--ink"></span>Pembelian
                         </span>
                     </div>
                 </div>
@@ -69,17 +74,17 @@
                     style="position:relative; height:{{ $chartH }}px; padding-left:48px; padding-top:8px;">
                     @foreach ([0, 0.5, 1] as $t)
                         <div
-                            style="position:absolute; left:0; right:0; top:{{ 8 + ($chartH - 40) * (1 - $t) }}px; border-top:1px dashed var(--line); display:flex; align-items:center;">
+                            class="barchart-grid-line"
+                            style="top:{{ 8 + ($chartH - 40) * (1 - $t) }}px;">
                             <span
-                                style="position:absolute; left:0; transform:translateY(-50%); font-size:10.5px; color:var(--ink-4);"
-                                class="mono">{{ fmt_rp_short($maxVal * $t * 1_000_000) }}</span>
+                                class="barchart-grid-label mono">{{ fmt_rp_short($maxVal * $t * 1_000_000) }}</span>
                         </div>
                     @endforeach
                     @php
                         $totalW = count($monthly) * ($groupW + $groupGap) - $groupGap;
                     @endphp
                     <svg width="100%" height="{{ $chartBase }}" viewBox="0 0 {{ $totalW }} {{ $chartBase }}"
-                        preserveAspectRatio="none" style="overflow:visible;">
+                        preserveAspectRatio="none" class="svg-barchart">
                         @foreach ($monthly as $i => $d)
                             @php
                                 $x0 = $i * ($groupW + $groupGap);
@@ -103,32 +108,32 @@
                         </div>
                         <div class="barchart-tooltip__pin"></div>
                     </div>
-                    <div style="position:absolute; left:48px; right:0; bottom:0; display:flex; gap:{{ $groupGap }}px;">
+                    <div class="barchart-months" style="gap:{{ $groupGap }}px;">
                         @foreach ($monthly as $d)
-                            <div style="width:{{ $groupW }}px; font-size:11px; color:var(--ink-4); text-align:center;"
-                                class="mono">{{ $d[0] }}</div>
+                            <div class="barchart-month-label mono"
+                                style="width:{{ $groupW }}px;">{{ $d[0] }}</div>
                         @endforeach
                     </div>
                 </div>
             </div>
 
             {{-- Pipeline --}}
-            <div class="card" style="padding:22px 24px;">
-                <x-erp.section-title title="Pipeline Penjualan" subtitle="Bulan berjalan · 8 hari ke depan" />
-                <div style="display:grid; gap:10px;">
+            <div class="card card-chart">
+                <x-misc.section-title title="Pipeline Penjualan" subtitle="Bulan berjalan · 8 hari ke depan" />
+                <div class="pipeline-grid">
                     @foreach ($pipeline as $s)
                         @php $w = round(($s['value'] / $pipelineMax) * 100); @endphp
-                        <div style="display:grid; grid-template-columns:140px 1fr 110px; align-items:center; gap:14px;">
+                        <div class="pipeline-row">
                             <div>
-                                <div style="font-size:13px; font-weight:600;">{{ $s['stage'] }}</div>
-                                <div style="font-size:11px; color:var(--ink-4);" class="mono">{{ $s['count'] }} dokumen
+                                <div class="pipeline-stage-header">{{ $s['stage'] }}</div>
+                                <div class="pipeline-stage-label mono">{{ $s['count'] }} dokumen
                                 </div>
                             </div>
-                            <div style="height:32px; background:var(--bg-2); border-radius:8px; overflow:hidden;">
-                                <div style="width:{{ $w }}%; height:100%; background:{{ $s['color'] }};">
+                            <div class="pipeline-bar-track">
+                                <div class="pipeline-bar-fill" style="width:{{ $w }}%; background:{{ $s['color'] }};">
                                 </div>
                             </div>
-                            <div class="num" style="font-size:13px; font-weight:600; text-align:right;">
+                            <div class="num pipeline-value">
                                 {{ fmt_rp_short($s['value']) }}</div>
                         </div>
                     @endforeach
@@ -151,6 +156,25 @@
             <script>
                 (function() {
                     const dateEl = document.querySelector('[data-dashboard-date]');
+                    const greetingEl = document.querySelector('[data-dashboard-greeting]');
+
+                    const updateGreeting = () => {
+                        if (!greetingEl) return;
+
+                        const hour = new Date().getHours();
+                        let greeting = 'Selamat Malam';
+
+                        if (hour < 11) {
+                            greeting = 'Selamat Pagi';
+                        } else if (hour < 15) {
+                            greeting = 'Selamat Siang';
+                        } else if (hour < 18) {
+                            greeting = 'Selamat Sore';
+                        }
+
+                        greetingEl.textContent = greeting;
+                    };
+
                     if (!dateEl) return;
 
                     const formatter = new Intl.DateTimeFormat('id-ID', {
@@ -164,100 +188,13 @@
                         dateEl.textContent = formatter.format(new Date());
                     };
 
+                    updateGreeting();
                     updateDate();
                     setInterval(updateDate, 60 * 1000);
+                    setInterval(updateGreeting, 60 * 1000);
                 })
                 ();
             </script>
-        @endpush
-    @endonce
-
-    @once
-        @push('scripts')
-            <script>
-                (function() {
-                    // Tooltip behavior for bar chart
-                    const wrap = document.querySelector('.barchart-wrap');
-                    if (!wrap) return;
-                    const tooltip = wrap.querySelector('.barchart-tooltip');
-                    const labelEl = tooltip.querySelector('.barchart-tooltip__label');
-                    const valueEl = tooltip.querySelector('.barchart-tooltip__value');
-
-                    const show = (series, value, x, y) => {
-                        labelEl.textContent = series;
-                        valueEl.textContent = value;
-                        tooltip.style.display = 'block';
-                        const rect = wrap.getBoundingClientRect();
-                        const left = Math.max(8, x - rect.left - 40);
-                        const top = Math.max(8, y - rect.top - 60);
-                        tooltip.style.left = left + 'px';
-                        tooltip.style.top = top + 'px';
-                    };
-
-                    const hide = () => {
-                        tooltip.style.display = 'none';
-                    };
-
-                    wrap.querySelectorAll('.barchart-bar').forEach((bar) => {
-                        bar.addEventListener('mouseenter', (e) => {
-                            const series = bar.dataset.series || '';
-                            const value = bar.dataset.tooltip || '';
-                            show(series, value, e.clientX, e.clientY);
-                        });
-                        bar.addEventListener('mousemove', (e) => {
-                            const series = bar.dataset.series || '';
-                            const value = bar.dataset.tooltip || '';
-                            show(series, value, e.clientX, e.clientY);
-                        });
-                        bar.addEventListener('mouseleave', hide);
-                    });
-                })
-                ();
-            </script>
-            <style>
-                .barchart-wrap {
-                    position: relative;
-                }
-
-                .barchart-tooltip {
-                    position: absolute;
-                    display: none;
-                    pointer-events: none;
-                    transform: translateY(0);
-                    z-index: 20;
-                }
-
-                .barchart-tooltip__box {
-                    background: #000;
-                    color: #fff;
-                    padding: 8px 10px;
-                    border-radius: 8px;
-                    font-size: 12px;
-                    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-                    white-space: nowrap;
-                }
-
-                .barchart-tooltip__label {
-                    font-weight: 600;
-                    font-size: 11px;
-                    opacity: .9;
-                }
-
-                .barchart-tooltip__value {
-                    font-weight: 700;
-                    margin-top: 2px;
-                }
-
-                .barchart-tooltip__pin {
-                    width: 10px;
-                    height: 10px;
-                    background: #000;
-                    transform: rotate(45deg);
-                    margin-top: -6px;
-                    margin-left: 45%;
-                    border-radius: 1px;
-                }
-            </style>
         @endpush
     @endonce
 @endsection

@@ -43,14 +43,14 @@
             <td style="color:var(--ink-3);">{{ $s['tanggal'] }}</td>
             <td>
               <div style="display:flex; align-items:center; gap:10px;">
-                <x-erp.avatar :name="$s['vendor']" />
+                <x-misc.avatar :name="$s['vendor']" />
                 <span style="font-weight:500;">{{ $s['vendor'] }}</span>
               </div>
             </td>
             <td style="color:var(--ink-3);">{{ $s['gudang'] }}</td>
             <td style="color:var(--ink-3);">{{ $s['jatuhTempo'] }}</td>
             <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($s['total']) }}</td>
-            <td><x-erp.status-badge :status="$s['status']" /></td>
+            <td><x-misc.status-badge :status="$s['status']" /></td>
             <td x-on:click.stop><button class="btn btn-ghost btn-icon btn-sm" style="border:none;"><x-misc.icon name="more" :size="15" /></button></td>
           </tr>
         @endforeach

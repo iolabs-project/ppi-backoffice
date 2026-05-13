@@ -177,3 +177,153 @@
   font-weight: 600;
   text-decoration: none;
 }
+
+// Bar Chart
+.barchart-wrap {
+  position: relative;
+}
+
+.barchart-tooltip {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  transform: translateY(0);
+  z-index: 20;
+}
+
+.barchart-tooltip__box {
+  background: #000;
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+}
+
+.barchart-tooltip__label {
+  font-weight: 600;
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.barchart-tooltip__value {
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.barchart-tooltip__pin {
+  width: 10px;
+  height: 10px;
+  background: #000;
+  transform: rotate(45deg);
+  margin-top: -6px;
+  margin-left: 45%;
+  border-radius: 1px;
+}
+
+// Card with standard padding
+.card-chart {
+  padding: 22px 24px;
+}
+
+// Chart legend dots
+.chart-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+
+  &--accent {
+    background: var(--accent);
+  }
+
+  &--ink {
+    background: var(--ink-2);
+  }
+}
+
+// SVG overflow
+.svg-barchart {
+  overflow: visible;
+}
+
+// Grid lines in chart
+.barchart-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  align-items: center;
+}
+
+.barchart-grid-label {
+  position: absolute;
+  left: 0;
+  transform: translateY(-50%);
+  font-size: 10.5px;
+  color: var(--ink-4);
+}
+
+// Bar chart months labels
+.barchart-months {
+  position: absolute;
+  left: 48px;
+  right: 0;
+  bottom: 0;
+  display: flex;
+}
+
+.barchart-month-label {
+  font-size: 11px;
+  color: var(--ink-4);
+  text-align: center;
+}
+
+// Pipeline grid
+.pipeline-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.pipeline-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 110px;
+  align-items: center;
+  gap: 14px;
+}
+
+.pipeline-stage-header {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pipeline-stage-label {
+  font-size: 11px;
+  color: var(--ink-4);
+}
+
+// Pipeline bar
+.pipeline-bar-track {
+  height: 32px;
+  background: var(--bg-2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pipeline-bar-fill {
+  width: 100%;
+  height: 100%;
+}
+
+.pipeline-value {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+
+// Greeting strong
+.dash-greeting__strong {
+  color: var(--ink);
+}
