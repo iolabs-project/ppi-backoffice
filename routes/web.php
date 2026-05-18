@@ -13,16 +13,20 @@ Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
 // Penjualan (Sales Orders)
 Route::prefix('penjualan')->name('penjualan.')->group(function () {
-    Route::get('/',              [PenjualanController::class, 'index'])->name('index');
-    Route::get('/create',        [PenjualanController::class, 'create'])->name('create');
-    Route::get('/{id}',          [PenjualanController::class, 'show'])->name('show');
-    Route::get('/{id}/pengiriman', [PenjualanController::class, 'pengiriman'])->name('pengiriman');
+    Route::get('/',                  [PenjualanController::class, 'index'])->name('index');
+    Route::get('/create',            [PenjualanController::class, 'create'])->name('create');
+    Route::get('/pengiriman',        [PenjualanController::class, 'pengirimanList'])->name('pengiriman_list');
+    Route::get('/tagihan',           [PenjualanController::class, 'tagihanList'])->name('tagihan_list');
+    Route::get('/{id}',              [PenjualanController::class, 'show'])->name('show');
+    Route::get('/{id}/pengiriman',   [PenjualanController::class, 'pengiriman'])->name('pengiriman');
 });
 
 // Pembelian (Purchase Orders)
 Route::prefix('pembelian')->name('pembelian.')->group(function () {
     Route::get('/',              [PembelianController::class, 'index'])->name('index');
     Route::get('/create',        [PembelianController::class, 'create'])->name('create');
+    Route::get('/penyusutan',    [PembelianController::class, 'penyusutanList'])->name('penyusutan_list');
+    Route::get('/tagihan-list',  [PembelianController::class, 'tagihanList'])->name('tagihan_list');
     Route::get('/{id}',          [PembelianController::class, 'show'])->name('show');
     Route::get('/{id}/pengiriman', [PembelianController::class, 'pengiriman'])->name('pengiriman');
     Route::get('/{id}/tagihan',  [PembelianController::class, 'tagihan'])->name('tagihan');

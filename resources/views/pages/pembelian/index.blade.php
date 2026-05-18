@@ -51,7 +51,38 @@
             <td style="color:var(--ink-3);">{{ $s['jatuhTempo'] }}</td>
             <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($s['total']) }}</td>
             <td><x-misc.status-badge :status="$s['status']" /></td>
-            <td x-on:click.stop><button class="btn btn-ghost btn-icon btn-sm" style="border:none;"><x-misc.icon name="more" :size="15" /></button></td>
+            <td x-on:click.stop>
+              <div x-data="{ open: false }" class="action-menu">
+                <button
+                  class="btn btn-ghost btn-icon btn-sm btn--borderless"
+                  x-on:click.stop="
+                    let r = $el.getBoundingClientRect();
+                    $refs.panel.style.top = (r.bottom + 6) + 'px';
+                    $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
+                    open = !open;
+                  ">
+                  <x-misc.icon name="more" :size="15" />
+                </button>
+                <div x-ref="panel" x-show="open" x-cloak x-on:click.away="open = false" class="action-menu__panel">
+                  <a href="{{ route('pembelian.show', $s['id']) }}" class="action-menu__item">
+                    <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail
+                  </a>
+                  <a href="{{ route('pembelian.pengiriman', $s['id']) }}" class="action-menu__item">
+                    <x-misc.icon name="box" :size="14" stroke="var(--ink-3)" />Buat Penerimaan
+                  </a>
+                  <a href="{{ route('pembelian.tagihan', $s['id']) }}" class="action-menu__item">
+                    <x-misc.icon name="receipt" :size="14" stroke="var(--ink-3)" />Buat Tagihan
+                  </a>
+                  <button class="action-menu__item">
+                    <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak PO
+                  </button>
+                  <div class="action-menu__divider"></div>
+                  <button class="action-menu__item action-menu__item--danger">
+                    <x-misc.icon name="x" :size="14" stroke="currentColor" />Batalkan PO
+                  </button>
+                </div>
+              </div>
+            </td>
           </tr>
         @endforeach
       </tbody>

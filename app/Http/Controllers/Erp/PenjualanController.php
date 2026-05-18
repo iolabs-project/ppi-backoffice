@@ -46,6 +46,30 @@ class PenjualanController extends Controller
         ]);
     }
 
+    public function pengirimanList()
+    {
+        return view('pages.penjualan.pengiriman-list', [
+            'currentPage' => 'penjualan.pengiriman',
+            'breadcrumb'  => [
+                ['label' => 'Penjualan', 'url' => route('penjualan.index')],
+                ['label' => 'Pengiriman'],
+            ],
+            'pengiriman'  => ErpDataService::pengirimanPenjualan(),
+        ]);
+    }
+
+    public function tagihanList()
+    {
+        return view('pages.penjualan.tagihan-list', [
+            'currentPage' => 'penjualan.tagihan',
+            'breadcrumb'  => [
+                ['label' => 'Penjualan', 'url' => route('penjualan.index')],
+                ['label' => 'Tagihan'],
+            ],
+            'tagihan'     => ErpDataService::tagihanPenjualan(),
+        ]);
+    }
+
     public function pengiriman(string $id)
     {
         $so = collect(ErpDataService::salesOrders())->firstWhere('id', $id)

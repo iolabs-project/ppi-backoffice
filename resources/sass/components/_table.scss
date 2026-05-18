@@ -1,36 +1,36 @@
 // Table styles
 .table-card {
-  overflow: hidden;
+    overflow: hidden;
 }
 
 .flex-spacer {
-  flex: 1;
+    flex: 1;
 }
 
 .table-customer-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 
-  .table-customer-name {
-    font-weight: 500;
-  }
+    .table-customer-name {
+        font-weight: 500;
+    }
 }
 
 .table-id {
-  font-weight: 600;
+    font-weight: 600;
 }
 
 .table-secondary {
-  color: var(--ink-3);
+    color: var(--ink-3);
 }
 
 .table-numeric {
-  font-weight: 600;
+    font-weight: 600;
 }
 
 .btn--borderless {
-  border: none;
+    border: none;
 }
 
 .tbl {
@@ -50,12 +50,12 @@
     background: var(--bg-2);
     border-bottom: 1px solid var(--line);
 
-    &:first-child {
-        border-top-left-radius: 12px;
-    }
-    &:last-child {
-        border-top-right-radius: 12px;
-    }
+    // &:first-child {
+    //     border-top-left-radius: 12px;
+    // }
+    // &:last-child {
+    //     border-top-right-radius: 12px;
+    // }
 }
 
 .tbl td {
@@ -63,6 +63,19 @@
     font-size: 13.5px;
     border-bottom: 1px solid var(--line);
     vertical-align: middle;
+
+    a {
+        &.orange-link {
+            color: var(--accent);
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.1s;
+
+            &:hover {
+                color: var(--accent-2);
+            }
+        }
+    }
 }
 
 .tbl tr:last-child td {
@@ -79,6 +92,61 @@
 .table-action-col {
     text-align: center !important;
     width: 75px;
+}
+
+// Action dropdown menu
+.action-menu {
+    position: relative;
+    display: inline-flex;
+}
+
+.action-menu__panel {
+    position: fixed;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow:
+        0 8px 28px rgba(0, 0, 0, 0.12),
+        0 2px 8px rgba(0, 0, 0, 0.06);
+    min-width: 190px;
+    z-index: 500;
+    overflow: hidden;
+    padding: 4px 0;
+}
+
+.action-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    text-decoration: none;
+    transition: background 0.1s;
+
+    &:hover {
+        background: var(--bg-2);
+    }
+
+    &--danger {
+        color: var(--bad);
+        &:hover {
+            background: var(--bad-bg);
+        }
+    }
+}
+
+.action-menu__divider {
+    height: 1px;
+    background: var(--line);
+    margin: 4px 0;
 }
 
 // Pagination

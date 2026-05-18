@@ -197,13 +197,10 @@
   color: var(--accent);
 }
 
-// Sticky action footer
 .order-form-footer {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  position: sticky;
-  bottom: 0;
   padding: 12px 0;
 }
 

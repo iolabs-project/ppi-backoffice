@@ -9,6 +9,8 @@
     'tagihan' => ['chip chip-warn', 'chip-dot dot-warn', 'Tagihan'],
     'lunas'   => ['chip chip-ok',   'chip-dot dot-ok',   'Lunas'],
     'draft'   => ['chip',           'chip-dot dot-muted','Draft'],
+    'selesai' => ['chip chip-ok',   'chip-dot dot-ok',   'Selesai'],
+    'batal'   => ['chip chip-bad',  'chip-dot dot-bad',  'Dibatalkan'],
   ];
   [$chipClass, $dotClass, $label] = $map[$status] ?? $map['pending'];
 @endphp

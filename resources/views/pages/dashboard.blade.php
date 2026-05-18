@@ -108,10 +108,14 @@
                         </div>
                         <div class="barchart-tooltip__pin"></div>
                     </div>
-                    <div class="barchart-months" style="gap:{{ $groupGap }}px;">
-                        @foreach ($monthly as $d)
+                    <div class="barchart-months">
+                        @foreach ($monthly as $i => $d)
+                            @php
+                                $cx = $i * ($groupW + $groupGap) + $groupW / 2;
+                                $pct = round($cx / $totalW * 100, 2);
+                            @endphp
                             <div class="barchart-month-label mono"
-                                style="width:{{ $groupW }}px;">{{ $d[0] }}</div>
+                                style="position:absolute; left:{{ $pct }}%; transform:translateX(-50%);">{{ $d[0] }}</div>
                         @endforeach
                     </div>
                 </div>

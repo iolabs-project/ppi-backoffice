@@ -1,17 +1,35 @@
 @extends('layouts.app')
 @section('content')
-<div x-data="{
-  items: [
-    { kode:'TPG-001', nama:'Tepung Terigu Cakra Kembar', qty:120, satuan:'Sak (25 kg)',    harga:215000 },
-    { kode:'GLP-002', nama:'Gula Pasir Kemasan Premium', qty:40,  satuan:'Sak (50 kg)',    harga:678000 },
-  ],
-  diskon: 2500000, ongkir: 1800000, biayaLain: 0,
-  get subtotal() { return this.items.reduce((s,i) => s + i.qty * i.harga, 0); },
-  get total()    { return this.subtotal - this.diskon + this.ongkir + this.biayaLain; },
-  addItem()   { this.items.push({ kode:'', nama:'', qty:1, satuan:'', harga:0 }); },
-  removeItem(idx) { this.items.splice(idx,1); },
-  fmt(n)  { return 'Rp ' + Math.round(n).toLocaleString('id-ID'); },
-}" class="order-page">
+
+<script>
+  function soCreateData() {
+    return {
+      customerOpen: false, gudangOpen: false, terminOpen: false,
+      customer: null, selectedGudang: null,
+      termin: 'Net 14 hari',
+      customers: @json(collect($kontak)->where('tipe', 'Customer')->values()),
+      gudangList: @json($gudang),
+      produkList: @json($produk),
+      terminList: ['Net 7 hari', 'Net 14 hari', 'Net 30 hari', 'Net 45 hari', 'COD'],
+      items: [
+        { kode: 'TPG-001', nama: 'Tepung Terigu Cakra Kembar', qty: 120, satuan: 'Kg',    harga: 215000 },
+        { kode: 'GLP-002', nama: 'Gula Pasir Kemasan Premium', qty: 40,  satuan: 'Kg',    harga: 678000 },
+      ],
+      diskon: 2500000, ongkir: 1800000, biayaLain: 0,
+      get subtotal() { return this.items.reduce((s, i) => s + i.qty * i.harga, 0); },
+      get total()    { return this.subtotal - this.diskon + this.ongkir + this.biayaLain; },
+      addItem()      { this.items.push({ kode: '', nama: '', qty: 1, satuan: '', harga: 0 }); },
+      removeItem(idx){ this.items.splice(idx, 1); },
+      fmt(n)         { return 'Rp ' + Math.round(n).toLocaleString('id-ID'); },
+      parseNum(str)  { return Number(String(str).replace(/\./g, '')) || 0; },
+      fmtNum(n)      { return Math.round(n).toLocaleString('id-ID'); },
+      fmtInput(e)    { let r = e.target.value.replace(/[^0-9]/g,''); e.target.value = r ? Number(r).toLocaleString('id-ID') : ''; },
+      initials(name) { return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?'; },
+    };
+  }
+</script>
+
+<div x-data="soCreateData()" class="order-page">
 
   <div>
     <a href="{{ route('penjualan.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
@@ -25,53 +43,100 @@
   <div class="card card-bd--form">
     <div class="display card-hd-title">Informasi Order</div>
     <div class="order-form-grid-4">
+
+      {{-- Customer Dropdown --}}
       <x-misc.field label="Pilih Customer" :required="true">
-        <div class="input" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-          <x-misc.avatar name="PT Roti Sumber Rejeki" />
-          <span style="flex:1; font-weight:500;">PT Roti Sumber Rejeki</span>
-          <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
+        <div class="dropdown-wrap" @click.outside="customerOpen=false">
+          <div class="input dropdown-trigger" @click="customerOpen=!customerOpen">
+            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+              x-text="initials(customer ? customer.nama : '')"></div>
+            <span style="flex:1; font-weight:500;"
+              x-text="customer ? customer.nama : 'Pilih Customer'"></span>
+            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
+          </div>
+          <div class="dropdown-menu" x-show="customerOpen" x-cloak>
+            <template x-for="c in customers" :key="c.id">
+              <div class="dropdown-item" @click="customer=c; customerOpen=false">
+                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                  x-text="initials(c.nama)"></div>
+                <span x-text="c.nama"></span>
+              </div>
+            </template>
+          </div>
         </div>
       </x-misc.field>
+
+      {{-- Nomor SO --}}
       <x-misc.field label="Nomor SO" :required="true">
         <input class="input mono" value="SO-2026-0143" />
       </x-misc.field>
+
+      {{-- Tanggal --}}
       <x-misc.field label="Tanggal" :required="true">
-        <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">08 Mei 2026</span>
-        </div>
+        <input type="date" class="input" value="2026-05-08" />
       </x-misc.field>
+
+      {{-- Jatuh Tempo --}}
       <x-misc.field label="Jatuh Tempo" :required="true">
-        <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">22 Mei 2026</span>
-        </div>
+        <input type="date" class="input" value="2026-05-22" />
       </x-misc.field>
+
+      {{-- Gudang Dropdown --}}
       <x-misc.field label="Gudang" :required="true">
-        <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
-          <span style="flex:1;">Gudang Bekasi</span>
-          <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
+        <div class="dropdown-wrap" @click.outside="gudangOpen=false">
+          <div class="input dropdown-trigger" @click="gudangOpen=!gudangOpen">
+            <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
+            <span style="flex:1;"
+              x-text="selectedGudang ? selectedGudang.nama : 'Pilih Gudang'"></span>
+            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
+          </div>
+          <div class="dropdown-menu" x-show="gudangOpen" x-cloak>
+            <template x-for="g in gudangList" :key="g.kode">
+              <div class="dropdown-item" @click="selectedGudang=g; gudangOpen=false">
+                <span style="flex:1;" x-text="g.nama"></span>
+                <span class="dropdown-item__sub" x-text="g.kota"></span>
+              </div>
+            </template>
+          </div>
         </div>
       </x-misc.field>
+
+      {{-- Sales Person (static) --}}
       <x-misc.field label="Sales Person">
         <div class="input" style="display:flex; align-items:center; gap:8px;">
           <x-misc.avatar name="Reza Pratama" />
           <span style="flex:1; font-weight:500;">Reza Pratama</span>
         </div>
       </x-misc.field>
+
+      {{-- Termin Pembayaran Dropdown --}}
       <x-misc.field label="Termin Pembayaran">
-        <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <span style="flex:1;">Net 14 hari</span>
-          <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
+        <div class="dropdown-wrap" @click.outside="terminOpen=false">
+          <div class="input dropdown-trigger" @click="terminOpen=!terminOpen">
+            <span style="flex:1;" x-text="termin"></span>
+            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
+          </div>
+          <div class="dropdown-menu" x-show="terminOpen" x-cloak>
+            <template x-for="t in terminList" :key="t">
+              <div class="dropdown-item"
+                :class="termin === t ? 'dropdown-item--active' : ''"
+                @click="termin=t; terminOpen=false"
+                x-text="t"></div>
+            </template>
+          </div>
         </div>
       </x-misc.field>
+
+      {{-- Nomor Referensi --}}
       <x-misc.field label="Nomor Referensi">
         <input class="input mono" placeholder="(opsional)" />
       </x-misc.field>
+
     </div>
   </div>
 
   {{-- Items --}}
-  <div class="card" style="overflow:hidden;">
+  <div class="card" style="overflow:visible;">
     <div class="card-hd">
       <div class="display card-hd-title">Daftar Produk</div>
       <button class="btn btn-ghost btn-sm" x-on:click="addItem()">
@@ -89,23 +154,58 @@
       </tr></thead>
       <tbody>
         <template x-for="(it, i) in items" :key="i">
-          <tr>
+          <tr x-data="{ open: false }">
             <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
             <td>
               <div style="display:flex; align-items:center; gap:10px;">
                 <div class="product-icon">
                   <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
                 </div>
-                <div style="flex:1;">
-                  <input class="input" style="height:32px; padding:0 10px;" x-model="it.nama" />
-                  <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;" x-text="it.kode || '— belum dipilih'"></div>
+                <div style="flex:1;" class="dropdown-wrap" @click.outside="open=false">
+                  <div class="input dropdown-trigger" style="height:32px; padding:0 10px;" @click="open=!open">
+                    <span style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
+                      :style="it.nama ? '' : 'color:var(--ink-4);'"
+                      x-text="it.nama || 'Pilih Produk'"></span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="m6 9 6 6 6-6"/></svg>
+                  </div>
+                  <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
+                    x-text="it.kode || '— belum dipilih'"></div>
+                  <div class="dropdown-menu" x-show="open" x-cloak style="min-width:320px;">
+                    <template x-for="p in produkList" :key="p.kode">
+                      <div class="dropdown-item"
+                        @click="it.nama=p.nama; it.kode=p.kode; it.satuan=p.satuan; it.harga=p.hargaJual; open=false">
+                        <div style="flex:1; min-width:0;">
+                          <div style="font-size:13px;" x-text="p.nama"></div>
+                          <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="p.kode"></div>
+                        </div>
+                        <span class="dropdown-item__sub" x-text="p.satuan"></span>
+                      </div>
+                    </template>
+                  </div>
                 </div>
               </div>
             </td>
-            <td><input class="input num" style="height:32px; text-align:right;" x-model.number="it.qty" /></td>
-            <td><input class="input" style="height:32px;" x-model="it.satuan" /></td>
-            <td><input class="input num" style="height:32px; text-align:right;" x-model.number="it.harga" /></td>
-            <td class="num" style="text-align:right; font-weight:600;" x-text="fmt(it.qty * it.harga)"></td>
+            <td>
+              <input class="input num" style="height:32px; text-align:right;"
+                :value="fmtNum(it.qty)"
+                @focus="$event.target.value = it.qty; $event.target.select()"
+                @input="fmtInput($event)"
+                @blur="it.qty = parseNum($event.target.value)" />
+            </td>
+            <td>
+              <div class="input input--readonly" style="height:32px; display:flex; align-items:center; padding:0 10px; color:var(--ink-3);">
+                <span x-text="it.satuan || '—'"></span>
+              </div>
+            </td>
+            <td>
+              <input class="input num" style="height:32px; text-align:right;"
+                :value="fmtNum(it.harga)"
+                @focus="$event.target.value = it.harga; $event.target.select()"
+                @input="fmtInput($event)"
+                @blur="it.harga = parseNum($event.target.value)" />
+            </td>
+            <td class="num" style="text-align:right; font-weight:600;"
+              x-text="fmt(it.qty * it.harga)"></td>
             <td>
               <button class="btn btn-ghost btn-icon btn-sm" style="border:none;" x-on:click="removeItem(i)">
                 <x-misc.icon name="trash" :size="14" stroke="var(--ink-4)" />
@@ -121,13 +221,25 @@
         <div class="display order-extras__title">Biaya Tambahan</div>
         <div class="order-extras__grid-3">
           <x-misc.field label="Diskon">
-            <input class="input num" style="text-align:right;" x-model.number="diskon" />
+            <input class="input num" style="text-align:right;"
+              :value="fmtNum(diskon)"
+              @focus="$event.target.value = diskon; $event.target.select()"
+              @input="fmtInput($event)"
+              @blur="diskon = parseNum($event.target.value)" />
           </x-misc.field>
           <x-misc.field label="Ongkos Kirim">
-            <input class="input num" style="text-align:right;" x-model.number="ongkir" />
+            <input class="input num" style="text-align:right;"
+              :value="fmtNum(ongkir)"
+              @focus="$event.target.value = ongkir; $event.target.select()"
+              @input="fmtInput($event)"
+              @blur="ongkir = parseNum($event.target.value)" />
           </x-misc.field>
           <x-misc.field label="Biaya Lain-lain">
-            <input class="input num" style="text-align:right;" x-model.number="biayaLain" />
+            <input class="input num" style="text-align:right;"
+              :value="fmtNum(biayaLain)"
+              @focus="$event.target.value = biayaLain; $event.target.select()"
+              @input="fmtInput($event)"
+              @blur="biayaLain = parseNum($event.target.value)" />
           </x-misc.field>
         </div>
         <x-misc.field label="Catatan Internal">
@@ -166,5 +278,6 @@
     <button class="btn btn-ghost" style="border-style:dashed;">Simpan Draft</button>
     <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan SO</button>
   </div>
+
 </div>
 @endsection

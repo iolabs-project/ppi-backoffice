@@ -1,40 +1,145 @@
 @props(['currentPage' => 'dashboard'])
 @php
-    $items = [
-        ['id' => 'dashboard', 'icon' => 'grid', 'label' => 'Dashboard', 'url' => route('dashboard')],
-        ['id' => 'penjualan', 'icon' => 'sales', 'label' => 'Penjualan', 'url' => route('penjualan.index')],
-        ['id' => 'pembelian', 'icon' => 'cart', 'label' => 'Pembelian', 'url' => route('pembelian.index')],
-        ['id' => 'kasbank', 'icon' => 'wallet', 'label' => 'Kas & Bank', 'url' => route('kasbank.index')],
-        ['id' => 'master', 'icon' => 'box', 'label' => 'Master Data', 'url' => route('master.index')],
-        ['id' => 'laporan', 'icon' => 'book', 'label' => 'Laporan', 'url' => route('laporan.index')],
+    $penjualanActive = str_starts_with($currentPage, 'penjualan');
+    $pembelianActive = str_starts_with($currentPage, 'pembelian');
+    $penjualanSubmenus = [
+        ['id' => 'penjualan',            'label' => 'Sales Order', 'desc' => 'Kelola pesanan penjualan',    'url' => route('penjualan.index'),           'icon' => 'sales',  'bg' => '#EEF2FF', 'fg' => '#6366F1'],
+        ['id' => 'penjualan.pengiriman', 'label' => 'Pengiriman',  'desc' => 'Kelola pengiriman penjualan', 'url' => route('penjualan.pengiriman_list'), 'icon' => 'box',    'bg' => '#F0FDF4', 'fg' => '#16A34A'],
+        ['id' => 'penjualan.tagihan',    'label' => 'Tagihan',     'desc' => 'Kelola tagihan penjualan',    'url' => route('penjualan.tagihan_list'),    'icon' => 'wallet', 'bg' => '#FFF7ED', 'fg' => '#EA580C'],
     ];
-    $bottom = [
-        // ['id'=>'pengaturan', 'icon'=>'settings','label'=>'Pengaturan', 'url'=>route('pengaturan.index')],
+    $pembelianSubmenus = [
+        ['id' => 'pembelian',              'label' => 'Purchase Order', 'desc' => 'Kelola pesanan pembelian',  'url' => route('pembelian.index'),            'icon' => 'cart',   'bg' => '#EFF6FF', 'fg' => '#2563EB'],
+        ['id' => 'pembelian.penyusutan',   'label' => 'Penyusutan',     'desc' => 'Catatan penyusutan barang', 'url' => route('pembelian.penyusutan_list'),  'icon' => 'box',    'bg' => '#FFF7ED', 'fg' => '#EA580C'],
+        ['id' => 'pembelian.tagihan_list', 'label' => 'Tagihan',        'desc' => 'Kelola tagihan pembelian',  'url' => route('pembelian.tagihan_list'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A'],
     ];
+    $navItems = [
+        ['id' => 'kasbank', 'icon' => 'wallet', 'label' => 'Kas & Bank',  'url' => route('kasbank.index')],
+        ['id' => 'master',  'icon' => 'box',    'label' => 'Master Data', 'url' => route('master.index')],
+        ['id' => 'laporan', 'icon' => 'book',   'label' => 'Laporan',     'url' => route('laporan.index')],
+    ];
+    $bottom = [];
 @endphp
-<aside class="sidebar">
-    <div class="ppi-logo">PPI</div>
-    <div class="sidebar__divider"></div>
 
-    <nav class="sidebar__nav">
-        @foreach ($items as $item)
-            @php $active = str_starts_with($currentPage, $item['id']); @endphp
-            <a href="{{ $item['url'] }}" title="{{ $item['label'] }}"
+<div x-data="{
+    openPanel: null,
+    penjualanActive: {{ $penjualanActive ? 'true' : 'false' }},
+    pembelianActive: {{ $pembelianActive ? 'true' : 'false' }},
+    toggle(p) { this.openPanel = this.openPanel === p ? null : p; }
+}" style="display: contents;">
+
+    <aside class="sidebar">
+        <div class="ppi-logo">PPI</div>
+        <div class="sidebar__divider"></div>
+
+        <nav class="sidebar__nav">
+            {{-- Dashboard --}}
+            <a href="{{ route('dashboard') }}" title="Dashboard"
                 class="sidebar-item"
-                @if($active) data-active @endif>
-                <x-misc.icon :name="$item['icon']" :size="18" sw="1.7" />
+                :data-active="openPanel === null && {{ str_starts_with($currentPage, 'dashboard') ? 'true' : 'false' }} ? '' : null">
+                <x-misc.icon name="grid" :size="18" sw="1.7" />
+            </a>
+
+            {{-- Penjualan --}}
+            <button type="button" title="Penjualan"
+                class="sidebar-item"
+                :data-active="openPanel === 'penjualan' || (openPanel === null && penjualanActive) ? '' : null"
+                @click="toggle('penjualan')">
+                <x-misc.icon name="sales" :size="18" sw="1.7" />
+            </button>
+
+            {{-- Pembelian --}}
+            <button type="button" title="Pembelian"
+                class="sidebar-item"
+                :data-active="openPanel === 'pembelian' || (openPanel === null && pembelianActive) ? '' : null"
+                @click="toggle('pembelian')">
+                <x-misc.icon name="cart" :size="18" sw="1.7" />
+            </button>
+
+            {{-- Other nav items --}}
+            @foreach ($navItems as $item)
+                @php $active = str_starts_with($currentPage, $item['id']); @endphp
+                <a href="{{ $item['url'] }}" title="{{ $item['label'] }}"
+                    class="sidebar-item"
+                    :data-active="openPanel === null && {{ $active ? 'true' : 'false' }} ? '' : null">
+                    <x-misc.icon :name="$item['icon']" :size="18" sw="1.7" />
+                </a>
+            @endforeach
+        </nav>
+
+        <nav class="sidebar__nav sidebar__nav--bottom">
+            @foreach ($bottom as $item)
+                @php $active = str_starts_with($currentPage, $item['id']); @endphp
+                <a href="{{ $item['url'] }}" title="{{ $item['label'] }}"
+                    class="sidebar-item"
+                    :data-active="openPanel === null && {{ $active ? 'true' : 'false' }} ? '' : null">
+                    <x-misc.icon :name="$item['icon']" :size="18" sw="1.7" />
+                </a>
+            @endforeach
+        </nav>
+    </aside>
+
+    {{-- Backdrop --}}
+    <div class="submenu-backdrop"
+         x-show="openPanel !== null"
+         x-transition:enter="submenu-bd-anim"
+         x-transition:enter-start="submenu-bd-start"
+         x-transition:enter-end="submenu-bd-end"
+         x-transition:leave="submenu-bd-anim"
+         x-transition:leave-start="submenu-bd-end"
+         x-transition:leave-end="submenu-bd-start"
+         @click="openPanel = null"
+         x-cloak></div>
+
+    {{-- Penjualan panel --}}
+    <div class="submenu-panel"
+         x-show="openPanel === 'penjualan'"
+         x-transition:enter="submenu-panel-anim"
+         x-transition:enter-start="submenu-panel-start"
+         x-transition:enter-end="submenu-panel-end"
+         x-transition:leave="submenu-panel-anim"
+         x-transition:leave-start="submenu-panel-end"
+         x-transition:leave-end="submenu-panel-start"
+         x-cloak>
+        <p class="submenu-panel__section">Penjualan</p>
+        @foreach ($penjualanSubmenus as $sub)
+            <a href="{{ $sub['url'] }}"
+               class="submenu-panel__item {{ $currentPage === $sub['id'] ? 'active' : '' }}">
+                <div class="submenu-panel__icon"
+                     style="background: {{ $sub['bg'] }}; color: {{ $sub['fg'] }};">
+                    <x-misc.icon :name="$sub['icon']" :size="18" sw="1.7" />
+                </div>
+                <div>
+                    <div class="submenu-panel__title">{{ $sub['label'] }}</div>
+                    <div class="submenu-panel__desc">{{ $sub['desc'] }}</div>
+                </div>
             </a>
         @endforeach
-    </nav>
+    </div>
 
-    <nav class="sidebar__nav sidebar__nav--bottom">
-        @foreach ($bottom as $item)
-            @php $active = str_starts_with($currentPage, $item['id']); @endphp
-            <a href="{{ $item['url'] }}" title="{{ $item['label'] }}"
-                class="sidebar-item"
-                @if($active) data-active @endif>
-                <x-misc.icon :name="$item['icon']" :size="18" sw="1.7" />
+    {{-- Pembelian panel --}}
+    <div class="submenu-panel"
+         x-show="openPanel === 'pembelian'"
+         x-transition:enter="submenu-panel-anim"
+         x-transition:enter-start="submenu-panel-start"
+         x-transition:enter-end="submenu-panel-end"
+         x-transition:leave="submenu-panel-anim"
+         x-transition:leave-start="submenu-panel-end"
+         x-transition:leave-end="submenu-panel-start"
+         x-cloak>
+        <p class="submenu-panel__section">Pembelian</p>
+        @foreach ($pembelianSubmenus as $sub)
+            <a href="{{ $sub['url'] }}"
+               class="submenu-panel__item {{ $currentPage === $sub['id'] ? 'active' : '' }}">
+                <div class="submenu-panel__icon"
+                     style="background: {{ $sub['bg'] }}; color: {{ $sub['fg'] }};">
+                    <x-misc.icon :name="$sub['icon']" :size="18" sw="1.7" />
+                </div>
+                <div>
+                    <div class="submenu-panel__title">{{ $sub['label'] }}</div>
+                    <div class="submenu-panel__desc">{{ $sub['desc'] }}</div>
+                </div>
             </a>
         @endforeach
-    </nav>
-</aside>
+    </div>
+
+</div>

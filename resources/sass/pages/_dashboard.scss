@@ -1,329 +1,330 @@
 .dash {
-  padding: 24px 28px 60px;
-  display: grid;
-  gap: 20px;
+    padding: 24px 28px 60px;
+    display: grid;
+    gap: 20px;
 }
 
 .dash-greeting {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .dash-greeting__date {
-  font-size: 13px;
-  color: var(--ink-4);
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    font-size: 13px;
+    color: var(--ink-4);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .dash-greeting__title {
-  margin: 0;
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
+    margin: 0;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
 }
 
 .dash-greeting__sub {
-  font-size: 14px;
-  color: var(--ink-3);
-  margin-top: 6px;
+    font-size: 14px;
+    color: var(--ink-3);
+    margin-top: 6px;
 }
 
 .dash-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
 }
 
 .dash-charts {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 14px;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 14px;
 }
 
 .dash-bottom {
-  display: grid;
-  grid-template-columns: 1fr 1.6fr;
-  gap: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 14px;
 }
 
 // Chart card
 .chart-hd {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 18px;
 }
 
 .chart-title {
-  font-size: 18px;
-  font-weight: 700;
+    font-size: 18px;
+    font-weight: 700;
 }
 
 .chart-sub {
-  font-size: 12px;
-  color: var(--ink-4);
-  margin-top: 2px;
+    font-size: 12px;
+    color: var(--ink-4);
+    margin-top: 2px;
 }
 
 .chart-legend {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  font-size: 12px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    font-size: 12px;
 }
 
 .chart-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .chart-legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
 }
 
 // Pipeline
 .pipeline-insight {
-  margin-top: 18px;
-  padding: 14px;
-  background: var(--bg-2);
-  border-radius: 12px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
+    margin-top: 18px;
+    padding: 14px;
+    background: var(--bg-2);
+    border-radius: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
 }
 
 .pipeline-insight__icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  display: grid;
-  place-items: center;
-  flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: grid;
+    place-items: center;
+    flex: 0 0 34px;
 }
 
 .pipeline-insight__text {
-  flex: 1;
-  font-size: 12.5px;
-  color: var(--ink-2);
-  line-height: 1.45;
+    flex: 1;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.45;
 }
 
 // Coverage ring
 .coverage-ring {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 8px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 8px 0 14px;
 }
 
 .coverage-ring__svg {
-  position: relative;
-  flex-shrink: 0;
+    position: relative;
+    flex-shrink: 0;
 }
 
 .coverage-ring__pct {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
 }
 
 .coverage-ring__label {
-  font-size: 22px;
-  font-weight: 700;
+    font-size: 22px;
+    font-weight: 700;
 }
 
 .coverage-bars {
-  flex: 1;
-  display: grid;
-  gap: 10px;
+    flex: 1;
+    display: grid;
+    gap: 10px;
 }
 
 .coverage-bar__row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
 }
 
 .coverage-bar__track {
-  height: 5px;
-  background: var(--bg-3);
-  border-radius: 999px;
+    height: 5px;
+    background: var(--bg-3);
+    border-radius: 999px;
 }
 
 .coverage-footer {
-  border-top: 1px solid var(--line);
-  padding-top: 14px;
-  font-size: 12px;
-  color: var(--ink-3);
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+    font-size: 12px;
+    color: var(--ink-3);
 }
 
 .coverage-footer__link {
-  color: var(--accent);
-  font-weight: 600;
-  text-decoration: none;
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
 }
 
 // Bar Chart
 .barchart-wrap {
-  position: relative;
+    position: relative;
 }
 
 .barchart-tooltip {
-  position: absolute;
-  display: none;
-  pointer-events: none;
-  transform: translateY(0);
-  z-index: 20;
+    position: absolute;
+    display: none;
+    pointer-events: none;
+    transform: translateY(0);
+    z-index: 20;
 }
 
 .barchart-tooltip__box {
-  background: #000;
-  color: #fff;
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-  white-space: nowrap;
+    background: #000;
+    color: #fff;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
 }
 
 .barchart-tooltip__label {
-  font-weight: 600;
-  font-size: 11px;
-  opacity: 0.9;
+    font-weight: 600;
+    font-size: 11px;
+    opacity: 0.9;
 }
 
 .barchart-tooltip__value {
-  font-weight: 700;
-  margin-top: 2px;
+    font-weight: 700;
+    margin-top: 2px;
 }
 
 .barchart-tooltip__pin {
-  width: 10px;
-  height: 10px;
-  background: #000;
-  transform: rotate(45deg);
-  margin-top: -6px;
-  margin-left: 45%;
-  border-radius: 1px;
+    width: 10px;
+    height: 10px;
+    background: #000;
+    transform: rotate(45deg);
+    margin-top: -6px;
+    margin-left: 45%;
+    border-radius: 1px;
 }
 
 // Card with standard padding
 .card-chart {
-  padding: 22px 24px;
+    padding: 22px 24px;
 }
 
 // Chart legend dots
 .chart-legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
 
-  &--accent {
-    background: var(--accent);
-  }
+    &--accent {
+        background: var(--accent);
+    }
 
-  &--ink {
-    background: var(--ink-2);
-  }
+    &--ink {
+        background: var(--ink-2);
+    }
 }
 
 // SVG overflow
 .svg-barchart {
-  overflow: visible;
+    overflow: visible;
 }
 
 // Grid lines in chart
 .barchart-grid-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  border-top: 1px dashed var(--line);
-  display: flex;
-  align-items: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 1px dashed var(--line);
+    display: flex;
+    align-items: center;
 }
 
 .barchart-grid-label {
-  position: absolute;
-  left: 0;
-  transform: translateY(-50%);
-  font-size: 10.5px;
-  color: var(--ink-4);
+    position: absolute;
+    left: 0;
+    transform: translateY(-50%);
+    font-size: 10.5px;
+    color: var(--ink-4);
 }
 
 // Bar chart months labels
 .barchart-months {
-  position: absolute;
-  left: 48px;
-  right: 0;
-  bottom: 0;
-  display: flex;
+    position: absolute;
+    left: 48px;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    height: 15px;
 }
 
 .barchart-month-label {
-  font-size: 11px;
-  color: var(--ink-4);
-  text-align: center;
+    font-size: 11px;
+    color: var(--ink-4);
+    text-align: center;
 }
 
 // Pipeline grid
 .pipeline-grid {
-  display: grid;
-  gap: 10px;
+    display: grid;
+    gap: 10px;
 }
 
 .pipeline-row {
-  display: grid;
-  grid-template-columns: 140px 1fr 110px;
-  align-items: center;
-  gap: 14px;
+    display: grid;
+    grid-template-columns: 140px 1fr 110px;
+    align-items: center;
+    gap: 14px;
 }
 
 .pipeline-stage-header {
-  font-size: 13px;
-  font-weight: 600;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .pipeline-stage-label {
-  font-size: 11px;
-  color: var(--ink-4);
+    font-size: 11px;
+    color: var(--ink-4);
 }
 
 // Pipeline bar
 .pipeline-bar-track {
-  height: 32px;
-  background: var(--bg-2);
-  border-radius: 8px;
-  overflow: hidden;
+    height: 32px;
+    background: var(--bg-2);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .pipeline-bar-fill {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 .pipeline-value {
-  font-size: 13px;
-  font-weight: 600;
-  text-align: right;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
 }
 
 // Greeting strong
 .dash-greeting__strong {
-  color: var(--ink);
+    color: var(--ink);
 }

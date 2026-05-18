@@ -5,24 +5,19 @@
         page: 1,
         perPage: 10,
         perPageOptions: [10, 25, 50],
-        total: {{ count($salesOrders) }},
-        setPerPage(n) {
-            this.perPage = n;
-            this.page = 1
-        },
+        total: {{ count($tagihan) }},
+        setPerPage(n) { this.perPage = n; this.page = 1 },
         prev() { if (this.page > 1) this.page-- },
         next() { if (this.page < Math.ceil(this.total / this.perPage)) this.page++ }
     }" class="order-page">
 
         <div class="order-hd">
             <div>
-                <h1 class="order-title display">Sales Order</h1>
-                <div class="order-sub">{{ count($salesOrders) }} dokumen · Periode Mei 2026</div>
+                <h1 class="order-title display">Tagihan</h1>
+                <div class="order-sub">{{ count($tagihan) }} dokumen · Periode Mei 2026</div>
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
-                <a href="{{ route('penjualan.create') }}" class="btn btn-primary"><x-misc.icon name="plus"
-                        :size="15" />Tambah SO</a>
             </div>
         </div>
 
@@ -30,15 +25,13 @@
         <div class="filter-pills">
             @php
                 $statuses = [
-                    ['id' => 'semua', 'label' => 'Semua'],
-                    ['id' => 'pending', 'label' => 'Pending'],
-                    ['id' => 'dikirim', 'label' => 'Dikirim'],
-                    ['id' => 'tagihan', 'label' => 'Tagihan'],
-                    ['id' => 'lunas', 'label' => 'Lunas'],
+                    ['id' => 'semua',   'label' => 'Semua'],
+                    ['id' => 'tagihan', 'label' => 'Belum Lunas'],
+                    ['id' => 'lunas',   'label' => 'Lunas'],
                 ];
             @endphp
             @foreach ($statuses as $st)
-                @php $cnt = $st['id'] === 'semua' ? count($salesOrders) : count(array_filter($salesOrders, fn($s) => $s['status'] === $st['id'])); @endphp
+                @php $cnt = $st['id'] === 'semua' ? count($tagihan) : count(array_filter($tagihan, fn($s) => $s['status'] === $st['id'])); @endphp
                 <button x-on:click="filter = '{{ $st['id'] }}'; page = 1"
                     :class="filter === '{{ $st['id'] }}' ? 'filter-pill filter-pill--active' : 'filter-pill'">
                     {{ $st['label'] }}<span class="filter-pill__count mono">{{ $cnt }}</span>
@@ -53,34 +46,35 @@
             <table class="tbl">
                 <thead>
                     <tr>
-                        <th>Nomor SO</th>
+                        <th>No. Invoice</th>
                         <th>Tanggal</th>
+                        <th>Ref. SO</th>
                         <th>Customer</th>
-                        <th>Gudang</th>
                         <th>Jatuh Tempo</th>
-                        <th>Total</th>
+                        <th style="text-align:right;">Total</th>
                         <th>Status</th>
                         <th class="table-action-col">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($salesOrders as $s)
-                        <tr class="row-tap" x-data="{ idx: {{ $loop->index }}, status: '{{ $s['status'] }}' }"
-                            x-show="(filter === 'semua' || filter === status) && idx >= (page-1)*perPage && idx < page*perPage"
-                            x-on:click="window.location='{{ route('penjualan.show', $s['id']) }}'">
-                            <td class="mono table-id">{{ $s['id'] }}</td>
-                            <td class="table-secondary">{{ $s['tanggal'] }}</td>
+                    @foreach ($tagihan as $t)
+                        <tr x-data="{ idx: {{ $loop->index }}, status: '{{ $t['status'] }}' }"
+                            x-show="(filter === 'semua' || filter === status) && idx >= (page-1)*perPage && idx < page*perPage">
+                            <td class="mono table-id">{{ $t['id'] }}</td>
+                            <td class="table-secondary">{{ $t['tanggal'] }}</td>
+                            <td class="mono">
+                                <a href="{{ route('penjualan.show', $t['soRef']) }}" class="link orange-link">{{ $t['soRef'] }}</a>
+                            </td>
                             <td>
                                 <div class="table-customer-row">
-                                    <x-misc.avatar :name="$s['customer']" />
-                                    <span class="table-customer-name">{{ $s['customer'] }}</span>
+                                    <x-misc.avatar :name="$t['customer']" />
+                                    <span class="table-customer-name">{{ $t['customer'] }}</span>
                                 </div>
                             </td>
-                            <td class="table-secondary">{{ $s['gudang'] }}</td>
-                            <td class="table-secondary">{{ $s['jatuhTempo'] }}</td>
-                            <td class="num table-numeric">{{ fmt_rp($s['total']) }}</td>
-                            <td><x-misc.status-badge :status="$s['status']" /></td>
-                            <td class="table-action-col" x-on:click.stop>
+                            <td class="table-secondary">{{ $t['jatuhTempo'] }}</td>
+                            <td class="num table-numeric">{{ fmt_rp($t['total']) }}</td>
+                            <td><x-misc.status-badge :status="$t['status']" /></td>
+                            <td class="table-action-col">
                                 <div x-data="{ open: false }" class="action-menu">
                                     <button
                                         class="btn btn-ghost btn-icon btn-sm btn--borderless"
@@ -93,21 +87,18 @@
                                         <x-misc.icon name="more" :size="15" />
                                     </button>
                                     <div x-ref="panel" x-show="open" x-cloak x-on:click.away="open = false" class="action-menu__panel">
-                                        <a href="{{ route('penjualan.show', $s['id']) }}" class="action-menu__item">
-                                            <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail
-                                        </a>
-                                        <a href="{{ route('penjualan.pengiriman', $s['id']) }}" class="action-menu__item">
-                                            <x-misc.icon name="truck" :size="14" stroke="var(--ink-3)" />Buat Pengiriman
+                                        <a href="{{ route('penjualan.show', $t['soRef']) }}" class="action-menu__item">
+                                            <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail SO
                                         </a>
                                         <button class="action-menu__item">
-                                            <x-misc.icon name="receipt" :size="14" stroke="var(--ink-3)" />Buat Tagihan
+                                            <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak Invoice
                                         </button>
                                         <button class="action-menu__item">
-                                            <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak SO
+                                            <x-misc.icon name="check" :size="14" stroke="var(--ink-3)" />Tandai Lunas
                                         </button>
                                         <div class="action-menu__divider"></div>
                                         <button class="action-menu__item action-menu__item--danger">
-                                            <x-misc.icon name="x" :size="14" stroke="currentColor" />Batalkan SO
+                                            <x-misc.icon name="x" :size="14" stroke="currentColor" />Batalkan Tagihan
                                         </button>
                                     </div>
                                 </div>
@@ -130,7 +121,6 @@
             <div class="pagination-info">
                 <span x-text="( (page-1)*perPage + 1 ) + '–' + Math.min(page*perPage, total) + ' dari ' + total"></span>
             </div>
-
             <div class="pagination-controls">
                 <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong
                         x-text="Math.ceil(total/perPage)"></strong></div>

@@ -79,4 +79,28 @@ class PembelianController extends Controller
             'poDetailItems' => ErpDataService::poDetailItems(),
         ]);
     }
+
+    public function penyusutanList()
+    {
+        return view('pages.pembelian.penyusutan-list', [
+            'currentPage' => 'pembelian.penyusutan',
+            'breadcrumb'  => [
+                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
+                ['label' => 'Penyusutan'],
+            ],
+            'penyusutan' => ErpDataService::penyusutanPembelian(),
+        ]);
+    }
+
+    public function tagihanList()
+    {
+        return view('pages.pembelian.tagihan-list', [
+            'currentPage' => 'pembelian.tagihan_list',
+            'breadcrumb'  => [
+                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
+                ['label' => 'Tagihan'],
+            ],
+            'tagihan' => ErpDataService::tagihanPembelian(),
+        ]);
+    }
 }

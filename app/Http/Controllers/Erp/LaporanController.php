@@ -9,7 +9,7 @@ class LaporanController extends Controller
 {
     public function index()
     {
-        return view('pageslaporan.index', [
+        return view('pages.laporan.index', [
             'currentPage'      => 'laporan',
             'breadcrumb'       => [['label' => 'Laporan Keuangan']],
             'chartOfAccounts'  => ErpDataService::chartOfAccounts(),

@@ -1,67 +1,182 @@
 .sidebar {
-  width: 72px;
-  flex: 0 0 72px;
-  background: var(--bg-2);
-  border-right: 1px solid var(--line);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 18px 0;
-  gap: 18px;
+    width: 72px;
+    flex: 0 0 72px;
+    background: var(--bg-2);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 0;
+    gap: 18px;
+    position: relative;
+    z-index: 160;
 }
 
 .sidebar__divider {
-  width: 32px;
-  height: 1px;
-  background: var(--line);
+    width: 32px;
+    height: 1px;
+    background: var(--line);
 }
 
 .sidebar__nav {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
 
-  &--bottom {
-    flex: 0;
-  }
+    &--bottom {
+        flex: 0;
+    }
 }
 
 .sidebar-item {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  text-decoration: none;
-  transition: background .15s ease, color .15s ease;
-  color: var(--ink-3);
-  background: transparent;
-
-  &:hover {
-    background: var(--bg-3);
-    color: var(--ink);
-  }
-
-  &[data-active] {
-    background: var(--ink);
-    color: var(--paper);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    font: inherit;
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    text-decoration: none;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+    color: var(--ink-3);
+    background: transparent;
 
     &:hover {
-      background: var(--ink);
-      color: var(--paper);
+        background: var(--bg-3);
+        color: var(--ink);
     }
 
-    &::before {
-      content: '';
-      position: absolute;
-      left: -12px;
-      top: 10px;
-      bottom: 10px;
-      width: 3px;
-      border-radius: 0 3px 3px 0;
-      background: var(--accent);
+    &[data-active] {
+        background: var(--ink);
+        color: var(--paper);
+
+        &:hover {
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        &::before {
+            content: "";
+            position: absolute;
+            left: -12px;
+            top: 10px;
+            bottom: 10px;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: var(--accent);
+        }
     }
-  }
+}
+
+// ── Backdrop ────────────────────────────────────────────────────────────────
+
+.submenu-backdrop {
+    position: fixed;
+    inset: 0;
+    left: 72px;
+    background: rgba(0, 0, 0, 0.28);
+    z-index: 150;
+}
+
+.submenu-bd-anim {
+    transition: opacity 0.2s ease;
+}
+.submenu-bd-start {
+    opacity: 0;
+}
+.submenu-bd-end {
+    opacity: 1;
+}
+
+// ── Slide panel ─────────────────────────────────────────────────────────────
+
+.submenu-panel {
+    position: fixed;
+    left: 72px;
+    top: 0;
+    height: 100vh;
+    width: 260px;
+    background: var(--bg-2);
+    border-right: 1px solid var(--line);
+    z-index: 155;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 12px;
+    gap: 10px;
+    overflow-y: auto;
+    box-shadow: 6px 0 24px rgba(0, 0, 0, 0.07);
+}
+
+.submenu-panel-anim {
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.submenu-panel-start {
+    transform: translateX(-100%);
+}
+.submenu-panel-end {
+    transform: translateX(0);
+}
+
+.submenu-panel__section {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    padding: 0 10px;
+    margin: 0 0 10px;
+}
+
+.submenu-panel__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: background 0.12s ease;
+
+    &:hover {
+        background: var(--bg-3);
+    }
+
+    &.active {
+        background: black;
+
+        .submenu-panel__title {
+            color: white;
+        }
+
+        .submenu-panel__desc {
+            color: var(--paper);
+        }
+    }
+}
+
+.submenu-panel__icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.submenu-panel__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.submenu-panel__desc {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-top: 2px;
 }
