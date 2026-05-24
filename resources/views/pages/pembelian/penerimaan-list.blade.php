@@ -5,7 +5,7 @@
         page: 1,
         perPage: 10,
         perPageOptions: [10, 25, 50],
-        total: {{ count($penyusutan) }},
+        total: {{ count($penerimaan) }},
         setPerPage(n) { this.perPage = n; this.page = 1 },
         prev() { if (this.page > 1) this.page-- },
         next() { if (this.page < Math.ceil(this.total / this.perPage)) this.page++ }
@@ -13,28 +13,27 @@
 
         <div class="order-hd">
             <div>
-                <h1 class="order-title display">Penyusutan</h1>
-                <div class="order-sub">{{ count($penyusutan) }} catatan · Periode Mei 2026</div>
+                <h1 class="order-title display">Penerimaan</h1>
+                <div class="order-sub">{{ count($penerimaan) }} catatan · Periode Mei 2026</div>
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
-                <button class="btn btn-primary"><x-misc.icon name="plus" :size="15" />Catat Penyusutan</button>
             </div>
         </div>
 
         {{-- Summary cards --}}
         @php
-            $totalNilai = array_sum(array_column($penyusutan, 'nilaiSusut'));
-            $totalPending = count(array_filter($penyusutan, fn($s) => $s['status'] === 'pending'));
+            $totalNilai = array_sum(array_column($penerimaan, 'nilaiSusut'));
+            $totalPending = count(array_filter($penerimaan, fn($s) => $s['status'] === 'pending'));
         @endphp
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+        {{-- <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
             <div class="card" style="padding: 16px 20px;">
                 <div style="font-size: 11px; color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px;">Total Catatan</div>
-                <div style="font-size: 24px; font-weight: 700; color: var(--ink-1);">{{ count($penyusutan) }}</div>
-                <div style="font-size: 12px; color: var(--ink-3); margin-top: 2px;">dokumen penyusutan</div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--ink-1);">{{ count($penerimaan) }}</div>
+                <div style="font-size: 12px; color: var(--ink-3); margin-top: 2px;">dokumen penerimaan</div>
             </div>
             <div class="card" style="padding: 16px 20px;">
-                <div style="font-size: 11px; color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px;">Nilai Penyusutan</div>
+                <div style="font-size: 11px; color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px;">Nilai Penerimaan</div>
                 <div style="font-size: 24px; font-weight: 700; color: #EA580C;">{{ fmt_rp($totalNilai) }}</div>
                 <div style="font-size: 12px; color: var(--ink-3); margin-top: 2px;">total kerugian</div>
             </div>
@@ -43,7 +42,7 @@
                 <div style="font-size: 24px; font-weight: 700; color: #CA8A04;">{{ $totalPending }}</div>
                 <div style="font-size: 12px; color: var(--ink-3); margin-top: 2px;">menunggu tindak lanjut</div>
             </div>
-        </div>
+        </div> --}}
 
         {{-- Filter pills --}}
         <div class="filter-pills">
@@ -55,7 +54,7 @@
                 ];
             @endphp
             @foreach ($statuses as $st)
-                @php $cnt = $st['id'] === 'semua' ? count($penyusutan) : count(array_filter($penyusutan, fn($s) => $s['status'] === $st['id'])); @endphp
+                @php $cnt = $st['id'] === 'semua' ? count($penerimaan) : count(array_filter($penerimaan, fn($s) => $s['status'] === $st['id'])); @endphp
                 <button x-on:click="filter = '{{ $st['id'] }}'; page = 1"
                     :class="filter === '{{ $st['id'] }}' ? 'filter-pill filter-pill--active' : 'filter-pill'">
                     {{ $st['label'] }}<span class="filter-pill__count mono">{{ $cnt }}</span>
@@ -83,7 +82,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($penyusutan as $d)
+                    @foreach ($penerimaan as $d)
                         <tr x-data="{ idx: {{ $loop->index }}, status: '{{ $d['status'] }}' }"
                             x-show="(filter === 'semua' || filter === status) && idx >= (page-1)*perPage && idx < page*perPage">
                             <td class="mono table-id">{{ $d['id'] }}</td>

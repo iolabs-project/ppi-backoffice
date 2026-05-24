@@ -1,6 +1,14 @@
 @extends('layouts.app')
 @section('content')
-<div x-data="{ filter: 'semua' }" class="order-page">
+<div x-data="{
+    filter: 'semua',
+    page: 1,
+    perPage: 10,
+    perPageOptions: [10, 25, 50],
+    total: {{ count($purchaseOrders) }},
+    prev() { if (this.page > 1) this.page-- },
+    next() { if (this.page < Math.ceil(this.total / this.perPage)) this.page++ }
+}" class="order-page">
   <div class="order-hd">
     <div>
       <h1 class="order-title display">Purchase Order</h1>
@@ -16,7 +24,7 @@
     @php $statuses = [['semua','Semua'],['draft','Draft'],['pending','Pending'],['dikirim','Dikirim'],['tagihan','Tagihan'],['lunas','Lunas']]; @endphp
     @foreach($statuses as [$id,$lbl])
       @php $cnt = $id === 'semua' ? count($purchaseOrders) : count(array_filter($purchaseOrders, fn($s) => $s['status'] === $id)); @endphp
-      <button x-on:click="filter = '{{ $id }}'"
+      <button x-on:click="filter = '{{ $id }}'; page = 1"
               :class="filter === '{{ $id }}' ? 'filter-pill filter-pill--active' : 'filter-pill'">
         {{ $lbl }}<span class="filter-pill__count mono">{{ $cnt }}</span>
       </button>
@@ -26,19 +34,20 @@
     <button class="btn btn-ghost btn-sm"><x-misc.icon name="filter" :size="13" />Filter</button>
   </div>
 
-  <div class="card" style="overflow:hidden;">
+  <div class="card table-card">
     <table class="tbl">
       <thead><tr>
-        <th style="width:36px;"><input type="checkbox" /></th>
+        {{-- <th style="width:36px;"><input type="checkbox" /></th> --}}
         <th>Nomor PO</th><th>Tanggal</th><th>Vendor</th><th>Gudang</th><th>Jatuh Tempo</th>
         <th style="text-align:right;">Total</th><th>Status</th><th style="width:40px;"></th>
       </tr></thead>
       <tbody>
         @foreach($purchaseOrders as $s)
           <tr class="row-tap"
-              x-show="filter === 'semua' || filter === '{{ $s['status'] }}'"
+              x-data="{ idx: {{ $loop->index }}, status: '{{ $s['status'] }}' }"
+              x-show="(filter === 'semua' || filter === status) && idx >= (page-1)*perPage && idx < page*perPage"
               x-on:click="window.location='{{ route('pembelian.show', $s['id']) }}'">
-            <td x-on:click.stop><input type="checkbox" /></td>
+            {{-- <td x-on:click.stop><input type="checkbox" /></td> --}}
             <td class="mono" style="font-weight:600;">{{ $s['id'] }}</td>
             <td style="color:var(--ink-3);">{{ $s['tanggal'] }}</td>
             <td>
@@ -103,6 +112,25 @@
         @endforeach
       </tbody>
     </table>
+  </div>
+
+  <div class="table-pagination">
+    <div class="pagination-actions">
+      <div class="pagination-label">Per</div>
+      <select x-model.number="perPage" x-on:change="page = 1" class="btn btn-ghost btn-sm pagination-select">
+        <template x-for="n in perPageOptions" :key="n">
+          <option :value="n" x-text="n"></option>
+        </template>
+      </select>
+    </div>
+    <div class="pagination-info">
+      <span x-text="( (page-1)*perPage + 1 ) + '–' + Math.min(page*perPage, total) + ' dari ' + total"></span>
+    </div>
+    <div class="pagination-controls">
+      <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong x-text="Math.ceil(total/perPage)"></strong></div>
+      <button class="btn btn-ghost btn-sm" x-on:click="prev()" :disabled="page <= 1"><x-misc.icon name="chev-left" :size="13" /> Prev</button>
+      <button class="btn btn-ghost btn-sm" x-on:click="next()" :disabled="page >= Math.ceil(total / perPage)">Next <x-misc.icon name="chev-right" :size="13" /></button>
+    </div>
   </div>
 </div>
 @endsection

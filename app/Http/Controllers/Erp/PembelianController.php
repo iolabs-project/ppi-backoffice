@@ -83,6 +83,23 @@ class PembelianController extends Controller
         ]);
     }
 
+    public function penerimaan(string $id)
+    {
+        $po = collect(ErpDataService::purchaseOrders())->firstWhere('id', $id)
+              ?? ErpDataService::purchaseOrders()[0];
+
+        return view('pages.pembelian.penerimaan', [
+            'currentPage'   => 'pembelian',
+            'breadcrumb'    => [
+                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
+                ['label' => $po['id'], 'url' => route('pembelian.show', $po['id'])],
+                ['label' => 'Buat Penerimaan'],
+            ],
+            'po'            => $po,
+            'poDetailItems' => ErpDataService::poDetailItems(),
+        ]);
+    }
+
     public function tagihan(string $id)
     {
         $po = collect(ErpDataService::purchaseOrders())->firstWhere('id', $id)
@@ -100,15 +117,15 @@ class PembelianController extends Controller
         ]);
     }
 
-    public function penyusutanList()
+    public function penerimaanList()
     {
-        return view('pages.pembelian.penyusutan-list', [
-            'currentPage' => 'pembelian.penyusutan',
+        return view('pages.pembelian.penerimaan-list', [
+            'currentPage' => 'pembelian.penerimaan',
             'breadcrumb'  => [
                 ['label' => 'Pembelian', 'url' => route('pembelian.index')],
-                ['label' => 'Penyusutan'],
+                ['label' => 'Penerimaan'],
             ],
-            'penyusutan' => ErpDataService::penyusutanPembelian(),
+            'penerimaan' => ErpDataService::penerimaanPembelian(),
         ]);
     }
 

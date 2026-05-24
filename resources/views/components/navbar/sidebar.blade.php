@@ -9,7 +9,7 @@
     ];
     $pembelianSubmenus = [
         ['id' => 'pembelian',              'label' => 'Purchase Order', 'desc' => 'Kelola pesanan pembelian',  'url' => route('pembelian.index'),            'icon' => 'cart',   'bg' => '#EFF6FF', 'fg' => '#2563EB'],
-        ['id' => 'pembelian.penyusutan',   'label' => 'Penyusutan',     'desc' => 'Catatan penyusutan barang', 'url' => route('pembelian.penyusutan_list'),  'icon' => 'box',    'bg' => '#FFF7ED', 'fg' => '#EA580C'],
+        ['id' => 'pembelian.penerimaan',   'label' => 'Penerimaan',     'desc' => 'Catatan penerimaan barang', 'url' => route('pembelian.penerimaan_list'),  'icon' => 'box',    'bg' => '#FFF7ED', 'fg' => '#EA580C'],
         ['id' => 'pembelian.tagihan_list', 'label' => 'Tagihan',        'desc' => 'Kelola tagihan pembelian',  'url' => route('pembelian.tagihan_list'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A'],
     ];
     $navItems = [

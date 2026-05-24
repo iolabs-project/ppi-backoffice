@@ -26,12 +26,13 @@ Route::prefix('penjualan')->name('penjualan.')->group(function () {
 Route::prefix('pembelian')->name('pembelian.')->group(function () {
     Route::get('/',              [PembelianController::class, 'index'])->name('index');
     Route::get('/create',        [PembelianController::class, 'create'])->name('create');
-    Route::get('/penyusutan',    [PembelianController::class, 'penyusutanList'])->name('penyusutan_list');
+    Route::get('/penerimaan',    [PembelianController::class, 'penerimaanList'])->name('penerimaan_list');
     Route::get('/tagihan-list',  [PembelianController::class, 'tagihanList'])->name('tagihan_list');
     Route::get('/{id}',          [PembelianController::class, 'show'])->name('show');
     Route::get('/{id}/edit',     [PembelianController::class, 'edit'])->name('edit');
-    Route::get('/{id}/pengiriman', [PembelianController::class, 'pengiriman'])->name('pengiriman');
-    Route::get('/{id}/tagihan',  [PembelianController::class, 'tagihan'])->name('tagihan');
+    Route::get('/{id}/pengiriman',  [PembelianController::class, 'pengiriman'])->name('pengiriman');
+    Route::get('/{id}/penerimaan', [PembelianController::class, 'penerimaan'])->name('penerimaan');
+    Route::get('/{id}/tagihan',    [PembelianController::class, 'tagihan'])->name('tagihan');
 });
 
 // Kas & Bank

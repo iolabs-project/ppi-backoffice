@@ -294,7 +294,7 @@ class ErpDataService
         ];
     }
 
-    public static function penyusutanPembelian(): array
+    public static function penerimaanPembelian(): array
     {
         return [
             ['id' => 'SUT-2026-0018', 'tanggal' => '07 Mei 2026', 'poRef' => 'PO-2026-0090', 'vendor' => 'UD Beras Sumber Tani',      'produk' => 'Beras Premium IR-64',         'qtySusut' => 3,  'satuan' => 'Kg', 'hargaSatuan' => 312_000, 'nilaiSusut' => 936_000,   'keterangan' => 'Kerusakan kemasan',         'status' => 'selesai'],

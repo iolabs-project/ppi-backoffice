@@ -26,7 +26,7 @@
             $totalBelumBayar = array_sum(array_column(array_filter($tagihan, fn($t) => $t['status'] === 'tagihan'), 'total'));
             $totalLunas     = array_sum(array_column(array_filter($tagihan, fn($t) => $t['status'] === 'lunas'), 'total'));
         @endphp
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+        {{-- <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
             <div class="card" style="padding: 16px 20px;">
                 <div style="font-size: 11px; color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px;">Total Tagihan</div>
                 <div style="font-size: 24px; font-weight: 700; color: var(--ink-1);">{{ count($tagihan) }}</div>
@@ -42,7 +42,7 @@
                 <div style="font-size: 24px; font-weight: 700; color: #16A34A;">{{ fmt_rp($totalLunas) }}</div>
                 <div style="font-size: 12px; color: var(--ink-3); margin-top: 2px;">total pembayaran</div>
             </div>
-        </div>
+        </div> --}}
 
         {{-- Filter pills --}}
         <div class="filter-pills">

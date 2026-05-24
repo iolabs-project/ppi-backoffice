@@ -22,8 +22,8 @@
     </div>
     <div class="order-actions">
       <button class="btn btn-ghost"><x-misc.icon name="x" :size="14" />Batal Pemesanan</button>
-      <a href="{{ route('pembelian.pengiriman', $po['id']) }}" class="btn btn-dark">
-        <x-misc.icon name="truck" :size="14" />Buat Pengiriman
+      <a href="{{ route('pembelian.penerimaan', $po['id']) }}" class="btn btn-dark">
+        <x-misc.icon name="truck" :size="14" />Buat Penerimaan
       </a>
       <a href="{{ route('pembelian.tagihan', $po['id']) }}" class="btn btn-primary">
         <x-misc.icon name="receipt" :size="14" />Buat Tagihan
