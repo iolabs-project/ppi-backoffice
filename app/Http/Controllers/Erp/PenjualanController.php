@@ -46,6 +46,26 @@ class PenjualanController extends Controller
         ]);
     }
 
+    public function edit(string $id)
+    {
+        $so = collect(ErpDataService::salesOrders())->firstWhere('id', $id)
+              ?? ErpDataService::salesOrders()[0];
+
+        return view('pages.penjualan.edit', [
+            'currentPage' => 'penjualan',
+            'breadcrumb'  => [
+                ['label' => 'Penjualan', 'url' => route('penjualan.index')],
+                ['label' => $so['id'], 'url' => route('penjualan.show', $so['id'])],
+                ['label' => 'Edit Draft'],
+            ],
+            'so'      => $so,
+            'produk'  => ErpDataService::produk(),
+            'kontak'  => ErpDataService::kontak(),
+            'gudang'  => ErpDataService::gudang(),
+            'soDetailItems' => ErpDataService::soDetailItems(),
+        ]);
+    }
+
     public function pengirimanList()
     {
         return view('pages.penjualan.pengiriman-list', [

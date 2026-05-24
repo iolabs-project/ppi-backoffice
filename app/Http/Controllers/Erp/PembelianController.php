@@ -46,6 +46,26 @@ class PembelianController extends Controller
         ]);
     }
 
+    public function edit(string $id)
+    {
+        $po = collect(ErpDataService::purchaseOrders())->firstWhere('id', $id)
+              ?? ErpDataService::purchaseOrders()[0];
+
+        return view('pages.pembelian.edit', [
+            'currentPage'   => 'pembelian',
+            'breadcrumb'    => [
+                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
+                ['label' => $po['id'], 'url' => route('pembelian.show', $po['id'])],
+                ['label' => 'Edit Draft'],
+            ],
+            'po'            => $po,
+            'produk'        => ErpDataService::produk(),
+            'kontak'        => ErpDataService::kontak(),
+            'gudang'        => ErpDataService::gudang(),
+            'poDetailItems' => ErpDataService::poDetailItems(),
+        ]);
+    }
+
     public function pengiriman(string $id)
     {
         $po = collect(ErpDataService::purchaseOrders())->firstWhere('id', $id)

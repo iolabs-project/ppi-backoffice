@@ -31,6 +31,7 @@
             @php
                 $statuses = [
                     ['id' => 'semua', 'label' => 'Semua'],
+                    ['id' => 'draft', 'label' => 'Draft'],
                     ['id' => 'pending', 'label' => 'Pending'],
                     ['id' => 'dikirim', 'label' => 'Dikirim'],
                     ['id' => 'tagihan', 'label' => 'Tagihan'],
@@ -93,6 +94,21 @@
                                         <x-misc.icon name="more" :size="15" />
                                     </button>
                                     <div x-ref="panel" x-show="open" x-cloak x-on:click.away="open = false" class="action-menu__panel">
+                                        @if ($s['status'] === 'draft')
+                                        <a href="{{ route('penjualan.edit', $s['id']) }}" class="action-menu__item">
+                                            <x-misc.icon name="edit" :size="14" stroke="var(--ink-3)" />Edit Draft
+                                        </a>
+                                        <button class="action-menu__item">
+                                            <x-misc.icon name="check" :size="14" stroke="var(--ink-3)" />Konfirmasi SO
+                                        </button>
+                                        <button class="action-menu__item">
+                                            <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Pratinjau
+                                        </button>
+                                        <div class="action-menu__divider"></div>
+                                        <button class="action-menu__item action-menu__item--danger">
+                                            <x-misc.icon name="trash" :size="14" stroke="currentColor" />Hapus Draft
+                                        </button>
+                                        @else
                                         <a href="{{ route('penjualan.show', $s['id']) }}" class="action-menu__item">
                                             <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail
                                         </a>
@@ -109,6 +125,7 @@
                                         <button class="action-menu__item action-menu__item--danger">
                                             <x-misc.icon name="x" :size="14" stroke="currentColor" />Batalkan SO
                                         </button>
+                                        @endif
                                     </div>
                                 </div>
                             </td>

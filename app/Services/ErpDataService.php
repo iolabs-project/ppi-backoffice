@@ -81,6 +81,9 @@ class ErpDataService
     public static function salesOrders(): array
     {
         return [
+            ['id' => 'SO-2026-0145', 'tanggal' => '08 Mei 2026', 'customer' => 'PT Bogasari Flour Mills',      'gudang' => 'Gudang Bekasi',    'total' => 218_400_000, 'status' => 'draft',   'jatuhTempo' => '22 Mei 2026'],
+            ['id' => 'SO-2026-0144', 'tanggal' => '07 Mei 2026', 'customer' => 'CV Gula Manis Lestari',        'gudang' => 'Gudang Tangerang', 'total' => 57_600_000,  'status' => 'draft',   'jatuhTempo' => '21 Mei 2026'],
+            ['id' => 'SO-2026-0143', 'tanggal' => '07 Mei 2026', 'customer' => 'Bakery Sahabat Sehat',         'gudang' => 'Gudang Bekasi',    'total' => 31_250_000,  'status' => 'draft',   'jatuhTempo' => '21 Mei 2026'],
             ['id' => 'SO-2026-0142', 'tanggal' => '06 Mei 2026', 'customer' => 'PT Roti Sumber Rejeki',        'gudang' => 'Gudang Bekasi',    'total' => 84_500_000,  'status' => 'pending', 'jatuhTempo' => '20 Mei 2026'],
             ['id' => 'SO-2026-0141', 'tanggal' => '06 Mei 2026', 'customer' => 'CV Mie Mas Joko',              'gudang' => 'Gudang Bekasi',    'total' => 142_800_000, 'status' => 'dikirim', 'jatuhTempo' => '21 Mei 2026'],
             ['id' => 'SO-2026-0140', 'tanggal' => '05 Mei 2026', 'customer' => 'PT Catering Selera Nusantara', 'gudang' => 'Gudang Tangerang', 'total' => 38_200_000,  'status' => 'tagihan', 'jatuhTempo' => '19 Mei 2026'],
@@ -158,12 +161,9 @@ class ErpDataService
     public static function akunKas(): array
     {
         return [
-            ['id' => 'KB-001', 'nama' => 'BCA - Operasional', 'bank' => 'BCA',    'norek' => '8821-xxx-xxx', 'jenis' => 'Bank', 'saldo' => 1_482_300_000, 'tipe' => 'IDR', 'transaksi' => 42],
-            ['id' => 'KB-002', 'nama' => 'Mandiri - Penjualan', 'bank' => 'Mandiri', 'norek' => '5601-xxx-xxx', 'jenis' => 'Bank', 'saldo' => 862_900_000, 'tipe' => 'IDR', 'transaksi' => 31],
-            ['id' => 'KB-003', 'nama' => 'BNI - Pembelian',   'bank' => 'BNI',    'norek' => '9034-xxx-xxx', 'jenis' => 'Bank', 'saldo' => 418_600_000, 'tipe' => 'IDR', 'transaksi' => 18],
-            ['id' => 'KB-004', 'nama' => 'Kas Kantor Pusat',  'bank' => 'Kas',    'norek' => '',            'jenis' => 'Kas', 'saldo' => 24_750_000,  'tipe' => 'IDR', 'transaksi' => 9],
-            ['id' => 'KB-005', 'nama' => 'Kas Gudang Bekasi', 'bank' => 'Kas',    'norek' => '',            'jenis' => 'Kas', 'saldo' => 11_400_000,  'tipe' => 'IDR', 'transaksi' => 6],
-            ['id' => 'KB-006', 'nama' => 'Petty Cash Marketing', 'bank' => 'Kas',  'norek' => '',            'jenis' => 'Kas', 'saldo' => 4_830_000,   'tipe' => 'IDR', 'transaksi' => 4],
+            ['id' => '1-10001', 'nama' => 'Kas',           'bank' => 'Kas',  'norek' => '', 'jenis' => 'Kas',  'saldo' => 3_450_000,  'tipe' => 'IDR', 'transaksi' => 2],
+            ['id' => '1-10002', 'nama' => 'Rekening Bank', 'bank' => 'Bank', 'norek' => '', 'jenis' => 'Bank', 'saldo' => 96_300_000, 'tipe' => 'IDR', 'transaksi' => 3],
+            ['id' => '1-10003', 'nama' => 'Giro',          'bank' => 'Giro', 'norek' => '', 'jenis' => 'Bank', 'saldo' => 48_650_000, 'tipe' => 'IDR', 'transaksi' => 2],
         ];
     }
 
@@ -199,13 +199,13 @@ class ErpDataService
     public static function transaksiKas(): array
     {
         return [
-            ['tanggal' => '06 Mei 2026', 'akun' => 'BCA Operasional', 'keterangan' => 'Pelunasan SO-2026-0137 – PT Roti Sumber Rejeki',    'masuk' => 96_300_000, 'keluar' => 0,           'saldo' => 1_482_300_000, 'ref' => 'SO-0137'],
-            ['tanggal' => '06 Mei 2026', 'akun' => 'BNI Pembelian',  'keterangan' => 'Pembayaran PO-2026-0091 – PT Bogasari Flour Mills', 'masuk' => 0,          'keluar' => 124_800_000, 'saldo' => 418_600_000,  'ref' => 'PO-0091'],
-            ['tanggal' => '05 Mei 2026', 'akun' => 'BCA Operasional', 'keterangan' => 'Transfer ke Mandiri Penjualan',                     'masuk' => 0,          'keluar' => 50_000_000,  'saldo' => 1_386_000_000, 'ref' => 'TRF-0021'],
-            ['tanggal' => '05 Mei 2026', 'akun' => 'BCA Operasional', 'keterangan' => 'Pelunasan SO-2026-0135 – Bakery Sahabat Sehat',     'masuk' => 48_650_000, 'keluar' => 0,           'saldo' => 1_436_000_000, 'ref' => 'SO-0135'],
-            ['tanggal' => '04 Mei 2026', 'akun' => 'BCA Operasional', 'keterangan' => 'Bayar listrik gudang Bekasi April',                 'masuk' => 0,          'keluar' => 4_280_000,   'saldo' => 1_387_350_000, 'ref' => 'EXP-0042'],
-            ['tanggal' => '04 Mei 2026', 'akun' => 'Mandiri Penjualan', 'keterangan' => 'Pelunasan parsial SO-2026-0132 – CV Mie Mas Joko', 'masuk' => 35_000_000, 'keluar' => 0,           'saldo' => 862_900_000,  'ref' => 'SO-0132'],
-            ['tanggal' => '03 Mei 2026', 'akun' => 'Kas Kantor',     'keterangan' => 'Setoran tunai kas operasional ke BCA',              'masuk' => 18_400_000, 'keluar' => 0,           'saldo' => 24_750_000,   'ref' => 'TRF-0020'],
+            ['tanggal' => '06 Mei 2026', 'akun' => 'Rekening Bank', 'keterangan' => 'Pelunasan SO-2026-0137 – PT Roti Sumber Rejeki',    'masuk' => 96_300_000, 'keluar' => 0,          'saldo' => 96_300_000,  'ref' => 'SO-0137'],
+            ['tanggal' => '06 Mei 2026', 'akun' => 'Rekening Bank', 'keterangan' => 'Pembayaran PO-2026-0091 – PT Bogasari Flour Mills', 'masuk' => 0,          'keluar' => 45_000_000, 'saldo' => 51_300_000,  'ref' => 'PO-0091'],
+            ['tanggal' => '05 Mei 2026', 'akun' => 'Giro',          'keterangan' => 'Terima pembayaran giro SO-2026-0135',              'masuk' => 48_650_000, 'keluar' => 0,          'saldo' => 48_650_000,  'ref' => 'SO-0135'],
+            ['tanggal' => '05 Mei 2026', 'akun' => 'Rekening Bank', 'keterangan' => 'Transfer ke Giro – pencairan dana operasional',    'masuk' => 0,          'keluar' => 20_000_000, 'saldo' => 31_300_000,  'ref' => 'TRF-0021'],
+            ['tanggal' => '04 Mei 2026', 'akun' => 'Kas',           'keterangan' => 'Penerimaan tunai penjualan harian',                'masuk' => 5_250_000,  'keluar' => 0,          'saldo' => 5_250_000,   'ref' => 'SO-0132'],
+            ['tanggal' => '04 Mei 2026', 'akun' => 'Kas',           'keterangan' => 'Bayar biaya operasional kantor',                   'masuk' => 0,          'keluar' => 1_800_000,  'saldo' => 3_450_000,   'ref' => 'EXP-0042'],
+            ['tanggal' => '03 Mei 2026', 'akun' => 'Giro',          'keterangan' => 'Pencairan giro – pembayaran vendor',               'masuk' => 0,          'keluar' => 12_500_000, 'saldo' => 36_150_000,  'ref' => 'PO-0088'],
         ];
     }
 
@@ -273,6 +273,9 @@ class ErpDataService
     public static function purchaseOrders(): array
     {
         return [
+            ['id' => 'PO-2026-0097', 'tanggal' => '09 Mei 2026', 'vendor' => 'PT Bogasari Flour Mills',   'gudang' => 'Gudang Bekasi',    'total' => 188_000_000, 'status' => 'draft',   'jatuhTempo' => '23 Mei 2026'],
+            ['id' => 'PO-2026-0096', 'tanggal' => '08 Mei 2026', 'vendor' => 'CV Gula Manis Lestari',     'gudang' => 'Gudang Bekasi',    'total' => 122_400_000, 'status' => 'draft',   'jatuhTempo' => '22 Mei 2026'],
+            ['id' => 'PO-2026-0095', 'tanggal' => '08 Mei 2026', 'vendor' => 'UD Beras Sumber Tani',      'gudang' => 'Gudang Surabaya',  'total' => 62_400_000,  'status' => 'draft',   'jatuhTempo' => '22 Mei 2026'],
             ['id' => 'PO-2026-0094', 'tanggal' => '07 Mei 2026', 'vendor' => 'PT Bogasari Flour Mills',   'gudang' => 'Gudang Bekasi',   'total' => 376_000_000, 'status' => 'pending', 'jatuhTempo' => '21 Mei 2026'],
             ['id' => 'PO-2026-0093', 'tanggal' => '07 Mei 2026', 'vendor' => 'CV Gula Manis Lestari',     'gudang' => 'Gudang Bekasi',   'total' => 244_800_000, 'status' => 'dikirim', 'jatuhTempo' => '21 Mei 2026'],
             ['id' => 'PO-2026-0092', 'tanggal' => '06 Mei 2026', 'vendor' => 'PT Salim Ivomas',            'gudang' => 'Gudang Tangerang', 'total' => 198_400_000, 'status' => 'tagihan', 'jatuhTempo' => '20 Mei 2026'],

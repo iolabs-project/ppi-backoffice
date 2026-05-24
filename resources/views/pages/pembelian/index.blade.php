@@ -13,7 +13,7 @@
   </div>
 
   <div class="filter-pills">
-    @php $statuses = [['semua','Semua'],['pending','Pending'],['dikirim','Dikirim'],['tagihan','Tagihan'],['lunas','Lunas']]; @endphp
+    @php $statuses = [['semua','Semua'],['draft','Draft'],['pending','Pending'],['dikirim','Dikirim'],['tagihan','Tagihan'],['lunas','Lunas']]; @endphp
     @foreach($statuses as [$id,$lbl])
       @php $cnt = $id === 'semua' ? count($purchaseOrders) : count(array_filter($purchaseOrders, fn($s) => $s['status'] === $id)); @endphp
       <button x-on:click="filter = '{{ $id }}'"
@@ -64,6 +64,21 @@
                   <x-misc.icon name="more" :size="15" />
                 </button>
                 <div x-ref="panel" x-show="open" x-cloak x-on:click.away="open = false" class="action-menu__panel">
+                  @if ($s['status'] === 'draft')
+                  <a href="{{ route('pembelian.edit', $s['id']) }}" class="action-menu__item">
+                    <x-misc.icon name="edit" :size="14" stroke="var(--ink-3)" />Edit Draft
+                  </a>
+                  <button class="action-menu__item">
+                    <x-misc.icon name="check" :size="14" stroke="var(--ink-3)" />Konfirmasi PO
+                  </button>
+                  <button class="action-menu__item">
+                    <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Pratinjau
+                  </button>
+                  <div class="action-menu__divider"></div>
+                  <button class="action-menu__item action-menu__item--danger">
+                    <x-misc.icon name="trash" :size="14" stroke="currentColor" />Hapus Draft
+                  </button>
+                  @else
                   <a href="{{ route('pembelian.show', $s['id']) }}" class="action-menu__item">
                     <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail
                   </a>
@@ -80,6 +95,7 @@
                   <button class="action-menu__item action-menu__item--danger">
                     <x-misc.icon name="x" :size="14" stroke="currentColor" />Batalkan PO
                   </button>
+                  @endif
                 </div>
               </div>
             </td>
