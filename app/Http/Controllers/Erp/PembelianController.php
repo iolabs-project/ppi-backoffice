@@ -140,4 +140,35 @@ class PembelianController extends Controller
             'tagihan' => ErpDataService::tagihanPembelian(),
         ]);
     }
+
+    public function tagihanCreate()
+    {
+        return view('pages.pembelian.tagihan-create', [
+            'currentPage' => 'pembelian.tagihan_list',
+            'breadcrumb'  => [
+                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
+                ['label' => 'Tagihan', 'url' => route('pembelian.tagihan_list')],
+                ['label' => 'Buat Tagihan'],
+            ],
+            'purchaseOrders' => ErpDataService::purchaseOrders(),
+            'kontak'         => ErpDataService::kontak(),
+        ]);
+    }
+
+    public function tagihanShow(string $id)
+    {
+        $bill = collect(ErpDataService::tagihanPembelian())->firstWhere('id', $id)
+                ?? ErpDataService::tagihanPembelian()[0];
+
+        return view('pages.pembelian.tagihan-show', [
+            'currentPage' => 'pembelian.tagihan_list',
+            'breadcrumb'  => [
+                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
+                ['label' => 'Tagihan', 'url' => route('pembelian.tagihan_list')],
+                ['label' => $bill['id']],
+            ],
+            'bill'          => $bill,
+            'poDetailItems' => ErpDataService::poDetailItems(),
+        ]);
+    }
 }

@@ -8,9 +8,13 @@
     'dikirim' => ['chip chip-info', 'chip-dot dot-info', 'Dikirim'],
     'tagihan' => ['chip chip-warn', 'chip-dot dot-warn', 'Tagihan'],
     'lunas'   => ['chip chip-ok',   'chip-dot dot-ok',   'Lunas'],
-    'draft'   => ['chip',           'chip-dot dot-muted','Draft'],
-    'selesai' => ['chip chip-ok',   'chip-dot dot-ok',   'Selesai'],
-    'batal'   => ['chip chip-bad',  'chip-dot dot-bad',  'Dibatalkan'],
+    'draft'           => ['chip',           'chip-dot dot-muted', 'Draft'],
+    'disetujui'       => ['chip chip-info', 'chip-dot dot-info',  'Disetujui'],
+    'selesai'         => ['chip chip-ok',   'chip-dot dot-ok',    'Selesai'],
+    'open'            => ['chip chip-info', 'chip-dot dot-info',  'Open'],
+    'terkirim'        => ['chip chip-ok',   'chip-dot dot-ok',    'Terkirim'],
+    'belum-dibayar'   => ['chip chip-bad',  'chip-dot dot-bad',   'Belum Dibayar'],
+    'dibayar-sebagian'=> ['chip chip-warn', 'chip-dot dot-warn',  'Dibayar Sebagian'],
   ];
   [$chipClass, $dotClass, $label] = $map[$status] ?? $map['pending'];
 @endphp

@@ -90,6 +90,37 @@ class PenjualanController extends Controller
         ]);
     }
 
+    public function tagihanCreate()
+    {
+        return view('pages.penjualan.tagihan-create', [
+            'currentPage' => 'penjualan.tagihan',
+            'breadcrumb'  => [
+                ['label' => 'Penjualan', 'url' => route('penjualan.index')],
+                ['label' => 'Tagihan', 'url' => route('penjualan.tagihan_list')],
+                ['label' => 'Buat Tagihan'],
+            ],
+            'salesOrders' => ErpDataService::salesOrders(),
+            'kontak'      => ErpDataService::kontak(),
+        ]);
+    }
+
+    public function tagihanShow(string $id)
+    {
+        $inv = collect(ErpDataService::tagihanPenjualan())->firstWhere('id', $id)
+               ?? ErpDataService::tagihanPenjualan()[0];
+
+        return view('pages.penjualan.tagihan-show', [
+            'currentPage' => 'penjualan.tagihan',
+            'breadcrumb'  => [
+                ['label' => 'Penjualan', 'url' => route('penjualan.index')],
+                ['label' => 'Tagihan', 'url' => route('penjualan.tagihan_list')],
+                ['label' => $inv['id']],
+            ],
+            'inv'           => $inv,
+            'soDetailItems' => ErpDataService::soDetailItems(),
+        ]);
+    }
+
     public function pengiriman(string $id)
     {
         $so = collect(ErpDataService::salesOrders())->firstWhere('id', $id)

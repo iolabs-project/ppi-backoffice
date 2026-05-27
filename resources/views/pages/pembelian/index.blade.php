@@ -6,6 +6,7 @@
     perPage: 10,
     perPageOptions: [10, 25, 50],
     total: {{ count($purchaseOrders) }},
+    setPerPage(n) { this.perPage = n; this.page = 1 },
     prev() { if (this.page > 1) this.page-- },
     next() { if (this.page < Math.ceil(this.total / this.perPage)) this.page++ }
 }" class="order-page">
@@ -21,7 +22,7 @@
   </div>
 
   <div class="filter-pills">
-    @php $statuses = [['semua','Semua'],['draft','Draft'],['pending','Pending'],['dikirim','Dikirim'],['tagihan','Tagihan'],['lunas','Lunas']]; @endphp
+    @php $statuses = [['semua','Semua'],['draft','Draft'],['disetujui','Disetujui'],['selesai','Selesai']]; @endphp
     @foreach($statuses as [$id,$lbl])
       @php $cnt = $id === 'semua' ? count($purchaseOrders) : count(array_filter($purchaseOrders, fn($s) => $s['status'] === $id)); @endphp
       <button x-on:click="filter = '{{ $id }}'; page = 1"
@@ -37,7 +38,6 @@
   <div class="card table-card">
     <table class="tbl">
       <thead><tr>
-        {{-- <th style="width:36px;"><input type="checkbox" /></th> --}}
         <th>Nomor PO</th><th>Tanggal</th><th>Vendor</th><th>Gudang</th><th>Jatuh Tempo</th>
         <th style="text-align:right;">Total</th><th>Status</th><th style="width:40px;"></th>
       </tr></thead>
@@ -47,7 +47,6 @@
               x-data="{ idx: {{ $loop->index }}, status: '{{ $s['status'] }}' }"
               x-show="(filter === 'semua' || filter === status) && idx >= (page-1)*perPage && idx < page*perPage"
               x-on:click="window.location='{{ route('pembelian.show', $s['id']) }}'">
-            {{-- <td x-on:click.stop><input type="checkbox" /></td> --}}
             <td class="mono" style="font-weight:600;">{{ $s['id'] }}</td>
             <td style="color:var(--ink-3);">{{ $s['tanggal'] }}</td>
             <td>
@@ -65,14 +64,21 @@
                 <button
                   class="btn btn-ghost btn-icon btn-sm btn--borderless"
                   x-on:click.stop="
-                    let r = $el.getBoundingClientRect();
-                    $refs.panel.style.top = (r.bottom + 6) + 'px';
-                    $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
-                    open = !open;
+                    let wasOpen = open;
+                    $dispatch('close-menus');
+                    if (!wasOpen) {
+                      let r = $el.getBoundingClientRect();
+                      $refs.panel.style.top = (r.bottom + 6) + 'px';
+                      $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
+                      open = true;
+                    }
                   ">
                   <x-misc.icon name="more" :size="15" />
                 </button>
-                <div x-ref="panel" x-show="open" x-cloak x-on:click.away="open = false" class="action-menu__panel">
+                <div x-ref="panel" x-show="open" x-cloak
+                     x-on:close-menus.window="open = false"
+                     x-on:click.away="open = false"
+                     class="action-menu__panel">
                   @if ($s['status'] === 'draft')
                   <a href="{{ route('pembelian.edit', $s['id']) }}" class="action-menu__item">
                     <x-misc.icon name="edit" :size="14" stroke="var(--ink-3)" />Edit Draft
@@ -87,11 +93,11 @@
                   <button class="action-menu__item action-menu__item--danger">
                     <x-misc.icon name="trash" :size="14" stroke="currentColor" />Hapus Draft
                   </button>
-                  @else
+                  @elseif ($s['status'] === 'disetujui')
                   <a href="{{ route('pembelian.show', $s['id']) }}" class="action-menu__item">
                     <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail
                   </a>
-                  <a href="{{ route('pembelian.pengiriman', $s['id']) }}" class="action-menu__item">
+                  <a href="{{ route('pembelian.penerimaan', $s['id']) }}" class="action-menu__item">
                     <x-misc.icon name="box" :size="14" stroke="var(--ink-3)" />Buat Penerimaan
                   </a>
                   <a href="{{ route('pembelian.tagihan', $s['id']) }}" class="action-menu__item">
@@ -103,6 +109,13 @@
                   <div class="action-menu__divider"></div>
                   <button class="action-menu__item action-menu__item--danger">
                     <x-misc.icon name="x" :size="14" stroke="currentColor" />Batalkan PO
+                  </button>
+                  @else
+                  <a href="{{ route('pembelian.show', $s['id']) }}" class="action-menu__item">
+                    <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail
+                  </a>
+                  <button class="action-menu__item">
+                    <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak PO
                   </button>
                   @endif
                 </div>

@@ -34,10 +34,18 @@
   get total()    { return this.subtotal - this.diskon + this.ongkir + this.biayaLain; },
   addItem()      { this.items.push({ kode: '', nama: '', qty: 1, satuan: '', harga: 0 }); },
   removeItem(idx){ this.items.splice(idx, 1); },
-  fmt(n)         { return 'Rp ' + Math.round(n).toLocaleString('id-ID'); },
-  parseNum(str)  { return Number(String(str).replace(/\./g, '')) || 0; },
-  fmtNum(n)      { return Math.round(n).toLocaleString('id-ID'); },
-  fmtInput(e)    { let r = e.target.value.replace(/[^0-9]/g,''); e.target.value = r ? Number(r).toLocaleString('id-ID') : ''; },
+  fmt(n)      { return 'Rp ' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); },
+  fmtNum(n)   { return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); },
+  parseNum(str) { return Number(String(str).replace(/[^0-9]/g, '')) || 0; },
+  fmtInput(e) {
+    let el = e.target;
+    let pos = el.value.slice(0, el.selectionStart).replace(/[^0-9]/g, '').length;
+    let raw = el.value.replace(/[^0-9]/g, '');
+    el.value = raw ? raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+    let i = 0, c = 0;
+    while (i < el.value.length && c < pos) { if (/\d/.test(el.value[i])) c++; i++; }
+    el.setSelectionRange(i, i);
+  },
   initials(name) { return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?'; },
 }" class="order-page">
 
@@ -201,7 +209,7 @@
             <td>
               <input class="input num" style="height:32px; text-align:right;"
                 :value="fmtNum(it.qty)"
-                @focus="$event.target.value = it.qty; $event.target.select()"
+                @focus="$event.target.select()"
                 @input="fmtInput($event)"
                 @blur="it.qty = parseNum($event.target.value)" />
             </td>
@@ -213,7 +221,7 @@
             <td>
               <input class="input num" style="height:32px; text-align:right;"
                 :value="fmtNum(it.harga)"
-                @focus="$event.target.value = it.harga; $event.target.select()"
+                @focus="$event.target.select()"
                 @input="fmtInput($event)"
                 @blur="it.harga = parseNum($event.target.value)" />
             </td>
@@ -236,21 +244,21 @@
           <x-misc.field label="Diskon">
             <input class="input num" style="text-align:right;"
               :value="fmtNum(diskon)"
-              @focus="$event.target.value = diskon; $event.target.select()"
+              @focus="$event.target.select()"
               @input="fmtInput($event)"
               @blur="diskon = parseNum($event.target.value)" />
           </x-misc.field>
           <x-misc.field label="Est. Ongkos Kirim">
             <input class="input num" style="text-align:right;"
               :value="fmtNum(ongkir)"
-              @focus="$event.target.value = ongkir; $event.target.select()"
+              @focus="$event.target.select()"
               @input="fmtInput($event)"
               @blur="ongkir = parseNum($event.target.value)" />
           </x-misc.field>
           <x-misc.field label="Biaya Lain-lain">
             <input class="input num" style="text-align:right;"
               :value="fmtNum(biayaLain)"
-              @focus="$event.target.value = biayaLain; $event.target.select()"
+              @focus="$event.target.select()"
               @input="fmtInput($event)"
               @blur="biayaLain = parseNum($event.target.value)" />
           </x-misc.field>

@@ -30,12 +30,9 @@
         <div class="filter-pills">
             @php
                 $statuses = [
-                    ['id' => 'semua', 'label' => 'Semua'],
-                    ['id' => 'draft', 'label' => 'Draft'],
-                    ['id' => 'pending', 'label' => 'Pending'],
-                    ['id' => 'dikirim', 'label' => 'Dikirim'],
-                    ['id' => 'tagihan', 'label' => 'Tagihan'],
-                    ['id' => 'lunas', 'label' => 'Lunas'],
+                    ['id' => 'semua',   'label' => 'Semua'],
+                    ['id' => 'draft',   'label' => 'Draft'],
+                    ['id' => 'selesai', 'label' => 'Selesai'],
                 ];
             @endphp
             @foreach ($statuses as $st)
@@ -86,14 +83,18 @@
                                     <button
                                         class="btn btn-ghost btn-icon btn-sm btn--borderless"
                                         x-on:click.stop="
-                                            let r = $el.getBoundingClientRect();
-                                            $refs.panel.style.top = (r.bottom + 6) + 'px';
-                                            $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
-                                            open = !open;
+                                            let wasOpen = open;
+                                            $dispatch('close-menus');
+                                            if (!wasOpen) {
+                                                let r = $el.getBoundingClientRect();
+                                                $refs.panel.style.top = (r.bottom + 6) + 'px';
+                                                $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
+                                                open = true;
+                                            }
                                         ">
                                         <x-misc.icon name="more" :size="15" />
                                     </button>
-                                    <div x-ref="panel" x-show="open" x-cloak x-on:click.away="open = false" class="action-menu__panel">
+                                    <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false" x-on:click.away="open = false" class="action-menu__panel">
                                         @if ($s['status'] === 'draft')
                                         <a href="{{ route('penjualan.edit', $s['id']) }}" class="action-menu__item">
                                             <x-misc.icon name="edit" :size="14" stroke="var(--ink-3)" />Edit Draft

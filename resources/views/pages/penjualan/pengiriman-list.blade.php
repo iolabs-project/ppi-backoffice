@@ -25,10 +25,9 @@
         <div class="filter-pills">
             @php
                 $statuses = [
-                    ['id' => 'semua',   'label' => 'Semua'],
-                    ['id' => 'pending', 'label' => 'Menunggu'],
-                    ['id' => 'dikirim', 'label' => 'Dalam Perjalanan'],
-                    ['id' => 'selesai', 'label' => 'Selesai'],
+                    ['id' => 'semua',    'label' => 'Semua'],
+                    ['id' => 'open',     'label' => 'Open'],
+                    ['id' => 'terkirim', 'label' => 'Terkirim'],
                 ];
             @endphp
             @foreach ($statuses as $st)

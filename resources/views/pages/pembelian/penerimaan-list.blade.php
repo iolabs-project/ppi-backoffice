@@ -49,7 +49,7 @@
             @php
                 $statuses = [
                     ['id' => 'semua',   'label' => 'Semua'],
-                    ['id' => 'pending', 'label' => 'Perlu Diproses'],
+                    ['id' => 'draft',   'label' => 'Draft'],
                     ['id' => 'selesai', 'label' => 'Selesai'],
                 ];
             @endphp
@@ -108,14 +108,21 @@
                                     <button
                                         class="btn btn-ghost btn-icon btn-sm btn--borderless"
                                         x-on:click.stop="
-                                            let r = $el.getBoundingClientRect();
-                                            $refs.panel.style.top = (r.bottom + 6) + 'px';
-                                            $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
-                                            open = !open;
+                                            let wasOpen = open;
+                                            $dispatch('close-menus');
+                                            if (!wasOpen) {
+                                                let r = $el.getBoundingClientRect();
+                                                $refs.panel.style.top = (r.bottom + 6) + 'px';
+                                                $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
+                                                open = true;
+                                            }
                                         ">
                                         <x-misc.icon name="more" :size="15" />
                                     </button>
-                                    <div x-ref="panel" x-show="open" x-cloak x-on:click.away="open = false" class="action-menu__panel">
+                                    <div x-ref="panel" x-show="open" x-cloak
+                                         x-on:close-menus.window="open = false"
+                                         x-on:click.away="open = false"
+                                         class="action-menu__panel">
                                         <a href="{{ route('pembelian.show', $d['poRef']) }}" class="action-menu__item">
                                             <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail PO
                                         </a>

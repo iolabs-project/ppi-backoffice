@@ -17,6 +17,8 @@ Route::prefix('penjualan')->name('penjualan.')->group(function () {
     Route::get('/create',            [PenjualanController::class, 'create'])->name('create');
     Route::get('/pengiriman',        [PenjualanController::class, 'pengirimanList'])->name('pengiriman_list');
     Route::get('/tagihan',           [PenjualanController::class, 'tagihanList'])->name('tagihan_list');
+    Route::get('/tagihan/create',    [PenjualanController::class, 'tagihanCreate'])->name('tagihan_create');
+    Route::get('/tagihan/{id}',      [PenjualanController::class, 'tagihanShow'])->name('tagihan_show');
     Route::get('/{id}',              [PenjualanController::class, 'show'])->name('show');
     Route::get('/{id}/edit',         [PenjualanController::class, 'edit'])->name('edit');
     Route::get('/{id}/pengiriman',   [PenjualanController::class, 'pengiriman'])->name('pengiriman');
@@ -27,8 +29,10 @@ Route::prefix('pembelian')->name('pembelian.')->group(function () {
     Route::get('/',              [PembelianController::class, 'index'])->name('index');
     Route::get('/create',        [PembelianController::class, 'create'])->name('create');
     Route::get('/penerimaan',    [PembelianController::class, 'penerimaanList'])->name('penerimaan_list');
-    Route::get('/tagihan-list',  [PembelianController::class, 'tagihanList'])->name('tagihan_list');
-    Route::get('/{id}',          [PembelianController::class, 'show'])->name('show');
+    Route::get('/tagihan-list',   [PembelianController::class, 'tagihanList'])->name('tagihan_list');
+    Route::get('/tagihan/create', [PembelianController::class, 'tagihanCreate'])->name('tagihan_create');
+    Route::get('/tagihan/{id}',   [PembelianController::class, 'tagihanShow'])->name('tagihan_show');
+    Route::get('/{id}',           [PembelianController::class, 'show'])->name('show');
     Route::get('/{id}/edit',     [PembelianController::class, 'edit'])->name('edit');
     Route::get('/{id}/pengiriman',  [PembelianController::class, 'pengiriman'])->name('pengiriman');
     Route::get('/{id}/penerimaan', [PembelianController::class, 'penerimaan'])->name('penerimaan');

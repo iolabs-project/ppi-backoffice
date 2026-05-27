@@ -22,10 +22,17 @@
 <script>
   function soEditData() {
     return {
-      customerOpen: false, gudangOpen: false, terminOpen: false,
+      customerOpen: false, gudangOpen: false, terminOpen: false, salesPersonOpen: false,
       customer: @json($editCustomer),
       selectedGudang: @json($editGudang),
+      salesPerson: { id: 'SP-001', nama: 'Reza Pratama' },
       termin: 'Net 14 hari',
+      salesPersonList: [
+        { id: 'SP-001', nama: 'Reza Pratama' },
+        { id: 'SP-002', nama: 'Sari Dewi' },
+        { id: 'SP-003', nama: 'Budi Santoso' },
+        { id: 'SP-004', nama: 'Andi Wijaya' },
+      ],
       customers: @json($editCustomers),
       gudangList: @json($gudang),
       produkList: @json($produk),
@@ -36,10 +43,18 @@
       get total()    { return this.subtotal - this.diskon + this.ongkir + this.biayaLain; },
       addItem()      { this.items.push({ kode: '', nama: '', qty: 1, satuan: '', harga: 0 }); },
       removeItem(idx){ this.items.splice(idx, 1); },
-      fmt(n)         { return 'Rp ' + Math.round(n).toLocaleString('id-ID'); },
-      parseNum(str)  { return Number(String(str).replace(/\./g, '')) || 0; },
-      fmtNum(n)      { return Math.round(n).toLocaleString('id-ID'); },
-      fmtInput(e)    { let r = e.target.value.replace(/[^0-9]/g,''); e.target.value = r ? Number(r).toLocaleString('id-ID') : ''; },
+      fmt(n)         { return 'Rp ' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); },
+      parseNum(str)  { return Number(String(str).replace(/[^0-9]/g, '')) || 0; },
+      fmtNum(n)      { return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); },
+      fmtInput(e) {
+        let el = e.target;
+        let pos = el.value.slice(0, el.selectionStart).replace(/[^0-9]/g, '').length;
+        let raw = el.value.replace(/[^0-9]/g, '');
+        el.value = raw ? raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+        let i = 0, c = 0;
+        while (i < el.value.length && c < pos) { if (/\d/.test(el.value[i])) c++; i++; }
+        el.setSelectionRange(i, i);
+      },
       initials(name) { return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?'; },
     };
   }
@@ -120,11 +135,25 @@
         </div>
       </x-misc.field>
 
-      {{-- Sales Person (static) --}}
+      {{-- Sales Person Dropdown --}}
       <x-misc.field label="Sales Person">
-        <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-misc.avatar name="Reza Pratama" />
-          <span style="flex:1; font-weight:500;">Reza Pratama</span>
+        <div class="dropdown-wrap" @click.outside="salesPersonOpen=false">
+          <div class="input dropdown-trigger" @click="salesPersonOpen=!salesPersonOpen">
+            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+              x-text="initials(salesPerson ? salesPerson.nama : '')"></div>
+            <span style="flex:1; font-weight:500;"
+              x-text="salesPerson ? salesPerson.nama : 'Pilih Sales Person'"></span>
+            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
+          </div>
+          <div class="dropdown-menu" x-show="salesPersonOpen" x-cloak>
+            <template x-for="sp in salesPersonList" :key="sp.id">
+              <div class="dropdown-item" @click="salesPerson=sp; salesPersonOpen=false">
+                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                  x-text="initials(sp.nama)"></div>
+                <span x-text="sp.nama"></span>
+              </div>
+            </template>
+          </div>
         </div>
       </x-misc.field>
 
@@ -207,7 +236,7 @@
             <td>
               <input class="input num" style="height:32px; text-align:right;"
                 :value="fmtNum(it.qty)"
-                @focus="$event.target.value = it.qty; $event.target.select()"
+                @focus="$event.target.select()"
                 @input="fmtInput($event)"
                 @blur="it.qty = parseNum($event.target.value)" />
             </td>
@@ -219,7 +248,7 @@
             <td>
               <input class="input num" style="height:32px; text-align:right;"
                 :value="fmtNum(it.harga)"
-                @focus="$event.target.value = it.harga; $event.target.select()"
+                @focus="$event.target.select()"
                 @input="fmtInput($event)"
                 @blur="it.harga = parseNum($event.target.value)" />
             </td>
@@ -242,21 +271,21 @@
           <x-misc.field label="Diskon">
             <input class="input num" style="text-align:right;"
               :value="fmtNum(diskon)"
-              @focus="$event.target.value = diskon; $event.target.select()"
+              @focus="$event.target.select()"
               @input="fmtInput($event)"
               @blur="diskon = parseNum($event.target.value)" />
           </x-misc.field>
           <x-misc.field label="Ongkos Kirim">
             <input class="input num" style="text-align:right;"
               :value="fmtNum(ongkir)"
-              @focus="$event.target.value = ongkir; $event.target.select()"
+              @focus="$event.target.select()"
               @input="fmtInput($event)"
               @blur="ongkir = parseNum($event.target.value)" />
           </x-misc.field>
           <x-misc.field label="Biaya Lain-lain">
             <input class="input num" style="text-align:right;"
               :value="fmtNum(biayaLain)"
-              @focus="$event.target.value = biayaLain; $event.target.select()"
+              @focus="$event.target.select()"
               @input="fmtInput($event)"
               @blur="biayaLain = parseNum($event.target.value)" />
           </x-misc.field>
