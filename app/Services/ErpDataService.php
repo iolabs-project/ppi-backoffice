@@ -183,6 +183,10 @@ class ErpDataService
             ['kode' => '6-1100', 'nama' => 'Beban Gaji & Tunjangan',   'kategori' => 'Beban',    'parent' => '6-1000', 'saldo' => 142_800_000],
             ['kode' => '6-1200', 'nama' => 'Beban Sewa Gudang',        'kategori' => 'Beban',    'parent' => '6-1000', 'saldo' => 54_000_000],
             ['kode' => '6-1300', 'nama' => 'Beban Listrik & Air',      'kategori' => 'Beban',    'parent' => '6-1000', 'saldo' => 21_600_000],
+            ['kode' => '6-1400', 'nama' => 'Beban Transport',          'kategori' => 'Beban',    'parent' => '6-1000', 'saldo' => 9_350_000],
+            ['kode' => '6-1500', 'nama' => 'Beban Operasional',        'kategori' => 'Beban',    'parent' => '6-1000', 'saldo' => 2_450_000],
+            ['kode' => '6-1600', 'nama' => 'Beban Pemeliharaan',       'kategori' => 'Beban',    'parent' => '6-1000', 'saldo' => 4_200_000],
+            ['kode' => '6-1700', 'nama' => 'Beban Marketing',          'kategori' => 'Beban',    'parent' => '6-1000', 'saldo' => 8_500_000],
         ];
     }
 
@@ -336,6 +340,113 @@ class ErpDataService
             ['id' => 'DO-2026-0082', 'tanggal' => '29 Apr 2026', 'soRef' => 'SO-2026-0113', 'customer' => 'PT Bogasari Flour Mills',      'gudang' => 'Gudang Bekasi',    'ekspedisi' => 'Internal – Truk Box L300', 'driver' => 'Budi Prasetyo', 'status' => 'terkirim', 'biaya' => 3_800_000],
             ['id' => 'DO-2026-0081', 'tanggal' => '28 Apr 2026', 'soRef' => 'SO-2026-0110', 'customer' => 'CV Mie Mas Joko',              'gudang' => 'Gudang Semarang',  'ekspedisi' => 'JNE Cargo',               'driver' => 'Ahmad Fauzi',   'status' => 'open',     'biaya' => 1_200_000],
             ['id' => 'DO-2026-0080', 'tanggal' => '27 Apr 2026', 'soRef' => 'SO-2026-0108', 'customer' => 'PT Roti Sumber Rejeki',        'gudang' => 'Gudang Bekasi',    'ekspedisi' => 'Internal – Truk Box L300', 'driver' => 'Sutrisno Hadi', 'status' => 'terkirim', 'biaya' => 2_100_000],
+        ];
+    }
+
+    public static function biayaDetail(string $id): ?array
+    {
+        $records = [
+            'EXP-2026-0051' => [
+                'id' => 'EXP-2026-0051', 'nomor' => 'EXP/00051',
+                'tanggal' => '09 Mei 2026', 'tgl_raw' => '2026-05-09', 'status' => 'disetujui',
+                'bayarNanti' => false,
+                'dibayarDari' => ['id' => '1-10002', 'nama' => 'Rekening Bank'],
+                'penerima' => ['nama' => 'Nadia Rahmawati', 'perusahaan' => 'PPI Internal', 'telepon' => '0812-3456-7890', 'alamat' => 'Kantor Pusat, Jakarta Selatan'],
+                'items' => [
+                    ['deskripsi' => 'Gaji Karyawan Tetap – Mei 2026',        'akun_kode' => '6-1100', 'akun_nama' => 'Beban Gaji & Tunjangan', 'jumlah' => 120_000_000],
+                    ['deskripsi' => 'Tunjangan Transport – Mei 2026',        'akun_kode' => '6-1100', 'akun_nama' => 'Beban Gaji & Tunjangan', 'jumlah' => 22_800_000],
+                ],
+                'catatan' => 'Transfer dilakukan setiap tanggal 9 bulan berjalan.',
+            ],
+            'EXP-2026-0050' => [
+                'id' => 'EXP-2026-0050', 'nomor' => 'EXP/00050',
+                'tanggal' => '08 Mei 2026', 'tgl_raw' => '2026-05-08', 'status' => 'disetujui',
+                'bayarNanti' => false,
+                'dibayarDari' => ['id' => '1-10002', 'nama' => 'Rekening Bank'],
+                'penerima' => ['nama' => 'PT Properti Nusantara', 'perusahaan' => '', 'telepon' => '(021) 5508-9001', 'alamat' => 'Jl. Cibitung Raya No. 88, Bekasi'],
+                'items' => [
+                    ['deskripsi' => 'Sewa Gudang Bekasi – Mei 2026',         'akun_kode' => '6-1200', 'akun_nama' => 'Beban Sewa Gudang', 'jumlah' => 18_000_000],
+                ],
+                'catatan' => '',
+            ],
+            'EXP-2026-0049' => [
+                'id' => 'EXP-2026-0049', 'nomor' => 'EXP/00049',
+                'tanggal' => '08 Mei 2026', 'tgl_raw' => '2026-05-08', 'status' => 'disetujui',
+                'bayarNanti' => false,
+                'dibayarDari' => ['id' => '1-10002', 'nama' => 'Rekening Bank'],
+                'penerima' => ['nama' => 'PT Properti Nusantara', 'perusahaan' => '', 'telepon' => '(021) 5508-9001', 'alamat' => 'Kawasan Industri Cikupa Blok F12, Tangerang'],
+                'items' => [
+                    ['deskripsi' => 'Sewa Gudang Tangerang – Mei 2026',      'akun_kode' => '6-1200', 'akun_nama' => 'Beban Sewa Gudang', 'jumlah' => 15_000_000],
+                ],
+                'catatan' => '',
+            ],
+            'EXP-2026-0048' => [
+                'id' => 'EXP-2026-0048', 'nomor' => 'EXP/00048',
+                'tanggal' => '06 Mei 2026', 'tgl_raw' => '2026-05-06', 'status' => 'disetujui',
+                'bayarNanti' => false,
+                'dibayarDari' => ['id' => '1-10001', 'nama' => 'Kas'],
+                'penerima' => ['nama' => 'PLN & PDAM', 'perusahaan' => '', 'telepon' => '', 'alamat' => ''],
+                'items' => [
+                    ['deskripsi' => 'Listrik Gudang Bekasi – Apr 2026',       'akun_kode' => '6-1300', 'akun_nama' => 'Beban Listrik & Air', 'jumlah' => 3_200_000],
+                    ['deskripsi' => 'Air / PDAM Gudang Bekasi – Apr 2026',    'akun_kode' => '6-1300', 'akun_nama' => 'Beban Listrik & Air', 'jumlah' => 1_080_000],
+                ],
+                'catatan' => '',
+            ],
+            'EXP-2026-0046' => [
+                'id' => 'EXP-2026-0046', 'nomor' => 'EXP/00046',
+                'tanggal' => '04 Mei 2026', 'tgl_raw' => '2026-05-04', 'status' => 'menunggu',
+                'bayarNanti' => false,
+                'dibayarDari' => ['id' => '1-10001', 'nama' => 'Kas'],
+                'penerima' => ['nama' => '—', 'perusahaan' => '', 'telepon' => '', 'alamat' => ''],
+                'items' => [
+                    ['deskripsi' => 'Biaya Operasional Kantor Pusat – Apr',   'akun_kode' => '6-1500', 'akun_nama' => 'Beban Operasional', 'jumlah' => 1_800_000],
+                ],
+                'catatan' => 'Menunggu persetujuan manager keuangan.',
+            ],
+        ];
+
+        if (isset($records[$id])) {
+            return $records[$id];
+        }
+
+        $list = static::biaya();
+        $item = collect($list)->firstWhere('id', $id);
+        if (!$item) return null;
+
+        $nomor = 'EXP/' . str_pad(ltrim(substr($id, strrpos($id, '-') + 1), '0') ?: '0', 5, '0', STR_PAD_LEFT);
+        return [
+            'id'         => $item['id'],
+            'nomor'      => $nomor,
+            'tanggal'    => $item['tanggal'],
+            'tgl_raw'    => '2026-04-01',
+            'status'     => $item['status'],
+            'bayarNanti' => false,
+            'dibayarDari'=> ['id' => '1-10002', 'nama' => 'Rekening Bank'],
+            'penerima'   => ['nama' => '—', 'perusahaan' => '', 'telepon' => '', 'alamat' => ''],
+            'items'      => [
+                ['deskripsi' => $item['keterangan'], 'akun_kode' => '', 'akun_nama' => $item['akun'], 'jumlah' => $item['jumlah']],
+            ],
+            'catatan'    => '',
+        ];
+    }
+
+    public static function biaya(): array
+    {
+        return [
+            ['id' => 'EXP-2026-0051', 'tanggal' => '09 Mei 2026', 'keterangan' => 'Gaji & Tunjangan Karyawan – Mei 2026',    'kategori' => 'Gaji',         'akun' => 'Beban Gaji & Tunjangan',  'jumlah' => 142_800_000, 'status' => 'disetujui'],
+            ['id' => 'EXP-2026-0050', 'tanggal' => '08 Mei 2026', 'keterangan' => 'Sewa Gudang Bekasi – Mei 2026',            'kategori' => 'Sewa',         'akun' => 'Beban Sewa Gudang',       'jumlah' => 18_000_000,  'status' => 'disetujui'],
+            ['id' => 'EXP-2026-0049', 'tanggal' => '08 Mei 2026', 'keterangan' => 'Sewa Gudang Tangerang – Mei 2026',         'kategori' => 'Sewa',         'akun' => 'Beban Sewa Gudang',       'jumlah' => 15_000_000,  'status' => 'disetujui'],
+            ['id' => 'EXP-2026-0048', 'tanggal' => '06 Mei 2026', 'keterangan' => 'Listrik & Air Gudang Bekasi – Apr 2026',   'kategori' => 'Utilitas',     'akun' => 'Beban Listrik & Air',     'jumlah' => 4_280_000,   'status' => 'disetujui'],
+            ['id' => 'EXP-2026-0047', 'tanggal' => '05 Mei 2026', 'keterangan' => 'Transport & BBM Truk Box Bekasi',          'kategori' => 'Transport',    'akun' => 'Beban Transport',         'jumlah' => 3_750_000,   'status' => 'disetujui'],
+            ['id' => 'EXP-2026-0046', 'tanggal' => '04 Mei 2026', 'keterangan' => 'Biaya Operasional Kantor Pusat – Apr',     'kategori' => 'Operasional',  'akun' => 'Beban Operasional',       'jumlah' => 1_800_000,   'status' => 'menunggu'],
+            ['id' => 'EXP-2026-0045', 'tanggal' => '03 Mei 2026', 'keterangan' => 'Perawatan Forklift Gudang Bekasi',         'kategori' => 'Pemeliharaan', 'akun' => 'Beban Pemeliharaan',      'jumlah' => 2_400_000,   'status' => 'menunggu'],
+            ['id' => 'EXP-2026-0044', 'tanggal' => '02 Mei 2026', 'keterangan' => 'Biaya ATK & Perlengkapan Kantor',          'kategori' => 'Operasional',  'akun' => 'Beban Operasional',       'jumlah' => 650_000,     'status' => 'ditolak'],
+            ['id' => 'EXP-2026-0043', 'tanggal' => '01 Mei 2026', 'keterangan' => 'Internet & Telepon Kantor Pusat',          'kategori' => 'Utilitas',     'akun' => 'Beban Listrik & Air',     'jumlah' => 1_200_000,   'status' => 'disetujui'],
+            ['id' => 'EXP-2026-0042', 'tanggal' => '30 Apr 2026', 'keterangan' => 'Biaya Pengiriman Internal – Apr 2026',     'kategori' => 'Transport',    'akun' => 'Beban Transport',         'jumlah' => 5_600_000,   'status' => 'disetujui'],
+            ['id' => 'EXP-2026-0041', 'tanggal' => '29 Apr 2026', 'keterangan' => 'Listrik & Air Gudang Tangerang – Mar',     'kategori' => 'Utilitas',     'akun' => 'Beban Listrik & Air',     'jumlah' => 3_120_000,   'status' => 'disetujui'],
+            ['id' => 'EXP-2026-0040', 'tanggal' => '28 Apr 2026', 'keterangan' => 'Perawatan AC Kantor & Gudang Bekasi',      'kategori' => 'Pemeliharaan', 'akun' => 'Beban Pemeliharaan',      'jumlah' => 1_800_000,   'status' => 'disetujui'],
+            ['id' => 'EXP-2026-0039', 'tanggal' => '27 Apr 2026', 'keterangan' => 'Sewa Gudang Surabaya – Apr 2026',          'kategori' => 'Sewa',         'akun' => 'Beban Sewa Gudang',       'jumlah' => 9_000_000,   'status' => 'disetujui'],
+            ['id' => 'EXP-2026-0038', 'tanggal' => '25 Apr 2026', 'keterangan' => 'Biaya Marketing & Promosi Q2',             'kategori' => 'Marketing',    'akun' => 'Beban Marketing',         'jumlah' => 8_500_000,   'status' => 'menunggu'],
         ];
     }
 

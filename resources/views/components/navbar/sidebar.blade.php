@@ -13,9 +13,10 @@
         ['id' => 'pembelian.tagihan_list', 'label' => 'Tagihan',        'desc' => 'Kelola tagihan pembelian',  'url' => route('pembelian.tagihan_list'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A'],
     ];
     $navItems = [
-        ['id' => 'kasbank', 'icon' => 'wallet', 'label' => 'Kas & Bank',  'url' => route('kasbank.index')],
-        ['id' => 'master',  'icon' => 'box',    'label' => 'Master Data', 'url' => route('master.index')],
-        ['id' => 'laporan', 'icon' => 'book',   'label' => 'Laporan',     'url' => route('laporan.index')],
+        ['id' => 'kasbank', 'icon' => 'wallet',  'label' => 'Kas & Bank',  'url' => route('kasbank.index')],
+        ['id' => 'biaya',   'icon' => 'receipt', 'label' => 'Biaya',       'url' => route('biaya.index')],
+        ['id' => 'master',  'icon' => 'box',     'label' => 'Master Data', 'url' => route('master.index')],
+        ['id' => 'laporan', 'icon' => 'book',    'label' => 'Laporan',     'url' => route('laporan.index')],
     ];
     $bottom = [];
 @endphp

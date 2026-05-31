@@ -25,7 +25,7 @@
       get subtotal() { return this.items.reduce((s, i) => s + i.qty * i.harga, 0); },
       get total()    { return this.subtotal - this.diskon + this.ongkir + this.biayaLain; },
       addItem()      { this.items.push({ kode: '', nama: '', qty: 1, satuan: '', harga: 0 }); },
-      removeItem(idx){ this.items.splice(idx, 1); },
+      removeItem(idx){ if (this.items.length > 1) this.items.splice(idx, 1); },
       fmt(n)         { return 'Rp ' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); },
       parseNum(str)  { return Number(String(str).replace(/[^0-9]/g, '')) || 0; },
       fmtNum(n)      { return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); },
@@ -168,7 +168,7 @@
     <div class="card-hd">
       <div class="display card-hd-title">Daftar Produk</div>
       <button class="btn btn-ghost btn-sm" x-on:click="addItem()">
-        <x-misc.icon name="plus" :size="13" />Tambah Baris
+        <x-misc.icon name="plus" :size="13" />Tambah Produk
       </button>
     </div>
     <table class="tbl">
@@ -217,8 +217,7 @@
               <input class="input num" style="height:32px; text-align:right;"
                 :value="fmtNum(it.qty)"
                 @focus="$event.target.select()"
-                @input="fmtInput($event)"
-                @blur="it.qty = parseNum($event.target.value)" />
+                @input="fmtInput($event); it.qty = parseNum($event.target.value)" />
             </td>
             <td>
               <div class="input input--readonly" style="height:32px; display:flex; align-items:center; padding:0 10px; color:var(--ink-3);">
@@ -229,13 +228,15 @@
               <input class="input num" style="height:32px; text-align:right;"
                 :value="fmtNum(it.harga)"
                 @focus="$event.target.select()"
-                @input="fmtInput($event)"
-                @blur="it.harga = parseNum($event.target.value)" />
+                @input="fmtInput($event); it.harga = parseNum($event.target.value)" />
             </td>
             <td class="num" style="text-align:right; font-weight:600;"
               x-text="fmt(it.qty * it.harga)"></td>
             <td>
-              <button class="btn btn-ghost btn-icon btn-sm" style="border:none;" x-on:click="removeItem(i)">
+              <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                :disabled="items.length <= 1"
+                :style="items.length <= 1 ? 'opacity:0.25; cursor:not-allowed;' : ''"
+                x-on:click="removeItem(i)">
                 <x-misc.icon name="trash" :size="14" stroke="var(--ink-4)" />
               </button>
             </td>
@@ -252,22 +253,19 @@
             <input class="input num" style="text-align:right;"
               :value="fmtNum(diskon)"
               @focus="$event.target.select()"
-              @input="fmtInput($event)"
-              @blur="diskon = parseNum($event.target.value)" />
+              @input="fmtInput($event); diskon = parseNum($event.target.value)" />
           </x-misc.field>
           <x-misc.field label="Ongkos Kirim">
             <input class="input num" style="text-align:right;"
               :value="fmtNum(ongkir)"
               @focus="$event.target.select()"
-              @input="fmtInput($event)"
-              @blur="ongkir = parseNum($event.target.value)" />
+              @input="fmtInput($event); ongkir = parseNum($event.target.value)" />
           </x-misc.field>
           <x-misc.field label="Biaya Lain-lain">
             <input class="input num" style="text-align:right;"
               :value="fmtNum(biayaLain)"
               @focus="$event.target.select()"
-              @input="fmtInput($event)"
-              @blur="biayaLain = parseNum($event.target.value)" />
+              @input="fmtInput($event); biayaLain = parseNum($event.target.value)" />
           </x-misc.field>
         </div>
         <x-misc.field label="Catatan Internal">

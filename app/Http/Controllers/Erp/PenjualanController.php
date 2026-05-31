@@ -101,6 +101,8 @@ class PenjualanController extends Controller
             ],
             'salesOrders' => ErpDataService::salesOrders(),
             'kontak'      => ErpDataService::kontak(),
+            'produk'      => ErpDataService::produk(),
+            'gudang'      => ErpDataService::gudang(),
         ]);
     }
 

@@ -128,7 +128,6 @@
 .order-extras {
   padding: 18px 22px;
   display: grid;
-  gap: 14px;
 }
 
 .order-extras__title {
@@ -144,9 +143,7 @@
 
 .order-info-note {
   font-size: 11.5px;
-  color: var(--ink-4);
   padding: 8px 12px;
-  background: var(--accent-3);
   border-radius: 8px;
   line-height: 1.5;
 }
@@ -158,6 +155,7 @@
   display: grid;
   gap: 8px;
   align-content: start;
+  border-radius: 0 0 15px 0;
 }
 
 .order-summary__title {

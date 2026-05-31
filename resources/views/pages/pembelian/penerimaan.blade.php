@@ -5,7 +5,24 @@
   $totalSusut    = array_sum(array_column($poDetailItems, 'susut'));
   $estHpp        = array_sum(array_map(fn($i) => $i['qtyDiterima'] * $i['harga'], $poDetailItems)) + 2_400_000;
 @endphp
-<div class="order-page">
+
+<script>
+  function penerimaanData() {
+    return {
+      fmtInput(e) {
+        let el = e.target;
+        let pos = el.value.slice(0, el.selectionStart).replace(/[^0-9]/g, '').length;
+        let raw = el.value.replace(/[^0-9]/g, '');
+        el.value = raw ? raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+        let i = 0, c = 0;
+        while (i < el.value.length && c < pos) { if (/\d/.test(el.value[i])) c++; i++; }
+        el.setSelectionRange(i, i);
+      },
+    };
+  }
+</script>
+
+<div x-data="penerimaanData()" class="order-page">
   <div>
     <a href="{{ route('pembelian.show', $po['id']) }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
       <x-misc.icon name="chev-left" :size="13" />Kembali ke {{ $po['id'] }}
@@ -52,9 +69,7 @@
         </div>
       </x-misc.field>
       <x-misc.field label="Tanggal Penerimaan" :required="true">
-        <div class="input" style="display:flex; align-items:center; gap:8px;">
-          <x-misc.icon name="calendar" :size="14" stroke="var(--ink-4)" /><span style="flex:1;">12 Mei 2026</span>
-        </div>
+        <input type="date" class="input" value="{{ date('Y-m-d') }}" />
       </x-misc.field>
       <x-misc.field label="No. Surat Jalan Vendor"><input class="input mono" placeholder="cth. SJ-BFM-9842" /></x-misc.field>
     </div>
@@ -85,8 +100,8 @@
               <div class="mono" style="font-size:11px; color:var(--ink-4);">{{ $it['kode'] }}</div>
             </td>
             <td class="num" style="text-align:right; color:var(--ink-4);">{{ $it['qty'] }}</td>
-            <td><input class="input num" style="height:32px; text-align:right;" value="{{ $it['qtyDiterima'] }}" /></td>
-            <td><input class="input num" style="height:32px; text-align:right;" value="{{ $it['susut'] }}" /></td>
+            <td><input class="input num" style="height:32px; text-align:right;" value="{{ number_format($it['qtyDiterima'], 0, ',', '.') }}" @input="fmtInput($event)" /></td>
+            <td><input class="input num" style="height:32px; text-align:right;" value="{{ number_format($it['susut'], 0, ',', '.') }}" @input="fmtInput($event)" /></td>
             <td style="color:var(--ink-3);">{{ $it['satuan'] }}</td>
           </tr>
         @endforeach
@@ -95,7 +110,7 @@
     <div class="order-items-split">
       <div style="padding:18px 22px;">
         <x-misc.field label="Estimasi Biaya Pengiriman">
-          <input class="input num" style="text-align:right;" value="2400000" />
+          <input class="input num" style="text-align:right;" value="2.400.000" @input="fmtInput($event)" />
         </x-misc.field>
         <div style="font-size:11.5px; color:var(--ink-4); margin-top:8px; line-height:1.5; max-width:380px;">
           Estimasi ini akan dipakai untuk menghitung HPP awal. Nilai final akan diperbarui saat tagihan dari vendor diterbitkan.

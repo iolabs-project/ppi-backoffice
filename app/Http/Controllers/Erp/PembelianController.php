@@ -152,6 +152,8 @@ class PembelianController extends Controller
             ],
             'purchaseOrders' => ErpDataService::purchaseOrders(),
             'kontak'         => ErpDataService::kontak(),
+            'produk'         => ErpDataService::produk(),
+            'gudang'         => ErpDataService::gudang(),
         ]);
     }
 

@@ -1,0 +1,156 @@
+.biaya-page {
+  padding: 24px 28px 60px;
+  display: grid;
+  gap: 16px;
+}
+
+.biaya-summary {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 14px;
+}
+
+.stat-card--warn {
+  .stat-card__label { color: var(--warn, #D97706); opacity: 1; }
+  .stat-card__value { color: var(--warn, #D97706); }
+}
+
+// ── Show / Receipt page ─────────────────────────────────────
+.biaya-receipt-hd {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 24px 24px 20px;
+}
+
+.biaya-receipt-penerima {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.biaya-receipt-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--ink-3);
+  margin-top: 5px;
+}
+
+.biaya-receipt-fields {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.biaya-receipt-field-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 4px;
+}
+
+// Line items list
+.biaya-receipt-items {
+  padding: 4px 0;
+}
+
+.biaya-receipt-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--line);
+
+  &:last-child { border-bottom: none; }
+}
+
+.biaya-receipt-item__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.biaya-receipt-item__desc {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 3px;
+}
+
+.biaya-receipt-item__akun {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.biaya-receipt-item__amount {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding-top: 2px;
+}
+
+// Summary
+.biaya-receipt-summary {
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--line);
+  max-width: 480px;
+  margin-left: auto;
+}
+
+.biaya-receipt-summary__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--ink-3);
+  padding: 4px 0;
+}
+
+.biaya-receipt-summary__row--total {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.biaya-receipt-summary__row--sisa {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+// Toggle switch (Bayar Nanti)
+.biaya-toggle {
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--line);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background .2s;
+  padding: 0;
+  flex-shrink: 0;
+
+  &--on {
+    background: var(--accent);
+  }
+}
+
+.biaya-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  transition: transform .2s;
+
+  .biaya-toggle--on & {
+    transform: translateX(18px);
+  }
+}

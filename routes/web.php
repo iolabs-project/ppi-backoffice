@@ -7,6 +7,7 @@ use App\Http\Controllers\Erp\PembelianController;
 use App\Http\Controllers\Erp\KasBankController;
 use App\Http\Controllers\Erp\LaporanController;
 use App\Http\Controllers\Erp\MasterController;
+use App\Http\Controllers\Erp\BiayaController;
 
 // Dashboard
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -41,8 +42,10 @@ Route::prefix('pembelian')->name('pembelian.')->group(function () {
 
 // Kas & Bank
 Route::prefix('kasbank')->name('kasbank.')->group(function () {
-    Route::get('/',      [KasBankController::class, 'index'])->name('index');
-    Route::get('/{id}',  [KasBankController::class, 'show'])->name('show');
+    Route::get('/',             [KasBankController::class, 'index'])->name('index');
+    Route::get('/{id}/kirim',   [KasBankController::class, 'kirimDana'])->name('kirim');
+    Route::get('/{id}/terima',  [KasBankController::class, 'terimaDana'])->name('terima');
+    Route::get('/{id}',         [KasBankController::class, 'show'])->name('show');
 });
 
 // Laporan Keuangan
@@ -50,16 +53,17 @@ Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index
 
 // Master Data
 Route::get('/master', [MasterController::class, 'index'])->name('master.index');
+Route::get('/master/produk/{kode}', [MasterController::class, 'showProduk'])->name('master.produk.show');
+Route::get('/master/kontak/{id}',  [MasterController::class, 'showKontak'])->name('master.kontak.show');
+Route::get('/master/gudang/{kode}', [MasterController::class, 'showGudang'])->name('master.gudang.show');
+Route::get('/master/gudang/{kode}/transfer', [MasterController::class, 'transferGudang'])->name('master.gudang.transfer');
+
+// Biaya
+Route::get('/biaya',        [BiayaController::class, 'index'])->name('biaya.index');
+Route::get('/biaya/create', [BiayaController::class, 'create'])->name('biaya.create');
+Route::get('/biaya/{id}',   [BiayaController::class, 'show'])->name('biaya.show');
 
 // Coming-soon placeholders
-Route::get('/biaya', function () {
-    return view('coming-soon', [
-        'currentPage' => 'biaya',
-        'breadcrumb'  => [['label' => 'Biaya']],
-        'title'       => 'Manajemen Biaya',
-        'description' => 'Modul pencatatan dan alokasi biaya operasional sedang dalam pengembangan.',
-    ]);
-})->name('biaya.index');
 
 Route::get('/pengaturan', function () {
     return view('coming-soon', [
