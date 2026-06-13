@@ -45,6 +45,14 @@
 function produkShowData() {
   return {
     modal: null,
+    editProduk: {
+      kode:      '{{ $produk['kode'] }}',
+      nama:      '{{ addslashes($produk['nama']) }}',
+      kategori:  '{{ addslashes($produk['kategori'] ?? '') }}',
+      satuan:    '{{ addslashes($produk['satuan']) }}',
+      hargaBeli: {{ $produk['hargaBeli'] }},
+      hargaJual: {{ $produk['hargaJual'] }},
+    },
     transaksiTab: 'terkini',
 
     penyesuaian: {
@@ -86,6 +94,7 @@ function produkShowData() {
       <div class="order-sub">{{ $produk['satuan'] }} · Diperbarui hari ini</div>
     </div>
     <div class="order-actions">
+      <button class="btn btn-ghost" x-on:click="modal = 'edit_produk'"><x-misc.icon name="edit" :size="14" /> Edit Produk</button>
       <button class="btn btn-primary" x-on:click="modal = 'penyesuaian'"><x-misc.icon name="plus" :size="14" /> Penyesuaian Stok</button>
     </div>
   </div>
@@ -315,6 +324,42 @@ function produkShowData() {
 
     </div>
   </div>
+
+  {{-- Modal: Edit Produk --}}
+  <x-misc.modal title="Edit Produk" show="modal === 'edit_produk'" close-handler="modal = null">
+    <div class="form-body">
+      <div class="form-grid-2">
+        <x-misc.field label="Kode Produk" :required="true">
+          <input class="input mono" x-model="editProduk.kode" />
+        </x-misc.field>
+        <x-misc.field label="Kategori">
+          <input class="input" x-model="editProduk.kategori" placeholder="Tepung, Gula, Minyak..." />
+        </x-misc.field>
+      </div>
+      <x-misc.field label="Nama Produk" :required="true">
+        <input class="input" x-model="editProduk.nama" />
+      </x-misc.field>
+      <div class="form-grid-3">
+        <x-misc.field label="Satuan">
+          <input class="input" x-model="editProduk.satuan" placeholder="Sak, Kg, Liter..." />
+        </x-misc.field>
+        <x-misc.field label="Harga Beli">
+          <input class="input num" type="number" style="text-align:right;" x-model="editProduk.hargaBeli" />
+        </x-misc.field>
+        <x-misc.field label="Harga Jual">
+          <input class="input num" type="number" style="text-align:right;" x-model="editProduk.hargaJual" />
+        </x-misc.field>
+      </div>
+    </div>
+    <x-slot:footer>
+      <button class="btn btn-ghost" x-on:click="modal = null">
+        <x-misc.icon name="x" :size="14" /> Batal
+      </button>
+      <button class="btn btn-primary">
+        <x-misc.icon name="check" :size="14" /> Simpan Perubahan
+      </button>
+    </x-slot:footer>
+  </x-misc.modal>
 
   {{-- Modal: Penyesuaian Stok --}}
   <x-misc.modal title="Penyesuaian Stok" show="modal === 'penyesuaian'" close-handler="modal = null" :width="620">

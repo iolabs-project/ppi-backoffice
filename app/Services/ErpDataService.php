@@ -467,4 +467,26 @@ class ErpDataService
             ['id' => 'INV-2026-0031', 'tanggal' => '01 Mei 2026', 'soRef' => 'SO-2026-0124', 'customer' => 'UD Beras Sumber Tani',         'jatuhTempo' => '17 Mei 2026', 'total' => 87_200_000,  'status' => 'lunas'],
         ];
     }
+
+    public static function users(): array
+    {
+        return [
+            ['id' => 'USR-001', 'username' => 'admin',    'nama' => 'Administrator',       'kontak' => null,             'role' => 'Admin',   'aktif' => true],
+            ['id' => 'USR-002', 'username' => 'budi.s',   'nama' => 'Budi Santoso',        'kontak' => 'Budi Santoso',   'role' => 'Manajer', 'aktif' => true],
+            ['id' => 'USR-003', 'username' => 'ani.r',    'nama' => 'Ani Rahayu',          'kontak' => 'Ani Rahayu',     'role' => 'Sales',   'aktif' => true],
+            ['id' => 'USR-004', 'username' => 'dedi.k',   'nama' => 'Dedi Kurniawan',      'kontak' => 'Dedi Kurniawan', 'role' => 'Gudang',  'aktif' => false],
+            ['id' => 'USR-005', 'username' => 'siti.m',   'nama' => 'Siti Maulida',        'kontak' => 'Siti Maulida',   'role' => 'Finance', 'aktif' => true],
+        ];
+    }
+
+    public static function roles(): array
+    {
+        return [
+            ['id' => 'ROLE-001', 'nama' => 'Admin',    'deskripsi' => 'Akses penuh ke semua modul',              'akses' => ['dashboard', 'penjualan', 'pembelian', 'kas', 'biaya', 'master', 'laporan']],
+            ['id' => 'ROLE-002', 'nama' => 'Manajer',  'deskripsi' => 'Semua modul kecuali pengaturan master',   'akses' => ['dashboard', 'penjualan', 'pembelian', 'kas', 'biaya', 'laporan']],
+            ['id' => 'ROLE-003', 'nama' => 'Sales',    'deskripsi' => 'Akses ke penjualan dan laporan',          'akses' => ['dashboard', 'penjualan', 'laporan']],
+            ['id' => 'ROLE-004', 'nama' => 'Gudang',   'deskripsi' => 'Akses ke pembelian dan master stok',      'akses' => ['dashboard', 'pembelian', 'master']],
+            ['id' => 'ROLE-005', 'nama' => 'Finance',  'deskripsi' => 'Akses ke kas, biaya, dan laporan',        'akses' => ['dashboard', 'kas', 'biaya', 'laporan']],
+        ];
+    }
 }

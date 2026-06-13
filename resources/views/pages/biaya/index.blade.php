@@ -119,7 +119,6 @@
                         <th>No. Biaya</th>
                         <th>Tanggal</th>
                         <th>Keterangan</th>
-                        <th>Kategori</th>
                         <th>Akun</th>
                         <th style="text-align:right;">Jumlah</th>
                         <th>Status</th>
@@ -131,11 +130,6 @@
                             <td class="mono" style="font-weight:600; font-size:12px; color:var(--ink-4);" x-text="b.id"></td>
                             <td style="color:var(--ink-3); white-space:nowrap; font-size:13px;" x-text="b.tanggal"></td>
                             <td style="font-weight:500; font-size:13px;" x-text="b.keterangan"></td>
-                            <td>
-                                <span class="chip"
-                                    :style="'background:' + kategoriColor(b.kategori).bg + '; color:' + kategoriColor(b.kategori).fg"
-                                    x-text="b.kategori"></span>
-                            </td>
                             <td style="font-size:12px; color:var(--ink-4);" x-text="b.akun"></td>
                             <td class="num" style="text-align:right; font-weight:600; font-size:13px;" x-text="fmtRp(b.jumlah)"></td>
                             <td>

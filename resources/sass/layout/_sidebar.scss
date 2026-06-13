@@ -72,6 +72,15 @@
             background: var(--accent);
         }
     }
+
+    &--danger {
+        color: var(--ink-3);
+
+        &:hover {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+    }
 }
 
 // ── Backdrop ────────────────────────────────────────────────────────────────

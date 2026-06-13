@@ -78,7 +78,7 @@
                 <div>
                     <div class="label">Dibayar Dari</div>
                     <div class="biaya-receipt-field-val" style="display:flex; align-items:center; gap:6px;">
-                        <x-misc.icon name="wallet" :size="13" stroke="var(--ink-4)" />
+                        <x-misc.icon name="dollar" :size="13" stroke="var(--ink-4)" />
                         @if($biaya['bayarNanti'])
                             <span style="color:var(--ink-4); font-style:italic;">Bayar Nanti</span>
                         @else

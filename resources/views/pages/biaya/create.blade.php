@@ -88,7 +88,7 @@
                     <x-misc.field label="Dibayar Dari" :required="true">
                         <div class="dropdown-wrap" @click.outside="akunOpen=false">
                             <div class="input dropdown-trigger" @click="akunOpen=!akunOpen">
-                                <x-misc.icon name="wallet" :size="15" stroke="var(--ink-4)" />
+                                <x-misc.icon name="dollar" :size="15" stroke="var(--ink-4)" />
                                 <span style="flex:1;"
                                     x-text="selectedAkun ? selectedAkun.nama : 'Pilih akun kas / bank'"></span>
                                 <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
@@ -96,7 +96,7 @@
                             <div class="dropdown-menu" x-show="akunOpen" x-cloak>
                                 <template x-for="a in akunList" :key="a.id">
                                     <div class="dropdown-item" @click="selectedAkun=a; akunOpen=false">
-                                        <x-misc.icon name="wallet" :size="14" stroke="var(--ink-4)" />
+                                        <x-misc.icon name="dollar" :size="14" stroke="var(--ink-4)" />
                                         <div style="flex:1; min-width:0;">
                                             <div style="font-size:13px;" x-text="a.nama"></div>
                                             <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="a.id">

@@ -56,7 +56,7 @@ function kontakShowData() {
   {{-- Header --}}
   <div class="order-hd order-hd--start">
     <div>
-      <a href="{{ route('master.index') }}?tab=kontak" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
+      <a href="{{ route('master.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
         <x-misc.icon name="chev-left" :size="13" /> Kembali ke Master Data
       </a>
       <div style="display:flex; align-items:center; gap:14px;">

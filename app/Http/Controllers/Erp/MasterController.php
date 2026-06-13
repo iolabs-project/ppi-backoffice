@@ -16,6 +16,8 @@ class MasterController extends Controller
             'kontak'           => ErpDataService::kontak(),
             'chartOfAccounts'  => ErpDataService::chartOfAccounts(),
             'gudang'           => ErpDataService::gudang(),
+            'users'            => ErpDataService::users(),
+            'roles'            => ErpDataService::roles(),
         ]);
     }
 
@@ -132,7 +134,7 @@ class MasterController extends Controller
             'qtyFmt'   => fmt_num($p['stok']),
             'satuan'   => $p['satuan'],
             'nilai'    => $p['stok'] * $p['hargaBeli'],
-            'nilaiFmt' => fmt_rp($p['stok'] * $p['hargaBeli']),
+            'nilaiFmt' => fmt_rp_short($p['stok'] * $p['hargaBeli']),
         ], $produkItems);
 
         return view('pages.master.gudang-show', [

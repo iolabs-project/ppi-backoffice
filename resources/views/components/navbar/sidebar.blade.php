@@ -3,20 +3,20 @@
     $penjualanActive = str_starts_with($currentPage, 'penjualan');
     $pembelianActive = str_starts_with($currentPage, 'pembelian');
     $penjualanSubmenus = [
-        ['id' => 'penjualan',            'label' => 'Sales Order', 'desc' => 'Kelola pesanan penjualan',    'url' => route('penjualan.index'),           'icon' => 'sales',  'bg' => '#EEF2FF', 'fg' => '#6366F1'],
-        ['id' => 'penjualan.pengiriman', 'label' => 'Pengiriman',  'desc' => 'Kelola pengiriman penjualan', 'url' => route('penjualan.pengiriman_list'), 'icon' => 'box',    'bg' => '#F0FDF4', 'fg' => '#16A34A'],
+        ['id' => 'penjualan',            'label' => 'Sales Order', 'desc' => 'Kelola pesanan penjualan',    'url' => route('penjualan.index'),           'icon' => 'receipt',  'bg' => '#EEF2FF', 'fg' => '#6366F1'],
+        ['id' => 'penjualan.pengiriman', 'label' => 'Pengiriman',  'desc' => 'Kelola pengiriman penjualan', 'url' => route('penjualan.pengiriman_list'), 'icon' => 'truck',  'bg' => '#F0FDF4', 'fg' => '#16A34A'],
         ['id' => 'penjualan.tagihan',    'label' => 'Tagihan',     'desc' => 'Kelola tagihan penjualan',    'url' => route('penjualan.tagihan_list'),    'icon' => 'wallet', 'bg' => '#FFF7ED', 'fg' => '#EA580C'],
     ];
     $pembelianSubmenus = [
-        ['id' => 'pembelian',              'label' => 'Purchase Order', 'desc' => 'Kelola pesanan pembelian',  'url' => route('pembelian.index'),            'icon' => 'cart',   'bg' => '#EFF6FF', 'fg' => '#2563EB'],
+        ['id' => 'pembelian',              'label' => 'Purchase Order', 'desc' => 'Kelola pesanan pembelian',  'url' => route('pembelian.index'),            'icon' => 'receipt',   'bg' => '#EFF6FF', 'fg' => '#2563EB'],
         ['id' => 'pembelian.penerimaan',   'label' => 'Penerimaan',     'desc' => 'Catatan penerimaan barang', 'url' => route('pembelian.penerimaan_list'),  'icon' => 'box',    'bg' => '#FFF7ED', 'fg' => '#EA580C'],
         ['id' => 'pembelian.tagihan_list', 'label' => 'Tagihan',        'desc' => 'Kelola tagihan pembelian',  'url' => route('pembelian.tagihan_list'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A'],
     ];
     $navItems = [
-        ['id' => 'kasbank', 'icon' => 'wallet',  'label' => 'Kas & Bank',  'url' => route('kasbank.index')],
+        ['id' => 'kasbank', 'icon' => 'piggy-bank', 'label' => 'Kas & Bank',  'url' => route('kasbank.index')],
         ['id' => 'biaya',   'icon' => 'receipt', 'label' => 'Biaya',       'url' => route('biaya.index')],
-        ['id' => 'master',  'icon' => 'box',     'label' => 'Master Data', 'url' => route('master.index')],
-        ['id' => 'laporan', 'icon' => 'book',    'label' => 'Laporan',     'url' => route('laporan.index')],
+        ['id' => 'master',  'icon' => 'database', 'label' => 'Master Data', 'url' => route('master.index')],
+        ['id' => 'laporan', 'icon' => 'clipboard', 'label' => 'Laporan',     'url' => route('laporan.index')],
     ];
     $bottom = [];
 @endphp
@@ -45,7 +45,7 @@
                 class="sidebar-item"
                 :data-active="openPanel === 'penjualan' || (openPanel === null && penjualanActive) ? '' : null"
                 @click="toggle('penjualan')">
-                <x-misc.icon name="sales" :size="18" sw="1.7" />
+                <x-misc.icon name="dollar" :size="18" sw="1.7" />
             </button>
 
             {{-- Pembelian --}}
@@ -76,6 +76,13 @@
                     <x-misc.icon :name="$item['icon']" :size="18" sw="1.7" />
                 </a>
             @endforeach
+
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" title="Logout" class="sidebar-item sidebar-item--danger">
+                    <x-misc.icon name="logout" :size="18" sw="1.7" />
+                </button>
+            </form>
         </nav>
     </aside>
 
