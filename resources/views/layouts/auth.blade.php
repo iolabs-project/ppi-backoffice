@@ -11,7 +11,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet" />
-    @php
+    {{-- @php
         $manifestPath = base_path('public/build/manifest.json');
         $manifest = file_exists($manifestPath) ? json_decode(file_get_contents($manifestPath), true) : [];
         $cssFile = $manifest['resources/sass/app.scss']['file'] ?? null;
@@ -19,7 +19,9 @@
     @if ($cssFile)
         <link rel="stylesheet" href="/build/{{ $cssFile }}" />
     @endif
-    @vite(['resources/sass/app.scss'])
+    @vite(['resources/sass/app.scss']) --}}
+
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </head>
 
 <body class="auth-body">
@@ -27,6 +29,7 @@
         @yield('content')
     </div>
 
+    @routes
     <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
     @stack('scripts')
 </body>

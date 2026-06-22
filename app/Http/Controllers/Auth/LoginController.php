@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -19,20 +21,26 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email'    => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        try {
+            $credentials = $request->validate([
+                'username'    => ['required'],
+                'password' => ['required'],
+            ]);
 
-        $remember = $request->boolean('remember');
+            if (!Auth::attempt($credentials)) {
+                throw ValidationException::withMessages([
+                    'auth' => ['Username atau password salah.']
+                ]);
+            }
 
-        if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'));
+            return response()->json(['redirect' => route('dashboard'), 'message' => 'Login berhasil.']);
+        } catch (ValidationException $e) {
+            Log::error('Error LoginController@login: ' . $e->getMessage());
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error LoginController@login: ' . $e->getMessage());
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba login. Silakan coba lagi.'], 500);
         }
-
-        return back()
-            ->withInput($request->only('email'))
-            ->withErrors(['email' => 'Email atau password salah.']);
     }
 }

@@ -12,7 +12,7 @@
         href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet" />
     {{-- @vite(['resources/sass/app.scss', 'resources/js/app.js']) --}}
-    @php
+    {{-- @php
         $manifestPath = base_path('public/build/manifest.json');
         $manifest = file_exists($manifestPath) ? json_decode(file_get_contents($manifestPath), true) : [];
         $cssFile = $manifest['resources/sass/app.scss']['file'] ?? null;
@@ -22,8 +22,8 @@
     @else
         <!-- Fallback: manifest not found or SCSS not in manifest -->
         <link rel="stylesheet" href="{{ asset('../resources/sass/app.scss') }}" />
-    @endif
-    @vite(['resources/sass/app.scss'])
+    @endif --}}
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </head>
 
 <body>
@@ -48,6 +48,7 @@
         </div>
     </div>
 
+    @routes
     {{-- Alpine.js --}}
     <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
     @stack('scripts')
