@@ -13,6 +13,16 @@ return new class extends Migration
     {
         Schema::create('chart_of_accounts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained()->onDelete('cascade');
+            $table->foreignId('parent_id')->nullable()->constrained('chart_of_accounts')->onDelete('cascade');
+            $table->foreignId('category_id')->constrained('account_categories')->onDelete('cascade');
+            $table->string('name', 255);
+            $table->string('code', 50);
+            $table->text('note')->nullable();
+            $table->boolean('is_parent')->default(false);
+            $table->boolean('is_deletable')->default(false);
+            $table->boolean('is_locked')->default(false);    
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
