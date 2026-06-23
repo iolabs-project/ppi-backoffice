@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('warehouses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->onDelete('cascade');
+            $table->foreignId('company_id')->constrained()->onDelete('restrict');
             $table->string('name', 255);
             $table->string('code', 50);
             $table->string('address', 255)->nullable();
             $table->text('note')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->softDeletes();
             $table->timestamps();
+
+            $table->unique(['company_id', 'name']);
+            $table->unique(['company_id', 'code']);
         });
     }
 

@@ -13,18 +13,24 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->onDelete('cascade');
-            $table->foreignId('category_id')->constrained('product_categories')->onDelete('cascade');
-            $table->foreignId('unit_id')->constrained('units')->onDelete('cascade');
+            $table->foreignId('company_id')->constrained()->onDelete('restrict');
+            $table->foreignId('category_id')->constrained('product_categories')->onDelete('restrict');
+            $table->foreignId('unit_id')->constrained('units')->onDelete('restrict');
             $table->string('name', 255);
             $table->string('code', 50)->nullable();
             $table->text('description')->nullable();
-            $table->decimal('minimum_stock', 15, 2)->default(0);
-            $table->foreignId('inventory_account_id')->constrained('chart_of_accounts')->onDelete('cascade');
-            $table->foreignId('sales_account_id')->constrained('chart_of_accounts')->onDelete('cascade');
-            $table->foreignId('cogs_account_id')->constrained('chart_of_accounts')->onDelete('cascade');
-            $table->boolean('is_active')->default(true);
+            $table->decimal('minimum_stock', 18, 4)->default(0);
+            $table->foreignId('inventory_account_id')->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->foreignId('sales_account_id')->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->foreignId('cogs_account_id')->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->softDeletes();
             $table->timestamps();
+
+            // index
+            $table->index(['company_id', 'category_id']);
+            $table->index(['company_id', 'unit_id']);
+            $table->index(['company_id', 'code']);
+            $table->index(['company_id', 'name']);
         });
     }
 

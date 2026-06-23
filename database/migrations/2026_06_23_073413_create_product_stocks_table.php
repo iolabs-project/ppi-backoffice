@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('product_stocks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->foreignId('warehouse_id')->constrained()->onDelete('cascade');
-            $table->decimal('quantity', 15, 2)->default(0);
+            $table->foreignId('company_id')->constrained()->onDelete('restrict');
+            $table->foreignId('product_id')->constrained()->onDelete('restrict');
+            $table->foreignId('warehouse_id')->constrained()->onDelete('restrict');
+            $table->decimal('quantity', 18, 4)->default(0);
+            $table->decimal('reserved_quantity', 18, 4)->default(0);
+            $table->decimal('average_cost', 18, 4)->default(0);
             $table->timestamps();
+
+            $table->unique(['company_id', 'product_id', 'warehouse_id']);
         });
     }
 

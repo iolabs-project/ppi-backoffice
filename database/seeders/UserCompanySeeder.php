@@ -15,7 +15,6 @@ class UserCompanySeeder extends Seeder
         $companny = \App\Models\Company::create([
             'code' => 'PPI',
             'name' => 'Putra Pangan Indonesia',
-            'is_active' => true,
         ]);
 
         $user = \App\Models\User::create([
