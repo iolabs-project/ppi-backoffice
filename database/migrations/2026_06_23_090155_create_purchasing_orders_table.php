@@ -47,7 +47,6 @@ return new class extends Migration
         Schema::create('purchasing_order_costs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('purchasing_order_id')->constrained('purchasing_orders')->onDelete('cascade');
-            $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
             $table->decimal('amount', 18, 4)->default(0);
             $table->text('description')->nullable();
             $table->boolean('is_inventory_cost')->default(false);
