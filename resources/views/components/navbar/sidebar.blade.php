@@ -8,7 +8,7 @@
         ['id' => 'penjualan.tagihan',    'label' => 'Tagihan',     'desc' => 'Kelola tagihan penjualan',    'url' => route('penjualan.tagihan_list'),    'icon' => 'wallet', 'bg' => '#FFF7ED', 'fg' => '#EA580C'],
     ];
     $pembelianSubmenus = [
-        ['id' => 'pembelian',              'label' => 'Purchase Order', 'desc' => 'Kelola pesanan pembelian',  'url' => route('pembelian.index'),            'icon' => 'receipt',   'bg' => '#EFF6FF', 'fg' => '#2563EB'],
+        ['id' => 'pembelian',              'label' => 'Purchase Order', 'desc' => 'Kelola pesanan pembelian',  'url' => route('purchasings.purchasing_orders.index'),            'icon' => 'receipt',   'bg' => '#EFF6FF', 'fg' => '#2563EB'],
         ['id' => 'pembelian.penerimaan',   'label' => 'Penerimaan',     'desc' => 'Catatan penerimaan barang', 'url' => route('pembelian.penerimaan_list'),  'icon' => 'box',    'bg' => '#FFF7ED', 'fg' => '#EA580C'],
         ['id' => 'pembelian.tagihan_list', 'label' => 'Tagihan',        'desc' => 'Kelola tagihan pembelian',  'url' => route('pembelian.tagihan_list'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A'],
     ];

@@ -10,6 +10,9 @@ use App\Http\Controllers\Erp\KasBankController;
 use App\Http\Controllers\Erp\LaporanController;
 use App\Http\Controllers\Erp\MasterController;
 use App\Http\Controllers\Erp\BiayaController;
+use App\Http\Controllers\Master\ContactController;
+use App\Http\Controllers\Master\WarehouseController;
+use App\Http\Controllers\Purchasing\PurchaseOrderController;
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
@@ -43,6 +46,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/pengiriman',   [PenjualanController::class, 'pengiriman'])->name('pengiriman');
     });
 
+    Route::prefix('purchasings')->name('purchasings.')->group(function () {
+        Route::prefix('purchasing-orders')->name('purchasing_orders.')->controller(PurchaseOrderController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('/{id}', 'show')->name('show');
+            Route::get('/{id}/edit', 'edit')->name('edit');
+            Route::put('/{id}', 'update')->name('update');
+        });
+    });
+
     // Pembelian (Purchase Orders)
     Route::prefix('pembelian')->name('pembelian.')->group(function () {
         Route::get('/',               [PembelianController::class, 'index'])->name('index');
@@ -53,8 +67,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/tagihan/{id}',   [PembelianController::class, 'tagihanShow'])->name('tagihan_show');
         Route::get('/{id}',           [PembelianController::class, 'show'])->name('show');
         Route::get('/{id}/edit',      [PembelianController::class, 'edit'])->name('edit');
-        Route::get('/{id}/pengiriman',[PembelianController::class, 'pengiriman'])->name('pengiriman');
-        Route::get('/{id}/penerimaan',[PembelianController::class, 'penerimaan'])->name('penerimaan');
+        Route::get('/{id}/pengiriman', [PembelianController::class, 'pengiriman'])->name('pengiriman');
+        Route::get('/{id}/penerimaan', [PembelianController::class, 'penerimaan'])->name('penerimaan');
         Route::get('/{id}/tagihan',   [PembelianController::class, 'tagihan'])->name('tagihan');
     });
 
@@ -100,4 +114,13 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('bantuan.index');
 
+    Route::prefix('master')->name('master.')->group(function () {
+        Route::prefix('contacts')->name('contacts.')->group(function () {
+            Route::get('/options', [ContactController::class, 'options'])->name('options');
+        });
+
+        Route::prefix('warehouses')->name('warehouses.')->group(function () {
+            Route::get('/options', [WarehouseController::class, 'options'])->name('options');
+        });
+    });
 });

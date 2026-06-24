@@ -36,10 +36,18 @@ class LoginController extends Controller
             $request->session()->regenerate();
             return response()->json(['redirect' => route('dashboard'), 'message' => 'Login berhasil.']);
         } catch (ValidationException $e) {
-            Log::error('Error LoginController@login: ' . $e->getMessage());
+            Log::error('Error LoginController@login: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            Log::error('Error LoginController@login: ' . $e->getMessage());
+            Log::error('Error LoginController@login: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba login. Silakan coba lagi.'], 500);
         }
     }

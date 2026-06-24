@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('purchasing_orders', function (Blueprint $table) {
+        Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained('companies')->onDelete('restrict');
             $table->foreignId('supplier_id')->constrained('contacts')->onDelete('restrict');
@@ -19,20 +19,22 @@ return new class extends Migration
             $table->string('number', 50)->unique();
             $table->dateTime('order_date');
             $table->dateTime('due_date')->nullable();
+            $table->enum('payment_terms', ['net_7', 'net_14', 'net_30', 'net_45'])->default('net_14');
             $table->enum('status', ['draft', 'open', 'closed', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 18, 4)->default(0);
             $table->decimal('discount_amount', 18, 4)->default(0);
             $table->decimal('tax_amount', 18, 4)->default(0);
-            $table->decimal('estimated_additional_cost', 18, 4)->default(0);
+            $table->decimal('transport_cost', 18, 4)->default(0);
+            $table->decimal('other_cost', 18, 4)->default(0);
             $table->decimal('total_amount', 18, 4)->default(0);
             $table->text('note')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('restrict');
             $table->timestamps();
         });
 
-        Schema::create('purchasing_order_items', function (Blueprint $table) {
+        Schema::create('purchase_order_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('purchasing_order_id')->constrained('purchasing_orders')->onDelete('cascade');
+            $table->foreignId('purchase_order_id')->constrained('purchase_orders')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('restrict');
             $table->decimal('quantity', 18, 4)->default(0);
             $table->decimal('received_quantity', 18, 4)->default(0);
@@ -43,15 +45,6 @@ return new class extends Migration
             $table->decimal('total_amount', 18, 4)->default(0);
             $table->timestamps();
         });
-
-        Schema::create('purchasing_order_costs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('purchasing_order_id')->constrained('purchasing_orders')->onDelete('cascade');
-            $table->decimal('amount', 18, 4)->default(0);
-            $table->text('description')->nullable();
-            $table->boolean('is_inventory_cost')->default(false);
-            $table->timestamps();
-        });
     }
 
     /**
@@ -59,6 +52,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('purchasing_orders');
+        Schema::dropIfExists('purchase_order_items');
+        Schema::dropIfExists('purchase_orders');
     }
 };
