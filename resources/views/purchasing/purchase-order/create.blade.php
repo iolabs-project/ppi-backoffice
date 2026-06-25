@@ -4,22 +4,28 @@
         function purchaseOrderForm() {
             return {
                 formData: {
-                    customer_id: null,
+                    supplier_id: null,
                     warehouse_id: null,
                     sales_person_id: null,
                     number: '{{ $number }}',
+                    reference_number: null,
                     order_date: "{{ now()->format('Y-m-d') }}",
                     due_date: "{{ now()->addDays(14)->format('Y-m-d') }}",
-                    discount_amount: 0,
-                    transport_cost: 0,
-                    other_cost: 0
+                    discount_amount: null,
+                    transport_cost: null,
+                    other_cost: null,
+                    payment_terms: null,
+                    subtotal: null,
+                    total_amount: null,
+                    note: null,
+                    details: [],
                 },
-                // Customer Options
-                customers: [],
-                customerLoading: false,
-                customerSearch: '',
-                customerSelected: null,
-                customerOpen: false,
+                // Supplier Options
+                suppliers: [],
+                supplierLoading: false,
+                supplierSearch: '',
+                supplierSelected: null,
+                supplierOpen: false,
                 // Warehouse Options
                 warehouses: [],
                 warehouseLoading: false,
@@ -36,88 +42,84 @@
                 paymentTerms: @json($paymentTerms),
                 paymentTermSelected: null,
                 paymentTermOpen: false,
+                // Product Options
+                products: [],
+                productLoading: false,
+                productSearch: '',
+                productSelected: [],
+                productOpen: false,
+                // Submit
+                isSubmitting: false,
 
-                produkList: @json($produk),
-                items: [{
-                        kode: 'TPG-001',
-                        nama: 'Tepung Terigu Cakra Kembar',
-                        qty: 120,
-                        satuan: 'Kg',
-                        harga: 215000
-                    },
-                    {
-                        kode: 'GLP-002',
-                        nama: 'Gula Pasir Kemasan Premium',
-                        qty: 40,
-                        satuan: 'Kg',
-                        harga: 678000
-                    },
-                ],
-                diskon: 2500000,
-                ongkir: 1800000,
-                biayaLain: 0,
-                get subtotal() {
-                    return this.items.reduce((s, i) => s + i.qty * i.harga, 0);
-                },
-                get total() {
-                    return this.subtotal - this.diskon + this.ongkir + this.biayaLain;
-                },
-                addItem() {
-                    this.items.push({
-                        kode: '',
-                        nama: '',
-                        qty: 1,
-                        satuan: '',
-                        harga: 0
+                addProduct() {
+                    this.formData.details.push({
+                        product_id: null,
+                        name: null,
+                        code: null,
+                        quantity: null,
+                        unit: null,
+                        unit_price: null,
+                        total_amount: null
                     });
                 },
-                removeItem(idx) {
-                    if (this.items.length > 1) this.items.splice(idx, 1);
+                deleteProduct(index) {
+                    this.formData.details.splice(index, 1);
+                    this.calculateSubtotal();
                 },
-                fmt(n) {
-                    return 'Rp ' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                },
-                parseNum(str) {
-                    return Number(String(str).replace(/[^0-9]/g, '')) || 0;
-                },
-                fmtNum(n) {
-                    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                },
-                fmtInput(e) {
-                    let el = e.target;
-                    let pos = el.value.slice(0, el.selectionStart).replace(/[^0-9]/g, '').length;
-                    let raw = el.value.replace(/[^0-9]/g, '');
-                    el.value = raw ? raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
-                    let i = 0,
-                        c = 0;
-                    while (i < el.value.length && c < pos) {
-                        if (/\d/.test(el.value[i])) c++;
-                        i++;
+                selectProduct(item, product) {
+                    if (this.formData.details.some(d => d.product_id === product.id)) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Produk sudah terpilih sebelumnya'
+                        });
+
+                        return;
                     }
-                    el.setSelectionRange(i, i);
+                    item.name = product.name;
+                    item.product_id = product.id;
+                    item.code = product.code;
+                    item.unit = product.unit.symbol;
+                },
+                calculateDetailTotal(index) {
+                    let item = this.formData.details[index];
+
+                    item.total_amount = NumberUtils.parseMaskIntoNumeric(item.quantity) * NumberUtils.parseMaskIntoNumeric(
+                        item.unit_price);
+                    this.calculateSubtotal();
+                },
+                calculateSubtotal() {
+                    this.formData.subtotal = this.formData.details.reduce((sum, item) => {
+                        return sum + NumberUtils.parseMaskIntoNumeric(item.total_amount);
+                    }, 0);
+                    this.calculateTotal();
+                },
+                calculateTotal() {
+                    this.formData.total_amount = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal) - NumberUtils
+                        .parseMaskIntoNumeric(this.formData.discount_amount) + NumberUtils.parseMaskIntoNumeric(this
+                            .formData.transport_cost) + NumberUtils.parseMaskIntoNumeric(this.formData.other_cost);
                 },
                 initials(name) {
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
                 },
 
-                async loadCustomers() {
-                    this.customerLoading = true;
+                async loadSuppliers() {
+                    this.supplierLoading = true;
 
                     try {
                         const response = await axios.get(
                             route('master.contacts.options'), {
                                 params: {
-                                    search: this.customerSearch,
-                                    type: 'customer'
+                                    search: this.supplierSearch,
+                                    type: 'supplier'
                                 }
                             }
                         );
 
-                        this.customers = response.data.data;
+                        this.suppliers = response.data.data;
 
 
                     } finally {
-                        this.customerLoading = false;
+                        this.supplierLoading = false;
                     }
                 },
 
@@ -162,10 +164,147 @@
                     }
                 },
 
+                async loadProducts() {
+                    this.productLoading = true;
+
+                    try {
+                        const response = await axios.get(
+                            route('master.products.options'), {
+                                params: {
+                                    search: this.productSearch,
+                                }
+                            }
+                        );
+
+                        this.products = response.data.data;
+                    } finally {
+                        this.productLoading = false;
+                    }
+                },
+
                 async init() {
-                    await this.loadCustomers();
-                    await this.loadSalesPersons();
-                    await this.loadWarehouses();
+                    await Promise.all([
+                        this.loadSuppliers(),
+                        this.loadSalesPersons(),
+                        this.loadWarehouses(),
+                        this.loadProducts(),
+                    ]);
+                },
+
+                async submitDraft() {
+                    this.isSubmitting = true;
+
+                    let body = {
+                        ...this.formData,
+                        status: 'draft',
+                    };
+                    body.discount_amount = NumberUtils.parseMaskIntoNumeric(body.discount_amount);
+                    body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
+                    body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
+                    body.details = body.details.map(d => ({
+                        ...d,
+                        quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
+                        unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
+                        total_amount: NumberUtils.parseMaskIntoNumeric(d.total_amount),
+                    }));
+
+                    Swal.fire({
+                        title: 'Memproses penyimpanan draft PO...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    try {
+                        const response = await axios.post(
+                            route('purchasings.purchasing_orders.store'), body
+                        );
+                        console.log('response', response.data.message);
+
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message
+                        });
+
+                        window.location.href = response.data.redirect;
+                    } catch (error) {
+                        console.error('Error submitting draft PO:', error);
+                        Swal.close();
+                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+
+                        if (error.response?.status === 422) {
+                            message = Object.values(error.response.data.errors)
+                                .flat()
+                                .join(', ');
+                        } else if (error.response?.data?.message) {
+                            message = error.response.data.message;
+                        }
+
+                        Toast.fire({
+                            icon: 'error',
+                            title: message
+                        });
+
+                    }
+                },
+
+                async submitOpen() {
+                    this.isSubmitting = true;
+
+                    let body = {
+                        ...this.formData,
+                        status: 'open',
+                    };
+                    body.discount_amount = NumberUtils.parseMaskIntoNumeric(body.discount_amount);
+                    body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
+                    body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
+                    body.details = body.details.map(d => ({
+                        ...d,
+                        quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
+                        unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
+                        total_amount: NumberUtils.parseMaskIntoNumeric(d.total_amount),
+                    }));
+
+                    Swal.fire({
+                        title: 'Memproses penyimpanan PO...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    try {
+                        const response = await axios.post(
+                            route('purchasings.purchasing_orders.store'), body
+                        );
+
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message
+                        });
+
+                        window.location.href = response.data.redirect;
+                    } catch (error) {
+                        Swal.close();
+                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+
+                        if (error.response?.status === 422) {
+                            message = Object.values(error.response.data.errors)
+                                .flat()
+                                .join(', ');
+                        } else if (error.response?.data?.message) {
+                            message = error.response.data.message;
+                        }
+
+                        Toast.fire({
+                            icon: 'error',
+                            title: message
+                        });
+
+                    }
                 }
 
             };
@@ -188,24 +327,24 @@
             <div class="display card-hd-title">Informasi Order</div>
             <div class="order-form-grid-4">
 
-                {{-- Customer Dropdown --}}
-                <x-misc.field label="Customer" :required="true">
-                    <div class="dropdown-wrap" @click.outside="customerOpen=false">
-                        <div class="input dropdown-trigger" @click="customerOpen=!customerOpen">
+                {{-- Supplier Dropdown --}}
+                <x-misc.field label="Supplier" :required="true">
+                    <div class="dropdown-wrap" @click.outside="supplierOpen=false">
+                        <div class="input dropdown-trigger" @click="supplierOpen=!supplierOpen">
                             <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                x-text="initials(customerSelected ? customerSelected.name : '')"></div>
+                                x-text="initials(supplierSelected ? supplierSelected.name : '')"></div>
                             <span style="flex:1; font-weight:500;"
-                                x-text="customerSelected ? customerSelected.name : 'Pilih Customer'"></span>
+                                x-text="supplierSelected ? supplierSelected.name : 'Pilih Supplier'"></span>
                             <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
                         </div>
-                        <div class="dropdown-menu" x-show="customerOpen" x-cloak>
-                            <template x-for="c in customers" :key="c.id">
+                        <div class="dropdown-menu" x-show="supplierOpen" x-cloak>
+                            <template x-for="s in suppliers" :key="s.id">
                                 <div class="dropdown-item"
-                                    @click="customerSelected=c; formData.customer_id=c.id; customerOpen=false">
+                                    @click="supplierSelected=s; formData.supplier_id=s.id; supplierOpen=false">
                                     <div class="avatar"
                                         style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                        x-text="initials(c.name)"></div>
-                                    <span x-text="c.name"></span>
+                                        x-text="initials(s.name)"></div>
+                                    <span x-text="s.name"></span>
                                 </div>
                             </template>
                         </div>
@@ -279,8 +418,6 @@
                 <x-misc.field label="Termin Pembayaran">
                     <div class="dropdown-wrap" @click.outside="paymentTermOpen=false">
                         <div class="input dropdown-trigger" @click="paymentTermOpen=!paymentTermOpen">
-                            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                x-text="initials(paymentTermSelected ? paymentTermSelected.name : '')"></div>
                             <span style="flex:1; font-weight:500;"
                                 x-text="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"></span>
                             <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
@@ -288,7 +425,7 @@
                         <div class="dropdown-menu" x-show="paymentTermOpen" x-cloak>
                             <template x-for="t in paymentTerms" :key="t.id">
                                 <div class="dropdown-item"
-                                    @click="paymentTermSelected=t; formData.payment_term_id=t.id; paymentTermOpen=false">
+                                    @click="paymentTermSelected=t; formData.payment_terms=t.id; paymentTermOpen=false">
                                     <span x-text="t.name"></span>
                                 </div>
                             </template>
@@ -298,7 +435,7 @@
 
                 {{-- Nomor Referensi --}}
                 <x-misc.field label="Nomor Referensi">
-                    <input class="input mono" placeholder="(opsional)" />
+                    <input class="input mono" placeholder="(opsional)" x-model="formData.reference_number" />
                 </x-misc.field>
 
             </div>
@@ -308,7 +445,7 @@
         <div class="card" style="overflow:visible;">
             <div class="card-hd">
                 <div class="display card-hd-title">Daftar Produk</div>
-                <button class="btn btn-ghost btn-sm" x-on:click="addItem()">
+                <button class="btn btn-ghost btn-sm" @click="addProduct()">
                     <x-misc.icon name="plus" :size="13" />Tambah Produk
                 </button>
             </div>
@@ -325,7 +462,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <template x-for="(it, i) in items" :key="i">
+                    <template x-for="(it, i) in formData.details" :key="i">
                         <tr x-data="{ open: false }">
                             <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
                             <td>
@@ -338,8 +475,8 @@
                                             @click="open=!open">
                                             <span
                                                 style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
-                                                :style="it.nama ? '' : 'color:var(--ink-4);'"
-                                                x-text="it.nama || 'Pilih Produk'"></span>
+                                                :style="it.product_id ? '' : 'color:var(--ink-4);'"
+                                                x-text="it.product_id ? it.name : 'Pilih Produk'"></span>
                                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                                                 stroke="var(--ink-4)" stroke-width="1.6" stroke-linecap="round"
                                                 stroke-linejoin="round" style="flex-shrink:0;">
@@ -347,17 +484,16 @@
                                             </svg>
                                         </div>
                                         <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
-                                            x-text="it.kode || '— belum dipilih'"></div>
+                                            x-text="it.code || '— belum dipilih'"></div>
                                         <div class="dropdown-menu" x-show="open" x-cloak style="min-width:320px;">
-                                            <template x-for="p in produkList" :key="p.kode">
-                                                <div class="dropdown-item"
-                                                    @click="it.nama=p.nama; it.kode=p.kode; it.satuan=p.satuan; it.harga=p.hargaJual; open=false">
+                                            <template x-for="p in products" :key="p.id">
+                                                <div class="dropdown-item" @click="selectProduct(it, p);open=false">
                                                     <div style="flex:1; min-width:0;">
-                                                        <div style="font-size:13px;" x-text="p.nama"></div>
+                                                        <div style="font-size:13px;" x-text="p.name"></div>
                                                         <div class="mono" style="font-size:11px; color:var(--ink-4);"
-                                                            x-text="p.kode"></div>
+                                                            x-text="p.code"></div>
                                                     </div>
-                                                    <span class="dropdown-item__sub" x-text="p.satuan"></span>
+                                                    <span class="dropdown-item__sub" x-text="p.unit.symbol"></span>
                                                 </div>
                                             </template>
                                         </div>
@@ -365,32 +501,31 @@
                                 </div>
                             </td>
                             <td>
-                                <input class="input num" style="height:32px; text-align:right;" :value="fmtNum(it.qty)"
-                                    @focus="$event.target.select()"
-                                    @input="fmtInput($event); it.qty = parseNum($event.target.value)" />
+                                <input class="input num" style="height:32px; text-align:right;" x-model="it.quantity"
+                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
                             </td>
                             <td>
                                 <div class="input input--readonly"
                                     style="height:32px; display:flex; align-items:center; padding:0 10px; color:var(--ink-3);">
-                                    <span x-text="it.satuan || '—'"></span>
+                                    <span x-text="it.unit || '—'"></span>
                                 </div>
                             </td>
                             <td>
-                                <input class="input num" style="height:32px; text-align:right;" :value="fmtNum(it.harga)"
-                                    @focus="$event.target.select()"
-                                    @input="fmtInput($event); it.harga = parseNum($event.target.value)" />
+                                <input class="input num" style="height:32px; text-align:right;" x-model="it.unit_price"
+                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
                             </td>
-                            <td class="num" style="text-align:right; font-weight:600;"
-                                x-text="fmt(it.qty * it.harga)"></td>
+                            <td>
+                                <input class="input num" style="height:32px; text-align:right;"
+                                    x-model.number="it.total_amount" x-mask:dynamic="$money($input, ',')" disabled />
+                            </td>
                             <td>
                                 <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
-                                    :disabled="items.length <= 1"
-                                    :style="items.length <= 1 ? 'opacity:0.25; cursor:not-allowed;' : ''"
-                                    x-on:click="removeItem(i)">
+                                    :disabled="formData.details.length <= 1"
+                                    :style="formData.details.length <= 1 ? 'opacity:0.25; cursor:not-allowed;' : ''"
+                                    @click="deleteProduct(i)">
                                     <x-misc.icon name="trash" :size="14" stroke="var(--ink-4)" />
                                 </button>
                             </td>
-                        </tr>
                     </template>
                 </tbody>
             </table>
@@ -400,61 +535,58 @@
                     <div class="display order-extras__title">Biaya Tambahan</div>
                     <div class="order-extras__grid-3">
                         <x-misc.field label="Diskon">
-                            {{-- <input class="input num" style="text-align:right;" :value="fmtNum(diskon)"
-                                @focus="$event.target.select()"
-                                @input="fmtInput($event); diskon = parseNum($event.target.value)" /> --}}
-
                             <input class="input num" style="text-align:right;" x-model="formData.discount_amount"
-                                x-mask:dynamic="$money($input, ',')" />
+                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal()" />
                         </x-misc.field>
                         <x-misc.field label="Ongkos Kirim">
-                            <input class="input num" style="text-align:right;" :value="fmtNum(ongkir)"
-                                @focus="$event.target.select()"
-                                @input="fmtInput($event); ongkir = parseNum($event.target.value)" />
+                            <input class="input num" style="text-align:right;" x-model="formData.transport_cost"
+                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal()" />
                         </x-misc.field>
                         <x-misc.field label="Biaya Lain-lain">
-                            <input class="input num" style="text-align:right;" :value="fmtNum(biayaLain)"
-                                @focus="$event.target.select()"
-                                @input="fmtInput($event); biayaLain = parseNum($event.target.value)" />
+                            <input class="input num" style="text-align:right;" x-model="formData.other_cost"
+                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal()" />
                         </x-misc.field>
                     </div>
                     <x-misc.field label="Catatan Internal">
-                        <textarea class="input" rows="2" placeholder="Tulis catatan untuk tim gudang/pengiriman…"></textarea>
+                        <textarea class="input" rows="2" placeholder="Tulis catatan untuk tim gudang/pengiriman…"
+                            x-model="formData.note"></textarea>
                     </x-misc.field>
                 </div>
                 <div class="order-summary">
                     <div class="display order-summary__title">Ringkasan</div>
                     <div class="order-summary__row">
                         <span class="order-summary__label">Subtotal</span>
-                        <span class="num" style="font-weight:500;" x-text="fmt(subtotal)"></span>
+                        <span class="num" style="font-weight:500;"
+                            x-text="'Rp ' + (formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
                     </div>
                     <div class="order-summary__row">
                         <span class="order-summary__label">Diskon</span>
-                        {{-- <span class="num" style="font-weight:500;" x-text="'–' + fmt(diskon)"></span> --}}
                         <span style="font-weight:500;">-<span class="num" style="font-weight:500;"
-                                x-text="formData.discount_amount"></span></span>
+                                x-text="'Rp ' + (formData.discount_amount ?? 0)"></span></span>
                     </div>
                     <div class="order-summary__row">
                         <span class="order-summary__label">Ongkos Kirim</span>
-                        <span class="num" style="font-weight:500;" x-text="fmt(ongkir)"></span>
+                        <span class="num" style="font-weight:500;"
+                            x-text="'Rp ' + (formData.transport_cost ?? 0)"></span>
                     </div>
                     <div class="order-summary__row">
                         <span class="order-summary__label">Biaya Lain-lain</span>
-                        <span class="num" style="font-weight:500;" x-text="fmt(biayaLain)"></span>
+                        <span class="num" style="font-weight:500;" x-text="'Rp ' + (formData.other_cost ?? 0)"></span>
                     </div>
                     <div class="order-summary__divider"></div>
                     <div class="order-summary__total">
                         <span class="order-summary__total-label">Total Harga</span>
-                        <span class="order-summary__total-value display num" x-text="fmt(total)"></span>
+                        <span class="order-summary__total-value display num"
+                            x-text="'Rp ' + (formData.total_amount ? NumberUtils.formatNumericIntoMask(formData.total_amount) : '0')"></span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="order-form-footer">
-            <a href="{{ route('penjualan.index') }}" class="btn btn-ghost">Batal</a>
-            <button class="btn btn-ghost" style="border-style:dashed;">Simpan Draft</button>
-            <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan SO</button>
+            <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost">Batal</a>
+            <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
+            <button class="btn btn-primary"><x-misc.icon name="check" @click="submitOpen()" :size="14" />Simpan SO</button>
         </div>
 
     </div>

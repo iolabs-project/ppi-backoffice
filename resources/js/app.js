@@ -1,2 +1,5 @@
 import './bootstrap';
-console.log('Hello, PPI Backoffice!');
+
+import * as NumberUtils from './utils/number';
+
+window.NumberUtils = NumberUtils;

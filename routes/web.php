@@ -11,6 +11,7 @@ use App\Http\Controllers\Erp\LaporanController;
 use App\Http\Controllers\Erp\MasterController;
 use App\Http\Controllers\Erp\BiayaController;
 use App\Http\Controllers\Master\ContactController;
+use App\Http\Controllers\Master\ProductController;
 use App\Http\Controllers\Master\WarehouseController;
 use App\Http\Controllers\Purchasing\PurchaseOrderController;
 
@@ -121,6 +122,10 @@ Route::middleware('auth')->group(function () {
 
         Route::prefix('warehouses')->name('warehouses.')->group(function () {
             Route::get('/options', [WarehouseController::class, 'options'])->name('options');
+        });
+
+        Route::prefix('products')->name('products.')->group(function () {
+            Route::get('/options', [ProductController::class, 'options'])->name('options');
         });
     });
 });
