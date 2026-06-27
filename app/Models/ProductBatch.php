@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProductStock extends Model
+class ProductBatch extends Model
 {
     protected $fillable = [
         'available_quantity',

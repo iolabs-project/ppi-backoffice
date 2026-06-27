@@ -17,4 +17,20 @@ class PurchaseOrderItem extends Model
         'tax_amount',
         'total_amount',
     ];
+
+    // cast
+    protected $casts = [
+        'quantity' => 'double',
+        'received_quantity' => 'double',
+        'invoiced_quantity' => 'double',
+        'unit_price' => 'double',
+        'discount_amount' => 'double',
+        'tax_amount' => 'double',
+        'total_amount' => 'double',
+    ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

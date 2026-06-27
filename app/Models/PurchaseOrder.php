@@ -26,8 +26,34 @@ class PurchaseOrder extends Model
         'created_by',
     ];
 
+    // cast attributes to specific types
+    protected $casts = [
+        'order_date' => 'date:Y-m-d',
+        'due_date' => 'date:Y-m-d',
+        'discount_amount' => 'double',
+        'transport_cost' => 'double',
+        'other_cost' => 'double',
+        'subtotal' => 'double',
+        'total_amount' => 'double',
+    ];
+
     public function items()
     {
         return $this->hasMany(PurchaseOrderItem::class);
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Contact::class, 'supplier_id');
+    }
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class, 'warehouse_id');
+    }
+
+    public function salesPerson()
+    {
+        return $this->belongsTo(Contact::class, 'sales_person_id');
     }
 }

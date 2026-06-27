@@ -1,53 +1,67 @@
 @extends('layouts.app')
 @section('content')
     <script>
+        const purchaseOrder = @json($purchaseOrder);
+        console.log('purchaseOrder', purchaseOrder);
+
         function purchaseOrderForm() {
             return {
                 formData: {
-                    supplier_id: null,
-                    warehouse_id: null,
-                    sales_person_id: null,
-                    number: '{{ $number }}',
-                    reference_number: null,
-                    order_date: "{{ now()->format('Y-m-d') }}",
-                    due_date: "{{ now()->addDays(14)->format('Y-m-d') }}",
-                    discount_amount: null,
-                    transport_cost: null,
-                    other_cost: null,
-                    payment_terms: null,
-                    subtotal: null,
-                    total_amount: null,
-                    note: null,
-                    details: [],
+                    id: purchaseOrder.id || null,
+                    supplier_id: purchaseOrder.supplier_id || null,
+                    warehouse_id: purchaseOrder.warehouse_id || null,
+                    sales_person_id: purchaseOrder.sales_person_id || null,
+                    number: purchaseOrder.number || null,
+                    reference_number: purchaseOrder.reference_number || null,
+                    order_date: purchaseOrder.order_date || "{{ now()->format('Y-m-d') }}",
+                    due_date: purchaseOrder.due_date || "{{ now()->addDays(14)->format('Y-m-d') }}",
+                    discount_amount: purchaseOrder.discount_amount || null,
+                    transport_cost: purchaseOrder.transport_cost || null,
+                    other_cost: purchaseOrder.other_cost || null,
+                    payment_terms: purchaseOrder.payment_terms || null,
+                    subtotal: purchaseOrder.subtotal || null,
+                    total_amount: purchaseOrder.total_amount || null,
+                    note: purchaseOrder.note || null,
+                    details: (purchaseOrder.items || []).map(item => ({
+                        id: item.id,
+                        product_id: item.product_id,
+                        code: item.product.code,
+                        name: item.product.name,
+                        unit: item.product.unit.symbol,
+                        quantity: item.quantity,
+                        unit_price: item.unit_price,
+                        total_amount: item.total_amount,
+                    })),
                 },
                 // Supplier Options
                 suppliers: [],
                 supplierLoading: false,
                 supplierSearch: '',
-                supplierSelected: null,
+                supplierSelected: purchaseOrder.supplier || null,
                 supplierOpen: false,
                 // Warehouse Options
                 warehouses: [],
                 warehouseLoading: false,
                 warehouseSearch: '',
-                warehouseSelected: null,
+                warehouseSelected: purchaseOrder.warehouse || null,
                 warehouseOpen: false,
                 // Sales Options
                 salesPersons: [],
                 salesPersonLoading: false,
                 salesPersonSearch: '',
-                salesPersonSelected: null,
+                salesPersonSelected: purchaseOrder.sales_person || null,
                 salesPersonOpen: false,
                 // Payment Terms
                 paymentTerms: @json($paymentTerms),
-                paymentTermSelected: null,
+                paymentTermSelected: purchaseOrder.payment_terms || null,
                 paymentTermOpen: false,
                 // Product Options
                 products: [],
                 productLoading: false,
                 productSearch: '',
-                productSelected: [],
                 productOpen: false,
+                // Submit
+                isSubmitting: false,
 
                 addProduct() {
                     this.formData.details.push({
@@ -198,6 +212,8 @@
                 },
 
                 async submitDraft() {
+                    this.isSubmitting = true;
+
                     let body = {
                         ...this.formData,
                         status: 'draft',
@@ -221,9 +237,10 @@
                     });
 
                     try {
-                        const response = await axios.post(
-                            route('purchasings.purchasing_orders.store'), body
+                        const response = await axios.put(
+                            route('purchasings.purchasing_orders.update', this.formData.id), body
                         );
+                        console.log('response', response.data.message);
 
                         Swal.close();
                         Toast.fire({
@@ -254,6 +271,8 @@
                 },
 
                 async submitOpen() {
+                    this.isSubmitting = true;
+
                     let body = {
                         ...this.formData,
                         status: 'open',
@@ -277,8 +296,8 @@
                     });
 
                     try {
-                        const response = await axios.post(
-                            route('purchasings.purchasing_orders.store'), body
+                        const response = await axios.put(
+                            route('purchasings.purchasing_orders.update', this.formData.id), body
                         );
 
                         Swal.close();
@@ -311,6 +330,7 @@
             };
         }
     </script>
+
     <div x-data="purchaseOrderForm()" x-init="init()" class="order-page">
 
         <div>
@@ -318,8 +338,8 @@
                 style="margin-bottom:10px;">
                 <x-misc.icon name="chev-left" :size="13" />Kembali
             </a>
-            <h1 class="order-title display">Tambah Purchase Order</h1>
-            <div class="order-sub">Buat dokumen PO baru</div>
+            <h1 class="order-title display">Edit Purchase Order</h1>
+            <div class="order-sub">Ubah dokumen PO yang ada</div>
         </div>
 
         {{-- Info Order --}}
@@ -586,7 +606,8 @@
         <div class="order-form-footer">
             <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost">Batal</a>
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
-            <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Simpan SO</button>
+            <button class="btn btn-primary"><x-misc.icon name="check" @click="submitOpen()" :size="14" />Simpan
+                SO</button>
         </div>
 
     </div>

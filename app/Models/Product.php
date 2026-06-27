@@ -13,8 +13,8 @@ class Product extends Model
         return $this->belongsTo(Unit::class);
     }
 
-    public function stocks()
+    public function batches()
     {
-        return $this->hasMany(ProductStock::class);
+        return $this->hasMany(ProductBatch::class);
     }
 }

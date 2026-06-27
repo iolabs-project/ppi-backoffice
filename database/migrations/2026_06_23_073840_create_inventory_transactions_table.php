@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('inventory_transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->onDelete('no action');
-            $table->foreignId('product_id')->constrained()->onDelete('no action');
-            $table->foreignId('warehouse_id')->constrained()->onDelete('no action');
+            $table->foreignId('company_id')->constrained()->onDelete('restrict');
+            $table->foreignId('warehouse_id')->constrained()->onDelete('restrict');
+            $table->foreignId('product_id')->constrained()->onDelete('restrict');
+            $table->foreignId('product_batch_id')->constrained()->onDelete('restrict');
             $table->enum('type', ['opening', 'purchase', 'sale', 'transfer_in', 'transfer_out', 'adjustment_plus', 'adjustment_minus']);
             $table->tinyInteger('direction')->comment('1 for incoming, -1 for outgoing');
             $table->decimal('quantity', 18, 4);

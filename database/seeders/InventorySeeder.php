@@ -101,11 +101,27 @@ class InventorySeeder extends Seeder
             ]
         ]);
 
+        DB::table('product_batches')->insert([
+            [
+                'id' => 1,
+                'company_id' => 1,
+                'product_id' => 1,
+                'warehouse_id' => 1,
+                'batch_number' => 'LOT001',
+                'quantity' => 500,
+                'reserved_quantity' => 0,
+                'average_cost' => 10000,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
         DB::table('inventory_transactions')->insert([
             [
                 'id' => 1,
                 'company_id' => 1,
                 'product_id' => 1,
+                'product_batch_id' => 1,
                 'warehouse_id' => 1,
                 'type' => 'opening',
                 'direction' => 1,
@@ -118,20 +134,6 @@ class InventorySeeder extends Seeder
                 'reference_id' => null,
                 'transaction_date' => now(),
                 'note' => 'Stok awal untuk produk Jagung',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
-
-        DB::table('product_stocks')->insert([
-            [
-                'id' => 1,
-                'company_id' => 1,
-                'product_id' => 1,
-                'warehouse_id' => 1,
-                'quantity' => 500,
-                'reserved_quantity' => 0,
-                'average_cost' => 10000,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

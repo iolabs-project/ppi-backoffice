@@ -34,17 +34,18 @@ class ProductService
             $data->where('category_id', $request->category_id);
         }
 
-        if ($request->filled('with_stock') && $request->filled('warehouse_id')) {
-            $warehouseID = $request->warehouse_id;
-            $subQuery = DB::table('product_stocks')
-                ->selectRaw('SUM(quantity - reserved_quantity) as available_quantity')
-                ->where('product_stocks.warehouse_id', $warehouseID);
+        // TODO: Refactor this to handle batches not just stock
+        // if ($request->filled('with_stock') && $request->filled('warehouse_id')) {
+        //     $warehouseID = $request->warehouse_id;
+        //     $subQuery = DB::table('product_stocks')
+        //         ->selectRaw('SUM(quantity - reserved_quantity) as available_quantity')
+        //         ->where('product_stocks.warehouse_id', $warehouseID);
 
-            $data->leftJoinSub($subQuery, 'sub', function ($join) {
-                $join->on('products.id', '=', 'sub.product_id');
-            })
-                ->addSelect('sub.available_quantity as available_quantity');
-        }
+        //     $data->leftJoinSub($subQuery, 'sub', function ($join) {
+        //         $join->on('products.id', '=', 'sub.product_id');
+        //     })
+        //         ->addSelect('sub.available_quantity as available_quantity');
+        // }
 
         $data = $data->get();
 

@@ -50,11 +50,18 @@ Route::middleware('auth')->group(function () {
     Route::prefix('purchasings')->name('purchasings.')->group(function () {
         Route::prefix('purchasing-orders')->name('purchasing_orders.')->controller(PurchaseOrderController::class)->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/datatable', 'datatable')->name('datatable');
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
-            Route::get('/{id}', 'show')->name('show');
-            Route::get('/{id}/edit', 'edit')->name('edit');
-            Route::put('/{id}', 'update')->name('update');
+
+            Route::prefix('/{id}')->group(function () {
+                Route::get('/', 'show')->name('show');
+                Route::get('/edit', 'edit')->name('edit');
+                Route::put('/', 'update')->name('update');
+                Route::post('/open', 'open')->name('open');
+                Route::post('/close', 'close')->name('close');
+                Route::post('/cancel', 'cancel')->name('cancel');
+            });
         });
     });
 
