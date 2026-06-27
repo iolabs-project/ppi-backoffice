@@ -31,6 +31,7 @@
                         quantity: item.quantity,
                         unit_price: item.unit_price,
                         total_amount: item.total_amount,
+                        estimated_hpp: null,
                     })),
                 },
                 // Supplier Options
@@ -71,7 +72,8 @@
                         quantity: null,
                         unit: null,
                         unit_price: null,
-                        total_amount: null
+                        total_amount: null,
+                        estimated_hpp: null,
                     });
                 },
                 deleteProduct(index) {
@@ -91,6 +93,32 @@
                     item.product_id = product.id;
                     item.code = product.code;
                     item.unit = product.unit.symbol;
+                },
+                calculateEstimatedHPP() {
+                    const estimatedAdditionalCost =
+                        NumberUtils.parseMaskIntoNumeric(this.formData.transport_cost) +
+                        NumberUtils.parseMaskIntoNumeric(this.formData.other_cost) -
+                        NumberUtils.parseMaskIntoNumeric(this.formData.discount_amount);
+
+                    const totalWeight = this.formData.details.reduce(
+                        (sum, item) => sum + NumberUtils.parseMaskIntoNumeric(item.quantity),
+                        0
+                    );
+
+                    const costPerKg = totalWeight > 0 ?
+                        Math.round(estimatedAdditionalCost / totalWeight) :
+                        0;
+
+                    this.formData.details.forEach(item => {
+                        const unitPrice = NumberUtils.parseMaskIntoNumeric(item.unit_price);
+                        console.log('HPP Calculation:', {
+                            unitPrice,
+                            costPerKg,
+                            estimatedAdditionalCost,
+                            totalWeight
+                        });
+                        item.estimated_hpp = unitPrice + costPerKg;
+                    });
                 },
                 calculateDetailTotal(index) {
                     let item = this.formData.details[index];
@@ -331,7 +359,7 @@
         }
     </script>
 
-    <div x-data="purchaseOrderForm()" x-init="init()" class="order-page">
+    <div x-data="purchaseOrderForm()" x-init="init(); calculateEstimatedHPP();" class="order-page">
 
         <div>
             <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost btn-sm"
@@ -478,6 +506,7 @@
                         <th style="width:140px;">Satuan</th>
                         <th style="width:160px; text-align:right;">Harga</th>
                         <th style="width:160px; text-align:right;">Subtotal</th>
+                        <th style="width:160px; text-align:right;">Est. HPP</th>
                         <th style="width:40px;"></th>
                     </tr>
                 </thead>
@@ -522,7 +551,8 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.quantity"
-                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
+                                    @input="calculateDetailTotal(i); calculateEstimatedHPP();"
+                                    x-mask:dynamic="$money($input, ',')" />
                             </td>
                             <td>
                                 <div class="input input--readonly"
@@ -532,11 +562,16 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.unit_price"
-                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
+                                    @input="calculateDetailTotal(i); calculateEstimatedHPP();"
+                                    x-mask:dynamic="$money($input, ',')" />
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
                                     x-model.number="it.total_amount" x-mask:dynamic="$money($input, ',')" disabled />
+                            </td>
+                            <td>
+                                <input class="input num" style="height:32px; text-align:right;"
+                                    x-model.number="it.estimated_hpp" x-mask:dynamic="$money($input, ',')" disabled />
                             </td>
                             <td>
                                 <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
@@ -556,15 +591,15 @@
                     <div class="order-extras__grid-3">
                         <x-misc.field label="Diskon">
                             <input class="input num" style="text-align:right;" x-model="formData.discount_amount"
-                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal()" />
+                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal(); calculateEstimatedHPP();" />
                         </x-misc.field>
                         <x-misc.field label="Ongkos Kirim">
                             <input class="input num" style="text-align:right;" x-model="formData.transport_cost"
-                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal()" />
+                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal(); calculateEstimatedHPP();" />
                         </x-misc.field>
                         <x-misc.field label="Biaya Lain-lain">
                             <input class="input num" style="text-align:right;" x-model="formData.other_cost"
-                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal()" />
+                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal(); calculateEstimatedHPP();" />
                         </x-misc.field>
                     </div>
                     <x-misc.field label="Catatan Internal">
