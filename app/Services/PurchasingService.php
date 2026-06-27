@@ -69,7 +69,8 @@ class PurchasingService
             'items.product.unit:id,name,symbol',
             'supplier:id,name,code',
             'warehouse:id,name,code',
-            'salesPerson:id,name,code'
+            'salesPerson:id,name,code',
+            'creator:id,username'
         ])
         ->select(
             'id',
@@ -87,6 +88,9 @@ class PurchasingService
             'total_amount',
             'note',
             'status',
+            'created_by',
+            'created_at',
+            'updated_at',
         )
         ->find($id);
     }

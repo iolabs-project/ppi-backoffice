@@ -56,4 +56,9 @@ class PurchaseOrder extends Model
     {
         return $this->belongsTo(Contact::class, 'sales_person_id');
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

@@ -77,6 +77,24 @@ class PurchaseOrderController extends Controller
         }
     }
 
+    public function show(PurchasingService $purchasingService, int $id)
+    {
+        $purchaseOrder = $purchasingService->fetchPurchaseOrderByID($id);
+        if (!$purchaseOrder) {
+            abort(404, 'Purchase Order tidak ditemukan.');
+        }
+
+        $data = [
+            'currentPage' => 'pembelian',
+            'breadcrumb'  => [
+                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
+                ['label' => 'Detail PO'],
+            ],
+            'purchaseOrder' => $purchaseOrder,
+        ];
+        return view('purchasing.purchase-order.show', $data);
+    }
+
     public function edit(PurchasingService $purchasingService, int $id)
     {
         $purchaseOrder = $purchasingService->fetchPurchaseOrderByID($id);
