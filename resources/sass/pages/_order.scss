@@ -125,6 +125,12 @@
   border-top: 1px solid var(--line);
 }
 
+.order-items-split2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  border-top: 1px solid var(--line);
+}
+
 .order-extras {
   padding: 18px 22px;
   display: grid;
@@ -139,6 +145,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
+  margin-bottom: 5px;
 }
 
 .order-info-note {

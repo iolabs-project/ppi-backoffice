@@ -6,9 +6,13 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 window.axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 import Swal from 'sweetalert2'
-window.Swal = Swal;
 
-window.Toast = Swal.mixin({
+window.Swal = Swal.mixin({
+    buttonsStyling: false,
+    reverseButtons: true,
+});
+
+window.Toast = window.Swal.mixin({
     toast: true,
     position: 'top-end',
     showConfirmButton: false,

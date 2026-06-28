@@ -12,6 +12,8 @@
     'disetujui'       => ['chip chip-info', 'chip-dot dot-info',  'Disetujui'],
     'selesai'         => ['chip chip-ok',   'chip-dot dot-ok',    'Selesai'],
     'open'            => ['chip chip-info', 'chip-dot dot-info',  'Open'],
+    'closed'          => ['chip chip-ok',   'chip-dot dot-ok',    'Closed'],
+    'cancelled'       => ['chip chip-bad',  'chip-dot dot-bad',   'Cancelled'],
     'terkirim'        => ['chip chip-ok',   'chip-dot dot-ok',    'Terkirim'],
     'belum-dibayar'   => ['chip chip-bad',  'chip-dot dot-bad',   'Belum Dibayar'],
     'dibayar-sebagian'=> ['chip chip-warn', 'chip-dot dot-warn',  'Dibayar Sebagian'],

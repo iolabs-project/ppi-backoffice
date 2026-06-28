@@ -9,7 +9,6 @@
                     id: purchaseOrder.id || null,
                     supplier_id: purchaseOrder.supplier_id || null,
                     warehouse_id: purchaseOrder.warehouse_id || null,
-                    sales_person_id: purchaseOrder.sales_person_id || null,
                     number: purchaseOrder.number || null,
                     reference_number: purchaseOrder.reference_number || null,
                     order_date: purchaseOrder.order_date || "{{ now()->format('Y-m-d') }}",
@@ -45,15 +44,9 @@
                 warehouseSearch: '',
                 warehouseSelected: purchaseOrder.warehouse || null,
                 warehouseOpen: false,
-                // Sales Options
-                salesPersons: [],
-                salesPersonLoading: false,
-                salesPersonSearch: '',
-                salesPersonSelected: purchaseOrder.sales_person || null,
-                salesPersonOpen: false,
                 // Payment Terms
                 paymentTerms: @json($paymentTerms),
-                paymentTermSelected: purchaseOrder.payment_terms || null,
+                paymentTermSelected: null,
                 paymentTermOpen: false,
                 // Product Options
                 products: [],
@@ -162,27 +155,6 @@
                     }
                 },
 
-                async loadSalesPersons() {
-                    this.salesPersonLoading = true;
-
-                    try {
-                        const response = await axios.get(
-                            route('master.contacts.options'), {
-                                params: {
-                                    search: this.salesPersonSearch,
-                                    type: 'employee'
-                                }
-                            }
-                        );
-
-                        this.salesPersons = response.data.data;
-
-
-                    } finally {
-                        this.salesPersonLoading = false;
-                    }
-                },
-
                 async loadWarehouses() {
                     this.warehouseLoading = true;
 
@@ -222,6 +194,8 @@
                 },
 
                 async init() {
+                    this.paymentTermSelected = this.paymentTerms.find(t => t.id === this.formData.payment_terms) || null;
+
                     Swal.fire({
                         title: 'Memuat data...',
                         allowOutsideClick: false,
@@ -231,7 +205,6 @@
                     });
                     await Promise.all([
                         this.loadSuppliers(),
-                        this.loadSalesPersons(),
                         this.loadWarehouses(),
                         this.loadProducts(),
                     ]);
@@ -437,30 +410,6 @@
                     </div>
                 </x-misc.field>
 
-                {{-- Sales Person Dropdown --}}
-                <x-misc.field label="Sales Person">
-                    <div class="dropdown-wrap" @click.outside="salesPersonOpen=false">
-                        <div class="input dropdown-trigger" @click="salesPersonOpen=!salesPersonOpen">
-                            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                x-text="initials(salesPersonSelected ? salesPersonSelected.name : '')"></div>
-                            <span style="flex:1; font-weight:500;"
-                                x-text="salesPersonSelected ? salesPersonSelected.name : 'Pilih Sales Person'"></span>
-                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                        </div>
-                        <div class="dropdown-menu" x-show="salesPersonOpen" x-cloak>
-                            <template x-for="s in salesPersons" :key="s.id">
-                                <div class="dropdown-item"
-                                    @click="salesPersonSelected=s; formData.sales_person_id=s.id; salesPersonOpen=false">
-                                    <div class="avatar"
-                                        style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                        x-text="initials(s.name)"></div>
-                                    <span x-text="s.name"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                </x-misc.field>
-
                 {{-- Termin Pembayaran Dropdown --}}
                 <x-misc.field label="Termin Pembayaran">
                     <div class="dropdown-wrap" @click.outside="paymentTermOpen=false">
@@ -584,7 +533,7 @@
                 </tbody>
             </table>
 
-            <div class="order-items-split">
+            <div class="order-items-split2">
                 <div class="order-extras">
                     <div class="display order-extras__title">Biaya Tambahan</div>
                     <div class="order-extras__grid-3">
@@ -606,7 +555,7 @@
                             x-model="formData.note"></textarea>
                     </x-misc.field>
                 </div>
-                <div class="order-summary">
+                {{-- <div class="order-summary">
                     <div class="display order-summary__title">Ringkasan</div>
                     <div class="order-summary__row">
                         <span class="order-summary__label">Subtotal</span>
@@ -633,14 +582,14 @@
                         <span class="order-summary__total-value display num"
                             x-text="'Rp ' + (formData.total_amount ? NumberUtils.formatNumericIntoMask(formData.total_amount) : '0')"></span>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
 
         <div class="order-form-footer">
             <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost">Batal</a>
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
-            <button class="btn btn-primary"><x-misc.icon name="check" @click="submitOpen()" :size="14" />Simpan
+            <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Simpan
                 SO</button>
         </div>
 
