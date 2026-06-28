@@ -16,15 +16,14 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained()->onDelete('restrict');
             $table->foreignId('product_id')->constrained()->onDelete('restrict');
             $table->foreignId('warehouse_id')->constrained()->onDelete('restrict');
-            // $table->foreignId('goods_receipt_id')->constrained()->onDelete('restrict'); // TODO: Uncomment this line if you have a goods_receipts table
             $table->string('batch_number', 50);
             $table->string('supplier_batch_number', 50)->nullable();
             $table->decimal('quantity', 18, 4)->default(0);
             $table->decimal('reserved_quantity', 18, 4)->default(0);
-            $table->decimal('average_cost', 18, 4)->default(0);
+            $table->decimal('unit_cost', 18, 4)->default(0);
             $table->timestamps();
 
-            $table->unique(['company_id', 'product_id', 'warehouse_id']);
+            $table->unique(['company_id', 'product_id', 'warehouse_id', 'batch_number'], 'unique_product_batch');
         });
     }
 
@@ -33,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_stocks');
+        Schema::dropIfExists('product_batches');
     }
 };

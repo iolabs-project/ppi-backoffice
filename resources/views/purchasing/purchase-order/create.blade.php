@@ -573,12 +573,12 @@
                                 x-mask:dynamic="$money($input, ',')"
                                 @input="calculateTotal(); calculateEstimatedHPP();" />
                         </x-misc.field>
-                        <x-misc.field label="Ongkos Kirim">
+                        <x-misc.field label="Biaya Transportasi (Est)">
                             <input class="input num" style="text-align:right;" x-model="formData.transport_cost"
                                 x-mask:dynamic="$money($input, ',')"
                                 @input="calculateTotal(); calculateEstimatedHPP();" />
                         </x-misc.field>
-                        <x-misc.field label="Biaya Lain-lain">
+                        <x-misc.field label="Biaya Lain-lain (Est)">
                             <input class="input num" style="text-align:right;" x-model="formData.other_cost"
                                 x-mask:dynamic="$money($input, ',')"
                                 @input="calculateTotal(); calculateEstimatedHPP();" />
@@ -602,12 +602,12 @@
                                 x-text="'Rp ' + (formData.discount_amount ?? 0)"></span></span>
                     </div>
                     <div class="order-summary__row">
-                        <span class="order-summary__label">Ongkos Kirim</span>
+                        <span class="order-summary__label">Biaya Transportasi (Est)</span>
                         <span class="num" style="font-weight:500;"
                             x-text="'Rp ' + (formData.transport_cost ?? 0)"></span>
                     </div>
                     <div class="order-summary__row">
-                        <span class="order-summary__label">Biaya Lain-lain</span>
+                        <span class="order-summary__label">Biaya Lain-lain (Est)</span>
                         <span class="num" style="font-weight:500;" x-text="'Rp ' + (formData.other_cost ?? 0)"></span>
                     </div>
                     <div class="order-summary__divider"></div>

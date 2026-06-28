@@ -115,6 +115,7 @@
                                                         Detail
                                                     </a>
                                                     <button class="action-menu__item">
+                                                        {{-- TODO: Implement print functionality --}}
                                                         <x-misc.icon name="print" :size="14"
                                                             stroke="var(--ink-3)" />Cetak
                                                         PO
@@ -122,14 +123,21 @@
                                                 </div>
                                             </template>
                                             <template x-if="row.status === '{{ $open }}'">
-                                                <a href="#" class="action-menu__item">
+                                                {{-- <a href="#" class="action-menu__item">
                                                     <x-misc.icon name="box" :size="14"
                                                         stroke="var(--ink-3)" />Buat
                                                     Penerimaan
-                                                </a>
+                                                </a> --}}
+                                                <button class="action-menu__item"
+                                                    @click="handleCreateGoodsReceipt(row.id)">
+                                                    <x-misc.icon name="box" :size="14"
+                                                        stroke="var(--ink-3)" />Buat
+                                                    Penerimaan
+                                                </button>
                                             </template>
                                             <div class="action-menu__divider"></div>
-                                            <button class="action-menu__item action-menu__item--danger" @click="handleCancel(row.id)">
+                                            <button class="action-menu__item action-menu__item--danger"
+                                                @click="handleCancel(row.id)">
                                                 <x-misc.icon name="trash" :size="14"
                                                     stroke="currentColor" />Batalkan
                                                 Draft
@@ -310,6 +318,51 @@
                             } catch (error) {
                                 Swal.close();
                                 let message = 'Terjadi kesalahan saat membatalkan PO. Silakan coba lagi.';
+                                if (error.response?.data?.message) {
+                                    message = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: message
+                                });
+                            }
+
+                        }
+                    })
+                },
+
+                async handleCreateGoodsReceipt(id) {
+                    Swal.fire({
+                        title: 'Apakah Anda yakin ingin membuat Penerimaan Barang untuk PO ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Memproses...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            try {
+                                const response = await axios.post(route(
+                                    'purchasings.goods_receipts.store', {
+                                        purchase_order_id: id
+                                    }));
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                
+                                window.location.href = response.data.redirect;
+                            } catch (error) {
+                                Swal.close();
+                                let message = 'Terjadi kesalahan saat membuat Penerimaan Barang. Silakan coba lagi.';
                                 if (error.response?.data?.message) {
                                     message = error.response.data.message;
                                 }

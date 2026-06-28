@@ -33,8 +33,9 @@ return new class extends Migration
             $table->index([
                 'company_id',
                 'product_id',
-                'warehouse_id'
-            ]);
+                'warehouse_id',
+                'product_batch_id',
+            ], 'unique_inventory_transaction');
 
             $table->index([
                 'company_id',

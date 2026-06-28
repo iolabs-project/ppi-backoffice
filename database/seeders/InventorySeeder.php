@@ -110,7 +110,7 @@ class InventorySeeder extends Seeder
                 'batch_number' => 'LOT001',
                 'quantity' => 500,
                 'reserved_quantity' => 0,
-                'average_cost' => 10000,
+                'unit_cost' => 10000,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

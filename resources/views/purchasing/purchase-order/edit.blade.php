@@ -2,7 +2,6 @@
 @section('content')
     <script>
         const purchaseOrder = @json($purchaseOrder);
-        console.log('purchaseOrder', purchaseOrder);
 
         function purchaseOrderForm() {
             return {

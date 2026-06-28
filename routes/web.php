@@ -13,6 +13,7 @@ use App\Http\Controllers\Erp\BiayaController;
 use App\Http\Controllers\Master\ContactController;
 use App\Http\Controllers\Master\ProductController;
 use App\Http\Controllers\Master\WarehouseController;
+use App\Http\Controllers\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Purchasing\PurchaseOrderController;
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -61,6 +62,19 @@ Route::middleware('auth')->group(function () {
                 Route::post('/open', 'open')->name('open');
                 Route::post('/close', 'close')->name('close');
                 Route::post('/cancel', 'cancel')->name('cancel');
+            });
+        });
+
+        Route::prefix('goods-receipts')->name('goods_receipts.')->controller(GoodsReceiptController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/datatable', 'datatable')->name('datatable');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+
+            Route::prefix('/{id}')->group(function () {
+                Route::get('/', 'show')->name('show');
+                Route::get('/edit', 'edit')->name('edit');
+                Route::put('/', 'update')->name('update');
             });
         });
     });

@@ -7,7 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class ProductBatch extends Model
 {
     protected $fillable = [
-        'available_quantity',
+        'company_id',
+        'warehouse_id',
+        'product_id',
+        'goods_receipt_id',
+        'batch_number',
+        'supplier_batch_number',
+        'quantity',
+        'reserved_quantity',
+        'unit_cost',
     ];
 
     public function getAvailableQuantityAttribute()

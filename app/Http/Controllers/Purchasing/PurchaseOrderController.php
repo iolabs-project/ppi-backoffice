@@ -194,4 +194,10 @@ class PurchaseOrderController extends Controller
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Purchase Order. Silakan coba lagi.'], 500);
         }
     }
+
+    // public function itemOptions(PurchasingService $purchasingService, Request $request)
+    // {
+    //     $options = $purchasingService->fetchPurchaseOrderItemOptions($request);
+    //     return response()->json($options);
+    // }
 }
