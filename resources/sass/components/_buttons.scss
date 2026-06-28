@@ -42,3 +42,9 @@
 
 .btn-sm  { height: 30px; padding: 0 12px; font-size: 11.5px; }
 .btn-icon { width: 38px; padding: 0; }
+
+.btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
