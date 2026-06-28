@@ -9,6 +9,23 @@ use Illuminate\Support\Facades\DB;
 
 class ProductService
 {
+
+    public function fetchProductData() {
+         $data = Product::with([
+            'unit:id,name,symbol',
+        ])
+            ->select(
+                'id',
+                'code',
+                'name',
+                'unit_id'
+            )
+            ->where('company_id', config('context.selected_company_id'))
+            ->whereNull('deleted_at')
+            ->get();
+
+        return $data;
+    }
     public function fetchOptionData(Request $request)
     {
         $data = Product::with([

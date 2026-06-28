@@ -62,10 +62,8 @@
                                 <td class="mono" style="font-weight:600;" x-text="row.purchase_order.number"></td>
                                 <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
-                                <td class="num" style="text-align:right;"
-                                    x-text="row.total_received_quantity"></td>
-                                <td class="num" style="text-align:right;"
-                                    x-text="row.total_shrinkage_quantity"></td>
+                                <td class="num" style="text-align:right;" x-text="row.total_received_quantity"></td>
+                                <td class="num" style="text-align:right;" x-text="row.total_shrinkage_quantity"></td>
                                 <td><span class="mono" x-text="row.status"></span></td>
                                 <td class="table-action-col">
                                     <div x-data="{ open: false }" class="action-menu">
@@ -84,28 +82,36 @@
                                         </button>
                                         <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
                                             x-on:click.away="open = false" class="action-menu__panel">
-                                            <a :href="route('purchasings.purchasing_orders.show', row.id)" class="action-menu__item">
+                                            <a :href="route('purchasings.purchasing_orders.show', row.purchase_order_id)"
+                                                class="action-menu__item">
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
                                                 Detail PO
                                             </a>
                                             <button class="action-menu__item">
                                                 <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
-                                                Berita Acara
+                                                Penerimaan
                                             </button>
-                                            <a :href="route('purchasings.goods_receipts.edit', row.id)" class="action-menu__item">
-                                                <x-misc.icon name="edit" :size="14" stroke="var(--ink-3)" />Edit
-                                                Catatan
-                                            </a>
-                                            <div class="action-menu__divider"></div>
-                                            <button class="action-menu__item">
+
+                                            {{-- <button class="action-menu__item">
                                                 <x-misc.icon name="check" :size="14" stroke="var(--ink-3)" />Tandai
                                                 Selesai
-                                            </button>
-                                            <div class="action-menu__divider"></div>
-                                            <button class="action-menu__item action-menu__item--danger">
-                                                <x-misc.icon name="x" :size="14" stroke="currentColor" />Hapus
-                                                Catatan
-                                            </button>
+                                            </button> --}}
+                                            <template x-if="row.status === 'draft'">
+                                                <div>
+                                                    <a :href="route('purchasings.goods_receipts.edit', row.id)"
+                                                        class="action-menu__item">
+                                                        <x-misc.icon name="edit" :size="14"
+                                                            stroke="var(--ink-3)" />Edit
+                                                        Catatan
+                                                    </a>
+                                                    <div class="action-menu__divider"></div>
+                                                    <button class="action-menu__item action-menu__item--danger">
+                                                        <x-misc.icon name="x" :size="14"
+                                                            stroke="currentColor" />Hapus
+                                                        Catatan
+                                                    </button>
+                                                </div>
+                                            </template>
                                         </div>
                                     </div>
                                 </td>
@@ -127,7 +133,8 @@
                 </select>
             </div>
             <div class="pagination-info">
-                <span x-text="( (page-1)*perPage + 1 ) + '–' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                <span
+                    x-text="( (page-1)*perPage + 1 ) + '–' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
             </div>
             <div class="pagination-controls">
                 <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong
@@ -135,7 +142,7 @@
                 <button class="btn btn-ghost btn-sm" x-on:click="prev()" :disabled="page <= 1"><x-misc.icon
                         name="chev-left" :size="13" /> Prev</button>
                 <button class="btn btn-ghost btn-sm" x-on:click="next()"
-                    :disabled="page >= Math.ceil(tableData.total/tableData.per_page)">Next
+                    :disabled="page >= Math.ceil(tableData.total / tableData.per_page)">Next
                     <x-misc.icon name="chev-right" :size="13" /></button>
             </div>
         </div>
@@ -184,7 +191,7 @@
                         console.log('Response data:', response.data);
                         this.tableData = response.data;
                     } catch (error) {
-                        console.error('Error fetching data:', error);   
+                        console.error('Error fetching data:', error);
                         Toast.fire({
                             icon: 'error',
                             title: 'Terjadi kesalahan saat memuat data. Silakan coba lagi.'

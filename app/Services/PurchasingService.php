@@ -37,7 +37,11 @@ class PurchasingService
     {
         $query = PurchaseOrder::with([
             'warehouse:id,name,code',
-            'supplier:id,name,code'
+            'supplier:id,name,code',
+            'goodsReceipts' => function ($query) {
+                $query->select('id', 'purchase_order_id', 'status')
+                ->where('status', '<>', GoodsReceiptStatus::CANCELLED->value);
+            },
         ])
             ->select(
                 'id',

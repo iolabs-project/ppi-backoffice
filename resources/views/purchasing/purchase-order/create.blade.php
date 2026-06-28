@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('content')
     <script>
+        const products = @json($products);
         function purchaseOrderForm() {
             return {
                 formData: {
@@ -36,9 +37,6 @@
                 paymentTermSelected: null,
                 paymentTermOpen: false,
                 // Product Options
-                products: [],
-                productLoading: false,
-                productSearch: '',
                 productSelected: [],
                 productOpen: false,
 
@@ -161,22 +159,8 @@
                     }
                 },
 
-                async loadProducts() {
-                    this.productLoading = true;
-
-                    try {
-                        const response = await axios.get(
-                            route('master.products.options'), {
-                                params: {
-                                    search: this.productSearch,
-                                }
-                            }
-                        );
-
-                        this.products = response.data.data;
-                    } finally {
-                        this.productLoading = false;
-                    }
+                availableProducts() {
+                    return products.filter(p => !this.formData.details.some(d => d.product_id === p.id));
                 },
 
                 async init() {
@@ -190,7 +174,6 @@
                     await Promise.all([
                         this.loadSuppliers(),
                         this.loadWarehouses(),
-                        this.loadProducts(),
                     ]);
                     Swal.close();
                 },
@@ -351,7 +334,10 @@
 
                 {{-- Nomor PO --}}
                 <x-misc.field label="Nomor PO" :required="true">
-                    <input class="input mono" x-model="formData.number" />
+                    <div class="input mono input--readonly" style="display:flex; align-items:center;">
+                        <span style="flex:1; font-weight:600;" x-text="formData.number"></span>
+                        <span class="auto-tag">Auto</span>
+                    </div>
                 </x-misc.field>
 
                 {{-- Tanggal --}}
@@ -389,7 +375,7 @@
                 </x-misc.field>
 
                 {{-- Termin Pembayaran Dropdown --}}
-                <x-misc.field label="Termin Pembayaran">
+                <x-misc.field label="Termin Pembayaran" :required="true">
                     <div class="dropdown-wrap" @click.outside="paymentTermOpen=false">
                         <div class="input dropdown-trigger" @click="paymentTermOpen=!paymentTermOpen">
                             <span style="flex:1; font-weight:500;"
@@ -461,7 +447,7 @@
                                         <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
                                             x-text="it.code || '— belum dipilih'"></div>
                                         <div class="dropdown-menu" x-show="open" x-cloak style="min-width:320px;">
-                                            <template x-for="p in products" :key="p.id">
+                                            <template x-for="p in availableProducts()" :key="p.id">
                                                 <div class="dropdown-item" @click="selectProduct(it, p);open=false">
                                                     <div style="flex:1; min-width:0;">
                                                         <div style="font-size:13px;" x-text="p.name"></div>
@@ -511,7 +497,7 @@
                 </tbody>
             </table>
 
-            <div class="order-items-split2">
+            <div class="order-items-split">
                 <div class="order-extras">
                     <div class="display order-extras__title">Biaya Tambahan</div>
                     <div class="order-extras__grid-3">
@@ -536,7 +522,7 @@
                             x-model="formData.note"></textarea>
                     </x-misc.field>
                 </div>
-                {{-- <div class="order-summary">
+                <div class="order-summary">
                     <div class="display order-summary__title">Ringkasan</div>
                     <div class="order-summary__row">
                         <span class="order-summary__label">Subtotal</span>
@@ -563,7 +549,7 @@
                         <span class="order-summary__total-value display num"
                             x-text="'Rp ' + (formData.total_amount ? NumberUtils.formatNumericIntoMask(formData.total_amount) : '0')"></span>
                     </div>
-                </div> --}}
+                </div>
             </div>
         </div>
 

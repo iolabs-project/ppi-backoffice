@@ -6,12 +6,14 @@ enum GoodsReceiptStatus: string
 {
     case DRAFT = 'draft';
     case FINISHED = 'finished';
+    case CANCELLED = 'cancelled';
 
     public function label(): string
     {
         return match ($this) {
             self::DRAFT => 'Draft',
             self::FINISHED => 'Selesai',
+            self::CANCELLED => 'Dibatalkan',
         };
     }
 
@@ -20,6 +22,7 @@ enum GoodsReceiptStatus: string
         return [
             self::DRAFT->value => self::DRAFT->label(),
             self::FINISHED->value => self::FINISHED->label(),
+            self::CANCELLED->value => self::CANCELLED->label(),
         ];
     }
 

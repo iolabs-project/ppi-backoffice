@@ -485,7 +485,7 @@
                     </template>
                 </tbody>
             </table>
-            <div class="order-items-split">
+            <div class="order-items-split2">X
                 <div class="order-extras">
                     <div class="display order-extras__title">Biaya Tambahan</div>
                     <div class="order-extras__grid-3">
@@ -508,13 +508,13 @@
                         </x-misc.field>
                     </div>
                 </div>
-                <div class="hpp-summary">
+                {{-- <div class="hpp-summary">
                     <div class="label" style="margin-bottom:6px;">Estimasi HPP Total</div>
                     <div class="hpp-summary__value display num">{{ fmt_rp(0) }}</div>
                     <div class="hpp-summary__sub">
                         0 unit diterima · HPP/unit ≈ <span class="mono">{{ fmt_rp(round(0 / max(0, 1))) }}</span>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
         <div class="order-form-footer">

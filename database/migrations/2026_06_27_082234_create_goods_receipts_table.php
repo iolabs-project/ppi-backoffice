@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('number', 50)->unique();
             $table->string('reference_number', 50)->nullable();
             $table->dateTime('receipt_date');
-            $table->enum('status', ['draft', 'finished'])->default('draft');
+            $table->enum('status', ['draft', 'finished', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 18, 4)->default(0);
             $table->decimal('discount_amount', 18, 4)->default(0);
             $table->decimal('tax_amount', 18, 4)->default(0);

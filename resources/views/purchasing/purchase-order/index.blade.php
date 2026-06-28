@@ -133,20 +133,26 @@
                                                         stroke="var(--ink-3)" />Buat
                                                     Penerimaan
                                                 </a> --}}
-                                                <button class="action-menu__item"
-                                                    @click="handleCreateGoodsReceipt(row.id)">
+                                                <button class="action-menu__item" @click="handleCreateGoodsReceipt(row.id)">
                                                     <x-misc.icon name="box" :size="14"
                                                         stroke="var(--ink-3)" />Buat
                                                     Penerimaan
                                                 </button>
                                             </template>
-                                            <div class="action-menu__divider"></div>
-                                            <button class="action-menu__item action-menu__item--danger"
-                                                @click="handleCancel(row.id)">
-                                                <x-misc.icon name="trash" :size="14"
-                                                    stroke="currentColor" />Batalkan
-                                                Draft
-                                            </button>
+
+                                            <template
+                                                x-if="row.status === '{{ $draft }}' || (row.status === '{{ $open }}' && row.goods_receipts.length === 0)">
+                                                <div>P
+                                                    <div class="action-menu__divider"></div>
+                                                <button class="action-menu__item action-menu__item--danger"
+                                                    @click="handleCancel(row.id)">
+                                                    <x-misc.icon name="trash" :size="14"
+                                                        stroke="currentColor" />Batalkan
+                                                    PO
+                                                </button>
+                                                </div>
+
+                                            </template>
                                         </div>
                                     </div>
                                 </td>
@@ -206,12 +212,32 @@
 
                 statusChip(status) {
                     const map = {
-                        draft: { chip: 'chip', dot: 'chip-dot dot-muted', label: 'Draft' },
-                        open: { chip: 'chip chip-info', dot: 'chip-dot dot-info', label: 'Open' },
-                        closed: { chip: 'chip chip-ok', dot: 'chip-dot dot-ok', label: 'Closed' },
-                        cancelled: { chip: 'chip chip-bad', dot: 'chip-dot dot-bad', label: 'Cancelled' },
+                        draft: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-muted',
+                            label: 'Draft'
+                        },
+                        open: {
+                            chip: 'chip chip-info',
+                            dot: 'chip-dot dot-info',
+                            label: 'Open'
+                        },
+                        closed: {
+                            chip: 'chip chip-ok',
+                            dot: 'chip-dot dot-ok',
+                            label: 'Closed'
+                        },
+                        cancelled: {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Cancelled'
+                        },
                     };
-                    return map[status] ?? { chip: 'chip', dot: 'chip-dot dot-neutral', label: status };
+                    return map[status] ?? {
+                        chip: 'chip',
+                        dot: 'chip-dot dot-neutral',
+                        label: status
+                    };
                 },
 
                 async setStatus(statusId) {
@@ -373,11 +399,12 @@
                                     icon: 'success',
                                     title: response.data.message
                                 });
-                                
+
                                 window.location.href = response.data.redirect;
                             } catch (error) {
                                 Swal.close();
-                                let message = 'Terjadi kesalahan saat membuat Penerimaan Barang. Silakan coba lagi.';
+                                let message =
+                                    'Terjadi kesalahan saat membuat Penerimaan Barang. Silakan coba lagi.';
                                 if (error.response?.data?.message) {
                                     message = error.response.data.message;
                                 }
