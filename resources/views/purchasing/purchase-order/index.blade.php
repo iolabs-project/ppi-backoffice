@@ -9,7 +9,7 @@
         <div class="order-hd">
             <div>
                 <h1 class="order-title display">Purchase Order</h1>
-                <div class="order-sub"><span x-text="tableData ? tableData.total : 0"></span> dokumen · Periode Mei 2026</div>
+                <div class="order-sub"><span x-text="tableData ? tableData.total : 0"></span> dokumen</div>
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
