@@ -69,6 +69,7 @@
                         <th style="text-align:right;">Quantity (Susut)</th>
                         <th>Satuan</th>
                         <th style="text-align:right;">Harga Beli</th>
+                        <th style="text-align:right;">Diskon (%)</th>
                         <th style="text-align:right;">HPP</th>
                     </tr>
                 </thead>
@@ -86,6 +87,7 @@
                             <td class="num" style="text-align:right;">{{ $it->shrinkage_quantity }}</td>
                             <td style="color:var(--ink-3);">{{ $it->product->unit->symbol }}</td>
                             <td class="num" style="text-align:right;">{{ fmt_rp($it->unit_price) }}</td>
+                            <td class="num" style="text-align:right;">{{ $it->discount_percentage }}</td>
                             <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($it->unit_cost) }}
                             </td>
                         </tr>

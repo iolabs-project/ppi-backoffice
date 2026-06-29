@@ -232,7 +232,7 @@ class PurchasingService
         $purchaseOrder->update(['status' => $status]);
     }
 
-    public function fetchPOItemsForGoodsReceipt(int $id): \Illuminate\Support\Collection
+    public function fetchPOItemsForGoodsReceipt(int $id): Collection
     {
         $query = PurchaseOrderItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol'])
             ->where('purchase_order_id', $id)
@@ -249,6 +249,8 @@ class PurchasingService
                 'remaining_quantity' => $item->quantity - $item->received_quantity,
                 'unit_price' => $item->unit_price,
                 'unit' => $item->product->unit->symbol,
+                'discount_percentage' => $item->discount_percentage,
+                'discount_amount' => $item->discount_amount,
             ];
         });
     }
@@ -323,8 +325,8 @@ class PurchasingService
             'receipt_date' => now(),
             'status' => GoodsReceiptStatus::DRAFT->value,
             'subtotal' => $purchaseOrder->subtotal,
+            'discount_percentage' => $purchaseOrder->discount_percentage,
             'discount_amount' => $purchaseOrder->discount_amount,
-            'tax_amount' => $purchaseOrder->tax_amount,
             'transport_cost' => $purchaseOrder->transport_cost,
             'other_cost' => $purchaseOrder->other_cost,
             'total_amount' => $purchaseOrder->total_amount,
@@ -338,7 +340,7 @@ class PurchasingService
             'items',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
-            'items.purchaseOrderItem:id,quantity,received_quantity',
+            'items.purchaseOrderItem:id,quantity,received_quantity,discount_percentage,discount_amount,unit_price,total_amount',
             'purchaseOrder:id,number',
             'supplier:id,name,code',
             'warehouse:id,name,code',
@@ -355,8 +357,8 @@ class PurchasingService
                 'receipt_date',
                 'status',
                 'subtotal',
+                'discount_percentage',
                 'discount_amount',
-                'tax_amount',
                 'transport_cost',
                 'other_cost',
                 'total_amount',
@@ -383,17 +385,14 @@ class PurchasingService
             $discountAmount = $requestCollection->get('discount_amount', 0);
             $transportCost = $requestCollection->get('transport_cost', 0);
             $otherCost = $requestCollection->get('other_cost', 0);
-            $taxAmount = $requestCollection->get('tax_amount', 0);
-            $totalAmount = $subtotal - $discountAmount + $transportCost + $otherCost + $taxAmount;
+            $totalAmount = $subtotal - $discountAmount + $transportCost + $otherCost;
             $header->update([
                 'reference_number' => $requestCollection->get('reference_number', null),
                 'receipt_date' => $requestCollection->get('receipt_date'),
                 'status' => $requestCollection->get('status'),
                 'subtotal' => $subtotal,
-                'discount_amount' => $discountAmount,
                 'transport_cost' => $transportCost,
                 'other_cost' => $otherCost,
-                'tax_amount' => $taxAmount,
                 'total_amount' => $totalAmount,
                 'note' => $requestCollection->get('note', null),
             ]);
@@ -402,7 +401,7 @@ class PurchasingService
             if ($requestCollection->get('status') === GoodsReceiptStatus::DRAFT->value) {
                 $this->saveDraftGoodsReceipt($header, $detailsCollection);
             } elseif ($requestCollection->get('status') === GoodsReceiptStatus::FINISHED->value) {
-                $this->finalizeGoodsReceipt($header, $detailsCollection, $transportCost, $otherCost, $discountAmount, $taxAmount);
+                $this->finalizeGoodsReceipt($header, $detailsCollection, $transportCost, $otherCost, $discountAmount);
             }
         });
     }
@@ -414,6 +413,8 @@ class PurchasingService
             $receivedQty = (float) ($item['received_quantity'] ?? 0);
             $expectedQty = (float) ($item['expected_quantity'] ?? 0);
             $unitPrice = (float) ($item['unit_price'] ?? 0);
+            $discountPercentage = (float) ($item['discount_percentage'] ?? 0);
+            $discountAmount = $receivedQty * $unitPrice * ($discountPercentage / 100);
             GoodsReceiptItem::create([
                 'goods_receipt_id' => $goodsReceipt->id,
                 'purchase_order_item_id' => $item['purchase_order_item_id'],
@@ -423,6 +424,8 @@ class PurchasingService
                 'shrinkage_quantity' => $expectedQty - $receivedQty,
                 'received_quantity' => $receivedQty,
                 'unit_price' => $unitPrice,
+                'discount_percentage' => $discountPercentage,
+                'discount_amount' => $discountAmount,
                 'allocated_cost' => 0,
                 'unit_cost' => 0,
                 'total_cost' => 0,
@@ -430,21 +433,27 @@ class PurchasingService
         }
     }
 
-    private function finalizeGoodsReceipt(GoodsReceipt $goodsReceipt, Collection $detailsCollection, float $transportCost, float $otherCost, float $discountAmount, float $taxAmount): void
+    private function finalizeGoodsReceipt(GoodsReceipt $goodsReceipt, Collection $detailsCollection, float $transportCost, float $otherCost, float $discountAmount): void
     {
-        $additionalCost = $transportCost + $otherCost - $discountAmount + $taxAmount;
+        $additionalCost = $transportCost + $otherCost - $discountAmount;
         $totalWeight = $detailsCollection->sum(function ($item) {
             return $item['received_quantity'];
         });
         $costPerUnit = $totalWeight > 0 ? $additionalCost / $totalWeight : 0;
 
+
+
         foreach ($detailsCollection as $item) {
             $receivedQty = (float) ($item['received_quantity'] ?? 0);
             $expectedQty = (float) ($item['expected_quantity'] ?? 0);
             $unitPrice = (float) ($item['unit_price'] ?? 0);
+            $discountPercentage = (float) ($item['discount_percentage'] ?? 0);
+            $discountAmount = $receivedQty * $unitPrice * ($discountPercentage / 100);
 
+            
             $allocatedCost = $costPerUnit * $receivedQty;
-            $unitCost = $unitPrice + $costPerUnit;
+            $discountPerUnit = $discountAmount / $receivedQty;
+            $unitCost = $unitPrice + $costPerUnit - $discountPerUnit;
             $totalCost = $unitCost * $receivedQty;
 
             if ($this->validateBatchNumber($item['batch_number'], $item['product_id'], $goodsReceipt->company_id)) {
@@ -462,6 +471,8 @@ class PurchasingService
                 'shrinkage_quantity' => $expectedQty - $receivedQty,
                 'received_quantity' => $receivedQty,
                 'unit_price' => $unitPrice,
+                'discount_percentage' => $discountPercentage,
+                'discount_amount' => $discountAmount,
                 'allocated_cost' => $allocatedCost,
                 'unit_cost' => $unitCost,
                 'total_cost' => $totalCost,
@@ -503,7 +514,17 @@ class PurchasingService
             ]);
 
             PurchaseOrderItem::where('id', $goodsReceiptItem->purchase_order_item_id)
-                ->increment('received_quantity', $goodsReceiptItem->expected_quantity);
+                ->increment('received_quantity', $goodsReceiptItem->received_quantity);
+
+            // PurchaseOrder::where('id', $goodsReceipt->purchase_order_id)
+            //     ->whereColumn('received_quantity', '>=', 'quantity')
+            //     ->update(['status' => 'closed']);
+
+            PurchaseOrder::where('id', $goodsReceipt->purchase_order_id)
+                ->whereDoesntHave('items', function ($query) {
+                    $query->whereColumn('received_quantity', '<', 'quantity');
+                })
+                ->update(['status' => 'closed']);
         }
     }
 

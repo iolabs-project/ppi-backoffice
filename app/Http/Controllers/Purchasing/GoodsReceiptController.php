@@ -59,14 +59,15 @@ class GoodsReceiptController extends Controller
 
     public function edit(PurchasingService $purchasingService, int $id)
     {
+        $goodsReceipt = $purchasingService->fetchGoodsReceiptByID($id);
         $data = [
             'currentPage'   => 'pembelian.penerimaan',
             'breadcrumb'    => [
                 ['label' => 'Penerimaan Barang', 'url' => route('purchasings.goods_receipts.index')],
                 ['label' => 'Edit'],
             ],
-            'goodsReceipt'  => $purchasingService->fetchGoodsReceiptByID($id),
-            'remainingPOItems' => $purchasingService->fetchPOItemsForGoodsReceipt($id),
+            'goodsReceipt'  => $goodsReceipt,
+            'remainingPOItems' => $purchasingService->fetchPOItemsForGoodsReceipt($goodsReceipt->purchase_order_id),
         ];
 
         return view('purchasing.goods-receipt.edit', $data);
@@ -91,6 +92,7 @@ class GoodsReceiptController extends Controller
                     'details.*.received_quantity' => 'required|numeric|min:0',
                     'details.*.expected_quantity' => 'nullable|numeric|min:0',
                     'details.*.unit_price' => 'required|numeric|min:0',
+                    'details.*.discount_percentage' => 'nullable|numeric|min:0|max:100',
                 ],
                 [
                     'receipt_date.required' => 'Tanggal penerimaan harus diisi.',
@@ -102,6 +104,7 @@ class GoodsReceiptController extends Controller
                     'details.*.expected_quantity.required' => 'Terdapat produk yang belum diisi jumlah yang diharapkan. Silakan isi jumlah yang diharapkan untuk setiap produk.',
                     'details.*.received_quantity.required' => 'Terdapat produk yang belum diisi jumlah penerimaannya. Silakan isi jumlah penerimaan untuk setiap produk.',
                     'details.*.unit_price.required' => 'Terdapat produk yang belum diisi harga satuannya. Silakan isi harga satuan untuk setiap produk.',
+                    'details.*.discount_percentage.required' => 'Terdapat produk yang belum diisi persentase diskon. Silakan isi persentase diskon untuk setiap produk.',
                 ]
             );
         }

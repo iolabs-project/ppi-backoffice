@@ -16,8 +16,8 @@ class GoodsReceipt extends Model
         'receipt_date',
         'status',
         'subtotal',
+        'discount_percentage',
         'discount_amount',
-        'tax_amount',
         'transport_cost',
         'other_cost',
         'total_amount',
@@ -28,6 +28,7 @@ class GoodsReceipt extends Model
     // cast attributes to specific types
     protected $casts = [
         'receipt_date' => 'date:Y-m-d',
+        'discount_percentage' => 'double',
         'discount_amount' => 'double',
         'transport_cost' => 'double',
         'other_cost' => 'double',

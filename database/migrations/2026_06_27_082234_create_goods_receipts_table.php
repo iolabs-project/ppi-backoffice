@@ -22,8 +22,8 @@ return new class extends Migration
             $table->dateTime('receipt_date');
             $table->enum('status', ['draft', 'finished', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 18, 4)->default(0);
+            $table->decimal('discount_percentage', 5, 2)->default(0);
             $table->decimal('discount_amount', 18, 4)->default(0);
-            $table->decimal('tax_amount', 18, 4)->default(0);
             $table->decimal('transport_cost', 18, 4)->default(0);
             $table->decimal('other_cost', 18, 4)->default(0);
             $table->decimal('total_amount', 18, 4)->default(0);
@@ -42,6 +42,8 @@ return new class extends Migration
             $table->decimal('shrinkage_quantity', 18, 4);
             $table->decimal('received_quantity', 18, 4);
             $table->decimal('unit_price', 18, 4)->default(0);
+            $table->decimal('discount_percentage', 5, 2)->default(0);
+            $table->decimal('discount_amount', 18, 4)->default(0);
             $table->decimal('allocated_cost', 18, 4)->default(0);
             $table->decimal('unit_cost', 18, 4)->default(0);
             $table->decimal('total_cost', 18, 4)->default(0);

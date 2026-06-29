@@ -14,8 +14,8 @@
                     reference_number: goodsReceipt.reference_number || null,
                     receipt_date: goodsReceipt.receipt_date || null,
                     subtotal: goodsReceipt.subtotal || null,
+                    discount_percentage: goodsReceipt.discount_percentage || null,
                     discount_amount: goodsReceipt.discount_amount || null,
-                    tax_amount: goodsReceipt.tax_amount || null,
                     transport_cost: goodsReceipt.transport_cost || null,
                     other_cost: goodsReceipt.other_cost || null,
                     total_amount: goodsReceipt.total_amount || null,
@@ -34,6 +34,8 @@
                         received_quantity: item.received_quantity,
                         shrinkage_quantity: item.shrinkage_quantity,
                         unit_price: item.unit_price,
+                        discount_percentage: item.discount_percentage,
+                        discount_amount: item.discount_amount,
                         allocated_cost: item.allocated_cost,
                         unit_cost: item.unit_cost,
                         total_cost: item.total_cost,
@@ -51,6 +53,8 @@
                         received_quantity: null,
                         shrinkage_quantity: null,
                         unit_price: null,
+                        discount_percentage: null,
+                        discount_amount: null,
                         allocated_cost: null,
                         unit_cost: null,
                         total_cost: null,
@@ -82,6 +86,8 @@
                     item.shrinkage_quantity = 0;
 
                     item.unit_price = poItem.unit_price;
+                    item.discount_percentage = poItem.discount_percentage;
+                    item.discount_amount = poItem.discount_amount;
 
                     this.calculateHPP();
                 },
@@ -109,21 +115,25 @@
                         0
                     );
 
-                    const costPerKg = totalWeight > 0 ?
+                    const costPerUnit = totalWeight > 0 ?
                         Math.round(additionalCost / totalWeight) :
                         0;
 
                     this.formData.details.forEach(item => {
                         const unitPrice = NumberUtils.parseMaskIntoNumeric(item.unit_price);
                         const receivedQuantity = NumberUtils.parseMaskIntoNumeric(item.received_quantity);
+                        const discountPerUnit = receivedQuantity > 0 ? Math.round(NumberUtils.parseMaskIntoNumeric(
+                            item
+                            .discount_amount) / receivedQuantity) : 0;
                         console.log('HPP Calculation:', {
                             unitPrice,
-                            costPerKg,
+                            costPerUnit,
                             additionalCost,
-                            totalWeight
+                            totalWeight,
+                            discountPerUnit
                         });
-                        item.allocated_cost = costPerKg * receivedQuantity;
-                        item.unit_cost = unitPrice + costPerKg;
+                        item.allocated_cost = costPerUnit * receivedQuantity;
+                        item.unit_cost = unitPrice + costPerUnit - discountPerUnit;
                         item.total_cost = item.unit_cost * receivedQuantity;
                     });
                 },
@@ -276,6 +286,7 @@
                                 allocated_cost: NumberUtils.parseMaskIntoNumeric(d
                                     .allocated_cost),
                                 unit_cost: NumberUtils.parseMaskIntoNumeric(d.unit_cost),
+                                discount_percentage: NumberUtils.parseMaskIntoNumeric(d.discount_percentage),
                             }));
 
                             Swal.fire({
@@ -378,10 +389,6 @@
                 <x-misc.field label="Nomor Referensi"><input class="input mono" placeholder="(opsional)"
                         x-model="formData.reference_number" /></x-misc.field>
             </div>
-            <x-misc.field label="Catatan Penerimaan">
-                <textarea class="input" rows="2"
-                    placeholder="Catat kondisi barang, kekurangan, atau informasi penting lainnya..." x-model="formData.note"></textarea>
-            </x-misc.field>
         </div>
 
         <div class="card" style="overflow:hidden;">
@@ -401,9 +408,10 @@
                         <th style="text-align:right; width:140px;">Qty (Ekspektasi)</th>
                         <th style="text-align:right; width:140px;">Qty (Diterima)</th>
                         <th style="text-align:right; width:80px;">Susut</th>
-                        <th style="width:60px;">Satuan</th>
-                        <th style="width:140px; text-align:right;">Harga</th>
-                        <th style="width:140px; text-align:right;">HPP</th>
+                        <th style="width:50px;">Satuan</th>
+                        <th style="width:120px; text-align:right;">Harga</th>
+                        <th style="width:80px; text-align:right;">Diskon(%)</th>
+                        <th style="width:120px; text-align:right;">HPP</th>
                         <th style="width:40px;"></th>
                     </tr>
                 </thead>
@@ -468,6 +476,10 @@
                                 <span class="mono" style="font-weight:600;"
                                     x-text="item.unit_price ? NumberUtils.formatNumericIntoMask(item.unit_price) : '0'"></span>
                             </td>
+                             <td style="text-align: right">
+                                <span class="mono" style="font-weight:600;"
+                                    x-text="item.discount_percentage ? NumberUtils.formatNumericIntoMask(item.discount_percentage) : '0'"></span>
+                            </td>
                             <td style="text-align: right">
                                 <span class="mono" style="font-weight:600"
                                     x-text="item.unit_cost ? NumberUtils.formatNumericIntoMask(item.unit_cost) : '0'"></span>
@@ -485,36 +497,39 @@
                     </template>
                 </tbody>
             </table>
-            <div class="order-items-split2">
+            <div class="order-items-split">
                 <div class="order-extras">
-                    <div class="display order-extras__title">Biaya Tambahan</div>
-                    <div class="order-extras__grid-3">
-                        <x-misc.field label="Diskon (PO)">
-                            {{-- <input class="input num" style="text-align:right;" x-model="formData.discount_amount"
-                                readonly /> --}}
-                            <div class="input mono input--readonly" style="display:flex; align-items:center;">
-                                <span class="auto-tag" style="flex:1">Auto</span>
-                                <span style="font-weight:600;"
-                                    x-text="formData.discount_amount ? NumberUtils.formatNumericIntoMask(formData.discount_amount) : '0'"></span>
-                            </div>
-                        </x-misc.field>
-                        <x-misc.field label="Biaya Transportasi">
-                            <input class="input num" style="text-align:right;" x-model="formData.transport_cost"
-                                x-mask:dynamic="$money($input, ',')" @input="calculateHPP()" />
-                        </x-misc.field>
-                        <x-misc.field label="Biaya Lain-lain">
-                            <input class="input num" style="text-align:right;" x-model="formData.other_cost"
-                                x-mask:dynamic="$money($input, ',')" @input="calculateHPP()" />
-                        </x-misc.field>
+                    <x-misc.field label="Catatan Penerimaan">
+                        <textarea class="input" rows="2"
+                            placeholder="Catat kondisi barang, kekurangan, atau informasi penting lainnya..." x-model="formData.note"></textarea>
+                    </x-misc.field>
+                </div>
+                <div class="order-summary">
+                    <div class="display order-summary__title">Ringkasan</div>
+                    <div class="order-summary__row" style="align-items:center;">
+                        <span class="order-summary__label">Diskon (%)</span>
+                        <div>
+                            <input class="input num input--readonly"
+                                style="height:28px; width:60px; text-align:right; font-size:13px;"
+                                x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')" disabled />
+                            <input class="input num input--readonly"
+                                style="height:28px; width:130px; text-align:right; font-size:13px;"
+                                x-model="formData.discount_amount" x-mask:dynamic="$money($input, ',')" disabled />
+                        </div>
+                    </div>
+                    <div class="order-summary__row" style="align-items:center;">
+                        <span class="order-summary__label">Biaya Transportasi</span>
+                        <input class="input num" style="height:28px; width:130px; text-align:right; font-size:13px;"
+                            x-model="formData.transport_cost" x-mask:dynamic="$money($input, ',')"
+                            @input="calculateHPP();" />
+                    </div>
+                    <div class="order-summary__row" style="align-items:center;">
+                        <span class="order-summary__label">Biaya Lain-lain</span>
+                        <input class="input num" style="height:28px; width:130px; text-align:right; font-size:13px;"
+                            x-model="formData.other_cost" x-mask:dynamic="$money($input, ',')"
+                            @input="calculateHPP();" />
                     </div>
                 </div>
-                {{-- <div class="hpp-summary">
-                    <div class="label" style="margin-bottom:6px;">Estimasi HPP Total</div>
-                    <div class="hpp-summary__value display num">{{ fmt_rp(0) }}</div>
-                    <div class="hpp-summary__sub">
-                        0 unit diterima · HPP/unit ≈ <span class="mono">{{ fmt_rp(round(0 / max(0, 1))) }}</span>
-                    </div>
-                </div> --}}
             </div>
         </div>
         <div class="order-form-footer">
