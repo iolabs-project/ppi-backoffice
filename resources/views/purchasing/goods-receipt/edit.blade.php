@@ -326,8 +326,8 @@
 
     <div x-data="goodsReceiptForm()" x-init="init()" class="order-page">
         <div>
-            <a href="#" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
-                <x-misc.icon name="chev-left" :size="13" />Kembali ke PLACEHOLDER
+            <a href="{{ route('purchasings.goods_receipts.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
+                <x-misc.icon name="chev-left" :size="13" />Kembali
             </a>
             <div class="order-title-row">
                 <h1 class="order-title display">Buat Penerimaan Barang</h1>
@@ -485,7 +485,7 @@
                     </template>
                 </tbody>
             </table>
-            <div class="order-items-split2">X
+            <div class="order-items-split2">
                 <div class="order-extras">
                     <div class="display order-extras__title">Biaya Tambahan</div>
                     <div class="order-extras__grid-3">

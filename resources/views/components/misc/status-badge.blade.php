@@ -10,7 +10,7 @@
     'lunas'   => ['chip chip-ok',   'chip-dot dot-ok',   'Lunas'],
     'draft'           => ['chip',           'chip-dot dot-muted', 'Draft'],
     'disetujui'       => ['chip chip-info', 'chip-dot dot-info',  'Disetujui'],
-    'selesai'         => ['chip chip-ok',   'chip-dot dot-ok',    'Selesai'],
+    'finished'         => ['chip chip-ok',   'chip-dot dot-ok',    'Finished'],
     'open'            => ['chip chip-info', 'chip-dot dot-info',  'Open'],
     'closed'          => ['chip chip-ok',   'chip-dot dot-ok',    'Closed'],
     'cancelled'       => ['chip chip-bad',  'chip-dot dot-bad',   'Cancelled'],

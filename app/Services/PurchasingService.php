@@ -303,6 +303,7 @@ class PurchasingService
             'purchaseOrder:id,number',
             'supplier:id,name,code',
             'warehouse:id,name,code',
+            'creator:id,username'
         ])
             ->select(
                 'id',
@@ -475,5 +476,11 @@ class PurchasingService
                 $query->where('company_id', $companyID);
             })
             ->exists();
+    }
+
+    public function changeGoodsReceiptStatus(int $id, string $status): void
+    {
+        $goodsReceipt = GoodsReceipt::findOrFail($id);
+        $goodsReceipt->update(['status' => $status]);
     }
 }

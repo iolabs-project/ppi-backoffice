@@ -15,8 +15,7 @@ class GoodsReceiptController extends Controller
         $data = [
             'currentPage' => 'pembelian.penerimaan',
             'breadcrumb'  => [
-                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
-                ['label' => 'Penerimaan'],
+                ['label' => 'Penerimaan Barang'],
             ],
             'status' => GoodsReceiptStatus::dropdownOptions(),
         ];
@@ -44,14 +43,27 @@ class GoodsReceiptController extends Controller
         }
     }
 
+    public function show(PurchasingService $purchasingService, int $id)
+    {
+        $data = [
+            'currentPage'   => 'pembelian.penerimaan',
+            'breadcrumb'    => [
+                ['label' => 'Penerimaan Barang', 'url' => route('purchasings.goods_receipts.index')],
+                ['label' => 'Detail'],
+            ],
+            'goodsReceipt'  => $purchasingService->fetchGoodsReceiptByID($id),
+        ];
+
+        return view('purchasing.goods-receipt.show', $data);
+    }
+
     public function edit(PurchasingService $purchasingService, int $id)
     {
         $data = [
             'currentPage'   => 'pembelian.penerimaan',
             'breadcrumb'    => [
-                ['label' => 'Pembelian', 'url' => route('pembelian.index')],
-                ['label' => $id, 'url' => route('purchasings.goods_receipts.show', $id)],
-                ['label' => 'Buat Penerimaan'],
+                ['label' => 'Penerimaan Barang', 'url' => route('purchasings.goods_receipts.index')],
+                ['label' => 'Edit'],
             ],
             'goodsReceipt'  => $purchasingService->fetchGoodsReceiptByID($id),
             'remainingPOItems' => $purchasingService->fetchPOItemsForGoodsReceipt($id),
@@ -94,7 +106,7 @@ class GoodsReceiptController extends Controller
             );
         }
 
-         try {
+        try {
             $purchasingService->updateGoodsReceipt($request, $id);
             return response()->json(['redirect' => route('purchasings.goods_receipts.index'), 'message' => 'Goods Receipt berhasil diperbarui.']);
         } catch (\Exception $e) {
@@ -104,6 +116,21 @@ class GoodsReceiptController extends Controller
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Penerimaan Barang. Silakan coba lagi.'], 500);
+        }
+    }
+
+    public function cancel(Request $request, PurchasingService $purchasingService, int $id)
+    {
+        try {
+            $purchasingService->changeGoodsReceiptStatus($id, GoodsReceiptStatus::CANCELLED->value);
+            return response()->json(['message' => 'Goods Receipt berhasil dibatalkan.']);
+        } catch (\Exception $e) {
+            Log::error('Error GoodsReceiptController@cancel: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Penerimaan Barang. Silakan coba lagi.'], 500);
         }
     }
 }

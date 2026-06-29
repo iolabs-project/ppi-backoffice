@@ -1,9 +1,14 @@
 @extends('layouts.app')
 @section('content')
+    @php
+        use App\Enums\GoodsReceiptStatus;
+        $draft = GoodsReceiptStatus::DRAFT->value;
+        $finished = GoodsReceiptStatus::FINISHED->value;
+    @endphp
     <div x-data="datatable()" x-init="fetchData()" class="order-page">
         <div class="order-hd">
             <div>
-                <h1 class="order-title display">Penerimaan</h1>
+                <h1 class="order-title display">Penerimaan Barang</h1>
                 <div class="order-sub"><span x-text="tableData ? tableData.total : 0"></span> catatan</div>
             </div>
             <div class="order-actions">
@@ -82,34 +87,41 @@
                                         </button>
                                         <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
                                             x-on:click.away="open = false" class="action-menu__panel">
-                                            <a :href="route('purchasings.purchasing_orders.show', row.purchase_order_id)"
+                                            <a :href="route('purchasings.goods_receipts.show', row.id)" @click.stop
                                                 class="action-menu__item">
-                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
-                                                Detail PO
+                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail
                                             </a>
-                                            <button class="action-menu__item">
+                                            <a :href="route('purchasings.purchasing_orders.show', row.purchase_order_id)" @click.stop
+                                                class="action-menu__item">
+                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat PO
+                                            </a>
+                                            <button class="action-menu__item" @click.stop>
                                                 <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
                                                 Penerimaan
                                             </button>
-
-                                            {{-- <button class="action-menu__item">
-                                                <x-misc.icon name="check" :size="14" stroke="var(--ink-3)" />Tandai
-                                                Selesai
-                                            </button> --}}
-                                            <template x-if="row.status === 'draft'">
+                                            <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('purchasings.goods_receipts.edit', row.id)"
+                                                    <a :href="route('purchasings.goods_receipts.edit', row.id)" @click.stop
                                                         class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />Edit
                                                         Catatan
                                                     </a>
                                                     <div class="action-menu__divider"></div>
-                                                    <button class="action-menu__item action-menu__item--danger">
+                                                    <button class="action-menu__item action-menu__item--danger" @click.stop="handleCancel(row.id)">
                                                         <x-misc.icon name="x" :size="14"
                                                             stroke="currentColor" />Hapus
                                                         Catatan
                                                     </button>
+                                                </div>
+                                            </template>
+                                            <template x-if="row.status === '{{ $finished }}'">
+                                                <div>
+                                                    <a :href="route('pembelian.tagihan', row.purchase_order_id)" @click.stop
+                                                        class="action-menu__item">
+                                                        <x-misc.icon name="receipt" :size="14"
+                                                            stroke="var(--ink-3)" />Buat Tagihan
+                                                    </a>
                                                 </div>
                                             </template>
                                         </div>
@@ -215,6 +227,48 @@
                         this.page--;
                         await this.fetchData();
                     }
+                },
+
+                async handleCancel(id) {
+                    Swal.fire({
+                        title: 'Apakah Anda yakin ingin membatalkan Penerimaan Barang ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, batalkan',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Memproses...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            try {
+                                const response = await axios.post(route(
+                                    'purchasings.goods_receipts.cancel', id));
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let message = 'Terjadi kesalahan saat membatalkan Penerimaan Barang. Silakan coba lagi.';
+                                if (error.response?.data?.message) {
+                                    message = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: message
+                                });
+                            }
+
+                        }
+                    })
                 },
             };
         }

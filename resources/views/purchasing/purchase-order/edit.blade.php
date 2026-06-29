@@ -533,7 +533,7 @@
                 </tbody>
             </table>
 
-            <div class="order-items-split2">
+            <div class="order-items-split">
                 <div class="order-extras">
                     <div class="display order-extras__title">Biaya Tambahan</div>
                     <div class="order-extras__grid-3">
@@ -555,7 +555,7 @@
                             x-model="formData.note"></textarea>
                     </x-misc.field>
                 </div>
-                {{-- <div class="order-summary">
+                <div class="order-summary">
                     <div class="display order-summary__title">Ringkasan</div>
                     <div class="order-summary__row">
                         <span class="order-summary__label">Subtotal</span>
@@ -582,7 +582,7 @@
                         <span class="order-summary__total-value display num"
                             x-text="'Rp ' + (formData.total_amount ? NumberUtils.formatNumericIntoMask(formData.total_amount) : '0')"></span>
                     </div>
-                </div> --}}
+                </div>
             </div>
         </div>
 

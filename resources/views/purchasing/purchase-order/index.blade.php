@@ -97,14 +97,14 @@
                                             x-on:click.away="open = false" class="action-menu__panel">
                                             <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('purchasings.purchasing_orders.edit', row.id)"
+                                                    <a :href="route('purchasings.purchasing_orders.edit', row.id)" @click.stop
                                                         class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />
                                                         Edit Draft
                                                     </a>
 
-                                                    <button class="action-menu__item" @click="handleOpen(row.id)">
+                                                    <button class="action-menu__item" @click.stop="handleOpen(row.id)">
                                                         <x-misc.icon name="check" :size="14"
                                                             stroke="var(--ink-3)" />
                                                         Konfirmasi Draft
@@ -113,13 +113,13 @@
                                             </template>
                                             <template x-if="row.status !== '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('purchasings.purchasing_orders.show', row.id)"
+                                                    <a :href="route('purchasings.purchasing_orders.show', row.id)" @click.stop
                                                         class="action-menu__item">
                                                         <x-misc.icon name="eye" :size="14"
                                                             stroke="var(--ink-3)" />Lihat
                                                         Detail
                                                     </a>
-                                                    <button class="action-menu__item">
+                                                    <button class="action-menu__item" @click.stop>
                                                         {{-- TODO: Implement print functionality --}}
                                                         <x-misc.icon name="print" :size="14"
                                                             stroke="var(--ink-3)" />Cetak
@@ -128,12 +128,7 @@
                                                 </div>
                                             </template>
                                             <template x-if="row.status === '{{ $open }}'">
-                                                {{-- <a href="#" class="action-menu__item">
-                                                    <x-misc.icon name="box" :size="14"
-                                                        stroke="var(--ink-3)" />Buat
-                                                    Penerimaan
-                                                </a> --}}
-                                                <button class="action-menu__item" @click="handleCreateGoodsReceipt(row.id)">
+                                                <button class="action-menu__item" @click.stop="handleCreateGoodsReceipt(row.id)">
                                                     <x-misc.icon name="box" :size="14"
                                                         stroke="var(--ink-3)" />Buat
                                                     Penerimaan
@@ -142,10 +137,10 @@
 
                                             <template
                                                 x-if="row.status === '{{ $draft }}' || (row.status === '{{ $open }}' && row.goods_receipts.length === 0)">
-                                                <div>P
+                                                <div>
                                                     <div class="action-menu__divider"></div>
                                                 <button class="action-menu__item action-menu__item--danger"
-                                                    @click="handleCancel(row.id)">
+                                                    @click.stop="handleCancel(row.id)">
                                                     <x-misc.icon name="trash" :size="14"
                                                         stroke="currentColor" />Batalkan
                                                     PO
