@@ -41,6 +41,8 @@ class PurchaseOrder extends Model
         'other_cost' => 'double',
         'subtotal' => 'double',
         'total_amount' => 'double',
+        'total_quantity' => 'double',
+        'total_received_quantity' => 'double',
     ];
 
     public function items()

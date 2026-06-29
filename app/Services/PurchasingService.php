@@ -36,6 +36,7 @@ class PurchasingService
     public function fetchPurchaseOrderTableData(Request $request)
     {
         $query = PurchaseOrder::with([
+            'items:id,purchase_order_id,product_id,quantity,received_quantity',
             'warehouse:id,name,code',
             'supplier:id,name,code',
             'goodsReceipts' => function ($query) {
@@ -52,7 +53,10 @@ class PurchasingService
                 'due_date',
                 'total_amount',
                 'status'
-            );
+            )
+            
+        ->withSum('items as total_quantity', 'quantity')
+        ->withSum('items as total_received_quantity', 'received_quantity');
 
         if ($request->filled('search')) {
             $search = $request->input('search');

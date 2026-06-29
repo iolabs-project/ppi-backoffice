@@ -4,6 +4,7 @@
         use App\Enums\PurchaseOrderStatus;
         $draft = PurchaseOrderStatus::DRAFT->value;
         $open = PurchaseOrderStatus::OPEN->value;
+        $cancelled = PurchaseOrderStatus::CANCELLED->value;
     @endphp
     <div x-data="datatable()" x-init="fetchData()" class="order-page">
         <div class="order-hd">
@@ -39,6 +40,7 @@
                         <th>Vendor</th>
                         <th>Gudang</th>
                         <th>Jatuh Tempo</th>
+                        <th>Proses</th>
                         <th style="text-align:right;">Total</th>
                         <th>Status</th>
                         <th style="width:40px;"></th>
@@ -47,7 +49,7 @@
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="8" style="text-align:center; color:var(--ink-3); padding:20px;">
+                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
                                 Memuat data...
                             </td>
                         </tr>
@@ -55,7 +57,7 @@
 
                     <template x-if="!loading && tableData.data.length === 0">
                         <tr>
-                            <td colspan="8" style="text-align:center; color:var(--ink-3); padding:20px;">
+                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
                                 Tidak ada data
                             </td>
                         </tr>
@@ -70,6 +72,14 @@
                                 <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
+                                <td style="color:var(--ink-3);">
+                                    <template x-if="row.status === '{{ $draft }}' || row.status === '{{ $cancelled }}'">
+                                        -
+                                    </template>
+                                    <template x-if="row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
+                                        <span x-text="row.total_received_quantity + ' / ' + row.total_quantity"></span>
+                                    </template>
+                                </td>
                                 <td class="num" style="text-align:right; font-weight:600;"
                                     x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
                                 <td>
