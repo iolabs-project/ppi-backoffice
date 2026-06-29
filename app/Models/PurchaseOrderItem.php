@@ -13,7 +13,9 @@ class PurchaseOrderItem extends Model
         'invoiced_quantity',
         'received_quantity',
         'unit_price',
+        'discount_percentage',
         'discount_amount',
+        'tax_percentage',
         'tax_amount',
         'total_amount',
     ];
@@ -24,7 +26,9 @@ class PurchaseOrderItem extends Model
         'received_quantity' => 'double',
         'invoiced_quantity' => 'double',
         'unit_price' => 'double',
+        'discount_percentage' => 'double',
         'discount_amount' => 'double',
+        'tax_percentage' => 'double',
         'tax_amount' => 'double',
         'total_amount' => 'double',
     ];

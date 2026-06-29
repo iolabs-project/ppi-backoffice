@@ -24,7 +24,9 @@ return new class extends Migration
             $table->enum('payment_terms', ['net_7', 'net_14', 'net_30', 'net_45'])->default('net_14');
             $table->enum('status', ['draft', 'open', 'closed', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 18, 4)->default(0);
+            $table->decimal('discount_percentage', 5, 2)->default(0);
             $table->decimal('discount_amount', 18, 4)->default(0);
+            $table->decimal('tax_percentage', 5, 2)->default(0);
             $table->decimal('tax_amount', 18, 4)->default(0);
             $table->decimal('transport_cost', 18, 4)->default(0);
             $table->decimal('other_cost', 18, 4)->default(0);
@@ -42,7 +44,9 @@ return new class extends Migration
             $table->decimal('received_quantity', 18, 4)->default(0);
             $table->decimal('invoiced_quantity', 18, 4)->default(0);
             $table->decimal('unit_price', 18, 4)->default(0);
+            $table->decimal('discount_percentage', 5, 2)->default(0);
             $table->decimal('discount_amount', 18, 4)->default(0);
+            $table->decimal('tax_percentage', 5, 2)->default(0);
             $table->decimal('tax_amount', 18, 4)->default(0);
             $table->decimal('total_amount', 18, 4)->default(0);
             $table->timestamps();

@@ -45,7 +45,6 @@ class PurchaseOrderController extends Controller
 
     public function store(Request $request, PurchasingService $purchasingService)
     {
-        // dd($request->all());
         if ($request->input('status') === PurchaseOrderStatus::OPEN->value) {
             $request->validate(
                 [
@@ -56,7 +55,10 @@ class PurchaseOrderController extends Controller
                     'order_date' => 'required|date',
                     'due_date' => 'nullable|date',
                     'payment_terms' => 'required|in:net_7,net_14,net_30,net_45',
+                    'discount_percentage' => 'nullable|numeric|min:0',
                     'discount_amount' => 'nullable|numeric|min:0',
+                    'tax_percentage' => 'nullable|numeric|min:0',
+                    'tax_amount' => 'nullable|numeric|min:0',
                     'transport_cost' => 'nullable|numeric|min:0',
                     'other_cost' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
@@ -67,6 +69,10 @@ class PurchaseOrderController extends Controller
                     'details.*.product_id' => 'required|exists:products,id',
                     'details.*.quantity' => 'required|numeric|min:1',
                     'details.*.unit_price' => 'required|numeric|min:0',
+                    'details.*.discount_percentage' => 'nullable|numeric|min:0',
+                    'details.*.discount_amount' => 'nullable|numeric|min:0',
+                    'details.*.tax_percentage' => 'nullable|numeric|min:0',
+                    'details.*.tax_amount' => 'nullable|numeric|min:0',
                 ],
                 [
                     'supplier_id.required' => 'Supplier harus dipilih.',
@@ -90,7 +96,8 @@ class PurchaseOrderController extends Controller
                     'reference_number' => 'nullable|string|max:50',
                     'order_date' => 'required|date',
                     'due_date' => 'nullable|date',
-                    'discount_amount' => 'nullable|numeric|min:0',
+                    'discount_percentage' => 'nullable|numeric|min:0',
+                    'tax_percentage' => 'nullable|numeric|min:0',
                     'transport_cost' => 'nullable|numeric|min:0',
                     'other_cost' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',

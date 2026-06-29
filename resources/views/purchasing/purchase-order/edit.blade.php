@@ -2,6 +2,7 @@
 @section('content')
     <script>
         const purchaseOrder = @json($purchaseOrder);
+        console.log('purchaseOrder', purchaseOrder);
 
         function purchaseOrderForm() {
             return {
@@ -13,7 +14,10 @@
                     reference_number: purchaseOrder.reference_number || null,
                     order_date: purchaseOrder.order_date || "{{ now()->format('Y-m-d') }}",
                     due_date: purchaseOrder.due_date || "{{ now()->addDays(14)->format('Y-m-d') }}",
+                    discount_percentage: purchaseOrder.discount_percentage || null,
                     discount_amount: purchaseOrder.discount_amount || null,
+                    tax_percentage: purchaseOrder.tax_percentage || null,
+                    tax_amount: purchaseOrder.tax_amount || null,
                     transport_cost: purchaseOrder.transport_cost || null,
                     other_cost: purchaseOrder.other_cost || null,
                     payment_terms: purchaseOrder.payment_terms || null,
@@ -28,8 +32,10 @@
                         unit: item.product.unit.symbol,
                         quantity: item.quantity,
                         unit_price: item.unit_price,
+                        discount_percentage: item.discount_percentage,
+                        discount_amount: item.discount_amount,
                         total_amount: item.total_amount,
-                        estimated_hpp: null,
+                        unit_cost: null,
                     })),
                 },
                 // Supplier Options
@@ -65,7 +71,7 @@
                         unit: null,
                         unit_price: null,
                         total_amount: null,
-                        estimated_hpp: null,
+                        unit_cost: null,
                     });
                 },
                 deleteProduct(index) {
@@ -86,6 +92,39 @@
                     item.code = product.code;
                     item.unit = product.unit.symbol;
                 },
+                handleDetailDiscountPercentageInput(index) {
+                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].discount_percentage);
+                    const quantity = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].quantity);
+                    const unitPrice = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].unit_price);
+
+                    if (percentage < 0) {
+                        this.formData.details[index].discount_percentage = 0;
+                    } else if (percentage > 100) {
+                        this.formData.details[index].discount_percentage = 100;
+                    }
+
+                    if (quantity && unitPrice) {
+                        this.formData.details[index].discount_amount = Math.round((percentage / 100) * (quantity *
+                            unitPrice));
+                    } else {
+                        this.formData.details[index].discount_amount = 0;
+                    }
+
+                    this.calculateDetailTotal(index);
+                },
+                handleDiscountPercentageInput() {
+                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.discount_percentage);
+                    const subtotal = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal);
+                    this.formData.discount_amount = Math.round((percentage / 100) * subtotal);
+                    this.calculateTotal();
+                },
+                handleTaxPercentageInput() {
+                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.tax_percentage);
+                    const subtotal = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal);
+                    const discount = NumberUtils.parseMaskIntoNumeric(this.formData.discount_amount);
+                    this.formData.tax_amount = Math.round((percentage / 100) * (subtotal - discount));
+                    this.calculateTotal();
+                },
                 calculateEstimatedHPP() {
                     const estimatedAdditionalCost =
                         NumberUtils.parseMaskIntoNumeric(this.formData.transport_cost) +
@@ -97,26 +136,24 @@
                         0
                     );
 
-                    const costPerKg = totalWeight > 0 ?
+                    const costPerUnit = totalWeight > 0 ?
                         Math.round(estimatedAdditionalCost / totalWeight) :
                         0;
 
                     this.formData.details.forEach(item => {
                         const unitPrice = NumberUtils.parseMaskIntoNumeric(item.unit_price);
-                        console.log('HPP Calculation:', {
-                            unitPrice,
-                            costPerKg,
-                            estimatedAdditionalCost,
-                            totalWeight
-                        });
-                        item.estimated_hpp = unitPrice + costPerKg;
+                        const quantity = NumberUtils.parseMaskIntoNumeric(item.quantity);
+                        const discountPerUnit = quantity > 0 ? Math.round(NumberUtils.parseMaskIntoNumeric(item
+                            .discount_amount) / quantity) : 0;
+
+                        item.unit_cost = unitPrice + costPerUnit - discountPerUnit;
                     });
                 },
                 calculateDetailTotal(index) {
                     let item = this.formData.details[index];
 
                     item.total_amount = NumberUtils.parseMaskIntoNumeric(item.quantity) * NumberUtils.parseMaskIntoNumeric(
-                        item.unit_price);
+                        item.unit_price) - NumberUtils.parseMaskIntoNumeric(item.discount_amount);
                     this.calculateSubtotal();
                 },
                 calculateSubtotal() {
@@ -128,7 +165,8 @@
                 calculateTotal() {
                     this.formData.total_amount = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal) - NumberUtils
                         .parseMaskIntoNumeric(this.formData.discount_amount) + NumberUtils.parseMaskIntoNumeric(this
-                            .formData.transport_cost) + NumberUtils.parseMaskIntoNumeric(this.formData.other_cost);
+                            .formData.transport_cost) + NumberUtils.parseMaskIntoNumeric(this.formData.other_cost) +
+                        NumberUtils.parseMaskIntoNumeric(this.formData.tax_amount);
                 },
                 initials(name) {
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
@@ -194,7 +232,8 @@
                 },
 
                 async init() {
-                    this.paymentTermSelected = this.paymentTerms.find(t => t.id === this.formData.payment_terms) || null;
+                    this.paymentTermSelected = this.paymentTerms.find(t => t.id === this.formData.payment_terms) ||
+                    null;
 
                     Swal.fire({
                         title: 'Memuat data...',
@@ -218,13 +257,15 @@
                         ...this.formData,
                         status: 'draft',
                     };
-                    body.discount_amount = NumberUtils.parseMaskIntoNumeric(body.discount_amount);
+                    body.discount_percentage = NumberUtils.parseMaskIntoNumeric(body.discount_percentage);
+                    body.tax_percentage = NumberUtils.parseMaskIntoNumeric(body.tax_percentage);
                     body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
                     body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
                     body.details = body.details.map(d => ({
                         ...d,
                         quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
                         unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
+                        discount_percentage: NumberUtils.parseMaskIntoNumeric(d.discount_percentage),
                         total_amount: NumberUtils.parseMaskIntoNumeric(d.total_amount),
                     }));
 
@@ -277,13 +318,15 @@
                         ...this.formData,
                         status: 'open',
                     };
-                    body.discount_amount = NumberUtils.parseMaskIntoNumeric(body.discount_amount);
+                    body.discount_percentage = NumberUtils.parseMaskIntoNumeric(body.discount_percentage);
+                    body.tax_percentage = NumberUtils.parseMaskIntoNumeric(body.tax_percentage);
                     body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
                     body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
                     body.details = body.details.map(d => ({
                         ...d,
                         quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
                         unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
+                        discount_percentage: NumberUtils.parseMaskIntoNumeric(d.discount_percentage),
                         total_amount: NumberUtils.parseMaskIntoNumeric(d.total_amount),
                     }));
 
@@ -331,7 +374,8 @@
         }
     </script>
 
-    <div x-data="purchaseOrderForm()" x-init="init(); calculateEstimatedHPP();" class="order-page">
+    <div x-data="purchaseOrderForm()" x-init="init();
+    calculateEstimatedHPP();" class="order-page">
 
         <div>
             <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost btn-sm"
@@ -373,7 +417,10 @@
 
                 {{-- Nomor PO --}}
                 <x-misc.field label="Nomor PO" :required="true">
-                    <input class="input mono" x-model="formData.number" />
+                    <div class="input mono input--readonly" style="display:flex; align-items:center;">
+                        <span style="flex:1; font-weight:600;" x-text="formData.number"></span>
+                        <span class="auto-tag">Auto</span>
+                    </div>
                 </x-misc.field>
 
                 {{-- Tanggal --}}
@@ -411,7 +458,7 @@
                 </x-misc.field>
 
                 {{-- Termin Pembayaran Dropdown --}}
-                <x-misc.field label="Termin Pembayaran">
+                <x-misc.field label="Termin Pembayaran" :required="true">
                     <div class="dropdown-wrap" @click.outside="paymentTermOpen=false">
                         <div class="input dropdown-trigger" @click="paymentTermOpen=!paymentTermOpen">
                             <span style="flex:1; font-weight:500;"
@@ -453,6 +500,7 @@
                         <th style="width:120px; text-align:right;">Qty</th>
                         <th style="width:140px;">Satuan</th>
                         <th style="width:160px; text-align:right;">Harga</th>
+                        <th style="width:100px; text-align:right;">Diskon (%)</th>
                         <th style="width:160px; text-align:right;">Subtotal</th>
                         <th style="width:160px; text-align:right;">Est. HPP</th>
                         <th style="width:40px;"></th>
@@ -483,7 +531,7 @@
                                         <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
                                             x-text="it.code || '— belum dipilih'"></div>
                                         <div class="dropdown-menu" x-show="open" x-cloak style="min-width:320px;">
-                                            <template x-for="p in products" :key="p.id">
+                                            <template x-for="p in availableProducts()" :key="p.id">
                                                 <div class="dropdown-item" @click="selectProduct(it, p);open=false">
                                                     <div style="flex:1; min-width:0;">
                                                         <div style="font-size:13px;" x-text="p.name"></div>
@@ -515,11 +563,17 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
+                                    x-model="it.discount_percentage"
+                                    @input="handleDetailDiscountPercentageInput(i); calculateEstimatedHPP();"
+                                    x-mask:dynamic="$money($input, ',')" />
+                            </td>
+                            <td>
+                                <input class="input num" style="height:32px; text-align:right;"
                                     x-model.number="it.total_amount" x-mask:dynamic="$money($input, ',')" disabled />
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
-                                    x-model.number="it.estimated_hpp" x-mask:dynamic="$money($input, ',')" disabled />
+                                    x-model.number="it.unit_cost" x-mask:dynamic="$money($input, ',')" disabled />
                             </td>
                             <td>
                                 <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
@@ -535,21 +589,24 @@
 
             <div class="order-items-split">
                 <div class="order-extras">
-                    <div class="display order-extras__title">Biaya Tambahan</div>
+                    {{-- <div class="display order-extras__title">Biaya Tambahan</div>
                     <div class="order-extras__grid-3">
                         <x-misc.field label="Diskon">
                             <input class="input num" style="text-align:right;" x-model="formData.discount_amount"
-                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal(); calculateEstimatedHPP();" />
+                                x-mask:dynamic="$money($input, ',')"
+                                @input="calculateTotal(); calculateEstimatedHPP();" />
                         </x-misc.field>
-                        <x-misc.field label="Ongkos Kirim">
+                        <x-misc.field label="Biaya Transportasi (Est)">
                             <input class="input num" style="text-align:right;" x-model="formData.transport_cost"
-                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal(); calculateEstimatedHPP();" />
+                                x-mask:dynamic="$money($input, ',')"
+                                @input="calculateTotal(); calculateEstimatedHPP();" />
                         </x-misc.field>
-                        <x-misc.field label="Biaya Lain-lain">
+                        <x-misc.field label="Biaya Lain-lain (Est)">
                             <input class="input num" style="text-align:right;" x-model="formData.other_cost"
-                                x-mask:dynamic="$money($input, ',')" @input="calculateTotal(); calculateEstimatedHPP();" />
+                                x-mask:dynamic="$money($input, ',')"
+                                @input="calculateTotal(); calculateEstimatedHPP();" />
                         </x-misc.field>
-                    </div>
+                    </div> --}}
                     <x-misc.field label="Catatan Internal">
                         <textarea class="input" rows="2" placeholder="Tulis catatan untuk tim gudang/pengiriman…"
                             x-model="formData.note"></textarea>
@@ -562,19 +619,42 @@
                         <span class="num" style="font-weight:500;"
                             x-text="'Rp ' + (formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
                     </div>
-                    <div class="order-summary__row">
-                        <span class="order-summary__label">Diskon</span>
-                        <span style="font-weight:500;">-<span class="num" style="font-weight:500;"
-                                x-text="'Rp ' + (formData.discount_amount ?? 0)"></span></span>
+                    <div class="order-summary__row" style="align-items:center;">
+                        <span class="order-summary__label">Diskon (%)</span>
+                        <div>
+                            <input class="input num" style="height:28px; width:60px; text-align:right; font-size:13px;"
+                                x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
+                                @input="handleDiscountPercentageInput(); calculateTotal(); calculateEstimatedHPP();" />
+                            <input class="input num input--readonly"
+                                style="height:28px; width:130px; text-align:right; font-size:13px;"
+                                x-model="formData.discount_amount" x-mask:dynamic="$money($input, ',')" disabled />
+                        </div>
                     </div>
-                    <div class="order-summary__row">
-                        <span class="order-summary__label">Ongkos Kirim</span>
-                        <span class="num" style="font-weight:500;"
-                            x-text="'Rp ' + (formData.transport_cost ?? 0)"></span>
+                    <div class="order-summary__row" style="align-items:center;">
+                        <span class="order-summary__label">Pajak (%)</span>
+                        <div>
+                            <input class="input num" style="height:28px; width:60px; text-align:right; font-size:13px;"
+                                x-model="formData.tax_percentage" x-mask:dynamic="$money($input, ',')"
+                                @input="handleTaxPercentageInput(); calculateTotal();" />
+                            <input class="input num input--readonly"
+                                style="height:28px; width:130px; text-align:right; font-size:13px;"
+                                x-model="formData.tax_amount" x-mask:dynamic="$money($input, ',')" disabled />
+                        </div>
                     </div>
-                    <div class="order-summary__row">
-                        <span class="order-summary__label">Biaya Lain-lain</span>
-                        <span class="num" style="font-weight:500;" x-text="'Rp ' + (formData.other_cost ?? 0)"></span>
+                    <div class="order-summary__row" style="align-items:center;">
+                        <span class="order-summary__label">Biaya Transportasi (Est)</span>
+                        {{-- <span class="num" style="font-weight:500;"
+                            x-text="'Rp ' + (formData.transport_cost ?? 0)"></span> --}}
+                        <input class="input num" style="height:28px; width:130px; text-align:right; font-size:13px;"
+                            x-model="formData.transport_cost" x-mask:dynamic="$money($input, ',')"
+                            @input="calculateTotal(); calculateEstimatedHPP();" />
+                    </div>
+                    <div class="order-summary__row" style="align-items:center;">
+                        <span class="order-summary__label">Biaya Lain-lain (Est)</span>
+                        {{-- <span class="num" style="font-weight:500;" x-text="'Rp ' + (formData.other_cost ?? 0)"></span> --}}
+                        <input class="input num" style="height:28px; width:130px; text-align:right; font-size:13px;"
+                            x-model="formData.other_cost" x-mask:dynamic="$money($input, ',')"
+                            @input="calculateTotal(); calculateEstimatedHPP();" />
                     </div>
                     <div class="order-summary__divider"></div>
                     <div class="order-summary__total">

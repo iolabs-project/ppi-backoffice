@@ -78,7 +78,7 @@ class PurchasingService
     public function fetchPurchaseOrderByID(int $id): ?PurchaseOrder
     {
         return PurchaseOrder::with([
-            'items:id,purchase_order_id,product_id,quantity,unit_price,total_amount',
+            'items:id,purchase_order_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
             'supplier:id,name,code',
@@ -96,7 +96,9 @@ class PurchasingService
                 'order_date',
                 'due_date',
                 'payment_terms',
+                'discount_percentage',
                 'discount_amount',
+                'tax_percentage',
                 'tax_amount',
                 'transport_cost',
                 'other_cost',
@@ -114,6 +116,18 @@ class PurchasingService
     public function storePurchaseOrder(Request $request): void
     {
         DB::transaction(function () use ($request) {
+            $detailsCollection = collect($request->input('details', []));
+            $subtotal = $detailsCollection->sum(function ($item) {
+                return (($item['quantity'] ?? 0))
+                    *
+                    (($item['unit_price'] ?? 0))
+
+                    *
+                    (1 - (($item['discount_percentage'] ?? 0) / 100));
+            });
+            $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
+            $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
+
             $form =  PurchaseOrder::create(
                 [
                     'company_id' => config('context.selected_company_id'),
@@ -124,11 +138,14 @@ class PurchasingService
                     'reference_number' => $request->reference_number,
                     'order_date' => $request->order_date,
                     'due_date' => $request->due_date,
-                    'discount_amount' => $request->discount_amount,
+                    'discount_percentage' => $request->discount_percentage,
+                    'tax_percentage' => $request->tax_percentage,
+                    'discount_amount' => $discountAmount,
+                    'tax_amount' => $taxAmount,
                     'transport_cost' => $request->transport_cost,
                     'other_cost' => $request->other_cost,
-                    'subtotal' => $request->subtotal,
-                    'total_amount' => $request->subtotal - $request->discount_amount + $request->transport_cost + $request->other_cost,
+                    'subtotal' => $subtotal,
+                    'total_amount' => $subtotal - $discountAmount + $taxAmount + $request->transport_cost + $request->other_cost,
                     'note' => $request->note,
                     'payment_terms' => $request->payment_terms,
                     'status' => $request->status,
@@ -142,7 +159,9 @@ class PurchasingService
                     'product_id' => $detail['product_id'],
                     'quantity' => $detail['quantity'],
                     'unit_price' => $detail['unit_price'],
-                    'total_amount' => $detail['total_amount'],
+                    'discount_percentage' => $detail['discount_percentage'],
+                    'discount_amount' => $detail['quantity'] * $detail['unit_price'] * ($detail['discount_percentage'] / 100),
+                    'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] / 100)),
                 ]);
             }
         });
@@ -152,6 +171,17 @@ class PurchasingService
     {
         DB::transaction(function () use ($request, $id) {
             $purchaseOrder = PurchaseOrder::findOrFail($id);
+            $detailsCollection = collect($request->input('details', []));
+            $subtotal = $detailsCollection->sum(function ($detail) {
+                return (($detail['quantity'] ?? 0))
+                    *
+                    (($detail['unit_price'] ?? 0))
+                    *
+                    (1 - (($detail['discount_percentage'] ?? 0) / 100));
+            });
+
+            $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
+            $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
 
             $purchaseOrder->update([
                 'supplier_id' => $request->supplier_id,
@@ -161,11 +191,14 @@ class PurchasingService
                 'reference_number' => $request->reference_number,
                 'order_date' => $request->order_date,
                 'due_date' => $request->due_date,
-                'discount_amount' => $request->discount_amount,
+                'discount_percentage' => $request->discount_percentage,
+                'discount_amount' => $discountAmount,
+                'tax_percentage' => $request->tax_percentage,
+                'tax_amount' => $taxAmount,
                 'transport_cost' => $request->transport_cost,
                 'other_cost' => $request->other_cost,
-                'subtotal' => $request->subtotal,
-                'total_amount' => $request->subtotal - $request->discount_amount + $request->transport_cost + $request->other_cost,
+                'subtotal' => $subtotal,
+                'total_amount' => $subtotal - $discountAmount + $taxAmount + $request->transport_cost + $request->other_cost,
                 'note' => $request->note,
                 'payment_terms' => $request->payment_terms,
                 'status' => $request->status,
@@ -181,7 +214,9 @@ class PurchasingService
                     'product_id' => $detail['product_id'],
                     'quantity' => $detail['quantity'],
                     'unit_price' => $detail['unit_price'],
-                    'total_amount' => $detail['total_amount'],
+                    'discount_percentage' => $detail['discount_percentage'] ?? 0,
+                    'discount_amount' => $detail['quantity'] * $detail['unit_price'] * (($detail['discount_percentage'] ?? 0) / 100),
+                    'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
                 ]);
             }
         });
