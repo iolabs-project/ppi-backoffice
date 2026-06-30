@@ -97,6 +97,7 @@ Route::middleware('auth')->group(function () {
     // Kas & Bank
     Route::prefix('kasbank')->name('kasbank.')->group(function () {
         Route::get('/',            [KasBankController::class, 'index'])->name('index');
+        Route::get('/options',     [KasBankController::class, 'options'])->name('options');
         Route::get('/{id}/kirim',  [KasBankController::class, 'kirimDana'])->name('kirim');
         Route::get('/{id}/terima', [KasBankController::class, 'terimaDana'])->name('terima');
         Route::get('/{id}',        [KasBankController::class, 'show'])->name('show');

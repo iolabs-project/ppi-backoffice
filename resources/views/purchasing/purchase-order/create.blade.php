@@ -18,6 +18,8 @@
                     tax_amount: null,
                     transport_cost: null,
                     other_cost: null,
+                    down_payment_source_id: null,
+                    down_payment_amount: null,
                     payment_terms: null,
                     subtotal: null,
                     total_amount: null,
@@ -54,6 +56,11 @@
                 // Product Options
                 productSelected: [],
                 productOpen: false,
+                // Cash Bank Options
+                cashBanks: [],
+                cashBankLoading: false,
+                cashBankSelected: null,
+                cashBankOpen: false,
 
                 addProduct() {
                     this.formData.details.push({
@@ -158,10 +165,13 @@
                     this.calculateTotal();
                 },
                 calculateTotal() {
-                    this.formData.total_amount = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal) - NumberUtils
-                        .parseMaskIntoNumeric(this.formData.discount_amount) + NumberUtils.parseMaskIntoNumeric(this
-                            .formData.transport_cost) + NumberUtils.parseMaskIntoNumeric(this.formData.other_cost) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.tax_amount);
+                    this.formData.total_amount =
+                        NumberUtils.parseMaskIntoNumeric(this.formData.subtotal) -
+                        NumberUtils.parseMaskIntoNumeric(this.formData.discount_amount) +
+                        NumberUtils.parseMaskIntoNumeric(this.formData.transport_cost) +
+                        NumberUtils.parseMaskIntoNumeric(this.formData.other_cost) +
+                        NumberUtils.parseMaskIntoNumeric(this.formData.tax_amount) -
+                        NumberUtils.parseMaskIntoNumeric(this.formData.down_payment_amount);
                 },
                 initials(name) {
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
@@ -208,6 +218,16 @@
                     }
                 },
 
+                async loadCashBanks() {
+                    this.cashBankLoading = true;
+                    try {
+                        const response = await axios.get(route('kasbank.options'));
+                        this.cashBanks = response.data.data;
+                    } finally {
+                        this.cashBankLoading = false;
+                    }
+                },
+
                 availableProducts() {
                     return products.filter(p => !this.formData.details.some(d => d.product_id === p.id));
                 },
@@ -223,6 +243,7 @@
                     await Promise.all([
                         this.loadSuppliers(),
                         this.loadWarehouses(),
+                        this.loadCashBanks(),
                     ]);
                     Swal.close();
                 },
@@ -236,6 +257,7 @@
                     body.tax_percentage = NumberUtils.parseMaskIntoNumeric(body.tax_percentage);
                     body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
                     body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
+                    body.down_payment_amount = NumberUtils.parseMaskIntoNumeric(body.down_payment_amount);
                     body.details = body.details.map(d => ({
                         ...d,
                         quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
@@ -294,6 +316,7 @@
                     body.tax_percentage = NumberUtils.parseMaskIntoNumeric(body.tax_percentage);
                     body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
                     body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
+                    body.down_payment_amount = NumberUtils.parseMaskIntoNumeric(body.down_payment_amount);
                     body.details = body.details.map(d => ({
                         ...d,
                         quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
@@ -584,49 +607,95 @@
                 </div>
                 <div class="order-summary">
                     <div class="display order-summary__title">Ringkasan</div>
-                    <div class="order-summary__row">
-                        <span class="order-summary__label">Subtotal</span>
-                        <span class="num" style="font-weight:500;"
-                            x-text="'Rp ' + (formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
-                    </div>
-                    <div class="order-summary__row" style="align-items:center;">
-                        <span class="order-summary__label">Diskon (%)</span>
-                        <div>
-                            <input class="input num" style="height:28px; width:60px; text-align:right; font-size:13px;"
-                                x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
-                                @input="handleDiscountPercentageInput(); calculateTotal(); calculateEstimatedHPP();" />
-                            <input class="input num input--readonly"
-                                style="height:28px; width:130px; text-align:right; font-size:13px;"
-                                x-model="formData.discount_amount" x-mask:dynamic="$money($input, ',')" disabled />
+
+                    <div class="order-summary__grid">
+
+                        {{-- Cell 1: Subtotal --}}
+                        <div class="order-summary__row">
+                            <span class="order-summary__label">Subtotal</span>
+                            <span class="num order-summary__val"
+                                x-text="'Rp ' + (formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
                         </div>
-                    </div>
-                    <div class="order-summary__row" style="align-items:center;">
-                        <span class="order-summary__label">Pajak (%)</span>
-                        <div>
-                            <input class="input num" style="height:28px; width:60px; text-align:right; font-size:13px;"
-                                x-model="formData.tax_percentage" x-mask:dynamic="$money($input, ',')"
-                                @input="handleTaxPercentageInput(); calculateTotal();" />
-                            <input class="input num input--readonly"
-                                style="height:28px; width:130px; text-align:right; font-size:13px;"
-                                x-model="formData.tax_amount" x-mask:dynamic="$money($input, ',')" disabled />
+
+                        {{-- Cell 2: Diskon --}}
+                        <div class="order-summary__row">
+                            <span class="order-summary__label">Diskon</span>
+                            <div class="order-summary__pct-group">
+                                <input class="input num order-summary__pct-input"
+                                    x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
+                                    @input="handleDiscountPercentageInput(); calculateTotal(); calculateEstimatedHPP();" />
+                                <span class="order-summary__pct-sym">%</span>
+                                <input class="input num input--readonly order-summary__amount-display"
+                                    :value="formData.discount_amount ? NumberUtils.formatNumericIntoMask(formData.discount_amount) : '0'"
+                                    disabled />
+                            </div>
                         </div>
+
+                        {{-- Cell 3: Pajak --}}
+                        <div class="order-summary__row">
+                            <span class="order-summary__label">Pajak</span>
+                            <div class="order-summary__pct-group">
+                                <input class="input num order-summary__pct-input"
+                                    x-model="formData.tax_percentage" x-mask:dynamic="$money($input, ',')"
+                                    @input="handleTaxPercentageInput(); calculateTotal();" />
+                                <span class="order-summary__pct-sym">%</span>
+                                <input class="input num input--readonly order-summary__amount-display"
+                                    :value="formData.tax_amount ? NumberUtils.formatNumericIntoMask(formData.tax_amount) : '0'"
+                                    disabled />
+                            </div>
+                        </div>
+
+                        {{-- Cell 4: Transport --}}
+                        <div class="order-summary__row">
+                            <span class="order-summary__label">Transport (Est)</span>
+                            <input class="input num order-summary__cost-input"
+                                x-model="formData.transport_cost" x-mask:dynamic="$money($input, ',')"
+                                @input="calculateTotal(); calculateEstimatedHPP();" />
+                        </div>
+
+                        {{-- Cell 5: Biaya Lain-lain --}}
+                        <div class="order-summary__row">
+                            <span class="order-summary__label">Biaya Lain-lain</span>
+                            <input class="input num order-summary__cost-input"
+                                x-model="formData.other_cost" x-mask:dynamic="$money($input, ',')"
+                                @input="calculateTotal(); calculateEstimatedHPP();" />
+                        </div>
+
+                        {{-- Cell 6: Uang Muka --}}
+                        <div class="order-summary__row">
+                            <span class="order-summary__label">Uang Muka</span>
+                            <div class="order-summary__dp-group">
+                                <div class="dropdown-wrap" @click.outside="cashBankOpen=false">
+                                    <div class="input dropdown-trigger order-summary__dp-trigger"
+                                        @click="cashBankOpen=!cashBankOpen">
+                                        <span style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
+                                            :style="cashBankSelected ? '' : 'color:var(--ink-4);'"
+                                            x-text="cashBankSelected ? cashBankSelected.nama : 'Sumber Kas'"></span>
+                                        <x-misc.icon name="chev-down" :size="11" stroke="var(--ink-4)" />
+                                    </div>
+                                    <div class="dropdown-menu" x-show="cashBankOpen" x-cloak
+                                        style="right:0; left:auto; min-width:180px;">
+                                        <template x-for="cb in cashBanks" :key="cb.id">
+                                            <div class="dropdown-item"
+                                                @click="cashBankSelected=cb; formData.down_payment_source_id=cb.id; cashBankOpen=false">
+                                                <span x-text="cb.nama"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="input-with-prefix">
+                                    <span class="input-with-prefix__label">Rp</span>
+                                    <input class="num input-with-prefix__input"
+                                        x-model="formData.down_payment_amount"
+                                        x-mask:dynamic="$money($input, ',')"
+                                        @input="calculateTotal();"
+                                        placeholder="0" />
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-                    <div class="order-summary__row" style="align-items:center;">
-                        <span class="order-summary__label">Biaya Transportasi (Est)</span>
-                        {{-- <span class="num" style="font-weight:500;"
-                            x-text="'Rp ' + (formData.transport_cost ?? 0)"></span> --}}
-                        <input class="input num" style="height:28px; width:130px; text-align:right; font-size:13px;"
-                            x-model="formData.transport_cost" x-mask:dynamic="$money($input, ',')"
-                            @input="calculateTotal(); calculateEstimatedHPP();" />
-                    </div>
-                    <div class="order-summary__row" style="align-items:center;">
-                        <span class="order-summary__label">Biaya Lain-lain (Est)</span>
-                        {{-- <span class="num" style="font-weight:500;" x-text="'Rp ' + (formData.other_cost ?? 0)"></span> --}}
-                        <input class="input num" style="height:28px; width:130px; text-align:right; font-size:13px;"
-                            x-model="formData.other_cost" x-mask:dynamic="$money($input, ',')"
-                            @input="calculateTotal(); calculateEstimatedHPP();" />
-                    </div>
-                    <div class="order-summary__divider"></div>
+
                     <div class="order-summary__total">
                         <span class="order-summary__total-label">Total Harga</span>
                         <span class="order-summary__total-value display num"

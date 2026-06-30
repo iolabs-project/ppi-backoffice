@@ -4,9 +4,16 @@ namespace App\Http\Controllers\Erp;
 
 use App\Http\Controllers\Controller;
 use App\Services\ErpDataService;
+use Illuminate\Http\JsonResponse;
 
 class KasBankController extends Controller
 {
+    public function options(): JsonResponse
+    {
+        $akunKas = ErpDataService::akunKas();
+        return response()->json(['data' => $akunKas]);
+    }
+
     public function index()
     {
         $akunKas = ErpDataService::akunKas();
