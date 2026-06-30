@@ -159,7 +159,7 @@
   background: var(--bg-2);
   display: flex;
   flex-direction: column;
-  border-radius: 0 0 15px 15px;
+  border-radius: 0 0 15px 0px;
   overflow: visible;
 }
 
@@ -171,8 +171,8 @@
 }
 
 .order-summary__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   overflow: visible;
 }
 
@@ -185,8 +185,7 @@
   border-bottom: 1px solid var(--line);
   overflow: visible;
 
-  &:nth-child(odd)       { border-right: 1px solid var(--line); }
-  &:nth-last-child(-n+2) { border-bottom: none; }
+  &:last-child { border-bottom: none; }
 }
 
 .order-summary__label {
