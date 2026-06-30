@@ -43,6 +43,7 @@ class PurchaseOrder extends Model
         'total_amount' => 'double',
         'total_quantity' => 'double',
         'total_received_quantity' => 'double',
+        'total_invoiced_quantity' => 'double',
     ];
 
     public function items()

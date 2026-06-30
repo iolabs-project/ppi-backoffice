@@ -14,6 +14,7 @@ use App\Http\Controllers\Master\ContactController;
 use App\Http\Controllers\Master\ProductController;
 use App\Http\Controllers\Master\WarehouseController;
 use App\Http\Controllers\Purchasing\GoodsReceiptController;
+use App\Http\Controllers\Purchasing\PurchaseInvoiceController;
 use App\Http\Controllers\Purchasing\PurchaseOrderController;
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -66,6 +67,19 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::prefix('goods-receipts')->name('goods_receipts.')->controller(GoodsReceiptController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/datatable', 'datatable')->name('datatable');
+            Route::post('/', 'store')->name('store');
+
+            Route::prefix('/{id}')->group(function () {
+                Route::get('/', 'show')->name('show');
+                Route::get('/edit', 'edit')->name('edit');
+                Route::put('/', 'update')->name('update');
+                Route::post('/cancel', 'cancel')->name('cancel');
+            });
+        });
+
+        Route::prefix('purchase-invoices')->name('purchase_invoices.')->controller(PurchaseInvoiceController::class)->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::post('/', 'store')->name('store');

@@ -40,7 +40,8 @@
                         <th>Vendor</th>
                         <th>Gudang</th>
                         <th>Jatuh Tempo</th>
-                        <th>Proses</th>
+                        <th>Penerimaan</th>
+                        <th>Tagihan</th>
                         <th style="text-align:right;">Total</th>
                         <th>Status</th>
                         <th style="width:40px;"></th>
@@ -49,7 +50,7 @@
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
+                            <td colspan="10" style="text-align:center; color:var(--ink-3); padding:20px;">
                                 Memuat data...
                             </td>
                         </tr>
@@ -57,7 +58,7 @@
 
                     <template x-if="!loading && tableData.data.length === 0">
                         <tr>
-                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
+                            <td colspan="10" style="text-align:center; color:var(--ink-3); padding:20px;">
                                 Tidak ada data
                             </td>
                         </tr>
@@ -72,12 +73,42 @@
                                 <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
-                                <td style="color:var(--ink-3);">
-                                    <template x-if="row.status === '{{ $draft }}' || row.status === '{{ $cancelled }}'">
-                                        -
+                                <td style="min-width:100px;">
+                                    <template
+                                        x-if="row.status === '{{ $draft }}' || row.status === '{{ $cancelled }}'">
+                                        <span style="color:var(--ink-3);">-</span>
                                     </template>
-                                    <template x-if="row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
-                                        <span x-text="row.total_received_quantity + ' / ' + row.total_quantity"></span>
+                                    <template
+                                        x-if="row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
+                                        <div class="progress-cell">
+                                            <span class="progress-label"
+                                                x-text="row.total_received_quantity + ' / ' + row.total_quantity"></span>
+                                            <div class="progress-track">
+                                                <div class="progress-bar"
+                                                    x-bind:style="'width:' + Math.min((row.total_received_quantity / row
+                                                        .total_quantity) * 100, 100) + '%'">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </td>
+                                <td style="min-width:100px;">
+                                    <template
+                                        x-if="row.status === '{{ $draft }}' || row.status === '{{ $cancelled }}'">
+                                        <span style="color:var(--ink-3);">-</span>
+                                    </template>
+                                    <template
+                                        x-if="row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
+                                        <div class="progress-cell">
+                                            <span class="progress-label"
+                                                x-text="row.total_invoiced_quantity + ' / ' + row.total_quantity"></span>
+                                            <div class="progress-track">
+                                                <div class="progress-bar progress-bar--invoice"
+                                                    x-bind:style="'width:' + Math.min((row.total_invoiced_quantity / row
+                                                        .total_quantity) * 100, 100) + '%'">
+                                                </div>
+                                            </div>
+                                        </div>
                                     </template>
                                 </td>
                                 <td class="num" style="text-align:right; font-weight:600;"
@@ -107,8 +138,8 @@
                                             x-on:click.away="open = false" class="action-menu__panel">
                                             <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('purchasings.purchasing_orders.edit', row.id)" @click.stop
-                                                        class="action-menu__item">
+                                                    <a :href="route('purchasings.purchasing_orders.edit', row.id)"
+                                                        @click.stop class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />
                                                         Edit Draft
@@ -123,8 +154,8 @@
                                             </template>
                                             <template x-if="row.status !== '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('purchasings.purchasing_orders.show', row.id)" @click.stop
-                                                        class="action-menu__item">
+                                                    <a :href="route('purchasings.purchasing_orders.show', row.id)"
+                                                        @click.stop class="action-menu__item">
                                                         <x-misc.icon name="eye" :size="14"
                                                             stroke="var(--ink-3)" />Lihat
                                                         Detail
@@ -138,10 +169,19 @@
                                                 </div>
                                             </template>
                                             <template x-if="row.status === '{{ $open }}'">
-                                                <button class="action-menu__item" @click.stop="handleCreateGoodsReceipt(row.id)">
+                                                <button class="action-menu__item"
+                                                    @click.stop="handleCreateGoodsReceipt(row.id)">
                                                     <x-misc.icon name="box" :size="14"
                                                         stroke="var(--ink-3)" />Buat
                                                     Penerimaan
+                                                </button>
+                                            </template>
+                                            <template x-if="row.total_invoiced_quantity < row.total_quantity && row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
+                                                <button class="action-menu__item"
+                                                    @click.stop="handleCreatePurchaseInvoice(row.id)">
+                                                    <x-misc.icon name="wallet" :size="14"
+                                                        stroke="var(--ink-3)" />Buat
+                                                    Tagihan
                                                 </button>
                                             </template>
 
@@ -149,12 +189,12 @@
                                                 x-if="row.status === '{{ $draft }}' || (row.status === '{{ $open }}' && row.goods_receipts.length === 0)">
                                                 <div>
                                                     <div class="action-menu__divider"></div>
-                                                <button class="action-menu__item action-menu__item--danger"
-                                                    @click.stop="handleCancel(row.id)">
-                                                    <x-misc.icon name="trash" :size="14"
-                                                        stroke="currentColor" />Batalkan
-                                                    PO
-                                                </button>
+                                                    <button class="action-menu__item action-menu__item--danger"
+                                                        @click.stop="handleCancel(row.id)">
+                                                        <x-misc.icon name="trash" :size="14"
+                                                            stroke="currentColor" />Batalkan
+                                                        PO
+                                                    </button>
                                                 </div>
 
                                             </template>
@@ -410,6 +450,52 @@
                                 Swal.close();
                                 let message =
                                     'Terjadi kesalahan saat membuat Penerimaan Barang. Silakan coba lagi.';
+                                if (error.response?.data?.message) {
+                                    message = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: message
+                                });
+                            }
+
+                        }
+                    })
+                },
+
+                async handleCreatePurchaseInvoice(id) {
+                    Swal.fire({
+                        title: 'Apakah Anda yakin ingin membuat Tagihan untuk PO ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Memproses...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            try {
+                                const response = await axios.post(route(
+                                    'purchasings.purchase_invoices.store', {
+                                        purchase_order_id: id
+                                    }));
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+
+                                window.location.href = response.data.redirect;
+                            } catch (error) {
+                                Swal.close();
+                                let message =
+                                    'Terjadi kesalahan saat membuat Tagihan. Silakan coba lagi.';
                                 if (error.response?.data?.message) {
                                     message = error.response.data.message;
                                 }

@@ -94,6 +94,40 @@
     width: 75px;
 }
 
+// Progress bar in table cells
+.progress-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.progress-label {
+    font-size: 11px;
+    color: var(--ink-3);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.progress-track {
+    height: 6px;
+    background: var(--bg-2);
+    border-radius: 3px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 120px;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+
+    &--invoice {
+        background: var(--info, #54a0ff);
+    }
+}
+
 // Action dropdown menu
 .action-menu {
     position: relative;
