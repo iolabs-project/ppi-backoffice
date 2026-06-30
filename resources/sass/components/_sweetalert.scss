@@ -2,7 +2,7 @@
 // !important is needed throughout: SweetAlert2 injects its own <style> tag
 // at runtime, so load order vs. our compiled CSS isn't guaranteed.
 
-.swal2-container {
+.swal2-container.swal2-center {
   background: rgba(20, 15, 8, .35) !important;
   backdrop-filter: blur(2px);
 }
