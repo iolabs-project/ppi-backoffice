@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Enums\GoodsReceiptStatus;
+use App\Enums\PurchaseInvoiceStatus;
 use App\Models\Company;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
 use App\Models\InventoryTransaction;
 use App\Models\ProductBatch;
+use App\Models\PurchaseInvoice;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use Illuminate\Http\Request;
@@ -41,7 +43,7 @@ class PurchasingService
             'supplier:id,name,code',
             'goodsReceipts' => function ($query) {
                 $query->select('id', 'purchase_order_id', 'status')
-                ->where('status', '<>', GoodsReceiptStatus::CANCELLED->value);
+                    ->where('status', '<>', GoodsReceiptStatus::CANCELLED->value);
             },
         ])
             ->select(
@@ -54,9 +56,10 @@ class PurchasingService
                 'total_amount',
                 'status'
             )
-            
-        ->withSum('items as total_quantity', 'quantity')
-        ->withSum('items as total_received_quantity', 'received_quantity');
+
+            ->withSum('items as total_quantity', 'quantity')
+            ->withSum('items as total_received_quantity', 'received_quantity')
+            ->withSum('items as total_invoiced_quantity', 'invoiced_quantity');
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -82,7 +85,7 @@ class PurchasingService
     public function fetchPurchaseOrderByID(int $id): ?PurchaseOrder
     {
         return PurchaseOrder::with([
-            'items:id,purchase_order_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
+            'items:id,purchase_order_id,product_id,quantity,received_quantity,invoiced_quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
             'supplier:id,name,code',
@@ -277,7 +280,7 @@ class PurchasingService
             'supplier:id,name,code',
             'items:id,goods_receipt_id,product_id,received_quantity,shrinkage_quantity',
         ])
-            
+
             ->select(
                 'id',
                 'number',
@@ -450,7 +453,7 @@ class PurchasingService
             $discountPercentage = (float) ($item['discount_percentage'] ?? 0);
             $discountAmount = $receivedQty * $unitPrice * ($discountPercentage / 100);
 
-            
+
             $allocatedCost = $costPerUnit * $receivedQty;
             $discountPerUnit = $discountAmount / $receivedQty;
             $unitCost = $unitPrice + $costPerUnit - $discountPerUnit;
@@ -543,4 +546,122 @@ class PurchasingService
         $goodsReceipt = GoodsReceipt::findOrFail($id);
         $goodsReceipt->update(['status' => $status]);
     }
+
+    // Purchase Invoice
+    public function generatePurchaseInvoiceNumber(): string
+    {
+        $prefix = 'PI';
+        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
+        $datePart = date('Y');
+
+        $counter = PurchaseInvoice::whereYear('created_at', date('Y'))
+            ->where('company_id', config('context.selected_company_id'))
+            ->count() + 1;
+        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
+
+
+
+        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+    }
+
+    public function fetchPurchaseInvoiceTableData(Request $request)
+    {
+        $query = PurchaseInvoice::with([
+            'purchaseOrder:id,number',
+            'supplier:id,name,code',
+            'warehouse:id,name,code',
+        ])
+            ->select(
+                'id',
+                'number',
+                'invoice_date',
+                'supplier_id',
+                'warehouse_id',
+                'purchase_order_id',
+                'total_amount',
+                'status'
+            );
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('number', 'like', "%{$search}%")
+                    ->orWhereHas('supplier', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('warehouse', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('purchaseOrder', function ($q) use ($search) {
+                        $q->where('number', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $query->where('status', $request->input('status'));
+        }
+
+        $query = $query->orderBy('invoice_date', 'desc')->paginate($request->input('per_page', 10));
+        return $query;
+    }
+
+    public function storePurchaseInvoice(Request $request): PurchaseInvoice
+    {
+        $purchaseOrder =  $this->fetchPurchaseOrderByID($request->purchase_order_id);
+        return PurchaseInvoice::create([
+            'company_id' => $purchaseOrder->company_id,
+            'purchase_order_id' => $purchaseOrder->id,
+            'supplier_id' => $purchaseOrder->supplier_id,
+            'warehouse_id' => $purchaseOrder->warehouse_id,
+            'number' => $this->generatePurchaseInvoiceNumber(),
+            'invoice_date' => now(),
+            'status' => PurchaseInvoiceStatus::DRAFT->value,
+            'subtotal' => 0,
+            'discount_percentage' => $purchaseOrder->discount_percentage,
+            'discount_amount' => 0,
+            'tax_percentage' => $purchaseOrder->tax_percentage,
+            'tax_amount' => 0,
+            'total_amount' => 0,
+            'created_by' => auth()->user()->id,
+        ]);
+    }
+
+    public function fetchPurchaseInvoiceByID(int $id): ?PurchaseInvoice
+    {
+        return PurchaseInvoice::with([
+            'purchaseOrder:id,number',
+            'items:id,purchase_invoice_id,goods_receipt_item_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
+            'items.product:id,code,name,unit_id',
+            'items.product.unit:id,name,symbol',
+            'supplier:id,name,code',
+            'warehouse:id,name,code',
+            'creator:id,username'
+        ])
+            ->select(
+                'id',
+                'company_id',
+                'supplier_id',
+                'warehouse_id',
+                'number',
+                'reference_number',
+                'order_date',
+                'due_date',
+                'payment_terms',
+                'discount_percentage',
+                'discount_amount',
+                'tax_percentage',
+                'tax_amount',
+                'subtotal',
+                'total_amount',
+                'note',
+                'status',
+                'created_by',
+                'created_at',
+                'updated_at',
+            )
+            ->find($id);
+    }
+
+   
 }

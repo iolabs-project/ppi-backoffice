@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('company_id')->constrained('companies')->onDelete('restrict');
             $table->foreignId('purchase_order_id')->constrained('purchase_orders')->onDelete('restrict');
-            $table->foreignId('goods_receipt_id')->constrained('goods_receipts')->onDelete('restrict');
             $table->foreignId('supplier_id')->constrained('contacts')->onDelete('restrict');
             $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('restrict');
             $table->string('number', 50)->unique();
@@ -44,7 +43,6 @@ return new class extends Migration
             $table->foreignId('purchase_order_item_id')->constrained('purchase_order_items')->onDelete('restrict');
             $table->foreignId('goods_receipt_item_id')->constrained('goods_receipt_items')->onDelete('restrict');
             $table->foreignId('product_id')->constrained('products')->onDelete('restrict');
-            $table->string('batch_number', 100)->nullable();
             $table->decimal('quantity', 18, 4);
             $table->decimal('unit_price', 18, 4)->default(0);
             $table->decimal('discount_percentage', 5, 2)->default(0);

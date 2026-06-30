@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Services\PurchasingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class GoodsReceiptController extends Controller
 {
@@ -31,15 +32,33 @@ class GoodsReceiptController extends Controller
     public function store(Request $request, PurchasingService $purchasingService)
     {
         try {
-            $request->validate([
-                'purchase_order_id' => 'required|exists:purchase_orders,id',
-            ]);
+            $request->validate(
+                [
+                    'purchase_order_id' => 'required|exists:purchase_orders,id',
+                ],
+                [
+                    'purchase_order_id.required' => 'ID Purchase Order harus diisi.',
+                    'purchase_order_id.exists' => 'Purchase Order tidak ditemukan.',
+                ]
+            );
 
             $data = $purchasingService->storeGoodsReceipt($request);
 
             return response()->json(['redirect' => route('purchasings.goods_receipts.edit', $data->id), 'message' => 'Goods receipt berhasil dibuat.']);
+        } catch (ValidationException $e) {
+            Log::error('Error GoodsReceiptController@store: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            Log::error('Error GoodsReceiptController@store: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat penerimaan barang. Silakan coba lagi.'], 500);
         }
     }
 
@@ -112,6 +131,13 @@ class GoodsReceiptController extends Controller
         try {
             $purchasingService->updateGoodsReceipt($request, $id);
             return response()->json(['redirect' => route('purchasings.goods_receipts.index'), 'message' => 'Goods Receipt berhasil diperbarui.']);
+        } catch (ValidationException $e) {
+            Log::error('Error GoodsReceiptController@update: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             Log::error('Error GoodsReceiptController@update: ' . $e->getMessage(), [
                 'exception' => $e,
