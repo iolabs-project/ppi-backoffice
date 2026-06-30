@@ -40,15 +40,19 @@ enum PaymentTerm: string
     }
 
     public static function dropdownOptions(): array
-{
-    return collect(self::cases())
-        ->map(fn ($case) => [
-            'id' => $case->value,
-            'name' => $case->label(),
-            'days' => $case->days(),
-        ])
-        ->values()
-        ->toArray();
-}
-    
+    {
+        return collect(self::cases())
+            ->map(fn($case) => [
+                'id' => $case->value,
+                'name' => $case->label(),
+                'days' => $case->days(),
+            ])
+            ->values()
+            ->toArray();
+    }
+
+    public static function day(string $value): int
+    {
+        return self::from($value)->days();
+    }
 }

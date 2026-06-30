@@ -69,6 +69,9 @@
                 // Submit
                 isSubmitting: false,
 
+                // Shorthand: parse masked string to number
+                n(v) { return NumberUtils.parseMaskIntoNumeric(v); },
+
                 addProduct() {
                     this.formData.details.push({
                         product_id: null,
@@ -77,13 +80,15 @@
                         quantity: null,
                         unit: null,
                         unit_price: null,
+                        discount_percentage: null,
+                        discount_amount: null,
                         total_amount: null,
                         unit_cost: null,
                     });
                 },
                 deleteProduct(index) {
                     this.formData.details.splice(index, 1);
-                    this.calculateSubtotal();
+                    this.recalculate();
                 },
                 selectProduct(item, product) {
                     if (this.formData.details.some(d => d.product_id === product.id)) {
@@ -100,83 +105,44 @@
                     item.unit = product.unit.symbol;
                 },
                 handleDetailDiscountPercentageInput(index) {
-                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].discount_percentage);
-                    const quantity = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].quantity);
-                    const unitPrice = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].unit_price);
-
-                    if (percentage < 0) {
-                        this.formData.details[index].discount_percentage = 0;
-                    } else if (percentage > 100) {
-                        this.formData.details[index].discount_percentage = 100;
-                    }
-
-                    if (quantity && unitPrice) {
-                        this.formData.details[index].discount_amount = Math.round((percentage / 100) * (quantity *
-                            unitPrice));
-                    } else {
-                        this.formData.details[index].discount_amount = 0;
-                    }
-
+                    const d = this.formData.details[index];
+                    d.discount_percentage = Math.min(100, Math.max(0, this.n(d.discount_percentage)));
+                    d.discount_amount = Math.round((d.discount_percentage / 100) * (this.n(d.quantity) * this.n(d.unit_price)));
                     this.calculateDetailTotal(index);
                 },
                 handleDiscountPercentageInput() {
-                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.discount_percentage);
-                    const subtotal = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal);
-                    this.formData.discount_amount = Math.round((percentage / 100) * subtotal);
-                    this.calculateTotal();
+                    this.recalculate();
                 },
                 handleTaxPercentageInput() {
-                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.tax_percentage);
-                    const subtotal = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal);
-                    const discount = NumberUtils.parseMaskIntoNumeric(this.formData.discount_amount);
-                    this.formData.tax_amount = Math.round((percentage / 100) * (subtotal - discount));
-                    this.calculateTotal();
-                },
-                calculateEstimatedHPP() {
-                    const estimatedAdditionalCost =
-                        NumberUtils.parseMaskIntoNumeric(this.formData.transport_cost) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.other_cost) -
-                        NumberUtils.parseMaskIntoNumeric(this.formData.discount_amount);
-
-                    const totalWeight = this.formData.details.reduce(
-                        (sum, item) => sum + NumberUtils.parseMaskIntoNumeric(item.quantity),
-                        0
-                    );
-
-                    const costPerUnit = totalWeight > 0 ?
-                        Math.round(estimatedAdditionalCost / totalWeight) :
-                        0;
-
-                    this.formData.details.forEach(item => {
-                        const unitPrice = NumberUtils.parseMaskIntoNumeric(item.unit_price);
-                        const quantity = NumberUtils.parseMaskIntoNumeric(item.quantity);
-                        const discountPerUnit = quantity > 0 ? Math.round(NumberUtils.parseMaskIntoNumeric(item
-                            .discount_amount) / quantity) : 0;
-
-                        item.unit_cost = unitPrice + costPerUnit - discountPerUnit;
-                    });
+                    this.recalculate();
                 },
                 calculateDetailTotal(index) {
-                    let item = this.formData.details[index];
-
-                    item.total_amount = NumberUtils.parseMaskIntoNumeric(item.quantity) * NumberUtils.parseMaskIntoNumeric(
-                        item.unit_price) - NumberUtils.parseMaskIntoNumeric(item.discount_amount);
-                    this.calculateSubtotal();
+                    const d = this.formData.details[index];
+                    d.total_amount = this.n(d.quantity) * this.n(d.unit_price) - this.n(d.discount_amount);
+                    this.recalculate();
                 },
-                calculateSubtotal() {
-                    this.formData.subtotal = this.formData.details.reduce((sum, item) => {
-                        return sum + NumberUtils.parseMaskIntoNumeric(item.total_amount);
-                    }, 0);
-                    this.calculateTotal();
+                recalculate() {
+                    const sub = this.formData.details.reduce((sum, d) => sum + this.n(d.total_amount), 0);
+                    this.formData.subtotal        = sub;
+                    this.formData.discount_amount = Math.round((this.n(this.formData.discount_percentage) / 100) * sub);
+                    this.formData.tax_amount      = Math.round((this.n(this.formData.tax_percentage) / 100) * (sub - this.n(this.formData.discount_amount)));
+                    this.formData.total_amount    =
+                        sub
+                        - this.n(this.formData.discount_amount)
+                        + this.n(this.formData.transport_cost)
+                        + this.n(this.formData.other_cost)
+                        + this.n(this.formData.tax_amount)
+                        - this.n(this.formData.down_payment_amount);
+                    this.calculateEstimatedHPP();
                 },
-                calculateTotal() {
-                    this.formData.total_amount =
-                        NumberUtils.parseMaskIntoNumeric(this.formData.subtotal) -
-                        NumberUtils.parseMaskIntoNumeric(this.formData.discount_amount) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.transport_cost) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.other_cost) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.tax_amount) -
-                        NumberUtils.parseMaskIntoNumeric(this.formData.down_payment_amount);
+                calculateEstimatedHPP() {
+                    const additionalCost = this.n(this.formData.transport_cost) + this.n(this.formData.other_cost) - this.n(this.formData.discount_amount);
+                    const totalQty   = this.formData.details.reduce((sum, d) => sum + this.n(d.quantity), 0);
+                    const costPerUnit = totalQty > 0 ? Math.round(additionalCost / totalQty) : 0;
+                    this.formData.details.forEach(d => {
+                        const qty = this.n(d.quantity);
+                        d.unit_cost = this.n(d.unit_price) + costPerUnit - (qty > 0 ? Math.round(this.n(d.discount_amount) / qty) : 0);
+                    });
                 },
                 initials(name) {
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
@@ -274,125 +240,52 @@
                     Swal.close();
                 },
 
-                async submitDraft() {
-                    this.isSubmitting = true;
-
-                    let body = {
-                        ...this.formData,
-                        status: 'draft',
-                    };
-                    body.discount_percentage = NumberUtils.parseMaskIntoNumeric(body.discount_percentage);
-                    body.tax_percentage = NumberUtils.parseMaskIntoNumeric(body.tax_percentage);
-                    body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
-                    body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
-                    body.down_payment_amount = NumberUtils.parseMaskIntoNumeric(body.down_payment_amount);
+                buildBody(status) {
+                    const body = { ...this.formData, status };
+                    body.discount_percentage  = this.n(body.discount_percentage);
+                    body.tax_percentage       = this.n(body.tax_percentage);
+                    body.transport_cost       = this.n(body.transport_cost);
+                    body.other_cost           = this.n(body.other_cost);
+                    body.down_payment_amount  = this.n(body.down_payment_amount);
                     body.details = body.details.map(d => ({
                         ...d,
-                        quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
-                        unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
-                        discount_percentage: NumberUtils.parseMaskIntoNumeric(d.discount_percentage),
-                        total_amount: NumberUtils.parseMaskIntoNumeric(d.total_amount),
+                        quantity:            this.n(d.quantity),
+                        unit_price:          this.n(d.unit_price),
+                        discount_percentage: this.n(d.discount_percentage),
+                        total_amount:        this.n(d.total_amount),
                     }));
-
-                    Swal.fire({
-                        title: 'Memproses penyimpanan draft PO...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    try {
-                        const response = await axios.put(
-                            route('purchasings.purchasing_orders.update', this.formData.id), body
-                        );
-                        console.log('response', response.data.message);
-
-                        Swal.close();
-                        Toast.fire({
-                            icon: 'success',
-                            title: response.data.message
-                        });
-
-                        window.location.href = response.data.redirect;
-                    } catch (error) {
-                        console.error('Error submitting draft PO:', error);
-                        Swal.close();
-                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
-                        if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors)
-                                .flat()
-                                .join(', ');
-                        } else if (error.response?.data?.message) {
-                            message = error.response.data.message;
-                        }
-
-                        Toast.fire({
-                            icon: 'error',
-                            title: message
-                        });
-
-                    }
+                    return body;
                 },
 
-                async submitOpen() {
+                async submit(status) {
                     this.isSubmitting = true;
-
-                    let body = {
-                        ...this.formData,
-                        status: 'open',
+                    const titles = {
+                        draft: 'Memproses penyimpanan draft PO...',
+                        open:  'Memproses penyimpanan PO...',
                     };
-                    body.discount_percentage = NumberUtils.parseMaskIntoNumeric(body.discount_percentage);
-                    body.tax_percentage = NumberUtils.parseMaskIntoNumeric(body.tax_percentage);
-                    body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
-                    body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
-                    body.down_payment_amount = NumberUtils.parseMaskIntoNumeric(body.down_payment_amount);
-                    body.details = body.details.map(d => ({
-                        ...d,
-                        quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
-                        unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
-                        discount_percentage: NumberUtils.parseMaskIntoNumeric(d.discount_percentage),
-                        total_amount: NumberUtils.parseMaskIntoNumeric(d.total_amount),
-                    }));
-
                     Swal.fire({
-                        title: 'Memproses penyimpanan PO...',
+                        title: titles[status] ?? 'Memproses...',
                         allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
+                        didOpen: () => Swal.showLoading(),
                     });
-
                     try {
                         const response = await axios.put(
-                            route('purchasings.purchasing_orders.update', this.formData.id), body
+                            route('purchasings.purchasing_orders.update', this.formData.id), this.buildBody(status)
                         );
-
                         Swal.close();
-                        Toast.fire({
-                            icon: 'success',
-                            title: response.data.message
-                        });
-
+                        Toast.fire({ icon: 'success', title: response.data.message });
                         window.location.href = response.data.redirect;
                     } catch (error) {
                         Swal.close();
                         let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
                         if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors)
-                                .flat()
-                                .join(', ');
+                            message = Object.values(error.response.data.errors).flat().join(', ');
                         } else if (error.response?.data?.message) {
                             message = error.response.data.message;
                         }
-
-                        Toast.fire({
-                            icon: 'error',
-                            title: message
-                        });
-
+                        Toast.fire({ icon: 'error', title: message });
+                    } finally {
+                        this.isSubmitting = false;
                     }
                 }
 
@@ -400,8 +293,7 @@
         }
     </script>
 
-    <div x-data="purchaseOrderForm()" x-init="init();
-    calculateEstimatedHPP();" class="order-page">
+    <div x-data="purchaseOrderForm()" x-init="init(); recalculate();" class="order-page">
 
         <div>
             <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost btn-sm"
@@ -573,7 +465,7 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.quantity"
-                                    @input="calculateDetailTotal(i); calculateEstimatedHPP();"
+                                    @input="calculateDetailTotal(i)"
                                     x-mask:dynamic="$money($input, ',')" />
                             </td>
                             <td>
@@ -584,13 +476,13 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.unit_price"
-                                    @input="calculateDetailTotal(i); calculateEstimatedHPP();"
+                                    @input="calculateDetailTotal(i)"
                                     x-mask:dynamic="$money($input, ',')" />
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
                                     x-model="it.discount_percentage"
-                                    @input="handleDetailDiscountPercentageInput(i); calculateEstimatedHPP();"
+                                    @input="handleDetailDiscountPercentageInput(i)"
                                     x-mask:dynamic="$money($input, ',')" />
                             </td>
                             <td>
@@ -656,7 +548,7 @@
                             <div class="order-summary__pct-group">
                                 <input class="input num order-summary__pct-input"
                                     x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
-                                    @input="handleDiscountPercentageInput(); calculateTotal(); calculateEstimatedHPP();" />
+                                    @input="handleDiscountPercentageInput()" />
                                 <span class="order-summary__pct-sym">%</span>
                                 <input class="input num input--readonly order-summary__amount-display"
                                     :value="formData.discount_amount ? NumberUtils.formatNumericIntoMask(formData.discount_amount) : '0'"
@@ -670,7 +562,7 @@
                             <div class="order-summary__pct-group">
                                 <input class="input num order-summary__pct-input"
                                     x-model="formData.tax_percentage" x-mask:dynamic="$money($input, ',')"
-                                    @input="handleTaxPercentageInput(); calculateTotal();" />
+                                    @input="handleTaxPercentageInput()" />
                                 <span class="order-summary__pct-sym">%</span>
                                 <input class="input num input--readonly order-summary__amount-display"
                                     :value="formData.tax_amount ? NumberUtils.formatNumericIntoMask(formData.tax_amount) : '0'"
@@ -683,7 +575,7 @@
                             <span class="order-summary__label">Transport (Est)</span>
                             <input class="input num order-summary__cost-input"
                                 x-model="formData.transport_cost" x-mask:dynamic="$money($input, ',')"
-                                @input="calculateTotal(); calculateEstimatedHPP();" />
+                                @input="recalculate()" />
                         </div>
 
                         {{-- Cell 5: Biaya Lain-lain --}}
@@ -691,7 +583,7 @@
                             <span class="order-summary__label">Biaya Lain-lain</span>
                             <input class="input num order-summary__cost-input"
                                 x-model="formData.other_cost" x-mask:dynamic="$money($input, ',')"
-                                @input="calculateTotal(); calculateEstimatedHPP();" />
+                                @input="recalculate()" />
                         </div>
 
                         {{-- Cell 6: Uang Muka --}}
@@ -721,7 +613,7 @@
                                     <input class="num input-with-prefix__input"
                                         x-model="formData.down_payment_amount"
                                         x-mask:dynamic="$money($input, ',')"
-                                        @input="calculateTotal();"
+                                        @input="recalculate()"
                                         placeholder="0" />
                                 </div>
                             </div>
@@ -740,8 +632,8 @@
 
         <div class="order-form-footer">
             <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost">Batal</a>
-            <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
-            <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Simpan
+            <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
+            <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check" :size="14" />Simpan
                 SO</button>
         </div>
 

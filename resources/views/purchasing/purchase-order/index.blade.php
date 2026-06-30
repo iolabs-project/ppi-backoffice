@@ -176,7 +176,8 @@
                                                     Penerimaan
                                                 </button>
                                             </template>
-                                            <template x-if="row.total_invoiced_quantity < row.total_quantity && row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
+                                            <template
+                                                x-if="row.total_invoiced_quantity < row.total_quantity && row.total_delivered_quantity < row.total_invoiced_quantity && row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
                                                 <button class="action-menu__item"
                                                     @click.stop="handleCreatePurchaseInvoice(row.id)">
                                                     <x-misc.icon name="wallet" :size="14"

@@ -11,7 +11,7 @@
                     number: '{{ $number }}',
                     reference_number: null,
                     order_date: "{{ now()->format('Y-m-d') }}",
-                    due_date: "{{ now()->addDays(14)->format('Y-m-d') }}",
+                    due_date: null,
                     discount_percentage: null,
                     discount_amount: null,
                     tax_percentage: null,
@@ -62,6 +62,11 @@
                 cashBankSelected: null,
                 cashBankOpen: false,
 
+                // Shorthand: parse masked string to number
+                n(v) {
+                    return NumberUtils.parseMaskIntoNumeric(v);
+                },
+
                 addProduct() {
                     this.formData.details.push({
                         product_id: null,
@@ -78,7 +83,7 @@
                 },
                 deleteProduct(index) {
                     this.formData.details.splice(index, 1);
-                    this.calculateSubtotal();
+                    this.recalculate();
                 },
                 selectProduct(item, product) {
                     if (this.formData.details.some(d => d.product_id === product.id)) {
@@ -95,83 +100,68 @@
                     item.unit = product.unit.symbol;
                 },
                 handleDetailDiscountPercentageInput(index) {
-                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].discount_percentage);
-                    const quantity = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].quantity);
-                    const unitPrice = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].unit_price);
-
-                    if (percentage < 0) {
-                        this.formData.details[index].discount_percentage = 0;
-                    } else if (percentage > 100) {
-                        this.formData.details[index].discount_percentage = 100;
-                    }
-
-                    if (quantity && unitPrice) {
-                        this.formData.details[index].discount_amount = Math.round((percentage / 100) * (quantity *
-                            unitPrice));
-                    } else {
-                        this.formData.details[index].discount_amount = 0;
-                    }
-
+                    const d = this.formData.details[index];
+                    d.discount_percentage = Math.min(100, Math.max(0, this.n(d.discount_percentage)));
+                    d.discount_amount = Math.round((d.discount_percentage / 100) * (this.n(d.quantity) * this.n(d
+                        .unit_price)));
                     this.calculateDetailTotal(index);
                 },
                 handleDiscountPercentageInput() {
-                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.discount_percentage);
-                    const subtotal = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal);
-                    this.formData.discount_amount = Math.round((percentage / 100) * subtotal);
-                    this.calculateTotal();
+                    this.recalculate();
                 },
                 handleTaxPercentageInput() {
-                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.tax_percentage);
-                    const subtotal = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal);
-                    const discount = NumberUtils.parseMaskIntoNumeric(this.formData.discount_amount);
-                    this.formData.tax_amount = Math.round((percentage / 100) * (subtotal - discount));
-                    this.calculateTotal();
+                    this.recalculate();
                 },
-                calculateEstimatedHPP() {
-                    const estimatedAdditionalCost =
-                        NumberUtils.parseMaskIntoNumeric(this.formData.transport_cost) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.other_cost) -
-                        NumberUtils.parseMaskIntoNumeric(this.formData.discount_amount);
-
-                    const totalWeight = this.formData.details.reduce(
-                        (sum, item) => sum + NumberUtils.parseMaskIntoNumeric(item.quantity),
-                        0
-                    );
-
-                    const costPerUnit = totalWeight > 0 ?
-                        Math.round(estimatedAdditionalCost / totalWeight) :
-                        0;
-
-                    this.formData.details.forEach(item => {
-                        const unitPrice = NumberUtils.parseMaskIntoNumeric(item.unit_price);
-                        const quantity = NumberUtils.parseMaskIntoNumeric(item.quantity);
-                        const discountPerUnit = quantity > 0 ? Math.round(NumberUtils.parseMaskIntoNumeric(item
-                            .discount_amount) / quantity) : 0;
-
-                        item.unit_cost = unitPrice + costPerUnit - discountPerUnit;
-                    });
+                handlePaymentTermChange() {
+                    if (this.paymentTermSelected) {
+                        this.formData.payment_terms = this.paymentTermSelected.id;
+                        const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
+                        const orderDate = new Date(this.formData.order_date);
+                        const dueDate = new Date(orderDate.getTime() + days * 24 * 60 * 60 * 1000);
+                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                    } else {
+                        this.formData.payment_terms = null;
+                        this.formData.due_date = null;
+                    }
+                },
+                handleOrderDateChange() {
+                    if (this.paymentTermSelected) {
+                        const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
+                        const orderDate = new Date(this.formData.order_date);
+                        const dueDate = new Date(orderDate.getTime() + days * 24 * 60 * 60 * 1000);
+                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                    }
                 },
                 calculateDetailTotal(index) {
-                    let item = this.formData.details[index];
-
-                    item.total_amount = NumberUtils.parseMaskIntoNumeric(item.quantity) * NumberUtils.parseMaskIntoNumeric(
-                        item.unit_price) - NumberUtils.parseMaskIntoNumeric(item.discount_amount);
-                    this.calculateSubtotal();
+                    const d = this.formData.details[index];
+                    d.total_amount = this.n(d.quantity) * this.n(d.unit_price) - this.n(d.discount_amount);
+                    this.recalculate();
                 },
-                calculateSubtotal() {
-                    this.formData.subtotal = this.formData.details.reduce((sum, item) => {
-                        return sum + NumberUtils.parseMaskIntoNumeric(item.total_amount);
-                    }, 0);
-                    this.calculateTotal();
-                },
-                calculateTotal() {
+                recalculate() {
+                    const sub = this.formData.details.reduce((sum, d) => sum + this.n(d.total_amount), 0);
+                    this.formData.subtotal = sub;
+                    this.formData.discount_amount = Math.round((this.n(this.formData.discount_percentage) / 100) * sub);
+                    this.formData.tax_amount = Math.round((this.n(this.formData.tax_percentage) / 100) * (sub - this.n(this
+                        .formData.discount_amount)));
                     this.formData.total_amount =
-                        NumberUtils.parseMaskIntoNumeric(this.formData.subtotal) -
-                        NumberUtils.parseMaskIntoNumeric(this.formData.discount_amount) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.transport_cost) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.other_cost) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.tax_amount) -
-                        NumberUtils.parseMaskIntoNumeric(this.formData.down_payment_amount);
+                        sub -
+                        this.n(this.formData.discount_amount) +
+                        this.n(this.formData.transport_cost) +
+                        this.n(this.formData.other_cost) +
+                        this.n(this.formData.tax_amount) -
+                        this.n(this.formData.down_payment_amount);
+                    this.calculateEstimatedHPP();
+                },
+                calculateEstimatedHPP() {
+                    const additionalCost = this.n(this.formData.transport_cost) + this.n(this.formData.other_cost) - this.n(
+                        this.formData.discount_amount);
+                    const totalQty = this.formData.details.reduce((sum, d) => sum + this.n(d.quantity), 0);
+                    const costPerUnit = totalQty > 0 ? Math.round(additionalCost / totalQty) : 0;
+                    this.formData.details.forEach(d => {
+                        const qty = this.n(d.quantity);
+                        d.unit_cost = this.n(d.unit_price) + costPerUnit - (qty > 0 ? Math.round(this.n(d
+                            .discount_amount) / qty) : 0);
+                    });
                 },
                 initials(name) {
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
@@ -248,120 +238,58 @@
                     Swal.close();
                 },
 
-                async submitDraft() {
-                    let body = {
+                buildBody(status) {
+                    const body = {
                         ...this.formData,
-                        status: 'draft',
+                        status
                     };
-                    body.discount_percentage = NumberUtils.parseMaskIntoNumeric(body.discount_percentage);
-                    body.tax_percentage = NumberUtils.parseMaskIntoNumeric(body.tax_percentage);
-                    body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
-                    body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
-                    body.down_payment_amount = NumberUtils.parseMaskIntoNumeric(body.down_payment_amount);
+                    body.discount_percentage = this.n(body.discount_percentage);
+                    body.tax_percentage = this.n(body.tax_percentage);
+                    body.transport_cost = this.n(body.transport_cost);
+                    body.other_cost = this.n(body.other_cost);
+                    body.down_payment_amount = this.n(body.down_payment_amount);
                     body.details = body.details.map(d => ({
                         ...d,
-                        quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
-                        unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
-                        discount_percentage: NumberUtils.parseMaskIntoNumeric(d.discount_percentage),
-                        total_amount: NumberUtils.parseMaskIntoNumeric(d.total_amount),
+                        quantity: this.n(d.quantity),
+                        unit_price: this.n(d.unit_price),
+                        discount_percentage: this.n(d.discount_percentage),
+                        total_amount: this.n(d.total_amount),
                     }));
-
-                    Swal.fire({
-                        title: 'Memproses penyimpanan draft PO...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    try {
-                        const response = await axios.post(
-                            route('purchasings.purchasing_orders.store'), body
-                        );
-
-                        Swal.close();
-                        Toast.fire({
-                            icon: 'success',
-                            title: response.data.message
-                        });
-
-                        window.location.href = response.data.redirect;
-                    } catch (error) {
-                        console.error('Error submitting draft PO:', error);
-                        Swal.close();
-                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
-                        if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors)
-                                .flat()
-                                .join(', ');
-                        } else if (error.response?.data?.message) {
-                            message = error.response.data.message;
-                        }
-
-                        Toast.fire({
-                            icon: 'error',
-                            title: message
-                        });
-
-                    }
+                    return body;
                 },
 
-                async submitOpen() {
-                    let body = {
-                        ...this.formData,
-                        status: 'open',
+                async submit(status) {
+                    const titles = {
+                        draft: 'Memproses penyimpanan draft PO...',
+                        open: 'Memproses penyimpanan PO...',
                     };
-                    body.discount_percentage = NumberUtils.parseMaskIntoNumeric(body.discount_percentage);
-                    body.tax_percentage = NumberUtils.parseMaskIntoNumeric(body.tax_percentage);
-                    body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
-                    body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
-                    body.down_payment_amount = NumberUtils.parseMaskIntoNumeric(body.down_payment_amount);
-                    body.details = body.details.map(d => ({
-                        ...d,
-                        quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
-                        unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
-                        discount_percentage: NumberUtils.parseMaskIntoNumeric(d.discount_percentage),
-                        total_amount: NumberUtils.parseMaskIntoNumeric(d.total_amount),
-                    }));
-
                     Swal.fire({
-                        title: 'Memproses penyimpanan PO...',
+                        title: titles[status] ?? 'Memproses...',
                         allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
+                        didOpen: () => Swal.showLoading(),
                     });
-
                     try {
                         const response = await axios.post(
-                            route('purchasings.purchasing_orders.store'), body
+                            route('purchasings.purchasing_orders.store'), this.buildBody(status)
                         );
-
                         Swal.close();
                         Toast.fire({
                             icon: 'success',
                             title: response.data.message
                         });
-
                         window.location.href = response.data.redirect;
                     } catch (error) {
                         Swal.close();
                         let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
                         if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors)
-                                .flat()
-                                .join(', ');
+                            message = Object.values(error.response.data.errors).flat().join(', ');
                         } else if (error.response?.data?.message) {
                             message = error.response.data.message;
                         }
-
                         Toast.fire({
                             icon: 'error',
                             title: message
                         });
-
                     }
                 }
 
@@ -418,7 +346,7 @@
 
                 {{-- Tanggal --}}
                 <x-misc.field label="Tanggal" :required="true">
-                    <input type="date" class="input" x-model="formData.order_date" />
+                    <input type="date" class="input" x-model="formData.order_date" @change="handleOrderDateChange" />
                 </x-misc.field>
 
                 {{-- Jatuh Tempo --}}
@@ -461,7 +389,7 @@
                         <div class="dropdown-menu" x-show="paymentTermOpen" x-cloak>
                             <template x-for="t in paymentTerms" :key="t.id">
                                 <div class="dropdown-item"
-                                    @click="paymentTermSelected=t; formData.payment_terms=t.id; paymentTermOpen=false">
+                                    @click="paymentTermSelected=t; handlePaymentTermChange(); paymentTermOpen=false">
                                     <span x-text="t.name"></span>
                                 </div>
                             </template>
@@ -540,8 +468,7 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.quantity"
-                                    @input="calculateDetailTotal(i); calculateEstimatedHPP();"
-                                    x-mask:dynamic="$money($input, ',')" />
+                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
                             </td>
                             <td>
                                 <div class="input input--readonly"
@@ -551,13 +478,11 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.unit_price"
-                                    @input="calculateDetailTotal(i); calculateEstimatedHPP();"
-                                    x-mask:dynamic="$money($input, ',')" />
+                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
-                                    x-model="it.discount_percentage"
-                                    @input="handleDetailDiscountPercentageInput(i); calculateEstimatedHPP();"
+                                    x-model="it.discount_percentage" @input="handleDetailDiscountPercentageInput(i)"
                                     x-mask:dynamic="$money($input, ',')" />
                             </td>
                             <td>
@@ -621,12 +546,12 @@
                         <div class="order-summary__row">
                             <span class="order-summary__label">Diskon</span>
                             <div class="order-summary__pct-group">
-                                <input class="input num order-summary__pct-input"
-                                    x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
-                                    @input="handleDiscountPercentageInput(); calculateTotal(); calculateEstimatedHPP();" />
+                                <input class="input num order-summary__pct-input" x-model="formData.discount_percentage"
+                                    x-mask:dynamic="$money($input, ',')" @input="handleDiscountPercentageInput()" />
                                 <span class="order-summary__pct-sym">%</span>
                                 <input class="input num input--readonly order-summary__amount-display"
-                                    :value="formData.discount_amount ? NumberUtils.formatNumericIntoMask(formData.discount_amount) : '0'"
+                                    :value="formData.discount_amount ? NumberUtils.formatNumericIntoMask(formData
+                                        .discount_amount) : '0'"
                                     disabled />
                             </div>
                         </div>
@@ -635,9 +560,8 @@
                         <div class="order-summary__row">
                             <span class="order-summary__label">Pajak</span>
                             <div class="order-summary__pct-group">
-                                <input class="input num order-summary__pct-input"
-                                    x-model="formData.tax_percentage" x-mask:dynamic="$money($input, ',')"
-                                    @input="handleTaxPercentageInput(); calculateTotal();" />
+                                <input class="input num order-summary__pct-input" x-model="formData.tax_percentage"
+                                    x-mask:dynamic="$money($input, ',')" @input="handleTaxPercentageInput()" />
                                 <span class="order-summary__pct-sym">%</span>
                                 <input class="input num input--readonly order-summary__amount-display"
                                     :value="formData.tax_amount ? NumberUtils.formatNumericIntoMask(formData.tax_amount) : '0'"
@@ -648,17 +572,15 @@
                         {{-- Cell 4: Transport --}}
                         <div class="order-summary__row">
                             <span class="order-summary__label">Transport (Est)</span>
-                            <input class="input num order-summary__cost-input"
-                                x-model="formData.transport_cost" x-mask:dynamic="$money($input, ',')"
-                                @input="calculateTotal(); calculateEstimatedHPP();" />
+                            <input class="input num order-summary__cost-input" x-model="formData.transport_cost"
+                                x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
                         </div>
 
                         {{-- Cell 5: Biaya Lain-lain --}}
                         <div class="order-summary__row">
                             <span class="order-summary__label">Biaya Lain-lain</span>
-                            <input class="input num order-summary__cost-input"
-                                x-model="formData.other_cost" x-mask:dynamic="$money($input, ',')"
-                                @input="calculateTotal(); calculateEstimatedHPP();" />
+                            <input class="input num order-summary__cost-input" x-model="formData.other_cost"
+                                x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
                         </div>
 
                         {{-- Cell 6: Uang Muka --}}
@@ -685,11 +607,8 @@
                                 </div>
                                 <div class="input-with-prefix">
                                     <span class="input-with-prefix__label">Rp</span>
-                                    <input class="num input-with-prefix__input"
-                                        x-model="formData.down_payment_amount"
-                                        x-mask:dynamic="$money($input, ',')"
-                                        @input="calculateTotal();"
-                                        placeholder="0" />
+                                    <input class="num input-with-prefix__input" x-model="formData.down_payment_amount"
+                                        x-mask:dynamic="$money($input, ',')" @input="recalculate()" placeholder="0" />
                                 </div>
                             </div>
                         </div>
@@ -707,8 +626,9 @@
 
         <div class="order-form-footer">
             <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost">Batal</a>
-            <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
-            <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Simpan
+            <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
+            <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check"
+                    :size="14" />Simpan
                 SO</button>
         </div>
 

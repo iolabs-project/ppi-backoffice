@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\GoodsReceiptStatus;
+use App\Enums\PaymentTerm;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Models\Company;
 use App\Models\GoodsReceipt;
@@ -327,9 +328,9 @@ class PurchasingService
             'number' => $this->generateGoodsReceiptNumber(),
             'receipt_date' => now(),
             'status' => GoodsReceiptStatus::DRAFT->value,
-            'subtotal' => $purchaseOrder->subtotal,
+            'subtotal' => 0,
             'discount_percentage' => $purchaseOrder->discount_percentage,
-            'discount_amount' => $purchaseOrder->discount_amount,
+            'discount_amount' => 0,
             'transport_cost' => $purchaseOrder->transport_cost,
             'other_cost' => $purchaseOrder->other_cost,
             'total_amount' => $purchaseOrder->total_amount,
@@ -383,7 +384,10 @@ class PurchasingService
             $subtotal = $detailsCollection->sum(function ($item) {
                 return (($item['received_quantity'] ?? 0))
                     *
-                    (($item['unit_price'] ?? 0));
+                    (($item['unit_price'] ?? 0))
+
+                    *
+                    (1 - (($item['discount_percentage'] ?? 0) / 100));
             });
             $discountAmount = $requestCollection->get('discount_amount', 0);
             $transportCost = $requestCollection->get('transport_cost', 0);
@@ -616,6 +620,8 @@ class PurchasingService
             'warehouse_id' => $purchaseOrder->warehouse_id,
             'number' => $this->generatePurchaseInvoiceNumber(),
             'invoice_date' => now(),
+            'payment_terms' => $request->payment_terms,
+            'due_date' => now()->addDays(PaymentTerm::day($request->payment_terms)),
             'status' => PurchaseInvoiceStatus::DRAFT->value,
             'subtotal' => 0,
             'discount_percentage' => $purchaseOrder->discount_percentage,
@@ -662,6 +668,4 @@ class PurchasingService
             )
             ->find($id);
     }
-
-   
 }

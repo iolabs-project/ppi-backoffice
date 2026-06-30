@@ -73,6 +73,6 @@ class PurchaseOrder extends Model
 
     public function goodsReceipts()
     {
-        return $this->hasMany(GoodsReceipt::class);
+        return $this->hasMany(GoodsReceipt::class)->where('status', '!=', 'cancelled');
     }
 }
