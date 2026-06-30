@@ -35,13 +35,13 @@ return new class extends Migration
                 'company_id',
                 'cash_bank_account_id',
                 'number',
-            ]);
+            ], 'cash_bank_transactions_unique_number');
 
             $table->index([
                 'company_id',
                 'cash_bank_account_id',
                 'transaction_date',
-            ]);
+            ], 'cash_bank_transactions_index');
         });
 
         Schema::create('cash_bank_transaction_lines', function (Blueprint $table) {
@@ -58,7 +58,7 @@ return new class extends Migration
                 'cash_bank_transaction_id',
                 'reference_id',
                 'reference_type',
-            ]);
+            ], 'cash_bank_transaction_lines_index');
         });
     }
 
