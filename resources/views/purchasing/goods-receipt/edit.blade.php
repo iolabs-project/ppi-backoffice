@@ -163,9 +163,10 @@
                     let subtotal = this.formData.details.reduce((sum, item) => {
                         const qty = this.n(item.received_quantity);
                         const price = this.n(item.unit_price);
-                        const discount = this.n(item.discount_amount);
+                        const discountPercentage = this.n(item.discount_percentage);
+                        item.discount_amount = Math.round((discountPercentage / 100) * (qty * price));
                         item.subtotal = qty * price;
-                        item.total_amount = item.subtotal - discount;
+                        item.total_amount = item.subtotal - item.discount_amount;
                         return sum + item.total_amount;
                     }, 0);
                     this.formData.subtotal = subtotal;
@@ -517,10 +518,22 @@
                             <td style="text-align: right">
                                 <span class="mono" style="font-weight:600;"
                                     x-text="item.unit_price ? NumberUtils.formatNumericIntoMask(item.unit_price) : '0'"></span>
+                                <template x-if="item.subtotal !== null && item.subtotal !== undefined">
+                                    <div class="order-items__sub mono"
+                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align: right;"
+                                        x-text="NumberUtils.formatNumericIntoMask(item.subtotal)">
+                                    </div>
+                                </template>
                             </td>
                             <td style="text-align: right">
                                 <span class="mono" style="font-weight:600;"
                                     x-text="item.discount_percentage ? NumberUtils.formatNumericIntoMask(item.discount_percentage) : '0'"></span>
+                                <template x-if="item.discount_amount !== null && item.discount_amount !== undefined">
+                                    <div class="order-items__sub mono"
+                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align: right;"
+                                        x-text="NumberUtils.formatNumericIntoMask(item.discount_amount)">
+                                    </div>
+                                </template>
                             </td>
                             <td style="text-align: right">
                                 <span class="mono" style="font-weight:600"

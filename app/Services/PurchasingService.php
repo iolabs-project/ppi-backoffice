@@ -370,7 +370,6 @@ class PurchasingService
                 'discount_amount',
                 'transport_cost',
                 'other_cost',
-                'total_amount',
                 'note',
                 'created_by',
                 'created_at',
@@ -385,7 +384,7 @@ class PurchasingService
         $requestCollection = collect($request->except('details'));
         $detailsCollection = collect($request->input('details', []));
 
-        DB::transaction(function () use ($requestCollection, $detailsCollection, $header) {
+        DB::transaction(function () use ($request, $requestCollection, $detailsCollection, $header) {
             $subtotal = $detailsCollection->sum(function ($item) {
                 return (($item['received_quantity'] ?? 0))
                     *
@@ -394,7 +393,7 @@ class PurchasingService
                     *
                     (1 - (($item['discount_percentage'] ?? 0) / 100));
             });
-            $discountAmount = $requestCollection->get('discount_amount', 0);
+            $discountAmount = $subtotal * ($requestCollection->get('discount_percentage', 0)) / 100;
             $transportCost = $requestCollection->get('transport_cost', 0);
             $otherCost = $requestCollection->get('other_cost', 0);
             $header->update([
@@ -402,6 +401,8 @@ class PurchasingService
                 'receipt_date' => $requestCollection->get('receipt_date'),
                 'status' => $requestCollection->get('status'),
                 'subtotal' => $subtotal,
+                'discount_percentage' => $requestCollection->get('discount_percentage', 0),
+                'discount_amount' => $discountAmount,
                 'transport_cost' => $transportCost,
                 'other_cost' => $otherCost,
                 'note' => $requestCollection->get('note', null),
@@ -437,35 +438,48 @@ class PurchasingService
                 'subtotal' => $receivedQty * $unitPrice,
                 'discount_percentage' => $discountPercentage,
                 'discount_amount' => $discountAmount,
-                'allocated_cost' => 0,
                 'unit_cost' => 0,
                 'total_amount' => $receivedQty * $unitPrice - $discountAmount,
             ]);
         }
     }
 
-    private function finalizeGoodsReceipt(GoodsReceipt $goodsReceipt, Collection $detailsCollection, float $transportCost, float $otherCost, float $discountAmount): void
+    private function finalizeGoodsReceipt(GoodsReceipt $goodsReceipt, Collection $detailsCollection): void
     {
-        $additionalCost = $transportCost + $otherCost - $discountAmount;
-        $totalWeight = $detailsCollection->sum(function ($item) {
+        $transportCost = (float) ($goodsReceipt->transport_cost ?? 0);
+        $otherCost = (float) ($goodsReceipt->other_cost ?? 0);
+        $discountAmount = (float) ($goodsReceipt->discount_amount ?? 0);
+        $additionalCost = $transportCost + $otherCost;
+        $totalQty = $detailsCollection->sum(function ($item) {
             return $item['received_quantity'];
         });
-        $costPerUnit = $totalWeight > 0 ? $additionalCost / $totalWeight : 0;
-
-
+        $totalSubtotal = $detailsCollection->sum(function ($item) {
+            $subtotal = $item['received_quantity'] * $item['unit_price'];
+            $discountAmount = $subtotal * ($item['discount_percentage'] / 100);
+            return $subtotal - $discountAmount;
+        });
 
         foreach ($detailsCollection as $item) {
-            $receivedQty = (float) ($item['received_quantity'] ?? 0);
             $expectedQty = (float) ($item['expected_quantity'] ?? 0);
+            $qty = (float) ($item['received_quantity'] ?? 0);
+            $unitDiscountPercentage = (float) ($item['discount_percentage'] ?? 0);
             $unitPrice = (float) ($item['unit_price'] ?? 0);
-            $discountPercentage = (float) ($item['discount_percentage'] ?? 0);
-            $discountAmount = $receivedQty * $unitPrice * ($discountPercentage / 100);
+            $subtotal = $qty * $unitPrice;
+            $unitDiscountAmount = $subtotal * ($unitDiscountPercentage / 100);
+            $total = $subtotal - $unitDiscountAmount;
 
+            if ($qty <= 0) {
+                $unitCost = 0;
+            } else {
 
-            $allocatedCost = $costPerUnit * $receivedQty;
-            $discountPerUnit = $discountAmount / $receivedQty;
-            $unitCost = $unitPrice + $costPerUnit - $discountPerUnit;
-            $totalCost = $unitCost * $receivedQty;
+                $qtyRatio = $totalQty > 0 ? ($qty / $totalQty) : 0;
+                $valueRatio = $totalSubtotal > 0 ? ($total / $totalSubtotal) : 0;
+
+                $addtionalCostPerUnit = $qty > 0 ? ($additionalCost * $qtyRatio) / $qty : 0;
+                $discountAmountPerUnit = $qty > 0 ? ($discountAmount * $valueRatio) / $qty : 0;
+
+                $unitCost = $unitPrice - ($qty > 0 ? $unitDiscountAmount / $qty : 0) + $addtionalCostPerUnit - $discountAmountPerUnit;
+            }
 
             if ($this->validateBatchNumber($item['batch_number'], $item['product_id'], $goodsReceipt->company_id)) {
                 throw ValidationException::withMessages([
@@ -479,14 +493,12 @@ class PurchasingService
                 'product_id' => $item['product_id'],
                 'batch_number' => $item['batch_number'],
                 'expected_quantity' => $expectedQty,
-                'shrinkage_quantity' => $expectedQty - $receivedQty,
-                'received_quantity' => $receivedQty,
+                'shrinkage_quantity' => $expectedQty - $qty,
+                'received_quantity' => $qty,
                 'unit_price' => $unitPrice,
-                'discount_percentage' => $discountPercentage,
-                'discount_amount' => $discountAmount,
-                'allocated_cost' => $allocatedCost,
+                'discount_percentage' => $unitDiscountPercentage,
+                'discount_amount' => $unitDiscountAmount,
                 'unit_cost' => $unitCost,
-                'total_cost' => $totalCost,
             ]);
 
             $batch = ProductBatch::create([

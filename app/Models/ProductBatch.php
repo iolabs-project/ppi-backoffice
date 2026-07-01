@@ -10,7 +10,7 @@ class ProductBatch extends Model
         'company_id',
         'warehouse_id',
         'product_id',
-        'goods_receipt_id',
+        'goods_receipt_item_id',
         'batch_number',
         'supplier_batch_number',
         'quantity',
