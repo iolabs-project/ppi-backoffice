@@ -34,12 +34,16 @@
                         received_quantity: item.received_quantity,
                         shrinkage_quantity: item.shrinkage_quantity,
                         unit_price: item.unit_price,
+                        subtotal: item.subtotal,
                         discount_percentage: item.discount_percentage,
                         discount_amount: item.discount_amount,
-                        allocated_cost: item.allocated_cost,
                         unit_cost: item.unit_cost,
                         total_cost: item.total_cost,
                     })),
+                },
+
+                n(v) {
+                    return NumberUtils.parseMaskIntoNumeric(v);
                 },
 
                 addProduct() {
@@ -53,9 +57,9 @@
                         received_quantity: null,
                         shrinkage_quantity: null,
                         unit_price: null,
+                        subtotal: null,
                         discount_percentage: null,
                         discount_amount: null,
-                        allocated_cost: null,
                         unit_cost: null,
                         total_cost: null,
                     });
@@ -110,41 +114,64 @@
                 },
 
                 calculateHPP() {
-                    const overhead =
-                        NumberUtils.parseMaskIntoNumeric(this.formData.transport_cost) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.other_cost);
+                    const headerDiscount = this.n(this.formData.discount_amount);
+                    const additionalCost =
+                        this.n(this.formData.transport_cost) +
+                        this.n(this.formData.other_cost);
 
                     const totalQty = this.formData.details.reduce(
-                        (sum, item) => sum + NumberUtils.parseMaskIntoNumeric(item.received_quantity), 0
+                        (sum, d) => sum + this.n(d.received_quantity),
+                        0
                     );
 
-                    this.formData.details.forEach(item => {
-                        const qty = NumberUtils.parseMaskIntoNumeric(item.received_quantity);
-                        const price = NumberUtils.parseMaskIntoNumeric(item.unit_price);
-                        const discount = NumberUtils.parseMaskIntoNumeric(item.discount_amount);
+                    const subtotal = this.formData.subtotal;
 
-                        const allocatedOH = totalQty > 0 ? Math.round(overhead * qty / totalQty) : 0;
-                        const overheadPerUnit = qty > 0 ? Math.round(allocatedOH / qty) : 0;
-                        const discountPerUnit = qty > 0 ? Math.round(discount / qty) : 0;
+                    this.formData.details.forEach(d => {
+                        const qty = this.n(d.received_quantity);
+                        if (qty <= 0) {
+                            d.unit_cost = 0;
+                            return;
+                        }
 
-                        item.allocated_cost = allocatedOH;
-                        item.unit_cost = price + overheadPerUnit - discountPerUnit;
-                        item.total_cost = item.unit_cost * qty;
+                        const qtyRatio =
+                            totalQty > 0 ? qty / totalQty : 0;
+
+                        const valueRatio =
+                            subtotal > 0 ?
+                            this.n(d.total_amount) / subtotal :
+                            0;
+
+                        const additionalCostPerUnit =
+                            qty > 0 ?
+                            (additionalCost * qtyRatio) / qty :
+                            0;
+
+                        const discountPerUnit =
+                            qty > 0 ? (headerDiscount * valueRatio) / qty : 0;
+
+                        d.unit_cost =
+                            this.n(d.unit_price) -
+                            (qty > 0 ? this.n(d.discount_amount) / qty : 0) -
+                            discountPerUnit +
+                            additionalCostPerUnit;
+
+                        d.unit_cost = Math.round(d.unit_cost);
                     });
                 },
 
                 calculateSubtotal() {
-                    let subtotal = 0;
-                    let totalDiscount = 0;
-                    this.formData.details.forEach(item => {
-                        const qty = NumberUtils.parseMaskIntoNumeric(item.received_quantity);
-                        const price = NumberUtils.parseMaskIntoNumeric(item.unit_price);
-                        const discount = NumberUtils.parseMaskIntoNumeric(item.discount_amount);
-                        subtotal += (qty * price) - discount;
-                        totalDiscount += discount;
-                    });
+                    let subtotal = this.formData.details.reduce((sum, item) => {
+                        const qty = this.n(item.received_quantity);
+                        const price = this.n(item.unit_price);
+                        const discount = this.n(item.discount_amount);
+                        item.subtotal = qty * price;
+                        item.total_amount = item.subtotal - discount;
+                        return sum + item.total_amount;
+                    }, 0);
                     this.formData.subtotal = subtotal;
-                    this.formData.discount_amount = totalDiscount;
+                    this.formData.discount_amount = Math.round(
+                        (this.n(this.formData.discount_percentage) / 100) * subtotal
+                    );
                 },
 
                 handleExpectedQuantityInput(item) {
@@ -195,6 +222,13 @@
                     item.shrinkage_quantity = Math.max(0, expectedQuantity - receivedQuantity);
                 },
 
+                calculateDetailTotal(index) {
+                    const d = this.formData.details[index];
+                    d.subtotal = this.n(d.quantity) * this.n(d.unit_price);
+                    d.total_amount = d.subtotal - this.n(d.discount_amount);
+                    this.recalculate();
+                },
+
                 init() {
                     Swal.fire({
                         title: 'Memuat data penerimaan barang...',
@@ -221,7 +255,6 @@
                         received_quantity: NumberUtils.parseMaskIntoNumeric(d.received_quantity),
                         shrinkage_quantity: NumberUtils.parseMaskIntoNumeric(d.shrinkage_quantity),
                         unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
-                        allocated_cost: NumberUtils.parseMaskIntoNumeric(d.allocated_cost),
                         unit_cost: NumberUtils.parseMaskIntoNumeric(d.unit_cost),
                     }));
 
@@ -293,10 +326,9 @@
                                 shrinkage_quantity: NumberUtils.parseMaskIntoNumeric(d
                                     .shrinkage_quantity),
                                 unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
-                                allocated_cost: NumberUtils.parseMaskIntoNumeric(d
-                                    .allocated_cost),
                                 unit_cost: NumberUtils.parseMaskIntoNumeric(d.unit_cost),
-                                discount_percentage: NumberUtils.parseMaskIntoNumeric(d.discount_percentage),
+                                discount_percentage: NumberUtils.parseMaskIntoNumeric(d
+                                    .discount_percentage),
                             }));
 
                             Swal.fire({
@@ -486,7 +518,7 @@
                                 <span class="mono" style="font-weight:600;"
                                     x-text="item.unit_price ? NumberUtils.formatNumericIntoMask(item.unit_price) : '0'"></span>
                             </td>
-                             <td style="text-align: right">
+                            <td style="text-align: right">
                                 <span class="mono" style="font-weight:600;"
                                     x-text="item.discount_percentage ? NumberUtils.formatNumericIntoMask(item.discount_percentage) : '0'"></span>
                             </td>
@@ -516,11 +548,11 @@
                 </div>
                 <div class="order-summary">
                     <div class="display order-summary__title">Ringkasan</div>
-                     <div class="order-summary__row" style="align-items:center;">
+                    <div class="order-summary__row" style="align-items:center;">
                         <span class="order-summary__label">Subtotal</span>
-                       <input class="input num input--readonly"
-                                style="height:28px; width:130px; text-align:right; font-size:13px;"
-                                x-model="formData.subtotal" x-mask:dynamic="$money($input, ',')" disabled />
+                        <input class="input num input--readonly"
+                            style="height:28px; width:130px; text-align:right; font-size:13px;"
+                            x-model="formData.subtotal" x-mask:dynamic="$money($input, ',')" disabled />
                     </div>
                     <div class="order-summary__row" style="align-items:center;">
                         <span class="order-summary__label">Diskon (%)</span>
@@ -536,14 +568,12 @@
                     <div class="order-summary__row" style="align-items:center;">
                         <span class="order-summary__label">Biaya Transportasi</span>
                         <input class="input num" style="height:28px; width:130px; text-align:right; font-size:13px;"
-                            x-model="formData.transport_cost" x-mask:dynamic="$money($input, ',')"
-                            @input="recalc();" />
+                            x-model="formData.transport_cost" x-mask:dynamic="$money($input, ',')" @input="recalc();" />
                     </div>
                     <div class="order-summary__row" style="align-items:center;">
                         <span class="order-summary__label">Biaya Lain-lain</span>
                         <input class="input num" style="height:28px; width:130px; text-align:right; font-size:13px;"
-                            x-model="formData.other_cost" x-mask:dynamic="$money($input, ',')"
-                            @input="recalc();" />
+                            x-model="formData.other_cost" x-mask:dynamic="$money($input, ',')" @input="recalc();" />
                     </div>
                 </div>
             </div>

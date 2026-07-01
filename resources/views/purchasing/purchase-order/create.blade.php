@@ -517,11 +517,17 @@
 
                     <div class="order-summary__grid">
 
-                        {{-- Cell 1: Subtotal --}}
+                       {{-- Cell 1: Subtotal --}}
                         <div class="order-summary__row">
-                            <span class="order-summary__label">Subtotal</span>
+                            <span class="order-summary__label">Nilai Bruto</span>
                             <span class="num order-summary__val"
-                                x-text="'Rp ' + (formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
+                                x-text="'Rp ' + (formData.details ? NumberUtils.formatNumericIntoMask(formData.details.reduce((acc, item) => acc + item.subtotal, 0)) : '0')"></span>
+                        </div>
+
+                        <div class="order-summary__row">
+                            <span class="order-summary__label">Diskon Item</span>
+                            <span class="num order-summary__val"
+                                x-text="'Rp ' + (formData.details ? NumberUtils.formatNumericIntoMask(formData.details.reduce((acc, item) => acc + item.discount_amount, 0)) : '0')"></span>
                         </div>
 
                         {{-- Cell 2: Diskon --}}

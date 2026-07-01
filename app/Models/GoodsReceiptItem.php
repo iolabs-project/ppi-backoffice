@@ -15,11 +15,11 @@ class GoodsReceiptItem extends Model
         'received_quantity',
         'shrinkage_quantity',
         'unit_price',
+        'subtotal',
         'discount_percentage',
         'discount_amount',
-        'allocated_cost',
         'unit_cost',
-        'total_cost',
+        'total_amount',
     ];
 
     protected $casts = [
@@ -27,11 +27,11 @@ class GoodsReceiptItem extends Model
         'received_quantity' => 'double',
         'shrinkage_quantity' => 'double',
         'unit_price' => 'double',
+        'subtotal' => 'double',
         'discount_percentage' => 'double',
         'discount_amount' => 'double',
-        'allocated_cost' => 'double',
         'unit_cost' => 'double',
-        'total_cost' => 'double',
+        'total_amount' => 'double',
     ];
 
     public function goodsReceipt()

@@ -91,7 +91,6 @@ class PurchasingService
             'items.product.unit:id,name,symbol',
             'supplier:id,name,code',
             'warehouse:id,name,code',
-            'salesPerson:id,name,code',
             'creator:id,username'
         ])
             ->select(
@@ -143,7 +142,6 @@ class PurchasingService
                     'company_id' => config('context.selected_company_id'),
                     'supplier_id' => $request->supplier_id,
                     'warehouse_id' => $request->warehouse_id,
-                    'sales_person_id' => $request->sales_person_id,
                     'number' => $request->number,
                     'reference_number' => $request->reference_number,
                     'order_date' => $request->order_date,
@@ -199,7 +197,6 @@ class PurchasingService
             $purchaseOrder->update([
                 'supplier_id' => $request->supplier_id,
                 'warehouse_id' => $request->warehouse_id,
-                'sales_person_id' => $request->sales_person_id,
                 'number' => $request->number,
                 'reference_number' => $request->reference_number,
                 'order_date' => $request->order_date,

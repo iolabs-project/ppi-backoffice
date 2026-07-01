@@ -42,11 +42,11 @@ return new class extends Migration
             $table->decimal('shrinkage_quantity', 18, 4);
             $table->decimal('received_quantity', 18, 4);
             $table->decimal('unit_price', 18, 4)->default(0);
+            $table->decimal('subtotal', 18, 4)->default(0);
             $table->decimal('discount_percentage', 5, 2)->default(0);
             $table->decimal('discount_amount', 18, 4)->default(0);
-            $table->decimal('allocated_cost', 18, 4)->default(0);
             $table->decimal('unit_cost', 18, 4)->default(0);
-            $table->decimal('total_cost', 18, 4)->default(0);
+            $table->decimal('total_amount', 18, 4)->default(0);
             $table->timestamps();
         });
     }

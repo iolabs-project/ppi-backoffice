@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('company_id')->constrained('companies')->onDelete('restrict');
             $table->foreignId('supplier_id')->constrained('contacts')->onDelete('restrict');
-            $table->foreignId('sales_person_id')->nullable()->constrained('contacts')->onDelete('restrict');
             $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('restrict');
             $table->string('number', 50)->unique();
             $table->string('reference_number', 50)->nullable();
@@ -50,8 +49,6 @@ return new class extends Migration
             $table->decimal('subtotal', 18, 4)->default(0);
             $table->decimal('discount_percentage', 5, 2)->default(0);
             $table->decimal('discount_amount', 18, 4)->default(0);
-            $table->decimal('tax_percentage', 5, 2)->default(0);
-            $table->decimal('tax_amount', 18, 4)->default(0);
             $table->decimal('total_amount', 18, 4)->default(0);
             $table->timestamps();
         });
