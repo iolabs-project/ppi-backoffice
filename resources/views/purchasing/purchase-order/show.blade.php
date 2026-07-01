@@ -8,7 +8,7 @@
     <div x-data="detailPage()" class="order-page">
         <div class="order-hd order-hd--start">
             <div>
-                <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost btn-sm"
+                <a href="{{ route('purchasings.purchase_orders.index') }}" class="btn btn-ghost btn-sm"
                     style="margin-bottom:10px;">
                     <x-misc.icon name="chev-left" :size="13" />Kembali
                 </a>
@@ -24,14 +24,13 @@
             <div class="order-actions">
 
                 @if ($purchaseOrder->status == $draft)
-                    <a href="{{ route('purchasings.purchasing_orders.edit', $purchaseOrder->id) }}" class="btn btn-primary">
+                    <a href="{{ route('purchasings.purchase_orders.edit', $purchaseOrder->id) }}" class="btn btn-primary">
                         <x-misc.icon name="edit" :size="14" />Edit Pemesanan
                     </a>
                 @endif
-                @if (
-                    $purchaseOrder->status == $draft ||
-                        ($purchaseOrder->status == $open && !$purchaseOrder->goods_receipts))
-                    <button class="btn btn-ghost" @click="handleCancel({{ $purchaseOrder->id }})"><x-misc.icon name="x" :size="14" />Batal Pemesanan</button>
+                @if ($purchaseOrder->status == $draft || ($purchaseOrder->status == $open && !$purchaseOrder->goods_receipts))
+                    <button class="btn btn-ghost" @click="handleCancel({{ $purchaseOrder->id }})"><x-misc.icon
+                            name="x" :size="14" />Batal Pemesanan</button>
                 @endif
 
                 @if ($purchaseOrder->status === $open)
@@ -70,7 +69,8 @@
                         <th style="text-align:right;">Quantity</th>
                         <th>Satuan</th>
                         <th style="text-align:right;">Harga Beli</th>
-                        <th style="text-align:right;">Subtotal</th>
+                        <th style="text-align:right;">Diskon</th>
+                        <th style="text-align:right;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,7 +84,9 @@
                             </td>
                             <td class="num" style="text-align:right;">{{ $it->quantity }}</td>
                             <td style="color:var(--ink-3);">{{ $it->product->unit->name }}</td>
-                            <td class="num" style="text-align:right;">{{ fmt_rp($it->unit_price) }}</td>
+                            <td class="num" style="text-align:right;">{{ fmt_rp($it->unit_price * $it->quantity) }} ({{ fmt_rp($it->unit_price) }})</td>
+                            <td class="num" style="text-align:right;">{{ fmt_rp($it->discount_amount) }}
+                                ({{ $it->discount_percentage }}%)</td>
                             <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($it->total_amount) }}
                             </td>
                         </tr>
@@ -97,7 +99,17 @@
                     <div class="order-notes__text">{{ $purchaseOrder->note }}</div>
                 </div>
                 <div class="order-detail-summary">
-                    @foreach ([['Subtotal', $purchaseOrder->subtotal, false], ['Diskon', -$purchaseOrder->discount_amount, false], ['Ongkos Kirim', $purchaseOrder->transport_cost, false], ['Biaya Lain-Lain', $purchaseOrder->other_cost, false], ['Total Pesanan', $purchaseOrder->total_amount, true]] as [$lbl, $val, $bold])
+                    @foreach (
+                        [
+                            ['Nilai Bruto', $purchaseOrder->items->sum('subtotal'), false], 
+                            ['Diskon Item', -$purchaseOrder->items->sum('discount_amount'), false], 
+                            ['Subtotal', $purchaseOrder->subtotal, false], 
+                            ['Diskon', -$purchaseOrder->discount_amount, false], 
+                            ['Pajak', $purchaseOrder->tax_amount, false], 
+                            ['Ongkos Kirim', $purchaseOrder->transport_cost, false], 
+                            ['Biaya Lain-Lain', $purchaseOrder->other_cost, false], 
+                            ['Total Pesanan', $purchaseOrder->total_amount, true]
+                        ] as [$lbl, $val, $bold])
                         <div
                             style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
                             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
@@ -134,14 +146,14 @@
                             });
                             try {
                                 const response = await axios.post(route(
-                                    'purchasings.purchasing_orders.cancel', id));
+                                    'purchasings.purchase_orders.cancel', id));
                                 Swal.close();
                                 Toast.fire({
                                     icon: 'success',
                                     title: response.data.message
                                 });
 
-                                window.location.href = route('purchasings.purchasing_orders.index');
+                                window.location.href = route('purchasings.purchase_orders.index');
                             } catch (error) {
                                 Swal.close();
                                 let message = 'Terjadi kesalahan saat membatalkan PO. Silakan coba lagi.';

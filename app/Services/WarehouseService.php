@@ -26,4 +26,18 @@ class WarehouseService
 
         return $data->get();
     }
+
+    public function fetchWarehouseData()
+    {
+        $data = Warehouse::select(
+            'id',
+            'code',
+            'name',
+        )
+        ->where('company_id', config('context.selected_company_id'))
+        ->whereNull('deleted_at')
+        ->get();
+
+        return $data;
+    }
 }

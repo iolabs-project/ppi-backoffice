@@ -16,7 +16,6 @@ class COASeeder extends Seeder
         DB::table('account_categories')->insert([
             [
                 'id' => 1,
-                'company_id' => 1,
                 'name' => 'Kas & Bank',
 
                 'created_at' => now(),
@@ -24,7 +23,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 2,
-                'company_id' => 1,
                 'name' => 'Akun Piutang',
 
                 'created_at' => now(),
@@ -32,7 +30,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 3,
-                'company_id' => 1,
                 'name' => 'Persediaan',
 
                 'created_at' => now(),
@@ -40,7 +37,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 4,
-                'company_id' => 1,
                 'name' => 'Aktiva Lancar Lainnya',
 
                 'created_at' => now(),
@@ -48,7 +44,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 5,
-                'company_id' => 1,
                 'name' => 'Aktiva Tetap',
 
                 'created_at' => now(),
@@ -56,7 +51,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 6,
-                'company_id' => 1,
                 'name' => 'Depresiasi & Armortisasi',
 
                 'created_at' => now(),
@@ -64,7 +58,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 7,
-                'company_id' => 1,
                 'name' => 'Aktiva Lainnya',
 
                 'created_at' => now(),
@@ -72,7 +65,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 8,
-                'company_id' => 1,
                 'name' => 'Akun Hutang',
 
                 'created_at' => now(),
@@ -80,7 +72,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 9,
-                'company_id' => 1,
                 'name' => 'Kewajiban Lancar Lainnya',
 
                 'created_at' => now(),
@@ -88,7 +79,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 10,
-                'company_id' => 1,
                 'name' => 'Kewajiban Jangka Panjang',
 
                 'created_at' => now(),
@@ -96,7 +86,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 11,
-                'company_id' => 1,
                 'name' => 'Ekuitas',
 
                 'created_at' => now(),
@@ -104,7 +93,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 12,
-                'company_id' => 1,
                 'name' => 'Pendapatan',
 
                 'created_at' => now(),
@@ -112,7 +100,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 13,
-                'company_id' => 1,
                 'name' => 'Harga Pokok Penjualan',
 
                 'created_at' => now(),
@@ -120,7 +107,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 14,
-                'company_id' => 1,
                 'name' => 'Beban',
 
                 'created_at' => now(),
@@ -128,7 +114,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 15,
-                'company_id' => 1,
                 'name' => 'Pendapatan Lainnya',
 
                 'created_at' => now(),
@@ -136,7 +121,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 16,
-                'company_id' => 1,
                 'name' => 'Beban Lainnya',
 
                 'created_at' => now(),
@@ -144,7 +128,6 @@ class COASeeder extends Seeder
             ],
             [
                 'id' => 17,
-                'company_id' => 1,
                 'name' => 'Kartu Kredit',
 
                 'created_at' => now(),

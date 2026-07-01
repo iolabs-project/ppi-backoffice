@@ -18,7 +18,7 @@
                     tax_amount: null,
                     transport_cost: null,
                     other_cost: null,
-                    down_payment_source_id: null,
+                    down_payment_account_id: null,
                     down_payment_amount: null,
                     payment_terms: null,
                     subtotal: null,
@@ -31,6 +31,7 @@
                         quantity: null,
                         unit: null,
                         unit_price: null,
+                        subtotal: null,
                         discount_percentage: null,
                         discount_amount: null,
                         total_amount: null,
@@ -38,13 +39,13 @@
                     }],
                 },
                 // Supplier Options
-                suppliers: [],
+                suppliers: @json($suppliers),
                 supplierLoading: false,
                 supplierSearch: '',
                 supplierSelected: null,
                 supplierOpen: false,
                 // Warehouse Options
-                warehouses: [],
+                warehouses: @json($warehouses),
                 warehouseLoading: false,
                 warehouseSearch: '',
                 warehouseSelected: null,
@@ -57,7 +58,7 @@
                 productSelected: [],
                 productOpen: false,
                 // Cash Bank Options
-                cashBanks: [],
+                cashBanks: @json($cashBankAccounts),
                 cashBankLoading: false,
                 cashBankSelected: null,
                 cashBankOpen: false,
@@ -75,6 +76,7 @@
                         quantity: null,
                         unit: null,
                         unit_price: null,
+                        subtotal: null,
                         discount_percentage: null,
                         discount_amount: null,
                         total_amount: null,
@@ -134,7 +136,8 @@
                 },
                 calculateDetailTotal(index) {
                     const d = this.formData.details[index];
-                    d.total_amount = this.n(d.quantity) * this.n(d.unit_price) - this.n(d.discount_amount);
+                    d.subtotal = this.n(d.quantity) * this.n(d.unit_price);
+                    d.total_amount = d.subtotal - this.n(d.discount_amount);
                     this.recalculate();
                 },
                 recalculate() {
@@ -153,89 +156,54 @@
                     this.calculateEstimatedHPP();
                 },
                 calculateEstimatedHPP() {
-                    const additionalCost = this.n(this.formData.transport_cost) + this.n(this.formData.other_cost) - this.n(
-                        this.formData.discount_amount);
-                    const totalQty = this.formData.details.reduce((sum, d) => sum + this.n(d.quantity), 0);
-                    const costPerUnit = totalQty > 0 ? Math.round(additionalCost / totalQty) : 0;
+                    const headerDiscount = this.n(this.formData.discount_amount);
+                    const additionalCost =
+                        this.n(this.formData.transport_cost) +
+                        this.n(this.formData.other_cost);
+
+                    const totalQty = this.formData.details.reduce(
+                        (sum, d) => sum + this.n(d.quantity),
+                        0
+                    );
+
+                    const subtotal = this.formData.subtotal;
+
                     this.formData.details.forEach(d => {
                         const qty = this.n(d.quantity);
-                        d.unit_cost = this.n(d.unit_price) + costPerUnit - (qty > 0 ? Math.round(this.n(d
-                            .discount_amount) / qty) : 0);
+
+                        const qtyRatio =
+                            totalQty > 0 ? qty / totalQty : 0;
+
+                        const valueRatio =
+                            subtotal > 0 ?
+                            this.n(d.total_amount) / subtotal :
+                            0;
+
+                        const additionalCostPerUnit =
+                            qty > 0 ?
+                            (additionalCost * qtyRatio) / qty :
+                            0;
+
+                        const discountPerUnit =
+                            qty > 0 ?
+                            (headerDiscount * valueRatio) / qty :
+                            0;
+
+                        d.unit_cost =
+                            this.n(d.unit_price) -
+                            (qty > 0 ? this.n(d.discount_amount) / qty : 0) -
+                            discountPerUnit +
+                            additionalCostPerUnit;
+
+                        d.unit_cost = Math.round(d.unit_cost);
                     });
                 },
                 initials(name) {
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
                 },
 
-                async loadSuppliers() {
-                    this.supplierLoading = true;
-
-                    try {
-                        const response = await axios.get(
-                            route('master.contacts.options'), {
-                                params: {
-                                    search: this.supplierSearch,
-                                    type: 'supplier'
-                                }
-                            }
-                        );
-
-                        this.suppliers = response.data.data;
-
-
-                    } finally {
-                        this.supplierLoading = false;
-                    }
-                },
-
-                async loadWarehouses() {
-                    this.warehouseLoading = true;
-
-                    try {
-                        const response = await axios.get(
-                            route('master.warehouses.options'), {
-                                params: {
-                                    search: this.warehouseSearch,
-                                }
-                            }
-                        );
-
-                        this.warehouses = response.data.data;
-
-
-                    } finally {
-                        this.warehouseLoading = false;
-                    }
-                },
-
-                async loadCashBanks() {
-                    this.cashBankLoading = true;
-                    try {
-                        const response = await axios.get(route('kasbank.options'));
-                        this.cashBanks = response.data.data;
-                    } finally {
-                        this.cashBankLoading = false;
-                    }
-                },
-
                 availableProducts() {
                     return products.filter(p => !this.formData.details.some(d => d.product_id === p.id));
-                },
-
-                async init() {
-                    Swal.fire({
-                        title: 'Memuat data...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-                    await Promise.all([
-                        this.loadSuppliers(),
-                        this.loadWarehouses(),
-                        this.loadCashBanks(),
-                    ]);
-                    Swal.close();
                 },
 
                 buildBody(status) {
@@ -270,7 +238,7 @@
                     });
                     try {
                         const response = await axios.post(
-                            route('purchasings.purchasing_orders.store'), this.buildBody(status)
+                            route('purchasings.purchase_orders.store'), this.buildBody(status)
                         );
                         Swal.close();
                         Toast.fire({
@@ -296,10 +264,10 @@
             };
         }
     </script>
-    <div x-data="purchaseOrderForm()" x-init="init()" class="order-page">
+    <div x-data="purchaseOrderForm()" class="order-page">
 
         <div>
-            <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost btn-sm"
+            <a href="{{ route('purchasings.purchase_orders.index') }}" class="btn btn-ghost btn-sm"
                 style="margin-bottom:10px;">
                 <x-misc.icon name="chev-left" :size="13" />Kembali
             </a>
@@ -479,11 +447,25 @@
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.unit_price"
                                     @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
+
+                                <template x-if="it.subtotal !== null && it.subtotal !== undefined">
+                                    <div class="order-items__sub mono"
+                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align: right;"
+                                        x-text="NumberUtils.formatNumericIntoMask(it.subtotal)">
+                                    </div>
+                                </template>
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
                                     x-model="it.discount_percentage" @input="handleDetailDiscountPercentageInput(i)"
                                     x-mask:dynamic="$money($input, ',')" />
+
+                                <template x-if="it.discount_amount !== null && it.discount_amount !== undefined">
+                                    <div class="order-items__sub mono"
+                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align: right;"
+                                        x-text="NumberUtils.formatNumericIntoMask(it.discount_amount)">
+                                    </div>
+                                </template>
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
@@ -592,15 +574,15 @@
                                         @click="cashBankOpen=!cashBankOpen">
                                         <span style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
                                             :style="cashBankSelected ? '' : 'color:var(--ink-4);'"
-                                            x-text="cashBankSelected ? cashBankSelected.nama : 'Sumber Kas'"></span>
+                                            x-text="cashBankSelected ? cashBankSelected.name : 'Sumber Kas'"></span>
                                         <x-misc.icon name="chev-down" :size="11" stroke="var(--ink-4)" />
                                     </div>
                                     <div class="dropdown-menu" x-show="cashBankOpen" x-cloak
                                         style="right:0; left:auto; min-width:180px;">
                                         <template x-for="cb in cashBanks" :key="cb.id">
                                             <div class="dropdown-item"
-                                                @click="cashBankSelected=cb; formData.down_payment_source_id=cb.id; cashBankOpen=false">
-                                                <span x-text="cb.nama"></span>
+                                                @click="cashBankSelected=cb; formData.down_payment_account_id=cb.id; cashBankOpen=false">
+                                                <span x-text="cb.name"></span>
                                             </div>
                                         </template>
                                     </div>
@@ -625,7 +607,7 @@
         </div>
 
         <div class="order-form-footer">
-            <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost">Batal</a>
+            <a href="{{ route('purchasings.purchase_orders.index') }}" class="btn btn-ghost">Batal</a>
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
             <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check"
                     :size="14" />Simpan

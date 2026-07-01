@@ -277,7 +277,7 @@
 
                     try {
                         const response = await axios.put(
-                            route('purchasings.purchasing_orders.update', this.formData.id), body
+                            route('purchasings.purchase_orders.update', this.formData.id), body
                         );
                         console.log('response', response.data.message);
 
@@ -338,7 +338,7 @@
 
                     try {
                         const response = await axios.put(
-                            route('purchasings.purchasing_orders.update', this.formData.id), body
+                            route('purchasings.purchase_orders.update', this.formData.id), body
                         );
 
                         Swal.close();
@@ -632,7 +632,7 @@
         </div>
 
         <div class="order-form-footer">
-            <a href="{{ route('purchasings.purchasing_orders.index') }}" class="btn btn-ghost">Batal</a>
+            <a href="{{ route('purchasings.purchase_orders.index') }}" class="btn btn-ghost">Batal</a>
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
             <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Simpan
                 SO</button>

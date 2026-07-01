@@ -91,7 +91,7 @@
                                                 class="action-menu__item">
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail
                                             </a>
-                                            <a :href="route('purchasings.purchasing_orders.show', row.purchase_order_id)" @click.stop
+                                            <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)" @click.stop
                                                 class="action-menu__item">
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat PO
                                             </a>

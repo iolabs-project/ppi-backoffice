@@ -50,7 +50,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::prefix('purchasings')->name('purchasings.')->group(function () {
-        Route::prefix('purchasing-orders')->name('purchasing_orders.')->controller(PurchaseOrderController::class)->group(function () {
+        Route::prefix('purchase-orders')->name('purchase_orders.')->controller(PurchaseOrderController::class)->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::get('/create', 'create')->name('create');

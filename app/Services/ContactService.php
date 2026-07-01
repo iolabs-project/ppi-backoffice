@@ -44,4 +44,33 @@ class ContactService
 
         return $data->get();
     }
+
+    public function fetchContactData(string|null $type)
+    {
+        $data = Contact::select(
+            'id',
+            'code',
+            'name',
+        )
+        ->where('company_id', config('context.selected_company_id'))
+        ->whereNull('deleted_at');
+
+        if ($type) {
+            switch ($type) {
+                case 'customer':
+                    $data->where('is_customer', true);
+                    break;
+                case 'supplier':
+                    $data->where('is_supplier', true);
+                    break;
+                case 'employee':
+                    $data->where('is_employee', true);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return $data->get();
+    }
 }

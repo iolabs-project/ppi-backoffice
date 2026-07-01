@@ -22,6 +22,9 @@ class PurchaseOrder extends Model
         'transport_cost',
         'other_cost',
         'subtotal',
+        'down_payment_amount',
+        'down_payment_remaining_amount',
+        'down_payment_account_id',
         'total_amount',
         'note',
         'payment_terms',
@@ -40,6 +43,8 @@ class PurchaseOrder extends Model
         'transport_cost' => 'double',
         'other_cost' => 'double',
         'subtotal' => 'double',
+        'down_payment_amount' => 'double',
+        'down_payment_remaining_amount' => 'double',
         'total_amount' => 'double',
         'total_quantity' => 'double',
         'total_received_quantity' => 'double',
@@ -74,5 +79,10 @@ class PurchaseOrder extends Model
     public function goodsReceipts()
     {
         return $this->hasMany(GoodsReceipt::class)->where('status', '!=', 'cancelled');
+    }
+
+    public function downPaymentAccount()
+    {
+        return $this->belongsTo(ChartOfAccount::class, 'down_payment_account_id');
     }
 }

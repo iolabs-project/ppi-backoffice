@@ -2,16 +2,35 @@
 
 namespace App\Http\Controllers\Purchasing;
 
+use App\Enums\AccountCategory;
 use App\Enums\PaymentTerm;
 use App\Enums\PurchaseOrderStatus;
 use App\Http\Controllers\Controller;
+use App\Services\AccountService;
+use App\Services\ContactService;
 use App\Services\ProductService;
 use App\Services\PurchasingService;
+use App\Services\WarehouseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PurchaseOrderController extends Controller
 {
+    private PurchasingService $purchasingService;
+    private ProductService $productService;
+    private WarehouseService $warehouseService;
+    private ContactService $contactService;
+    private AccountService $accountService;
+
+    public function __construct(PurchasingService $purchasingService, ProductService $productService, WarehouseService $warehouseService, ContactService $contactService, AccountService $accountService)
+    {
+        $this->purchasingService = $purchasingService;
+        $this->productService = $productService;
+        $this->warehouseService = $warehouseService;
+        $this->contactService = $contactService;
+        $this->accountService = $accountService;
+    }
+
     public function index()
     {
         $data = [
@@ -22,28 +41,31 @@ class PurchaseOrderController extends Controller
         return view('purchasing.purchase-order.index', $data);
     }
 
-    public function datatable(Request $request, PurchasingService $purchasingService)
+    public function datatable(Request $request)
     {
-        $data = $purchasingService->fetchPurchaseOrderTableData($request);
+        $data = $this->purchasingService->fetchPurchaseOrderTableData($request);
         return response()->json($data);
     }
 
-    public function create(PurchasingService $purchasingService, ProductService $productService)
+    public function create()
     {
         $data = [
             'currentPage' => 'pembelian',
             'breadcrumb'  => [
-                ['label' => 'Pemesanan', 'url' => route('purchasings.purchasing_orders.index')],
+                ['label' => 'Pemesanan', 'url' => route('purchasings.purchase_orders.index')],
                 ['label' => 'Tambah'],
             ],
-            'number' => $purchasingService->generatePONumber(),
+            'number' => $this->purchasingService->generatePONumber(),
             'paymentTerms' => PaymentTerm::dropdownOptions(),
-            'products' => $productService->fetchProductData(),
+            'products' => $this->productService->fetchProductData(),
+            'warehouses' => $this->warehouseService->fetchWarehouseData(),
+            'suppliers' => $this->contactService->fetchContactData('supplier'),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
         ];
         return view('purchasing.purchase-order.create', $data);
     }
 
-    public function store(Request $request, PurchasingService $purchasingService)
+    public function store(Request $request)
     {
         if ($request->input('status') === PurchaseOrderStatus::OPEN->value) {
             $request->validate(
@@ -62,6 +84,8 @@ class PurchaseOrderController extends Controller
                     'transport_cost' => 'nullable|numeric|min:0',
                     'other_cost' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
+                    'down_payment_amount' => 'nullable|numeric|min:0',
+                    'down_payment_account_id' => 'nullable|exists:chart_of_accounts,id',
                     'total_amount' => 'nullable|numeric|min:0',
                     'note' => 'nullable|string|max:1000',
                     'status' => 'required|in:draft,open',
@@ -118,8 +142,8 @@ class PurchaseOrderController extends Controller
         }
 
         try {
-            $purchasingService->storePurchaseOrder($request);
-            return response()->json(['redirect' => route('purchasings.purchasing_orders.index'), 'message' => 'Purchase Order berhasil dibuat.']);
+            $this->purchasingService->storePurchaseOrder($request);
+            return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Purchase Order berhasil dibuat.']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -130,9 +154,9 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    public function show(PurchasingService $purchasingService, int $id)
+    public function show(int $id)
     {
-        $purchaseOrder = $purchasingService->fetchPurchaseOrderByID($id);
+        $purchaseOrder = $this->purchasingService->fetchPurchaseOrderByID($id);
         if (!$purchaseOrder) {
             abort(404, 'Purchase Order tidak ditemukan.');
         }
@@ -140,7 +164,7 @@ class PurchaseOrderController extends Controller
         $data = [
             'currentPage' => 'pembelian',
             'breadcrumb'  => [
-                ['label' => 'Pemesanan', 'url' => route('purchasings.purchasing_orders.index')],
+                ['label' => 'Pemesanan', 'url' => route('purchasings.purchase_orders.index')],
                 ['label' => 'Detail'],
             ],
             'purchaseOrder' => $purchaseOrder,
@@ -148,9 +172,9 @@ class PurchaseOrderController extends Controller
         return view('purchasing.purchase-order.show', $data);
     }
 
-    public function edit(PurchasingService $purchasingService, int $id)
+    public function edit(int $id)
     {
-        $purchaseOrder = $purchasingService->fetchPurchaseOrderByID($id);
+        $purchaseOrder = $this->purchasingService->fetchPurchaseOrderByID($id);
         if (!$purchaseOrder) {
             abort(404, 'Purchase Order tidak ditemukan.');
         }
@@ -158,16 +182,20 @@ class PurchaseOrderController extends Controller
         $data = [
             'currentPage' => 'pembelian',
             'breadcrumb'  => [
-                ['label' => 'Pemesanan', 'url' => route('purchasings.purchasing_orders.index')],
+                ['label' => 'Pemesanan', 'url' => route('purchasings.purchase_orders.index')],
                 ['label' => 'Edit'],
             ],
             'purchaseOrder' => $purchaseOrder,
-            'paymentTerms' => PaymentTerm::dropdownOptions()
+            'paymentTerms' => PaymentTerm::dropdownOptions(),
+            'products' => $this->productService->fetchProductData(),
+            'warehouses' => $this->warehouseService->fetchWarehouseData(),
+            'suppliers' => $this->contactService->fetchContactData('supplier'),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
         ];
         return view('purchasing.purchase-order.edit', $data);
     }
 
-    public function update(Request $request, PurchasingService $purchasingService, int $id)
+    public function update(Request $request, int $id)
     {
         $request->validate([
             'supplier_id' => 'required|exists:contacts,id',
@@ -191,8 +219,8 @@ class PurchaseOrderController extends Controller
         ]);
 
         try {
-            $purchasingService->updatePurchaseOrder($request, $id);
-            return response()->json(['redirect' => route('purchasings.purchasing_orders.index'), 'message' => 'Purchase Order berhasil diperbarui.']);
+            $this->purchasingService->updatePurchaseOrder($request, $id);
+            return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Purchase Order berhasil diperbarui.']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -203,10 +231,10 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    public function open(PurchasingService $purchasingService, int $id)
+    public function open(int $id)
     {
         try {
-            $purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::OPEN->value);
+            $this->purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::OPEN->value);
             return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Open"']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@open: ' . $e->getMessage(), [
@@ -218,10 +246,10 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    public function close(PurchasingService $purchasingService, int $id)
+    public function close(int $id)
     {
         try {
-            $purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CLOSED->value);
+            $this->purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CLOSED->value);
             return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Closed"']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@close: ' . $e->getMessage(), [
@@ -233,10 +261,10 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    public function cancel(PurchasingService $purchasingService, int $id)
+    public function cancel(int $id)
     {
         try {
-            $purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CANCELLED->value);
+            $this->purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CANCELLED->value);
             return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Cancelled"']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@cancel: ' . $e->getMessage(), [

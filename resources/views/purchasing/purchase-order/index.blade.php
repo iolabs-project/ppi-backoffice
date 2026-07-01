@@ -14,7 +14,7 @@
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
-                <a href="{{ route('purchasings.purchasing_orders.create') }}" class="btn btn-primary"><x-misc.icon
+                <a href="{{ route('purchasings.purchase_orders.create') }}" class="btn btn-primary"><x-misc.icon
                         name="plus" :size="15" />Tambah PO</a>
             </div>
         </div>
@@ -67,7 +67,7 @@
                     <template x-if="!loading">
                         <template x-for="row in tableData.data" :key="row.id">
                             <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
-                                @click="window.location = route('purchasings.purchasing_orders.show', row.id)">
+                                @click="window.location = route('purchasings.purchase_orders.show', row.id)">
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
                                 <td style="color:var(--ink-3);" x-text="row.order_date ?? '-'"></td>
                                 <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
@@ -138,7 +138,7 @@
                                             x-on:click.away="open = false" class="action-menu__panel">
                                             <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('purchasings.purchasing_orders.edit', row.id)"
+                                                    <a :href="route('purchasings.purchase_orders.edit', row.id)"
                                                         @click.stop class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />
@@ -154,7 +154,7 @@
                                             </template>
                                             <template x-if="row.status !== '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('purchasings.purchasing_orders.show', row.id)"
+                                                    <a :href="route('purchasings.purchase_orders.show', row.id)"
                                                         @click.stop class="action-menu__item">
                                                         <x-misc.icon name="eye" :size="14"
                                                             stroke="var(--ink-3)" />Lihat
@@ -299,7 +299,7 @@
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const response = await axios.get(route('purchasings.purchasing_orders.datatable'), {
+                        const response = await axios.get(route('purchasings.purchase_orders.datatable'), {
                             params: {
                                 page: this.page,
                                 per_page: this.perPage,
@@ -353,7 +353,7 @@
                             });
                             try {
                                 const response = await axios.post(route(
-                                    'purchasings.purchasing_orders.open', id));
+                                    'purchasings.purchase_orders.open', id));
                                 Swal.close();
                                 Toast.fire({
                                     icon: 'success',
@@ -395,7 +395,7 @@
                             });
                             try {
                                 const response = await axios.post(route(
-                                    'purchasings.purchasing_orders.cancel', id));
+                                    'purchasings.purchase_orders.cancel', id));
                                 Swal.close();
                                 Toast.fire({
                                     icon: 'success',
