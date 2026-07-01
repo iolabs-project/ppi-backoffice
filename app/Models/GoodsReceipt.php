@@ -20,7 +20,6 @@ class GoodsReceipt extends Model
         'discount_amount',
         'transport_cost',
         'other_cost',
-        'total_amount',
         'note',
         'created_by',
     ];

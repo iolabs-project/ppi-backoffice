@@ -26,7 +26,6 @@ return new class extends Migration
             $table->decimal('discount_amount', 18, 4)->default(0);
             $table->decimal('transport_cost', 18, 4)->default(0);
             $table->decimal('other_cost', 18, 4)->default(0);
-            $table->decimal('total_amount', 18, 4)->default(0);
             $table->text('note')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('restrict');
             $table->timestamps();

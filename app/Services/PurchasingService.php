@@ -397,7 +397,6 @@ class PurchasingService
             $discountAmount = $requestCollection->get('discount_amount', 0);
             $transportCost = $requestCollection->get('transport_cost', 0);
             $otherCost = $requestCollection->get('other_cost', 0);
-            $totalAmount = $subtotal - $discountAmount + $transportCost + $otherCost;
             $header->update([
                 'reference_number' => $requestCollection->get('reference_number', null),
                 'receipt_date' => $requestCollection->get('receipt_date'),
@@ -405,7 +404,6 @@ class PurchasingService
                 'subtotal' => $subtotal,
                 'transport_cost' => $transportCost,
                 'other_cost' => $otherCost,
-                'total_amount' => $totalAmount,
                 'note' => $requestCollection->get('note', null),
             ]);
 
@@ -436,11 +434,12 @@ class PurchasingService
                 'shrinkage_quantity' => $expectedQty - $receivedQty,
                 'received_quantity' => $receivedQty,
                 'unit_price' => $unitPrice,
+                'subtotal' => $receivedQty * $unitPrice,
                 'discount_percentage' => $discountPercentage,
                 'discount_amount' => $discountAmount,
                 'allocated_cost' => 0,
                 'unit_cost' => 0,
-                'total_cost' => 0,
+                'total_amount' => $receivedQty * $unitPrice - $discountAmount,
             ]);
         }
     }
