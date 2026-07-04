@@ -561,32 +561,55 @@
                 </div>
                 <div class="order-summary">
                     <div class="display order-summary__title">Ringkasan</div>
-                    <div class="order-summary__row" style="align-items:center;">
-                        <span class="order-summary__label">Subtotal</span>
-                        <input class="input num input--readonly"
-                            style="height:28px; width:130px; text-align:right; font-size:13px;"
-                            x-model="formData.subtotal" x-mask:dynamic="$money($input, ',')" disabled />
-                    </div>
-                    <div class="order-summary__row" style="align-items:center;">
-                        <span class="order-summary__label">Diskon (%)</span>
-                        <div>
-                            <input class="input num input--readonly"
-                                style="height:28px; width:60px; text-align:right; font-size:13px;"
-                                x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')" disabled />
-                            <input class="input num input--readonly"
-                                style="height:28px; width:130px; text-align:right; font-size:13px;"
-                                x-model="formData.discount_amount" x-mask:dynamic="$money($input, ',')" disabled />
+                    <div class="order-summary__grid">
+                        <div class="order-summary__group">
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Nilai Bruto</span>
+                                <span class="num order-summary__val"
+                                    x-text="(formData.details ? NumberUtils.formatNumericIntoMask(formData.details.reduce((acc, item) => acc + item.subtotal, 0)) : '0')"></span>
+                            </div>
+
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Diskon Per Item</span>
+                                <span class="num order-summary__val order-summary__val--negative"
+                                    x-text="(formData.details ? NumberUtils.formatNumericIntoMask(formData.details.reduce((acc, item) => acc + item.discount_amount, 0)) : '0')"></span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="order-summary__row" style="align-items:center;">
-                        <span class="order-summary__label">Biaya Transportasi</span>
-                        <input class="input num" style="height:28px; width:130px; text-align:right; font-size:13px;"
-                            x-model="formData.transport_cost" x-mask:dynamic="$money($input, ',')" @input="recalc();" />
-                    </div>
-                    <div class="order-summary__row" style="align-items:center;">
-                        <span class="order-summary__label">Biaya Lain-lain</span>
-                        <input class="input num" style="height:28px; width:130px; text-align:right; font-size:13px;"
-                            x-model="formData.other_cost" x-mask:dynamic="$money($input, ',')" @input="recalc();" />
+                        <div class="order-summary__group">
+                            <div class="order-summary__row">
+                                <span class="order-summary__label"></span>
+                                <span class="num order-summary__val"
+                                    x-text="(formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
+                            </div>
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Diskon</span>
+                                <div class="order-summary__pct-group">
+                                    <input class="input num order-summary__pct-input input--readonly"
+                                        x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
+                                        disabled />
+                                    <span class="order-summary__pct-sym">%</span>
+                                    <input
+                                        class="input num input--readonly order-summary__amount-display order-summary__amount-display--negative"
+                                        :value="'- ' + (formData.discount_amount ? NumberUtils.formatNumericIntoMask(formData
+                                            .discount_amount) : '0')"
+                                        disabled />
+                                </div>
+                            </div>
+                            <div class="order-summary__row" style="align-items:center;">
+                                <span class="order-summary__label">Biaya Transportasi</span>
+                                <input class="input num"
+                                    style="height:28px; width:130px; text-align:right; font-size:13px;"
+                                    x-model="formData.transport_cost" x-mask:dynamic="$money($input, ',')"
+                                    @input="recalc();" />
+                            </div>
+                            <div class="order-summary__row" style="align-items:center;">
+                                <span class="order-summary__label">Biaya Lain-lain</span>
+                                <input class="input num"
+                                    style="height:28px; width:130px; text-align:right; font-size:13px;"
+                                    x-model="formData.other_cost" x-mask:dynamic="$money($input, ',')"
+                                    @input="recalc();" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
