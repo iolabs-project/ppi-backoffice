@@ -523,98 +523,101 @@
 
                     <div class="order-summary__grid">
 
-                        {{-- Cell 1: Subtotal --}}
-                        <div class="order-summary__row">
-                            <span class="order-summary__label">Nilai Bruto</span>
-                            <span class="num order-summary__val"
-                                x-text="'Rp ' + (formData.details ? NumberUtils.formatNumericIntoMask(formData.details.reduce((acc, item) => acc + item.subtotal, 0)) : '0')"></span>
-                        </div>
+                        {{-- Group 1: Nilai Bruto -> Subtotal --}}
+                        <div class="order-summary__group">
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Nilai Bruto</span>
+                                <span class="num order-summary__val"
+                                    x-text="'Rp ' + (formData.details ? NumberUtils.formatNumericIntoMask(formData.details.reduce((acc, item) => acc + item.subtotal, 0)) : '0')"></span>
+                            </div>
 
-                        <div class="order-summary__row">
-                            <span class="order-summary__label">Diskon Item</span>
-                            <span class="num order-summary__val"
-                                x-text="'Rp ' + (formData.details ? NumberUtils.formatNumericIntoMask(formData.details.reduce((acc, item) => acc + item.discount_amount, 0)) : '0')"></span>
-                        </div>
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Diskon Per Item</span>
+                                <span class="num order-summary__val order-summary__val--negative"
+                                    x-text="'- Rp ' + (formData.details ? NumberUtils.formatNumericIntoMask(formData.details.reduce((acc, item) => acc + item.discount_amount, 0)) : '0')"></span>
+                            </div>
 
-                        <div class="order-summary__row">
-                            <span class="order-summary__label">Subtotal</span>
-                            <span class="num order-summary__val"
-                                x-text="'Rp ' + (formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
-                        </div>
-
-                        {{-- Cell 2: Diskon --}}
-                        <div class="order-summary__row">
-                            <span class="order-summary__label">Diskon</span>
-                            <div class="order-summary__pct-group">
-                                <input class="input num order-summary__pct-input" x-model="formData.discount_percentage"
-                                    x-mask:dynamic="$money($input, ',')" @input="handleDiscountPercentageInput()" />
-                                <span class="order-summary__pct-sym">%</span>
-                                <input class="input num input--readonly order-summary__amount-display"
-                                    :value="formData.discount_amount ? NumberUtils.formatNumericIntoMask(formData
-                                        .discount_amount) : '0'"
-                                    disabled />
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Subtotal</span>
+                                <span class="num order-summary__val"
+                                    x-text="'Rp ' + (formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
                             </div>
                         </div>
 
-                        {{-- Cell 3: Pajak --}}
-                        <div class="order-summary__row">
-                            <span class="order-summary__label">Pajak</span>
-                            <div class="order-summary__pct-group">
-                                <input class="input num order-summary__pct-input" x-model="formData.tax_percentage"
-                                    x-mask:dynamic="$money($input, ',')" @input="handleTaxPercentageInput()" />
-                                <span class="order-summary__pct-sym">%</span>
-                                <input class="input num input--readonly order-summary__amount-display"
-                                    :value="formData.tax_amount ? NumberUtils.formatNumericIntoMask(formData.tax_amount) : '0'"
-                                    disabled />
-                            </div>
-                        </div>
-
-                        {{-- Cell 4: Transport --}}
-                        <div class="order-summary__row">
-                            <span class="order-summary__label">Transport (Est)</span>
-                            <input class="input num order-summary__cost-input" x-model="formData.transport_cost"
-                                x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
-                        </div>
-
-                        {{-- Cell 5: Biaya Lain-lain --}}
-                        <div class="order-summary__row">
-                            <span class="order-summary__label">Biaya Lain-lain</span>
-                            <input class="input num order-summary__cost-input" x-model="formData.other_cost"
-                                x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
-                        </div>
-
-                        <div class="order-summary__row">
-                            <span class="order-summary__label">Subtotal</span>
-                            <span class="num order-summary__val"
-                                x-text="'Rp ' + NumberUtils.formatNumericIntoMask(n(formData.total_amount) + n(formData.down_payment_amount))"></span>
-                        </div>
-
-                        {{-- Cell 6: Uang Muka --}}
-                        <div class="order-summary__row">
-                            <span class="order-summary__label">Uang Muka</span>
-                            <div class="order-summary__dp-group">
-                                <div class="dropdown-wrap" @click.outside="cashBankOpen=false">
-                                    <div class="input dropdown-trigger order-summary__dp-trigger"
-                                        @click="cashBankOpen=!cashBankOpen">
-                                        <span style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
-                                            :style="cashBankSelected ? '' : 'color:var(--ink-4);'"
-                                            x-text="cashBankSelected ? cashBankSelected.name : 'Sumber Kas'"></span>
-                                        <x-misc.icon name="chev-down" :size="11" stroke="var(--ink-4)" />
-                                    </div>
-                                    <div class="dropdown-menu" x-show="cashBankOpen" x-cloak
-                                        style="right:0; left:auto; min-width:180px;">
-                                        <template x-for="cb in cashBanks" :key="cb.id">
-                                            <div class="dropdown-item"
-                                                @click="cashBankSelected=cb; formData.down_payment_account_id=cb.id; cashBankOpen=false">
-                                                <span x-text="cb.name"></span>
-                                            </div>
-                                        </template>
-                                    </div>
+                        {{-- Group 2: Diskon, Pajak, Transport, Biaya Lain-lain -> Subtotal --}}
+                        <div class="order-summary__group">
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Diskon</span>
+                                <div class="order-summary__pct-group">
+                                    <input class="input num order-summary__pct-input" x-model="formData.discount_percentage"
+                                        x-mask:dynamic="$money($input, ',')" @input="handleDiscountPercentageInput()" />
+                                    <span class="order-summary__pct-sym">%</span>
+                                    <input class="input num input--readonly order-summary__amount-display order-summary__amount-display--negative"
+                                        :value="'- ' + (formData.discount_amount ? NumberUtils.formatNumericIntoMask(formData
+                                            .discount_amount) : '0')"
+                                        disabled />
                                 </div>
-                                <div class="input-with-prefix">
-                                    <span class="input-with-prefix__label">Rp</span>
-                                    <input class="num input-with-prefix__input" x-model="formData.down_payment_amount"
-                                        x-mask:dynamic="$money($input, ',')" @input="recalculate()" placeholder="0" />
+                            </div>
+
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Pajak</span>
+                                <div class="order-summary__pct-group">
+                                    <input class="input num order-summary__pct-input" x-model="formData.tax_percentage"
+                                        x-mask:dynamic="$money($input, ',')" @input="handleTaxPercentageInput()" />
+                                    <span class="order-summary__pct-sym">%</span>
+                                    <input class="input num input--readonly order-summary__amount-display"
+                                        :value="formData.tax_amount ? NumberUtils.formatNumericIntoMask(formData.tax_amount) : '0'"
+                                        disabled />
+                                </div>
+                            </div>
+
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Transport (Est)</span>
+                                <input class="input num order-summary__cost-input" x-model="formData.transport_cost"
+                                    x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
+                            </div>
+
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Biaya Lain-lain</span>
+                                <input class="input num order-summary__cost-input" x-model="formData.other_cost"
+                                    x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
+                            </div>
+
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Subtotal</span>
+                                <span class="num order-summary__val"
+                                    x-text="'Rp ' + NumberUtils.formatNumericIntoMask(n(formData.total_amount) + n(formData.down_payment_amount))"></span>
+                            </div>
+                        </div>
+
+                        {{-- Group 3: Uang Muka --}}
+                        <div class="order-summary__group">
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Uang Muka</span>
+                                <div class="order-summary__dp-group">
+                                    <div class="dropdown-wrap" @click.outside="cashBankOpen=false">
+                                        <div class="input dropdown-trigger order-summary__dp-trigger"
+                                            @click="cashBankOpen=!cashBankOpen">
+                                            <span style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
+                                                :style="cashBankSelected ? '' : 'color:var(--ink-4);'"
+                                                x-text="cashBankSelected ? cashBankSelected.name : 'Sumber Kas'"></span>
+                                            <x-misc.icon name="chev-down" :size="11" stroke="var(--ink-4)" />
+                                        </div>
+                                        <div class="dropdown-menu" x-show="cashBankOpen" x-cloak
+                                            style="right:0; left:auto; min-width:180px;">
+                                            <template x-for="cb in cashBanks" :key="cb.id">
+                                                <div class="dropdown-item"
+                                                    @click="cashBankSelected=cb; formData.down_payment_account_id=cb.id; cashBankOpen=false">
+                                                    <span x-text="cb.name"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="input-with-prefix">
+                                        <span class="input-with-prefix__label">- Rp</span>
+                                        <input class="num input-with-prefix__input" x-model="formData.down_payment_amount"
+                                            x-mask:dynamic="$money($input, ',')" @input="recalculate()" placeholder="0" />
+                                    </div>
                                 </div>
                             </div>
                         </div>

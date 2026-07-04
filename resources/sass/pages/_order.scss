@@ -176,16 +176,19 @@
   overflow: visible;
 }
 
+.order-summary__group {
+  border-bottom: 1px solid var(--line);
+
+  &:last-child { border-bottom: none; }
+}
+
 .order-summary__row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 13px;
   padding: 11px 22px;
-  border-bottom: 1px solid var(--line);
   overflow: visible;
-
-  &:last-child { border-bottom: none; }
 }
 
 .order-summary__label {
@@ -196,6 +199,7 @@
 }
 
 .order-summary__val { font-weight: 500; }
+.order-summary__val--negative { color: var(--bad); }
 
 .order-summary__pct-group {
   display: flex;
@@ -227,6 +231,8 @@
   font-weight: 500;
   flex-shrink: 0;
 }
+
+.order-summary__amount-display--negative { color: var(--bad) !important; }
 
 .order-summary__cost-input {
   height: 30px !important;
