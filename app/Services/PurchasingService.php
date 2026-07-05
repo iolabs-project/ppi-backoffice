@@ -11,6 +11,7 @@ use App\Models\GoodsReceiptItem;
 use App\Models\InventoryTransaction;
 use App\Models\ProductBatch;
 use App\Models\PurchaseInvoice;
+use App\Models\PurchaseInvoiceItem;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use Illuminate\Http\Request;
@@ -621,6 +622,7 @@ class PurchasingService
                 'id',
                 'number',
                 'invoice_date',
+                'due_date',
                 'supplier_id',
                 'warehouse_id',
                 'purchase_order_id',
@@ -676,11 +678,79 @@ class PurchasingService
         ]);
     }
 
+    public function updatePurchaseInvoice(Request $request, int $id): void
+    {
+        DB::transaction(function () use ($request, $id) {
+            $purchaseInvoice = PurchaseInvoice::findOrFail($id);
+            $detailsCollection = collect($request->input('details', []));
+            $subtotal = $detailsCollection->sum(function ($detail) {
+                return (($detail['quantity'] ?? 0))
+                    *
+                    (($detail['unit_price'] ?? 0))
+                    *
+                    (1 - (($detail['discount_percentage'] ?? 0) / 100));
+            });
+
+            $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
+            $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
+
+            $purchaseInvoice->update([
+                'supplier_id' => $request->supplier_id,
+                'warehouse_id' => $request->warehouse_id,
+                'number' => $request->number,
+                'reference_number' => $request->reference_number,
+                'invoice_date' => $request->invoice_date,
+                'due_date' => $request->due_date,
+                'discount_percentage' => $request->discount_percentage,
+                'discount_amount' => $discountAmount,
+                'tax_percentage' => $request->tax_percentage,
+                'tax_amount' => $taxAmount,
+                'other_cost' => $request->other_cost,
+                'subtotal' => $subtotal,
+                'down_payment_amount' => $request->down_payment_amount,
+                'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $request->other_cost,
+                'remaining_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $request->other_cost,
+                'note' => $request->note,
+                'payment_terms' => $request->payment_terms,
+                'status' => $request->status,
+            ]);
+
+            // Delete existing items
+            PurchaseInvoiceItem::where('purchase_invoice_id', $purchaseInvoice->id)->delete();
+
+            // Create new items
+            foreach ($request->details as $detail) {
+                PurchaseInvoiceItem::create([
+                    'purchase_invoice_id' => $purchaseInvoice->id,
+                    'goods_receipt_item_id' => $detail['goods_receipt_item_id'],
+                    'purchase_order_item_id' => $detail['purchase_order_item_id'],
+                    'product_id' => $detail['product_id'],
+                    'quantity' => $detail['quantity'],
+                    'unit_price' => $detail['unit_price'],
+                    'subtotal' => $detail['quantity'] * $detail['unit_price'],
+                    'discount_percentage' => $detail['discount_percentage'] ?? 0,
+                    'discount_amount' => $detail['quantity'] * $detail['unit_price'] * (($detail['discount_percentage'] ?? 0) / 100),
+                    'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
+                ]);
+
+                if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
+                    PurchaseOrderItem::where('id', $detail['purchase_order_item_id'])
+                        ->increment('invoiced_quantity', $detail['quantity']);
+                }
+            }
+
+            if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
+                PurchaseOrder::where('id', $purchaseInvoice->purchase_order_id)
+                ->decrement('down_payment_remaining_amount', $request->down_payment_amount);
+            }
+        });
+    }
+
     public function fetchPurchaseInvoiceByID(int $id): ?PurchaseInvoice
     {
         return PurchaseInvoice::with([
             'purchaseOrder:id,number,down_payment_amount,down_payment_remaining_amount',
-            'items:id,purchase_invoice_id,goods_receipt_item_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
+            'items:id,purchase_invoice_id,purchase_order_item_id,goods_receipt_item_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
             'supplier:id,name,code',
@@ -713,5 +783,35 @@ class PurchasingService
                 'updated_at',
             )
             ->find($id);
+    }
+
+    public function cancelPurchaseInvoice(int $id): void
+    {
+        $purchaseInvoice = PurchaseInvoice::findOrFail($id);
+
+        if ($purchaseInvoice->status === PurchaseInvoiceStatus::CANCELLED->value) {
+            throw ValidationException::withMessages([
+                'status' => "Tagihan ini sudah dibatalkan.",
+            ]);
+        }
+
+        $isDraft = $purchaseInvoice->status === PurchaseInvoiceStatus::DRAFT->value;
+        $isOpenWithNoPayment = $purchaseInvoice->status === PurchaseInvoiceStatus::OPEN->value
+            && (float) $purchaseInvoice->total_amount === (float) $purchaseInvoice->remaining_amount;
+
+        if (!$isDraft && !$isOpenWithNoPayment) {
+            throw ValidationException::withMessages([
+                'status' => "Tagihan ini tidak dapat dibatalkan.",
+            ]);
+        }
+        DB::transaction(function () use ($purchaseInvoice) {
+            foreach ($purchaseInvoice->items as $item) {
+                PurchaseOrderItem::where('id', $item->purchase_order_item_id)
+                    ->decrement('invoiced_quantity', $item->quantity);
+            }
+            $purchaseInvoice->update(['status' => PurchaseInvoiceStatus::CANCELLED->value]);
+            PurchaseOrder::where('id', $purchaseInvoice->purchase_order_id)
+                ->increment('down_payment_remaining_amount', $purchaseInvoice->down_payment_amount);
+        });
     }
 }

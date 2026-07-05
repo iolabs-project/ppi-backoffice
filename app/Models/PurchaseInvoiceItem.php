@@ -19,5 +19,33 @@ class PurchaseInvoiceItem extends Model
         'total_amount',
     ];
 
+    protected $casts = [
+        'quantity' => 'double',
+        'unit_price' => 'double',
+        'subtotal' => 'double',
+        'discount_percentage' => 'double',
+        'discount_amount' => 'double',
+        'total_amount' => 'double',
+    ];
+
+    public function purchaseInvoice()
+    {
+        return $this->belongsTo(PurchaseInvoice::class);
+    }
+
+    public function purchaseOrderItem()
+    {
+        return $this->belongsTo(PurchaseOrderItem::class);
+    }
+
+    public function goodsReceiptItem()
+    {
+        return $this->belongsTo(GoodsReceiptItem::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
     
 }

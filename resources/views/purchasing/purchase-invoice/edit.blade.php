@@ -28,6 +28,7 @@
                     details: (purchaseInvoice.items || []).map(item => ({
                         id: item.id,
                         goods_receipt_item_id: item.goods_receipt_item_id,
+                        purchase_order_item_id: item.purchase_order_item_id,
                         product_id: item.product_id,
                         code: item.product.code,
                         name: item.product.name,
@@ -88,11 +89,6 @@
 
                         return;
                     }
-                    console.log('selected product', product);
-                    // item.name = product.name;
-                    // item.product_id = product.id;
-                    // item.code = product.code;
-                    // item.unit = product.unit.symbol;
 
                     item.purchase_order_item_id = product.purchase_order_item_id;
                     item.goods_receipt_item_id = product.id;
@@ -109,7 +105,7 @@
                     item.discount_amount = item.subtotal * (product.discount_percentage / 100);
                     item.total_amount = item.subtotal - item.discount_amount;
 
-                    console.log('item after select', item);
+                    this.recalculate();
                 },
 
 
@@ -121,9 +117,9 @@
                     return remainingGRItems.filter(item => !selectedIds.includes(item.id));
                 },
                 handleDetailDiscountPercentageInput(index) {
-                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].discount_percentage);
-                    const quantity = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].quantity);
-                    const unitPrice = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].unit_price);
+                    const percentage = this.n(this.formData.details[index].discount_percentage);
+                    const quantity = this.n(this.formData.details[index].quantity);
+                    const unitPrice = this.n(this.formData.details[index].unit_price);
 
                     if (percentage < 0) {
                         this.formData.details[index].discount_percentage = 0;
@@ -173,7 +169,7 @@
                 handlePaymentTermChange() {
                     if (this.paymentTermSelected) {
                         this.formData.payment_terms = this.paymentTermSelected.id;
-                        const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
+                        const days = this.n(this.paymentTermSelected.days);
                         const invoiceDate = new Date(this.formData.invoice_date);
                         const dueDate = new Date(invoiceDate.getTime() + days * 24 * 60 * 60 * 1000);
                         this.formData.due_date = dueDate.toISOString().split('T')[0];
@@ -184,7 +180,7 @@
                 },
                 handleInvoiceDateChange() {
                     if (this.paymentTermSelected) {
-                        const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
+                        const days = this.n(this.paymentTermSelected.days);
                         const invoiceDate = new Date(this.formData.invoice_date);
                         const dueDate = new Date(invoiceDate.getTime() + days * 24 * 60 * 60 * 1000);
                         this.formData.due_date = dueDate.toISOString().split('T')[0];
@@ -287,20 +283,20 @@
                         ...this.formData,
                         status: 'draft',
                     };
-                    body.discount_percentage = NumberUtils.parseMaskIntoNumeric(body.discount_percentage);
-                    body.tax_percentage = NumberUtils.parseMaskIntoNumeric(body.tax_percentage);
-                    body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
-                    body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
+                    body.discount_percentage = this.n(body.discount_percentage);
+                    body.tax_percentage = this.n(body.tax_percentage);
+                    body.other_cost = this.n(body.other_cost);
+                    body.down_payment_amount = this.n(body.down_payment_amount);
                     body.details = body.details.map(d => ({
                         ...d,
-                        quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
-                        unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
-                        discount_percentage: NumberUtils.parseMaskIntoNumeric(d.discount_percentage),
-                        total_amount: NumberUtils.parseMaskIntoNumeric(d.total_amount),
+                        quantity: this.n(d.quantity),
+                        unit_price: this.n(d.unit_price),
+                        discount_percentage: this.n(d.discount_percentage),
+                        total_amount: this.n(d.total_amount),
                     }));
 
                     Swal.fire({
-                        title: 'Memproses penyimpanan draft PO...',
+                        title: 'Memproses penyimpanan draft tagihan...',
                         allowOutsideClick: false,
                         didOpen: () => {
                             Swal.showLoading();
@@ -309,7 +305,7 @@
 
                     try {
                         const response = await axios.put(
-                            route('purchasings.purchase_orders.update', this.formData.id), body
+                            route('purchasings.purchase_invoices.update', this.formData.id), body
                         );
                         console.log('response', response.data.message);
 
@@ -321,7 +317,7 @@
 
                         window.location.href = response.data.redirect;
                     } catch (error) {
-                        console.error('Error submitting draft PO:', error);
+                        console.error('Error submitting draft PI:', error);
                         Swal.close();
                         let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
 
@@ -348,20 +344,20 @@
                         ...this.formData,
                         status: 'open',
                     };
-                    body.discount_percentage = NumberUtils.parseMaskIntoNumeric(body.discount_percentage);
-                    body.tax_percentage = NumberUtils.parseMaskIntoNumeric(body.tax_percentage);
-                    body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
-                    body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
+                    body.discount_percentage = this.n(body.discount_percentage);
+                    body.tax_percentage = this.n(body.tax_percentage);
+                    body.down_payment_amount = this.n(body.down_payment_amount);
+                    body.other_cost = this.n(body.other_cost);
                     body.details = body.details.map(d => ({
                         ...d,
-                        quantity: NumberUtils.parseMaskIntoNumeric(d.quantity),
-                        unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
-                        discount_percentage: NumberUtils.parseMaskIntoNumeric(d.discount_percentage),
-                        total_amount: NumberUtils.parseMaskIntoNumeric(d.total_amount),
+                        quantity: this.n(d.quantity),
+                        unit_price: this.n(d.unit_price),
+                        discount_percentage: this.n(d.discount_percentage),
+                        total_amount: this.n(d.total_amount),
                     }));
 
                     Swal.fire({
-                        title: 'Memproses penyimpanan PO...',
+                        title: 'Memproses penyimpanan tagihan...',
                         allowOutsideClick: false,
                         didOpen: () => {
                             Swal.showLoading();
@@ -370,7 +366,7 @@
 
                     try {
                         const response = await axios.put(
-                            route('purchasings.purchase_orders.update', this.formData.id), body
+                            route('purchasings.purchase_invoices.update', this.formData.id), body
                         );
 
                         Swal.close();
