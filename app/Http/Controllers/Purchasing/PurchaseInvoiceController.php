@@ -75,7 +75,8 @@ class PurchaseInvoiceController extends Controller
                 ['label' => 'Edit'],
             ],
             'purchaseInvoice' => $purchaseInvoice,
-            'paymentTerms' => PaymentTerm::dropdownOptions()
+            'paymentTerms' => PaymentTerm::dropdownOptions(),
+            'remainingGRItems' => $purchasingService->fetchGRItemsForPurchaseInvoice($purchaseInvoice->purchase_order_id),
         ];
         return view('purchasing.purchase-invoice.edit', $data);
     }

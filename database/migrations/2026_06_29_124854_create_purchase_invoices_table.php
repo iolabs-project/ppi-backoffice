@@ -21,16 +21,16 @@ return new class extends Migration
             $table->string('reference_number', 50)->nullable();
             $table->dateTime('invoice_date');
             $table->dateTime('due_date')->nullable();
-            $table->enum('payment_terms', ['net_7', 'net_14', 'net_30', 'net_45'])->default('net_14');
+            $table->enum('payment_terms', ['net_7', 'net_14', 'net_30', 'net_45'])->nullable()->default('net_14');
             $table->enum('status', ['draft', 'open', 'partial', 'paid', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 18, 4)->default(0);
             $table->decimal('discount_percentage', 5, 2)->default(0);
             $table->decimal('discount_amount', 18, 4)->default(0);
             $table->decimal('tax_percentage', 5, 2)->default(0);
             $table->decimal('tax_amount', 18, 4)->default(0);
+            $table->decimal('other_cost', 18, 4)->default(0);
+            $table->decimal('down_payment_amount', 18, 4)->default(0);
             $table->decimal('total_amount', 18, 4)->default(0);
-            $table->decimal('allocated_down_payment_amount', 18, 4)->default(0);
-            $table->decimal('paid_amount', 18, 4)->default(0);
             $table->decimal('remaining_amount', 18, 4)->default(0);
             $table->text('note')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('restrict');
@@ -45,6 +45,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products')->onDelete('restrict');
             $table->decimal('quantity', 18, 4);
             $table->decimal('unit_price', 18, 4)->default(0);
+            $table->decimal('subtotal', 18, 4)->default(0);
             $table->decimal('discount_percentage', 5, 2)->default(0);
             $table->decimal('discount_amount', 18, 4)->default(0);
             $table->decimal('total_amount', 18, 4)->default(0);

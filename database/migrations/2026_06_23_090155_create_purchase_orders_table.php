@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('reference_number', 50)->nullable();
             $table->dateTime('order_date');
             $table->dateTime('due_date')->nullable();
-            $table->enum('payment_terms', ['net_7', 'net_14', 'net_30', 'net_45'])->default('net_14');
+            $table->enum('payment_terms', ['net_7', 'net_14', 'net_30', 'net_45'])->nullable()->default('net_14');
             $table->enum('status', ['draft', 'open', 'closed', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 18, 4)->default(0);
             $table->decimal('discount_percentage', 5, 2)->default(0);

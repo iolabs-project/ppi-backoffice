@@ -120,6 +120,26 @@
                 handleTaxPercentageInput() {
                     this.recalculate();
                 },
+                handlePaymentTermChange() {
+                    if (this.paymentTermSelected) {
+                        this.formData.payment_terms = this.paymentTermSelected.id;
+                        const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
+                        const orderDate = new Date(this.formData.order_date);
+                        const dueDate = new Date(orderDate.getTime() + days * 24 * 60 * 60 * 1000);
+                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                    } else {
+                        this.formData.payment_terms = null;
+                        this.formData.due_date = null;
+                    }
+                },
+                handleOrderDateChange() {
+                    if (this.paymentTermSelected) {
+                        const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
+                        const orderDate = new Date(this.formData.order_date);
+                        const dueDate = new Date(orderDate.getTime() + days * 24 * 60 * 60 * 1000);
+                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                    }
+                },
                 calculateDetailTotal(index) {
                     const d = this.formData.details[index];
                     d.subtotal = this.n(d.quantity) * this.n(d.unit_price);
@@ -320,7 +340,7 @@
 
                 {{-- Tanggal --}}
                 <x-misc.field label="Tanggal" :required="true">
-                    <input type="date" class="input" x-model="formData.order_date" />
+                    <input type="date" class="input" x-model="formData.order_date" @change="handleOrderDateChange" />
                 </x-misc.field>
 
                 {{-- Jatuh Tempo --}}
@@ -363,7 +383,7 @@
                         <div class="dropdown-menu" x-show="paymentTermOpen" x-cloak>
                             <template x-for="t in paymentTerms" :key="t.id">
                                 <div class="dropdown-item"
-                                    @click="paymentTermSelected=t; formData.payment_terms=t.id; paymentTermOpen=false">
+                                    @click="paymentTermSelected=t; handlePaymentTermChange(); paymentTermOpen=false">
                                     <span x-text="t.name"></span>
                                 </div>
                             </template>

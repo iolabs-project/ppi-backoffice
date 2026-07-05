@@ -153,6 +153,7 @@ class PurchasingService
                     'transport_cost' => $request->transport_cost,
                     'other_cost' => $request->other_cost,
                     'down_payment_amount' => $request->down_payment_amount,
+                    'down_payment_remaining_amount' => $request->down_payment_amount,
                     'down_payment_account_id' => $request->down_payment_account_id,
                     'subtotal' => $subtotal,
                     'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $request->transport_cost + $request->other_cost,
@@ -567,6 +568,31 @@ class PurchasingService
         $goodsReceipt->update(['status' => $status]);
     }
 
+    public function fetchGRItemsForPurchaseInvoice(int $id): Collection
+    {
+        $query = GoodsReceiptItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol'])
+            ->whereHas('goodsReceipt', function ($query) use ($id) {
+                $query->where('purchase_order_id', $id);
+            })
+            ->orderBy('id', 'asc');
+
+        return $query->get()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'purchase_order_item_id' => $item->purchase_order_item_id,
+                'product_id' => $item->product_id,
+                'product_code' => $item->product->code,
+                'product_name' => $item->product->name,
+                'batch_number' => $item->batch_number,
+                'quantity' => $item->received_quantity,
+                'unit_price' => $item->unit_price,
+                'unit' => $item->product->unit->symbol,
+                'discount_percentage' => $item->discount_percentage,
+                'discount_amount' => $item->discount_amount,
+            ];
+        });
+    }
+
     // Purchase Invoice
     public function generatePurchaseInvoiceNumber(): string
     {
@@ -636,14 +662,15 @@ class PurchasingService
             'warehouse_id' => $purchaseOrder->warehouse_id,
             'number' => $this->generatePurchaseInvoiceNumber(),
             'invoice_date' => now(),
-            'payment_terms' => $request->payment_terms,
-            'due_date' => now()->addDays(PaymentTerm::day($request->payment_terms)),
+            'payment_terms' => $purchaseOrder->payment_terms,
+            'due_date' => now()->addDays(PaymentTerm::day($purchaseOrder->payment_terms)),
             'status' => PurchaseInvoiceStatus::DRAFT->value,
             'subtotal' => 0,
             'discount_percentage' => $purchaseOrder->discount_percentage,
             'discount_amount' => 0,
             'tax_percentage' => $purchaseOrder->tax_percentage,
             'tax_amount' => 0,
+            'other_cost' => $purchaseOrder->other_cost,
             'total_amount' => 0,
             'created_by' => auth()->user()->id,
         ]);
@@ -652,7 +679,7 @@ class PurchasingService
     public function fetchPurchaseInvoiceByID(int $id): ?PurchaseInvoice
     {
         return PurchaseInvoice::with([
-            'purchaseOrder:id,number',
+            'purchaseOrder:id,number,down_payment_amount,down_payment_remaining_amount',
             'items:id,purchase_invoice_id,goods_receipt_item_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
@@ -662,18 +689,21 @@ class PurchasingService
         ])
             ->select(
                 'id',
+                'purchase_order_id',
                 'company_id',
                 'supplier_id',
                 'warehouse_id',
                 'number',
                 'reference_number',
-                'order_date',
+                'invoice_date',
                 'due_date',
                 'payment_terms',
                 'discount_percentage',
                 'discount_amount',
                 'tax_percentage',
                 'tax_amount',
+                'other_cost',
+                'down_payment_amount',
                 'subtotal',
                 'total_amount',
                 'note',

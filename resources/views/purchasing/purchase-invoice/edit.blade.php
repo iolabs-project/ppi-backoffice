@@ -2,14 +2,15 @@
 @section('content')
     <script>
         const purchaseInvoice = @json($purchaseInvoice);
+        const remainingGRItems = @json($remainingGRItems);
         console.log('purchaseInvoice', purchaseInvoice);
 
         function purchaseInvoiceForm() {
             return {
                 formData: {
-                    id: purchaseOrder.id || null,
-                    supplier_id: purchaseOrder.supplier_id || null,
-                    warehouse_id: purchaseOrder.warehouse_id || null,
+                    id: purchaseInvoice.id || null,
+                    supplier_id: purchaseInvoice.supplier_id || null,
+                    warehouse_id: purchaseInvoice.warehouse_id || null,
                     number: purchaseInvoice.number || null,
                     reference_number: purchaseInvoice.reference_number || null,
                     invoice_date: purchaseInvoice.invoice_date || "{{ now()->format('Y-m-d') }}",
@@ -18,6 +19,8 @@
                     discount_amount: purchaseInvoice.discount_amount || null,
                     tax_percentage: purchaseInvoice.tax_percentage || null,
                     tax_amount: purchaseInvoice.tax_amount || null,
+                    other_cost: purchaseInvoice.other_cost || null,
+                    down_payment_amount: purchaseInvoice.down_payment_amount || 0,
                     payment_terms: purchaseInvoice.payment_terms || null,
                     subtotal: purchaseInvoice.subtotal || null,
                     total_amount: purchaseInvoice.total_amount || null,
@@ -28,26 +31,22 @@
                         product_id: item.product_id,
                         code: item.product.code,
                         name: item.product.name,
+                        batch_number: item.batch_number,
                         unit: item.product.unit.symbol,
                         quantity: item.quantity,
                         unit_price: item.unit_price,
+                        subtotal: item.subtotal,
                         discount_percentage: item.discount_percentage,
                         discount_amount: item.discount_amount,
                         total_amount: item.total_amount,
                     })),
                 },
-                // Supplier Options
-                suppliers: [],
-                supplierLoading: false,
-                supplierSearch: '',
-                supplierSelected: purchaseOrder.supplier || null,
-                supplierOpen: false,
-                // Warehouse Options
-                warehouses: [],
-                warehouseLoading: false,
-                warehouseSearch: '',
-                warehouseSelected: purchaseOrder.warehouse || null,
-                warehouseOpen: false,
+
+
+
+                n(v) {
+                    return NumberUtils.parseMaskIntoNumeric(v);
+                },
                 // Payment Terms
                 paymentTerms: @json($paymentTerms),
                 paymentTermSelected: null,
@@ -57,38 +56,69 @@
                 productLoading: false,
                 productSearch: '',
                 productOpen: false,
-                // Submit
-                isSubmitting: false,
 
                 addProduct() {
                     this.formData.details.push({
+                        id: null,
+                        purchase_order_item_id: null,
+                        goods_receipt_item_id: null,
                         product_id: null,
-                        name: null,
                         code: null,
-                        quantity: null,
+                        name: null,
                         unit: null,
-                        unit_price: null,
-                        total_amount: null,
-                        unit_cost: null,
+                        quantity: 0,
+                        unit_price: 0,
+                        subtotal: 0,
+                        discount_percentage: 0,
+                        discount_amount: 0,
+                        total_amount: 0,
                     });
                 },
                 deleteProduct(index) {
                     this.formData.details.splice(index, 1);
-                    this.calculateSubtotal();
+                    this.recalculate();
                 },
                 selectProduct(item, product) {
-                    if (this.formData.details.some(d => d.product_id === product.id)) {
+                    if (this.formData.details.some(d => d.batch_number === product.batch_number)) {
                         Toast.fire({
                             icon: 'error',
-                            title: 'Produk sudah terpilih sebelumnya'
+                            title: 'Produk dengan batch number ' + product.batch_number +
+                                ' sudah dipilih sebelumnya.'
                         });
 
                         return;
                     }
-                    item.name = product.name;
-                    item.product_id = product.id;
-                    item.code = product.code;
-                    item.unit = product.unit.symbol;
+                    console.log('selected product', product);
+                    // item.name = product.name;
+                    // item.product_id = product.id;
+                    // item.code = product.code;
+                    // item.unit = product.unit.symbol;
+
+                    item.purchase_order_item_id = product.purchase_order_item_id;
+                    item.goods_receipt_item_id = product.id;
+                    item.product_id = product.product_id;
+                    item.code = product.product_code;
+                    item.name = product.product_name;
+                    item.batch_number = product.batch_number;
+                    item.quantity = product.quantity;
+                    item.unit = product.unit;
+
+                    item.unit_price = product.unit_price;
+                    item.subtotal = product.quantity * product.unit_price;
+                    item.discount_percentage = product.discount_percentage;
+                    item.discount_amount = item.subtotal * (product.discount_percentage / 100);
+                    item.total_amount = item.subtotal - item.discount_amount;
+
+                    console.log('item after select', item);
+                },
+
+
+                availableGRItems() {
+                    const selectedIds = this.formData.details
+                        .filter(d => d.goods_receipt_item_id)
+                        .map(d => d.goods_receipt_item_id);
+
+                    return remainingGRItems.filter(item => !selectedIds.includes(item.id));
                 },
                 handleDetailDiscountPercentageInput(index) {
                     const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.details[index].discount_percentage);
@@ -111,65 +141,67 @@
                     this.calculateDetailTotal(index);
                 },
                 handleDiscountPercentageInput() {
-                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.discount_percentage);
-                    const subtotal = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal);
-                    this.formData.discount_amount = Math.round((percentage / 100) * subtotal);
-                    this.calculateTotal();
+                    this.recalculate();
                 },
                 handleTaxPercentageInput() {
-                    const percentage = NumberUtils.parseMaskIntoNumeric(this.formData.tax_percentage);
-                    const subtotal = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal);
-                    const discount = NumberUtils.parseMaskIntoNumeric(this.formData.discount_amount);
-                    this.formData.tax_amount = Math.round((percentage / 100) * (subtotal - discount));
-                    this.calculateTotal();
-                },
-                calculateEstimatedHPP() {
-                    const estimatedAdditionalCost =
-                        NumberUtils.parseMaskIntoNumeric(this.formData.transport_cost) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.other_cost) -
-                        NumberUtils.parseMaskIntoNumeric(this.formData.discount_amount);
-
-                    const totalWeight = this.formData.details.reduce(
-                        (sum, item) => sum + NumberUtils.parseMaskIntoNumeric(item.quantity),
-                        0
-                    );
-
-                    const costPerUnit = totalWeight > 0 ?
-                        Math.round(estimatedAdditionalCost / totalWeight) :
-                        0;
-
-                    this.formData.details.forEach(item => {
-                        const unitPrice = NumberUtils.parseMaskIntoNumeric(item.unit_price);
-                        const quantity = NumberUtils.parseMaskIntoNumeric(item.quantity);
-                        const discountPerUnit = quantity > 0 ? Math.round(NumberUtils.parseMaskIntoNumeric(item
-                            .discount_amount) / quantity) : 0;
-
-                        item.unit_cost = unitPrice + costPerUnit - discountPerUnit;
-                    });
+                    this.recalculate();
                 },
                 calculateDetailTotal(index) {
-                    let item = this.formData.details[index];
+                    const d = this.formData.details[index];
+                    d.subtotal = this.n(d.quantity) * this.n(d.unit_price);
 
-                    item.total_amount = NumberUtils.parseMaskIntoNumeric(item.quantity) * NumberUtils.parseMaskIntoNumeric(
-                        item.unit_price) - NumberUtils.parseMaskIntoNumeric(item.discount_amount);
-                    this.calculateSubtotal();
+                    d.discount_amount = this.n(d.subtotal) * (this.n(d.discount_percentage) / 100);
+                    d.total_amount = d.subtotal - this.n(d.discount_amount);
+                    // this.recalculate();
                 },
-                calculateSubtotal() {
-                    this.formData.subtotal = this.formData.details.reduce((sum, item) => {
-                        return sum + NumberUtils.parseMaskIntoNumeric(item.total_amount);
-                    }, 0);
-                    this.calculateTotal();
-                },
-                calculateTotal() {
-                    this.formData.total_amount = NumberUtils.parseMaskIntoNumeric(this.formData.subtotal) - NumberUtils
-                        .parseMaskIntoNumeric(this.formData.discount_amount) + NumberUtils.parseMaskIntoNumeric(this
-                            .formData.transport_cost) + NumberUtils.parseMaskIntoNumeric(this.formData.other_cost) +
-                        NumberUtils.parseMaskIntoNumeric(this.formData.tax_amount);
+                recalculate() {
+                    const sub = this.formData.details.reduce((sum, d) => sum + this.n(d.total_amount), 0);
+                    this.formData.subtotal = sub;
+                    this.formData.discount_amount = Math.round((this.n(this.formData.discount_percentage) / 100) * sub);
+                    this.formData.tax_amount = Math.round((this.n(this.formData.tax_percentage) / 100) * (sub - this.n(this
+                        .formData.discount_amount)));
+                    this.formData.total_amount =
+                        sub -
+                        this.n(this.formData.discount_amount) +
+                        this.n(this.formData.other_cost) +
+                        this.n(this.formData.tax_amount) -
+                        this.n(this.formData.down_payment_amount);
                 },
                 initials(name) {
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
                 },
-
+                handlePaymentTermChange() {
+                    if (this.paymentTermSelected) {
+                        this.formData.payment_terms = this.paymentTermSelected.id;
+                        const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
+                        const invoiceDate = new Date(this.formData.invoice_date);
+                        const dueDate = new Date(invoiceDate.getTime() + days * 24 * 60 * 60 * 1000);
+                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                    } else {
+                        this.formData.payment_terms = null;
+                        this.formData.due_date = null;
+                    }
+                },
+                handleInvoiceDateChange() {
+                    if (this.paymentTermSelected) {
+                        const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
+                        const invoiceDate = new Date(this.formData.invoice_date);
+                        const dueDate = new Date(invoiceDate.getTime() + days * 24 * 60 * 60 * 1000);
+                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                    }
+                },
+                handleDownPaymentAmountInput() {
+                    if (this.n(purchaseInvoice.purchase_order.down_payment_remaining_amount) > 0) {
+                        if (this.n(this.formData.down_payment_amount) < 0) {
+                            this.formData.down_payment_amount = 0;
+                        } else if (this.n(this.formData.down_payment_amount) > this.n(purchaseInvoice.purchase_order.down_payment_remaining_amount)) {
+                            this.formData.down_payment_amount = this.n(purchaseInvoice.purchase_order.down_payment_remaining_amount);
+                        }
+                    } else {
+                        this.formData.down_payment_amount = 0;
+                    }
+                    this.recalculate();
+                },
                 async loadSuppliers() {
                     this.supplierLoading = true;
 
@@ -231,7 +263,7 @@
 
                 async init() {
                     this.paymentTermSelected = this.paymentTerms.find(t => t.id === this.formData.payment_terms) ||
-                    null;
+                        null;
 
                     Swal.fire({
                         title: 'Memuat data...',
@@ -373,7 +405,7 @@
     </script>
 
     <div x-data="purchaseInvoiceForm()" x-init="init();
-    calculateEstimatedHPP();" class="order-page">
+    recalculate();" class="order-page">
 
         <div>
             <a href="{{ route('purchasings.purchase_invoices.index') }}" class="btn btn-ghost btn-sm"
@@ -391,39 +423,25 @@
 
                 {{-- Supplier Dropdown --}}
                 <x-misc.field label="Supplier" :required="true">
-                    <div class="dropdown-wrap" @click.outside="supplierOpen=false">
-                        <div class="input dropdown-trigger" @click="supplierOpen=!supplierOpen">
-                            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                x-text="initials(supplierSelected ? supplierSelected.name : '')"></div>
-                            <span style="flex:1; font-weight:500;"
-                                x-text="supplierSelected ? supplierSelected.name : 'Pilih Supplier'"></span>
-                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                        </div>
-                        <div class="dropdown-menu" x-show="supplierOpen" x-cloak>
-                            <template x-for="s in suppliers" :key="s.id">
-                                <div class="dropdown-item"
-                                    @click="supplierSelected=s; formData.supplier_id=s.id; supplierOpen=false">
-                                    <div class="avatar"
-                                        style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                        x-text="initials(s.name)"></div>
-                                    <span x-text="s.name"></span>
-                                </div>
-                            </template>
-                        </div>
+                    <div class="input input--readonly" style="display:flex; align-items:center; gap:10px;">
+                        <x-misc.avatar :name="$purchaseInvoice->supplier->name" />
+                        <span style="flex:1; font-weight:500;">{{ $purchaseInvoice->supplier->name }}</span>
+                        <span class="auto-tag">Auto</span>
                     </div>
                 </x-misc.field>
 
                 {{-- Nomor PO --}}
-                <x-misc.field label="Nomor PO" :required="true">
+                <x-misc.field label="No. Pemesanan" :required="true">
                     <div class="input mono input--readonly" style="display:flex; align-items:center;">
-                        <span style="flex:1; font-weight:600;" x-text="formData.number"></span>
+                        <span style="flex:1; font-weight:600;">{{ $purchaseInvoice->purchaseOrder->number }}</span>
                         <span class="auto-tag">Auto</span>
                     </div>
                 </x-misc.field>
 
                 {{-- Tanggal --}}
                 <x-misc.field label="Tanggal" :required="true">
-                    <input type="date" class="input" x-model="formData.order_date" />
+                    <input type="date" class="input" x-model="formData.invoice_date"
+                        @change="handleInvoiceDateChange" />
                 </x-misc.field>
 
                 {{-- Jatuh Tempo --}}
@@ -432,26 +450,11 @@
                 </x-misc.field>
 
                 {{-- Gudang Dropdown --}}
-                <x-misc.field label="Gudang" :required="true">
-                    <div class="dropdown-wrap" @click.outside="warehouseOpen=false">
-                        <div class="input dropdown-trigger" @click="warehouseOpen=!warehouseOpen">
-                            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                x-text="initials(warehouseSelected ? warehouseSelected.name : '')"></div>
-                            <span style="flex:1; font-weight:500;"
-                                x-text="warehouseSelected ? warehouseSelected.name : 'Pilih Gudang'"></span>
-                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                        </div>
-                        <div class="dropdown-menu" x-show="warehouseOpen" x-cloak>
-                            <template x-for="g in warehouses" :key="g.id">
-                                <div class="dropdown-item"
-                                    @click="warehouseSelected=g; formData.warehouse_id=g.id; warehouseOpen=false">
-                                    <div class="avatar"
-                                        style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                        x-text="initials(g.name)"></div>
-                                    <span x-text="g.name"></span>
-                                </div>
-                            </template>
-                        </div>
+                <x-misc.field label="Gudang Tujuan" :required="true">
+                    <div class="input input--readonly" style="display:flex; align-items:center; gap:8px;">
+                        <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
+                        <span style="flex:1;">{{ $purchaseInvoice->warehouse->name }}</span>
+                        <span class="auto-tag">Auto</span>
                     </div>
                 </x-misc.field>
 
@@ -466,7 +469,7 @@
                         <div class="dropdown-menu" x-show="paymentTermOpen" x-cloak>
                             <template x-for="t in paymentTerms" :key="t.id">
                                 <div class="dropdown-item"
-                                    @click="paymentTermSelected=t; formData.payment_terms=t.id; paymentTermOpen=false">
+                                    @click="paymentTermSelected=t; handlePaymentTermChange(); paymentTermOpen=false">
                                     <span x-text="t.name"></span>
                                 </div>
                             </template>
@@ -499,8 +502,7 @@
                         <th style="width:140px;">Satuan</th>
                         <th style="width:160px; text-align:right;">Harga</th>
                         <th style="width:100px; text-align:right;">Diskon (%)</th>
-                        <th style="width:160px; text-align:right;">Subtotal</th>
-                        <th style="width:160px; text-align:right;">Est. HPP</th>
+                        <th style="width:160px; text-align:right;">Total</th>
                         <th style="width:40px;"></th>
                     </tr>
                 </thead>
@@ -519,7 +521,7 @@
                                             <span
                                                 style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
                                                 :style="it.product_id ? '' : 'color:var(--ink-4);'"
-                                                x-text="it.product_id ? it.name : 'Pilih Produk'"></span>
+                                                x-text="it.product_id ? it.name + ' (' + it.batch_number + ')' : 'Pilih Produk'"></span>
                                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                                                 stroke="var(--ink-4)" stroke-width="1.6" stroke-linecap="round"
                                                 stroke-linejoin="round" style="flex-shrink:0;">
@@ -529,12 +531,13 @@
                                         <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
                                             x-text="it.code || '— belum dipilih'"></div>
                                         <div class="dropdown-menu" x-show="open" x-cloak style="min-width:320px;">
-                                            <template x-for="p in availableProducts()" :key="p.id">
+                                            <template x-for="p in availableGRItems()" :key="p.id">
                                                 <div class="dropdown-item" @click="selectProduct(it, p);open=false">
                                                     <div style="flex:1; min-width:0;">
-                                                        <div style="font-size:13px;" x-text="p.name"></div>
+                                                        <div style="font-size:13px;"
+                                                            x-text="p.product_name + ' (' + p.batch_number + ')'"></div>
                                                         <div class="mono" style="font-size:11px; color:var(--ink-4);"
-                                                            x-text="p.code"></div>
+                                                            x-text="p.product_code"></div>
                                                     </div>
                                                     <span class="dropdown-item__sub" x-text="p.unit.symbol"></span>
                                                 </div>
@@ -545,8 +548,7 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.quantity"
-                                    @input="calculateDetailTotal(i); calculateEstimatedHPP();"
-                                    x-mask:dynamic="$money($input, ',')" />
+                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
                             </td>
                             <td>
                                 <div class="input input--readonly"
@@ -556,22 +558,30 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.unit_price"
-                                    @input="calculateDetailTotal(i); calculateEstimatedHPP();"
-                                    x-mask:dynamic="$money($input, ',')" />
+                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
+
+                                <template x-if="it.subtotal !== null && it.subtotal !== undefined">
+                                    <div class="order-items__sub mono"
+                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align: right;"
+                                        x-text="NumberUtils.formatNumericIntoMask(it.subtotal)">
+                                    </div>
+                                </template>
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
-                                    x-model="it.discount_percentage"
-                                    @input="handleDetailDiscountPercentageInput(i); calculateEstimatedHPP();"
+                                    x-model="it.discount_percentage" @input="handleDetailDiscountPercentageInput(i)"
                                     x-mask:dynamic="$money($input, ',')" />
+
+                                <template x-if="it.discount_amount !== null && it.discount_amount !== undefined">
+                                    <div class="order-items__sub mono"
+                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align: right;"
+                                        x-text="NumberUtils.formatNumericIntoMask(it.discount_amount)">
+                                    </div>
+                                </template>
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
                                     x-model.number="it.total_amount" x-mask:dynamic="$money($input, ',')" disabled />
-                            </td>
-                            <td>
-                                <input class="input num" style="height:32px; text-align:right;"
-                                    x-model.number="it.unit_cost" x-mask:dynamic="$money($input, ',')" disabled />
                             </td>
                             <td>
                                 <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
@@ -594,34 +604,98 @@
                 </div>
                 <div class="order-summary">
                     <div class="display order-summary__title">Ringkasan</div>
-                    <div class="order-summary__row">
-                        <span class="order-summary__label">Subtotal</span>
-                        <span class="num" style="font-weight:500;"
-                            x-text="'Rp ' + (formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
-                    </div>
-                    <div class="order-summary__row" style="align-items:center;">
-                        <span class="order-summary__label">Diskon (%)</span>
-                        <div>
-                            <input class="input num" style="height:28px; width:60px; text-align:right; font-size:13px;"
-                                x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
-                                @input="handleDiscountPercentageInput(); calculateTotal(); calculateEstimatedHPP();" />
-                            <input class="input num input--readonly"
-                                style="height:28px; width:130px; text-align:right; font-size:13px;"
-                                x-model="formData.discount_amount" x-mask:dynamic="$money($input, ',')" disabled />
+                    <div class="order-summary__grid">
+
+                        {{-- Group 1: Nilai Bruto -> Subtotal --}}
+                        <div class="order-summary__group">
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Nilai Bruto</span>
+                                <span class="num order-summary__val"
+                                    x-text="(formData.details ? NumberUtils.formatNumericIntoMask(formData.details.reduce((acc, item) => acc + item.subtotal, 0)) : '0')"></span>
+                            </div>
+
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Diskon Per Item</span>
+                                <span class="num order-summary__val order-summary__val--negative"
+                                    x-text="(formData.details ? NumberUtils.formatNumericIntoMask(formData.details.reduce((acc, item) => acc + item.discount_amount, 0)) : '0')"></span>
+                            </div>
+
+
                         </div>
-                    </div>
-                    <div class="order-summary__row" style="align-items:center;">
-                        <span class="order-summary__label">Pajak (%)</span>
-                        <div>
-                            <input class="input num" style="height:28px; width:60px; text-align:right; font-size:13px;"
-                                x-model="formData.tax_percentage" x-mask:dynamic="$money($input, ',')"
-                                @input="handleTaxPercentageInput(); calculateTotal();" />
-                            <input class="input num input--readonly"
-                                style="height:28px; width:130px; text-align:right; font-size:13px;"
-                                x-model="formData.tax_amount" x-mask:dynamic="$money($input, ',')" disabled />
+
+                        {{-- Group 2: Diskon, Pajak, Transport, Biaya Lain-lain -> Subtotal --}}
+                        <div class="order-summary__group">
+                            <div class="order-summary__row">
+                                <span class="order-summary__label"></span>
+                                <span class="num order-summary__val"
+                                    x-text="(formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
+                            </div>
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Diskon</span>
+                                <div class="order-summary__pct-group">
+                                    <input class="input num order-summary__pct-input"
+                                        x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
+                                        @input="handleDiscountPercentageInput()" />
+                                    <span class="order-summary__pct-sym">%</span>
+                                    <input
+                                        class="input num input--readonly order-summary__amount-display order-summary__amount-display--negative"
+                                        :value="'- ' + (formData.discount_amount ? NumberUtils.formatNumericIntoMask(formData
+                                            .discount_amount) : '0')"
+                                        disabled />
+                                </div>
+                            </div>
+
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Pajak</span>
+                                <div class="order-summary__pct-group">
+                                    <input class="input num order-summary__pct-input" x-model="formData.tax_percentage"
+                                        x-mask:dynamic="$money($input, ',')" @input="handleTaxPercentageInput()" />
+                                    <span class="order-summary__pct-sym">%</span>
+                                    <input class="input num input--readonly order-summary__amount-display"
+                                        :value="formData.tax_amount ? NumberUtils.formatNumericIntoMask(formData.tax_amount) :
+                                            '0'"
+                                        disabled />
+                                </div>
+                            </div>
+
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Biaya Lain-lain</span>
+                                <input class="input num order-summary__cost-input" x-model="formData.other_cost"
+                                    x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
+                            </div>
+
+
                         </div>
+
+                        <template x-if="purchaseInvoice.purchase_order && purchaseInvoice.purchase_order.down_payment_remaining_amount > 0">
+                            <div class="order-summary__group">
+                                <div class="order-summary__row">
+                                    <span class="order-summary__label"></span>
+                                    <span class="num order-summary__val"
+                                        x-text="NumberUtils.formatNumericIntoMask(n(formData.total_amount) + n(formData.down_payment_amount))"></span>
+                                </div>
+                                <div class="order-summary__row">
+                                    <span class="order-summary__label">Uang Muka</span>
+                                    <div class="order-summary__dp-group">
+                                        <div class="input-with-prefix">
+                                            <input
+                                                class="input num input--readonly order-summary__cost-input"
+                                                :value="purchaseInvoice.purchase_order.down_payment_remaining_amount ? NumberUtils.formatNumericIntoMask(purchaseInvoice.purchase_order.down_payment_remaining_amount) : '0'"
+                                                disabled />
+                                        </div>
+                                        <div class="input-with-prefix">
+                                            {{-- <span class="input-with-prefix__label">- Rp</span> --}}
+                                            <input
+                                                class="input num order-summary__cost-input order-summary__amount-display--negative"
+                                                x-model="formData.down_payment_amount"
+                                                x-mask:dynamic="$money($input, ',')" @input="handleDownPaymentAmountInput()"
+                                                placeholder="0" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
                     </div>
-                    <div class="order-summary__divider"></div>
                     <div class="order-summary__total">
                         <span class="order-summary__total-label">Total Harga</span>
                         <span class="order-summary__total-value display num"
