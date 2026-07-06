@@ -1,31 +1,31 @@
 <?php
 
-namespace App\Http\Controllers\Purchasing;
+namespace App\Http\Controllers\Sales;
 
 use App\Enums\AccountCategory;
 use App\Enums\PaymentTerm;
-use App\Enums\PurchaseOrderStatus;
+use App\Enums\SalesOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Services\AccountService;
 use App\Services\ContactService;
-use App\Services\ProductService;
-use App\Services\PurchasingService;
+use App\Services\InventoryService;
+use App\Services\Sales\SalesOrderService;
 use App\Services\WarehouseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class PurchaseOrderController extends Controller
+class SalesOrderController extends Controller
 {
-    private PurchasingService $purchasingService;
-    private ProductService $productService;
+    private SalesOrderService $salesOrderService;
+    private InventoryService $inventoryService;
     private WarehouseService $warehouseService;
     private ContactService $contactService;
     private AccountService $accountService;
 
-    public function __construct(PurchasingService $purchasingService, ProductService $productService, WarehouseService $warehouseService, ContactService $contactService, AccountService $accountService)
+    public function __construct(SalesOrderService $salesOrderService, InventoryService $inventoryService, WarehouseService $warehouseService, ContactService $contactService, AccountService $accountService)
     {
-        $this->purchasingService = $purchasingService;
-        $this->productService = $productService;
+        $this->salesOrderService = $salesOrderService;
+        $this->inventoryService = $inventoryService;
         $this->warehouseService = $warehouseService;
         $this->contactService = $contactService;
         $this->accountService = $accountService;
@@ -34,45 +34,47 @@ class PurchaseOrderController extends Controller
     public function index()
     {
         $data = [
-            'currentPage'    => 'pembelian',
+            'currentPage'    => 'penjualan',
             'breadcrumb'     => [['label' => 'Pemesanan']],
-            'status' => PurchaseOrderStatus::dropdownOptions(),
+            'status' => SalesOrderStatus::dropdownOptions(),
         ];
-        return view('purchasing.purchase-order.index', $data);
+        return view('sales.sales-order.index', $data);
     }
 
     public function datatable(Request $request)
     {
-        $data = $this->purchasingService->fetchPurchaseOrderTableData($request);
+        $data = $this->salesOrderService->fetchSalesOrderTableData($request);
         return response()->json($data);
     }
 
     public function create()
     {
         $data = [
-            'currentPage' => 'pembelian',
+            'currentPage' => 'penjualan',
             'breadcrumb'  => [
-                ['label' => 'Pemesanan', 'url' => route('purchasings.purchase_orders.index')],
+                ['label' => 'Pemesanan', 'url' => route('sales.sales_orders.index')],
                 ['label' => 'Tambah'],
             ],
-            'number' => $this->purchasingService->generatePONumber(),
+            'number' => $this->salesOrderService->generateSONumber(),
             'paymentTerms' => PaymentTerm::dropdownOptions(),
-            'products' => $this->productService->fetchProductData(),
+            'inventories' => $this->inventoryService->fetchGlobalInventoryStock(),
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
-            'suppliers' => $this->contactService->fetchContactData('supplier'),
+            'customers' => $this->contactService->fetchContactData('customer'),
+            'salesPersons' => $this->contactService->fetchContactData('employee'),
             'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
         ];
-        return view('purchasing.purchase-order.create', $data);
+        return view('sales.sales-order.create', $data);
     }
 
     public function store(Request $request)
     {
-        if ($request->input('status') === PurchaseOrderStatus::OPEN->value) {
+        if ($request->input('status') === SalesOrderStatus::OPEN->value) {
             $request->validate(
                 [
-                    'supplier_id' => 'required|exists:contacts,id',
+                    'customer_id' => 'required|exists:contacts,id',
                     'warehouse_id' => 'required|exists:warehouses,id',
-                    'number' => 'required|string|max:50|unique:purchase_orders,number',
+                    'sales_person_id' => 'nullable|exists:contacts,id',
+                    'number' => 'required|string|max:50|unique:sales_orders,number',
                     'reference_number' => 'nullable|string|max:50',
                     'order_date' => 'required|date',
                     'due_date' => 'nullable|date',
@@ -81,8 +83,8 @@ class PurchaseOrderController extends Controller
                     'discount_amount' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
                     'tax_amount' => 'nullable|numeric|min:0',
-                    'transport_cost' => 'nullable|numeric|min:0',
-                    'other_cost' => 'nullable|numeric|min:0',
+                    'shipment_charge' => 'nullable|numeric|min:0',
+                    'other_charge' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'down_payment_amount' => 'nullable|numeric|min:0',
                     'down_payment_account_id' => 'nullable|exists:chart_of_accounts,id',
@@ -97,11 +99,11 @@ class PurchaseOrderController extends Controller
                     'details.*.discount_amount' => 'nullable|numeric|min:0',
                 ],
                 [
-                    'supplier_id.required' => 'Supplier harus dipilih.',
+                    'customer_id.required' => 'Customer harus dipilih.',
                     'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'number.required' => 'Nomor PO harus diisi.',
-                    'number.unique' => 'Nomor PO sudah digunakan. Silakan gunakan nomor lain.',
-                    'order_date.required' => 'Tanggal PO harus diisi.',
+                    'number.required' => 'Nomor SO harus diisi.',
+                    'number.unique' => 'Nomor SO sudah digunakan. Silakan gunakan nomor lain.',
+                    'order_date.required' => 'Tanggal SO harus diisi.',
                     'payment_terms.required' => 'Syarat pembayaran harus dipilih.',
                     'details.required' => 'Daftar item tidak boleh kosong.',
                     'details.*.product_id.required' => 'Produk harus dipilih untuk setiap item.',
@@ -109,30 +111,30 @@ class PurchaseOrderController extends Controller
                     'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
                 ]
             );
-        } else if ($request->input('status') === PurchaseOrderStatus::DRAFT->value) {
+        } else if ($request->input('status') === SalesOrderStatus::DRAFT->value) {
             $request->validate(
                 [
-                    'supplier_id' => 'required|exists:contacts,id',
+                    'customer_id' => 'required|exists:contacts,id',
                     'warehouse_id' => 'required|exists:warehouses,id',
-                    'number' => 'required|string|max:50|unique:purchase_orders,number',
+                    'number' => 'required|string|max:50|unique:sales_orders,number',
                     'reference_number' => 'nullable|string|max:50',
                     'order_date' => 'required|date',
                     'due_date' => 'nullable|date',
                     'discount_percentage' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
-                    'transport_cost' => 'nullable|numeric|min:0',
-                    'other_cost' => 'nullable|numeric|min:0',
+                    'shipment_charge' => 'nullable|numeric|min:0',
+                    'other_charge' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'total_amount' => 'nullable|numeric|min:0',
                     'note' => 'nullable|string|max:1000',
                     'status' => 'required|in:draft,open',
                 ],
                 [
-                    'supplier_id.required' => 'Supplier harus dipilih.',
+                    'customer_id.required' => 'Customer harus dipilih.',
                     'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'number.required' => 'Nomor PO harus diisi.',
-                    'number.unique' => 'Nomor PO sudah digunakan. Silakan gunakan nomor lain.',
-                    'order_date.required' => 'Tanggal PO harus diisi.',
+                    'number.required' => 'Nomor SO harus diisi.',
+                    'number.unique' => 'Nomor SO sudah digunakan. Silakan gunakan nomor lain.',
+                    'order_date.required' => 'Tanggal SO harus diisi.',
                 ]
             );
         } else {
@@ -140,67 +142,69 @@ class PurchaseOrderController extends Controller
         }
 
         try {
-            $this->purchasingService->storePurchaseOrder($request);
-            return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Purchase Order berhasil dibuat.']);
+            $this->salesOrderService->storeSalesOrder($request);
+            return response()->json(['redirect' => route('sales.sales_orders.index'), 'message' => 'Sales Order berhasil dibuat.']);
         } catch (\Exception $e) {
-            Log::error('Error PurchaseOrderController@store: ' . $e->getMessage(), [
+            Log::error('Error SalesOrderController@store: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat Purchase Order. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat Sales Order. Silakan coba lagi.'], 500);
         }
     }
 
     public function show(int $id)
     {
-        $purchaseOrder = $this->purchasingService->fetchPurchaseOrderByID($id);
-        if (!$purchaseOrder) {
-            abort(404, 'Purchase Order tidak ditemukan.');
+        $salesOrder = $this->salesOrderService->fetchSalesOrderByID($id);
+        if (!$salesOrder) {
+            abort(404, 'Sales Order tidak ditemukan.');
         }
 
         $data = [
-            'currentPage' => 'pembelian',
+            'currentPage' => 'penjualan',
             'breadcrumb'  => [
-                ['label' => 'Pemesanan', 'url' => route('purchasings.purchase_orders.index')],
+                ['label' => 'Penjualan', 'url' => route('sales.sales_orders.index')],
                 ['label' => 'Detail'],
             ],
-            'purchaseOrder' => $purchaseOrder,
+            'salesOrder' => $salesOrder,
         ];
-        return view('purchasing.purchase-order.show', $data);
+        return view('sales.sales-order.show', $data);
     }
 
     public function edit(int $id)
     {
-        $purchaseOrder = $this->purchasingService->fetchPurchaseOrderByID($id);
-        if (!$purchaseOrder) {
-            abort(404, 'Purchase Order tidak ditemukan.');
+        $salesOrder = $this->salesOrderService->fetchSalesOrderByID($id);
+        if (!$salesOrder) {
+            abort(404, 'Sales Order tidak ditemukan.');
         }
 
         $data = [
-            'currentPage' => 'pembelian',
+            'currentPage' => 'penjualan',
             'breadcrumb'  => [
-                ['label' => 'Pemesanan', 'url' => route('purchasings.purchase_orders.index')],
+                ['label' => 'Penjualan', 'url' => route('sales.sales_orders.index')],
                 ['label' => 'Edit'],
             ],
-            'purchaseOrder' => $purchaseOrder,
+            'salesOrder' => $salesOrder,
             'paymentTerms' => PaymentTerm::dropdownOptions(),
-            'products' => $this->productService->fetchProductData(),
+            'inventories' => $this->inventoryService->fetchGlobalInventoryStock(),
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
-            'suppliers' => $this->contactService->fetchContactData('supplier'),
+            'customers' => $this->contactService->fetchContactData('customer'),
+            'salesPersons' => $this->contactService->fetchContactData('employee'),
             'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
         ];
-        return view('purchasing.purchase-order.edit', $data);
+        return view('sales.sales-order.edit', $data);
     }
 
     public function update(Request $request, int $id)
     {
-        if ($request->input('status') === PurchaseOrderStatus::OPEN->value) {
+        if ($request->input('status') === SalesOrderStatus::OPEN->value) {
             $request->validate(
                 [
-                    'supplier_id' => 'required|exists:contacts,id',
+                    'customer_id' => 'required|exists:contacts,id',
                     'warehouse_id' => 'required|exists:warehouses,id',
-                    'number' => 'required|string|max:50|unique:purchase_orders,number',
+                    'sales_person_id' => 'nullable|exists:contacts,id',
+                    'number' => 'required|string|max:50|unique:sales_orders,number',
                     'reference_number' => 'nullable|string|max:50',
                     'order_date' => 'required|date',
                     'due_date' => 'nullable|date',
@@ -209,8 +213,8 @@ class PurchaseOrderController extends Controller
                     'discount_amount' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
                     'tax_amount' => 'nullable|numeric|min:0',
-                    'transport_cost' => 'nullable|numeric|min:0',
-                    'other_cost' => 'nullable|numeric|min:0',
+                    'shipment_charge' => 'nullable|numeric|min:0',
+                    'other_charge' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'down_payment_amount' => 'nullable|numeric|min:0',
                     'down_payment_account_id' => 'nullable|exists:chart_of_accounts,id',
@@ -225,11 +229,11 @@ class PurchaseOrderController extends Controller
                     'details.*.discount_amount' => 'nullable|numeric|min:0',
                 ],
                 [
-                    'supplier_id.required' => 'Supplier harus dipilih.',
+                    'customer_id.required' => 'Customer harus dipilih.',
                     'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'number.required' => 'Nomor PO harus diisi.',
-                    'number.unique' => 'Nomor PO sudah digunakan. Silakan gunakan nomor lain.',
-                    'order_date.required' => 'Tanggal PO harus diisi.',
+                    'number.required' => 'Nomor SO harus diisi.',
+                    'number.unique' => 'Nomor SO sudah digunakan. Silakan gunakan nomor lain.',
+                    'order_date.required' => 'Tanggal SO harus diisi.',
                     'payment_terms.required' => 'Syarat pembayaran harus dipilih.',
                     'details.required' => 'Daftar item tidak boleh kosong.',
                     'details.*.product_id.required' => 'Produk harus dipilih untuk setiap item.',
@@ -237,30 +241,30 @@ class PurchaseOrderController extends Controller
                     'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
                 ]
             );
-        } else if ($request->input('status') === PurchaseOrderStatus::DRAFT->value) {
+        } else if ($request->input('status') === SalesOrderStatus::DRAFT->value) {
             $request->validate(
                 [
-                    'supplier_id' => 'required|exists:contacts,id',
+                    'customer_id' => 'required|exists:contacts,id',
                     'warehouse_id' => 'required|exists:warehouses,id',
-                    'number' => 'required|string|max:50|unique:purchase_orders,number',
+                    'number' => 'required|string|max:50|unique:sales_orders,number',
                     'reference_number' => 'nullable|string|max:50',
                     'order_date' => 'required|date',
                     'due_date' => 'nullable|date',
                     'discount_percentage' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
-                    'transport_cost' => 'nullable|numeric|min:0',
-                    'other_cost' => 'nullable|numeric|min:0',
+                    'shipment_charge' => 'nullable|numeric|min:0',
+                    'other_charge' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'total_amount' => 'nullable|numeric|min:0',
                     'note' => 'nullable|string|max:1000',
                     'status' => 'required|in:draft,open',
                 ],
                 [
-                    'supplier_id.required' => 'Supplier harus dipilih.',
+                    'customer_id.required' => 'Customer harus dipilih.',
                     'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'number.required' => 'Nomor PO harus diisi.',
-                    'number.unique' => 'Nomor PO sudah digunakan. Silakan gunakan nomor lain.',
-                    'order_date.required' => 'Tanggal PO harus diisi.',
+                    'number.required' => 'Nomor SO harus diisi.',
+                    'number.unique' => 'Nomor SO sudah digunakan. Silakan gunakan nomor lain.',
+                    'order_date.required' => 'Tanggal SO harus diisi.',
                 ]
             );
         } else {
@@ -268,66 +272,60 @@ class PurchaseOrderController extends Controller
         }
 
         try {
-            $this->purchasingService->updatePurchaseOrder($request, $id);
-            return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Purchase Order berhasil diperbarui.']);
+            $this->salesOrderService->updateSalesOrder($request, $id);
+            return response()->json(['redirect' => route('sales.sales_orders.index'), 'message' => 'Sales Order berhasil diperbarui.']);
         } catch (\Exception $e) {
-            Log::error('Error PurchaseOrderController@update: ' . $e->getMessage(), [
+            Log::error('Error SalesOrderController@update: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Purchase Order. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Sales Order. Silakan coba lagi.'], 500);
         }
     }
-
+    
     public function open(int $id)
     {
         try {
-            $this->purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::OPEN->value);
-            return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Open"']);
+            $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::OPEN->value);
+            return response()->json(['message' => 'Status Sales Order berhasil diubah menjadi "Open"']);
         } catch (\Exception $e) {
-            Log::error('Error PurchaseOrderController@open: ' . $e->getMessage(), [
+            Log::error('Error SalesOrderController@open: ' . $e->getMessage(), [
                 'exception' => $e,
-                'purchase_order_id' => $id,
+                'sales_order_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuka Purchase Order. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuka Sales Order. Silakan coba lagi.'], 500);
         }
     }
 
     public function close(int $id)
     {
         try {
-            $this->purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CLOSED->value);
-            return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Closed"']);
+            $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::CLOSED->value);
+            return response()->json(['message' => 'Status Sales Order berhasil diubah menjadi "Closed"']);
         } catch (\Exception $e) {
-            Log::error('Error PurchaseOrderController@close: ' . $e->getMessage(), [
+            Log::error('Error SalesOrderController@close: ' . $e->getMessage(), [
                 'exception' => $e,
-                'purchase_order_id' => $id,
+                'sales_order_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba menutup Purchase Order. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba menutup Sales Order. Silakan coba lagi.'], 500);
         }
     }
 
     public function cancel(int $id)
     {
         try {
-            $this->purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CANCELLED->value);
-            return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Cancelled"']);
+            $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::CANCELLED->value);
+            return response()->json(['message' => 'Status Sales Order berhasil diubah menjadi "Cancelled"']);
         } catch (\Exception $e) {
-            Log::error('Error PurchaseOrderController@cancel: ' . $e->getMessage(), [
+            Log::error('Error SalesOrderController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,
-                'purchase_order_id' => $id,
+                'sales_order_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Purchase Order. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Sales Order. Silakan coba lagi.'], 500);
         }
     }
-
-    // public function itemOptions(PurchasingService $purchasingService, Request $request)
-    // {
-    //     $options = $purchasingService->fetchPurchaseOrderItemOptions($request);
-    //     return response()->json($options);
-    // }
 }

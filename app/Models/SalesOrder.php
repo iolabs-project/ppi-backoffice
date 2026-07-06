@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PurchaseOrder extends Model
+class SalesOrder extends Model
 {
     protected $fillable = [
         'company_id',
-        'supplier_id',
+        'customer_id',
         'warehouse_id',
+        'sales_person_id',
         'number',
         'reference_number',
         'order_date',
@@ -18,8 +19,8 @@ class PurchaseOrder extends Model
         'discount_amount',
         'tax_percentage',
         'tax_amount',
-        'transport_cost',
-        'other_cost',
+        'shipping_charge',
+        'other_charge',
         'subtotal',
         'down_payment_amount',
         'down_payment_remaining_amount',
@@ -39,25 +40,25 @@ class PurchaseOrder extends Model
         'discount_amount' => 'double',
         'tax_percentage' => 'double',
         'tax_amount' => 'double',
-        'transport_cost' => 'double',
-        'other_cost' => 'double',
+        'shipping_charge' => 'double',
+        'other_charge' => 'double',
         'subtotal' => 'double',
         'down_payment_amount' => 'double',
         'down_payment_remaining_amount' => 'double',
         'total_amount' => 'double',
         'total_quantity' => 'double',
-        'total_received_quantity' => 'double',
+        'total_delivered_quantity' => 'double',
         'total_invoiced_quantity' => 'double',
     ];
 
     public function items()
     {
-        return $this->hasMany(PurchaseOrderItem::class);
+        return $this->hasMany(SalesOrderItem::class);
     }
 
-    public function supplier()
+    public function customer()
     {
-        return $this->belongsTo(Contact::class, 'supplier_id');
+        return $this->belongsTo(Contact::class, 'customer_id');
     }
 
     public function warehouse()
@@ -65,14 +66,14 @@ class PurchaseOrder extends Model
         return $this->belongsTo(Warehouse::class, 'warehouse_id');
     }
 
+    public function salesPerson()
+    {
+        return $this->belongsTo(Contact::class, 'sales_person_id');
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function goodsReceipts()
-    {
-        return $this->hasMany(GoodsReceipt::class)->where('status', '!=', 'cancelled');
     }
 
     public function downPaymentAccount()

@@ -18,6 +18,15 @@ class ProductBatch extends Model
         'unit_cost',
     ];
 
+    protected $casts = [
+        'quantity' => 'double',
+        'reserved_quantity' => 'double',
+        'unit_cost' => 'double',
+    ];
+    protected $appends = [
+        'available_quantity',
+    ];
+
     public function getAvailableQuantityAttribute()
     {
         if (!isset($this->attributes['quantity']) && isset($this->attributes['reserved_quantity'])) {
@@ -25,5 +34,20 @@ class ProductBatch extends Model
         }
 
         return $this->attributes['quantity'] - $this->attributes['reserved_quantity'];
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
+    public function goodsReceiptItem()
+    {
+        return $this->belongsTo(GoodsReceiptItem::class);
     }
 }
