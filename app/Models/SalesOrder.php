@@ -47,7 +47,7 @@ class SalesOrder extends Model
         'down_payment_remaining_amount' => 'double',
         'total_amount' => 'double',
         'total_quantity' => 'double',
-        'total_delivered_quantity' => 'double',
+        'total_shipped_quantity' => 'double',
         'total_invoiced_quantity' => 'double',
     ];
 
@@ -79,5 +79,10 @@ class SalesOrder extends Model
     public function downPaymentAccount()
     {
         return $this->belongsTo(ChartOfAccount::class, 'down_payment_account_id');
+    }
+
+    public function deliveryOrders()
+    {
+        return $this->hasMany(DeliveryOrder::class);
     }
 }

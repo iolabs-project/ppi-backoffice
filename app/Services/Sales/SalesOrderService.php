@@ -2,18 +2,8 @@
 
 namespace App\Services\Sales;
 
-use App\Enums\GoodsReceiptStatus;
-use App\Enums\PaymentTerm;
-use App\Enums\PurchaseInvoiceStatus;
+use App\Enums\DeliveryOrderStatus;
 use App\Models\Company;
-use App\Models\GoodsReceipt;
-use App\Models\GoodsReceiptItem;
-use App\Models\InventoryTransaction;
-use App\Models\ProductBatch;
-use App\Models\PurchaseInvoice;
-use App\Models\PurchaseInvoiceItem;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
 use Illuminate\Http\Request;
@@ -44,6 +34,10 @@ class SalesOrderService
             'warehouse:id,name,code',
             'customer:id,name,code',
             'salesPerson:id,name,code',
+            'deliveryOrders' => function ($query) {
+                $query->select('id', 'sales_order_id', 'status')
+                    ->where('status', '<>', DeliveryOrderStatus::CANCELLED->value);
+            },
         ])
             ->select(
                 'id',

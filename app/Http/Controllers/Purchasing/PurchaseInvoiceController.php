@@ -15,7 +15,7 @@ class PurchaseInvoiceController extends Controller
     public function index()
     {
         $data = [
-            'currentPage'    => 'pembelian',
+            'currentPage'    => 'pembelian.tagihan',
             'breadcrumb'     => [['label' => 'Tagihan']],
             'status' => PurchaseInvoiceStatus::dropdownOptions(),
         ];
@@ -69,7 +69,7 @@ class PurchaseInvoiceController extends Controller
         }
 
         $data = [
-            'currentPage' => 'pembelian',
+            'currentPage' => 'pembelian.tagihan',
             'breadcrumb'  => [
                 ['label' => 'Tagihan', 'url' => route('purchasings.purchase_invoices.index')],
                 ['label' => 'Edit'],

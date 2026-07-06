@@ -17,6 +17,7 @@ use App\Http\Controllers\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Purchasing\PurchaseInvoiceController;
 use App\Http\Controllers\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Sale\SaleOrderController;
+use App\Http\Controllers\Sales\DeliveryOrderController;
 use App\Http\Controllers\Sales\SalesOrderController;
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -108,6 +109,19 @@ Route::middleware('auth')->group(function () {
                 Route::put('/', 'update')->name('update');
                 Route::post('/open', 'open')->name('open');
                 Route::post('/close', 'close')->name('close');
+                Route::post('/cancel', 'cancel')->name('cancel');
+            });
+        });
+
+        Route::prefix('delivery-orders')->name('delivery_orders.')->controller(DeliveryOrderController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/datatable', 'datatable')->name('datatable');
+            Route::post('/', 'store')->name('store');
+
+            Route::prefix('/{id}')->group(function () {
+                Route::get('/', 'show')->name('show');
+                Route::get('/edit', 'edit')->name('edit');
+                Route::put('/', 'update')->name('update');
                 Route::post('/cancel', 'cancel')->name('cancel');
             });
         });

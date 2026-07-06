@@ -14,8 +14,8 @@
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
-                <a href="{{ route('sales.sales_orders.create') }}" class="btn btn-primary"><x-misc.icon
-                        name="plus" :size="15" />Tambah SO</a>
+                <a href="{{ route('sales.sales_orders.create') }}" class="btn btn-primary"><x-misc.icon name="plus"
+                        :size="15" />Tambah SO</a>
             </div>
         </div>
 
@@ -138,8 +138,8 @@
                                             x-on:click.away="open = false" class="action-menu__panel">
                                             <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('sales.sales_orders.edit', row.id)"
-                                                        @click.stop class="action-menu__item">
+                                                    <a :href="route('sales.sales_orders.edit', row.id)" @click.stop
+                                                        class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />
                                                         Edit Draft
@@ -148,8 +148,8 @@
                                             </template>
                                             <template x-if="row.status !== '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('sales.sales_orders.show', row.id)"
-                                                        @click.stop class="action-menu__item">
+                                                    <a :href="route('sales.sales_orders.show', row.id)" @click.stop
+                                                        class="action-menu__item">
                                                         <x-misc.icon name="eye" :size="14"
                                                             stroke="var(--ink-3)" />Lihat
                                                         Detail
@@ -164,7 +164,7 @@
                                             </template>
                                             <template x-if="row.status === '{{ $open }}'">
                                                 <button class="action-menu__item"
-                                                    @click.stop="handleCreateGoodsReceipt(row.id)">
+                                                    @click.stop="handleCreateDeliveryOrder(row.id)">
                                                     <x-misc.icon name="box" :size="14"
                                                         stroke="var(--ink-3)" />Buat
                                                     Pengiriman
@@ -181,7 +181,7 @@
                                             </template>
 
                                             <template
-                                                x-if="row.status === '{{ $draft }}' || (row.status === '{{ $open }}' && row.goods_receipts.length === 0)">
+                                                x-if="row.status === '{{ $draft }}' || (row.status === '{{ $open }}' && row.delivery_orders.length === 0)">
                                                 <div>
                                                     <div class="action-menu__divider"></div>
                                                     <button class="action-menu__item action-menu__item--danger"
@@ -413,49 +413,54 @@
                 },
 
                 async handleCreateDeliveryOrder(id) {
-                    // Swal.fire({
-                    //     title: 'Apakah Anda yakin ingin membuat Pengiriman Barang untuk SO ini?',
-                    //     icon: 'warning',
-                    //     showCancelButton: true,
-                    //     confirmButtonText: 'Ya, buat',
-                    //     cancelButtonText: 'Batal',
-                    //     reverseButtons: true,
-                    // }).then(async (result) => {
-                    //     if (result.isConfirmed) {
-                    //         Swal.fire({
-                    //             title: 'Memproses...',
-                    //             allowOutsideClick: false,
-                    //             didOpen: () => {
-                    //                 Swal.showLoading();
-                    //             }
-                    //         });
-                    //         try {
-                    //             const response = await axios.post(route(
-                    //                 'sales.delivery_orders.store', {
-                    //                     sale_order_id: id
-                    //                 }));
-                    //             Swal.close();
-                    //             Toast.fire({
-                    //                 icon: 'success',
-                    //                 title: response.data.message
-                    //             });
+                    Swal.fire({
+                        title: 'Apakah Anda yakin ingin membuat Pengiriman Barang untuk SO ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Memproses...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            try {
+                                const response = await axios.post(route(
+                                    'sales.delivery_orders.store', {
+                                        sales_order_id: id
+                                    }));
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
 
-                    //             window.location.href = response.data.redirect;
-                    //         } catch (error) {
-                    //             Swal.close();
-                    //             let message =
-                    //                 'Terjadi kesalahan saat membuat Pengiriman Barang. Silakan coba lagi.';
-                    //             if (error.response?.data?.message) {
-                    //                 message = error.response.data.message;
-                    //             }
-                    //             Toast.fire({
-                    //                 icon: 'error',
-                    //                 title: message
-                    //             });
-                    //         }
+                                window.location.href = response.data.redirect;
+                            } catch (error) {
+                                console.error('Error creating delivery order:', error);
+                                Swal.close();
+                                let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
 
-                    //     }
-                    // })
+                                if (error.response?.status === 422) {
+                                    message = Object.values(error.response.data.errors)
+                                        .flat()
+                                        .join(', ');
+                                } else if (error.response?.data?.message) {
+                                    message = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: message
+                                });
+                            }
+
+                        }
+                    })
                 },
 
                 async handleCreateSalesInvoice(id) {
@@ -478,7 +483,7 @@
                     //         try {
                     //             const response = await axios.post(route(
                     //                 'sales.sales_invoices.store', {
-                    //                     sale_order_id: id
+                    //                     sales_order_id: id
                     //                 }));
                     //             Swal.close();
                     //             Toast.fire({
