@@ -11,6 +11,7 @@ use App\Http\Controllers\Erp\LaporanController;
 use App\Http\Controllers\Erp\MasterController;
 use App\Http\Controllers\Erp\BiayaController;
 use App\Http\Controllers\Master\ContactController;
+use App\Http\Controllers\Master\ProductCategoryController;
 use App\Http\Controllers\Master\ProductController;
 use App\Http\Controllers\Master\WarehouseController;
 use App\Http\Controllers\Purchasing\GoodsReceiptController;
@@ -200,16 +201,35 @@ Route::middleware('auth')->group(function () {
     })->name('bantuan.index');
 
     Route::prefix('master')->name('master.')->group(function () {
-        Route::prefix('contacts')->name('contacts.')->group(function () {
-            Route::get('/options', [ContactController::class, 'options'])->name('options');
+        Route::prefix('contacts')->name('contacts.')->controller(ContactController::class)->group(function () {
+            Route::get('/datatable', 'datatable')->name('datatable');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{id}', 'update')->name('update');
+            Route::post('/{id}/status', 'status')->name('status');
+            Route::get('/options', 'options')->name('options');
         });
 
-        Route::prefix('warehouses')->name('warehouses.')->group(function () {
-            Route::get('/options', [WarehouseController::class, 'options'])->name('options');
+        Route::prefix('warehouses')->name('warehouses.')->controller(WarehouseController::class)->group(function () {
+            Route::get('/datatable', 'datatable')->name('datatable');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{id}', 'update')->name('update');
+            Route::post('/{id}/status', 'status')->name('status');
+            Route::get('/options', 'options')->name('options');
         });
 
-        Route::prefix('products')->name('products.')->group(function () {
-            Route::get('/options', [ProductController::class, 'options'])->name('options');
+        Route::prefix('products')->name('products.')->controller(ProductController::class)->group(function () {
+        Route::prefix('categories')->name('categories.')->controller(ProductCategoryController::class)->group(function () {
+            Route::post('/', 'store')->name('store');
+            Route::put('/{id}', 'update')->name('update');
+        });    
+        
+        Route::get('/datatable', 'datatable')->name('datatable');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{id}', 'update')->name('update');
+            Route::post('/{id}/status', 'status')->name('status');
+            Route::get('/options', 'options')->name('options');
+
+
         });
     });
 });

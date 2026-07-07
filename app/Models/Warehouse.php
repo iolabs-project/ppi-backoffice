@@ -6,5 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Warehouse extends Model
 {
-    //
+    protected $fillable = [
+        'company_id',
+        'name',
+        'code',
+        'address',
+        'note',
+        'deleted_at',
+    ];
 }
