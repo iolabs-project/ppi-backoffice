@@ -28,6 +28,11 @@ class DeliveryOrderItem extends Model
         return $this->belongsTo(SalesOrderItem::class);
     }
 
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
     public function batches()
     {
         return $this->hasMany(DeliveryOrderItemBatch::class);

@@ -67,7 +67,12 @@
                                 <td style="font-weight:500;" x-text="row.customer.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
                                 <td class="num" style="text-align:right;" x-text="row.total_shipped_quantity"></td>
-                                <td><span class="mono" x-text="row.status"></span></td>
+                                <td>
+                                    <span :class="statusChip(row.status).chip">
+                                        <span :class="statusChip(row.status).dot"></span>
+                                        <span x-text="statusChip(row.status).label"></span>
+                                    </span>
+                                </td>
                                 <td class="table-action-col">
                                     <div x-data="{ open: false }" class="action-menu">
                                         <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
@@ -115,7 +120,7 @@
                                             </template>
                                             <template x-if="row.status === '{{ $finished }}'">
                                                 <div>
-                                                    <a :href="route('penjualan.tagihan', row.sales_order_id)" @click.stop
+                                                    <a :href="route('sales.sales_orders.show', row.sales_order_id)" @click.stop
                                                         class="action-menu__item">
                                                         <x-misc.icon name="receipt" :size="14"
                                                             stroke="var(--ink-3)" />Buat Tagihan
@@ -177,6 +182,31 @@
                 page: 1,
                 perPage: 10,
                 filter: 'all',
+
+                statusChip(status) {
+                    const map = {
+                        draft: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-muted',
+                            label: 'Draft'
+                        },
+                        finished: {
+                            chip: 'chip chip-ok',
+                            dot: 'chip-dot dot-ok',
+                            label: 'Finished'
+                        },
+                        cancelled: {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Cancelled'
+                        },
+                    };
+                    return map[status] ?? {
+                        chip: 'chip',
+                        dot: 'chip-dot dot-neutral',
+                        label: status
+                    };
+                },
 
                 async setStatus(statusId) {
                     this.filter = statusId;

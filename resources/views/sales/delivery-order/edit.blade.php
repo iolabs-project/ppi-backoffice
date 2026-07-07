@@ -3,200 +3,163 @@
     <script>
         const deliveryOrder = @json($deliveryOrder);
         const remainingSOItems = @json($remainingSOItems);
+        const availableBatches = @json($availableBatches);
 
         function deliveryOrderForm() {
             return {
+                modal: null,
+                activeItemIndex: null,
+                batchForm: {
+                    product_batch_id: null,
+                    quantity: null,
+                },
+
                 formData: {
                     id: deliveryOrder.id || null,
                     reference_number: deliveryOrder.reference_number || null,
-                    delivery_date: deliveryOrder.delivery_date || null,
+                    delivery_date: deliveryOrder.delivery_date ? deliveryOrder.delivery_date.substring(0, 10) : null,
                     note: deliveryOrder.note || null,
-                    // details: (deliveryOrder.items || []).map(item => ({
-                    //     id: item.id,
-                    //     purchase_order_item_id: item.purchase_order_item_id,
-                    //     product_id: item.product_id,
-                    //     code: item.product.code,
-                    //     name: item.product.name,
-                    //     unit: item.product.unit.symbol,
-                    //     batch_number: item.batch_number,
-                    //     remaining_quantity: item.purchase_order_item.quantity - item.purchase_order_item
-                    //         .received_quantity,
-                    //     expected_quantity: item.expected_quantity,
-                    //     received_quantity: item.received_quantity,
-                    //     shrinkage_quantity: item.shrinkage_quantity,
-                    //     unit_price: item.unit_price,
-                    //     subtotal: item.subtotal,
-                    //     discount_percentage: item.discount_percentage,
-                    //     discount_amount: item.discount_amount,
-                    //     unit_cost: item.unit_cost,
-                    //     total_cost: item.total_cost,
-                    // })),
-                    details: []
+                    details: (deliveryOrder.items || []).map(item => {
+                        const soItem = remainingSOItems.find(s => s.id === item.sales_order_item_id);
+                        return {
+                            sales_order_item_id: item.sales_order_item_id,
+                            product_id: item.product_id,
+                            code: item.product?.code,
+                            name: item.product?.name,
+                            unit: item.product?.unit?.symbol,
+                            quantity_ordered: soItem ? soItem.quantity : 0,
+                            quantity_previously_delivered: soItem ? soItem.shipped_quantity : 0,
+                            remaining_quantity: soItem ? soItem.remaining_quantity : 0,
+                            batches: (item.batches || []).map(b => ({
+                                product_batch_id: b.product_batch_id,
+                                batch_number: b.product_batch?.batch_number,
+                                quantity: b.quantity,
+                                unit_cost: b.unit_cost,
+                            })),
+                        };
+                    }),
                 },
 
                 n(v) {
                     return NumberUtils.parseMaskIntoNumeric(v);
                 },
 
-
-                // availablePOItems() {
-                //     const selectedIds = this.formData.details
-                //         .filter(d => d.purchase_order_item_id)
-                //         .map(d => d.purchase_order_item_id);
-
-                //     return remainingPOItems.filter(item =>
-                //         item.remaining_quantity > 0 &&
-                //         !selectedIds.includes(item.id)
-                //     );
-                // },
-                availableSOItems() {
-                    return []
-                },
                 init() {
+                    Object.assign(this, window.deliveryOrderTable);
+                },
+
+                openBatchModal(index) {
+                    this.activeItemIndex = index;
+                    this.batchForm = { product_batch_id: null, quantity: null };
+                    this.modal = 'add_batch';
+                },
+
+                closeBatchModal() {
+                    this.modal = null;
+                    this.activeItemIndex = null;
+                },
+
+                async submitDraft() {
+                    await this.submit('draft');
+                },
+
+                async submitFinish() {
+                    if (!this.validateBatches()) {
+                        return;
+                    }
+
                     Swal.fire({
-                        title: 'Memuat data penerimaan barang...',
+                        title: 'Apakah Anda yakin ingin menyelesaikan pengiriman barang ini?',
+                        text: 'Setelah diselesaikan, pengiriman barang akan membentuk jurnal umum dan mengurangi stok di gudang asal.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, selesaikan',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            await this.submit('finished');
+                        }
+                    });
+                },
+
+                validateBatches() {
+                    for (const item of this.formData.details) {
+                        if (!item.product_id) {
+                            Toast.fire({ icon: 'error', title: 'Terdapat baris produk yang belum dipilih.' });
+                            return false;
+                        }
+                        const batchTotal = item.batches.reduce((sum, b) => sum + this.n(b.quantity), 0);
+                        if (batchTotal <= 0) {
+                            Toast.fire({ icon: 'error', title: `Belum ada batch dipilih untuk ${item.name}.` });
+                            return false;
+                        }
+                        if (batchTotal > this.n(item.remaining_quantity) + 0.0001) {
+                            Toast.fire({
+                                icon: 'error',
+                                title: `Total batch untuk ${item.name} (${batchTotal}) melebihi sisa yang perlu dikirim (${item.remaining_quantity}).`
+                            });
+                            return false;
+                        }
+                    }
+                    return true;
+                },
+
+                async submit(status) {
+                    let body = {
+                        ...this.formData,
+                        status,
+                    };
+                    body.details = body.details.map(d => {
+                        const batches = d.batches.map(b => ({
+                            ...b,
+                            quantity: this.n(b.quantity),
+                        }));
+                        return {
+                            ...d,
+                            quantity: batches.reduce((sum, b) => sum + b.quantity, 0),
+                            batches,
+                        };
+                    });
+
+                    Swal.fire({
+                        title: 'Memproses penyimpanan Pengiriman Barang...',
                         allowOutsideClick: false,
                         didOpen: () => {
                             Swal.showLoading();
                         }
                     });
-                    // this.recalc();
-                    Object.assign(this, window.deliveryOrderTable);
-                    Swal.close();
+
+                    try {
+                        const response = await axios.put(
+                            route('sales.delivery_orders.update', this.formData.id), body
+                        );
+
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message
+                        });
+
+                        window.location.href = response.data.redirect;
+                    } catch (error) {
+                        Swal.close();
+                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+
+                        if (error.response?.status === 422) {
+                            message = Object.values(error.response.data.errors)
+                                .flat()
+                                .join(', ');
+                        } else if (error.response?.data?.message) {
+                            message = error.response.data.message;
+                        }
+
+                        Toast.fire({
+                            icon: 'error',
+                            title: message
+                        });
+                    }
                 },
-
-                async submitDraft() {
-                    // let body = {
-                    //     ...this.formData,
-                    //     status: 'draft',
-                    // };
-                    // body.discount_amount = NumberUtils.parseMaskIntoNumeric(body.discount_amount);
-                    // body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
-                    // body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
-                    // body.details = body.details.map(d => ({
-                    //     ...d,
-                    //     expected_quantity: NumberUtils.parseMaskIntoNumeric(d.expected_quantity),
-                    //     received_quantity: NumberUtils.parseMaskIntoNumeric(d.received_quantity),
-                    //     shrinkage_quantity: NumberUtils.parseMaskIntoNumeric(d.shrinkage_quantity),
-                    //     unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
-                    //     unit_cost: NumberUtils.parseMaskIntoNumeric(d.unit_cost),
-                    // }));
-
-                    // Swal.fire({
-                    //     title: 'Memproses penyimpanan draft Penerimaan Barang...',
-                    //     allowOutsideClick: false,
-                    //     didOpen: () => {
-                    //         Swal.showLoading();
-                    //     }
-                    // });
-
-                    // try {
-                    //     const response = await axios.put(
-                    //         route('purchasings.goods_receipts.update', this.formData.id), body
-                    //     );
-                    //     console.log('response', response.data.message);
-
-                    //     Swal.close();
-                    //     Toast.fire({
-                    //         icon: 'success',
-                    //         title: response.data.message
-                    //     });
-
-                    //     window.location.href = response.data.redirect;
-                    // } catch (error) {
-                    //     Swal.close();
-                    //     let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
-                    //     if (error.response?.status === 422) {
-                    //         message = Object.values(error.response.data.errors)
-                    //             .flat()
-                    //             .join(', ');
-                    //     } else if (error.response?.data?.message) {
-                    //         message = error.response.data.message;
-                    //     }
-
-                    //     Toast.fire({
-                    //         icon: 'error',
-                    //         title: message
-                    //     });
-
-                    // }
-                },
-
-                async submitFinish() {
-                    // Swal.fire({
-                    //     title: 'Apakah Anda yakin ingin menyelesaikan penerimaan barang ini?',
-                    //     text: 'Setelah diselesaikan, penerimaan barang akan membentuk jurnal umum dan menambah stok di gudang tujuan.',
-                    //     icon: 'warning',
-                    //     showCancelButton: true,
-                    //     confirmButtonText: 'Ya, selesaikan',
-                    //     cancelButtonText: 'Batal',
-                    //     reverseButtons: true,
-                    // }).then(async (result) => {
-                    //     if (result.isConfirmed) {
-                    //         let body = {
-                    //             ...this.formData,
-                    //             status: 'finished',
-                    //         };
-                    //         body.discount_amount = NumberUtils.parseMaskIntoNumeric(body.discount_amount);
-                    //         body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
-                    //         body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
-                    //         body.details = body.details.map(d => ({
-                    //             ...d,
-                    //             expected_quantity: NumberUtils.parseMaskIntoNumeric(d
-                    //                 .expected_quantity),
-                    //             received_quantity: NumberUtils.parseMaskIntoNumeric(d
-                    //                 .received_quantity),
-                    //             shrinkage_quantity: NumberUtils.parseMaskIntoNumeric(d
-                    //                 .shrinkage_quantity),
-                    //             unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
-                    //             unit_cost: NumberUtils.parseMaskIntoNumeric(d.unit_cost),
-                    //             discount_percentage: NumberUtils.parseMaskIntoNumeric(d
-                    //                 .discount_percentage),
-                    //         }));
-
-                    //         Swal.fire({
-                    //             title: 'Memproses penyimpanan Penerimaan Barang...',
-                    //             allowOutsideClick: false,
-                    //             didOpen: () => {
-                    //                 Swal.showLoading();
-                    //             }
-                    //         });
-
-                    //         try {
-                    //             const response = await axios.put(
-                    //                 route('purchasings.goods_receipts.update', this.formData.id), body
-                    //             );
-
-                    //             Swal.close();
-                    //             Toast.fire({
-                    //                 icon: 'success',
-                    //                 title: response.data.message
-                    //             });
-
-                    //             window.location.href = response.data.redirect;
-                    //         } catch (error) {
-                    //             Swal.close();
-                    //             let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
-                    //             if (error.response?.status === 422) {
-                    //                 message = Object.values(error.response.data.errors)
-                    //                     .flat()
-                    //                     .join(', ');
-                    //             } else if (error.response?.data?.message) {
-                    //                 message = error.response.data.message;
-                    //             }
-
-                    //             Toast.fire({
-                    //                 icon: 'error',
-                    //                 title: message
-                    //             });
-
-                    //         }
-                    //     }
-                    // });
-                }
-
             };
         }
     </script>
@@ -220,7 +183,7 @@
             <div class="shipping-form-info">
                 <div class="display card-hd-title">Informasi Pengiriman</div>
                 <div class="shipping-form-info__sub"><span style="color:var(--accent);">*</span> Field terisi otomatis dari
-                    PO</div>
+                    SO</div>
             </div>
             <div class="order-form-grid-3">
                 <x-misc.field label="Customer" :required="true">
@@ -236,7 +199,7 @@
                         <span class="auto-tag">Auto</span>
                     </div>
                 </x-misc.field>
-                <x-misc.field label="Gudang Tujuan" :required="true">
+                <x-misc.field label="Gudang Asal" :required="true">
                     <div class="input input--readonly" style="display:flex; align-items:center; gap:8px;">
                         <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
                         <span style="flex:1;">{{ $deliveryOrder->warehouse->name }}</span>
@@ -264,15 +227,14 @@
                     <x-misc.icon name="plus" :size="13" />Tambah Produk
                 </button>
             </div>
-            {{-- <x-sales.delivery-order.item-table/> --}}
             @include('sales.delivery-order.partials.edit.item-table')
-            <div class="order-items-split">
+            <div class="order-items-split2">
                 <div class="order-extras">
                     <x-misc.field label="Catatan Penerimaan">
                         <textarea class="input" rows="2"
                             placeholder="Catat kondisi barang, kekurangan, atau informasi penting lainnya..." x-model="formData.note"></textarea>
                     </x-misc.field>
-                </div>  
+                </div>
             </div>
         </div>
         <div class="order-form-footer">

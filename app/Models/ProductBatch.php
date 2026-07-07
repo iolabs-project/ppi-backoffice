@@ -29,8 +29,8 @@ class ProductBatch extends Model
 
     public function getAvailableQuantityAttribute()
     {
-        if (!isset($this->attributes['quantity']) && isset($this->attributes['reserved_quantity'])) {
-            return 0;
+        if (!isset($this->attributes['quantity']) || !isset($this->attributes['reserved_quantity'])) {
+            return null;
         }
 
         return $this->attributes['quantity'] - $this->attributes['reserved_quantity'];

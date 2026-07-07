@@ -20,6 +20,10 @@ class DeliveryOrder extends Model
         'created_by',
     ];
 
+    protected $casts = [
+        'delivery_date' => 'date:Y-m-d',
+    ];
+
     public function customer()
     {
         return $this->belongsTo(Contact::class, 'customer_id');
