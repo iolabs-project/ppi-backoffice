@@ -17,7 +17,7 @@
                     discount_amount: null,
                     tax_percentage: null,
                     tax_amount: null,
-                    shipment_charge: null,
+                    shipping_charge: null,
                     other_charge: null,
                     down_payment_account_id: null,
                     down_payment_amount: null,
@@ -188,7 +188,7 @@
                     this.formData.total_amount =
                         sub -
                         this.n(this.formData.discount_amount) +
-                        this.n(this.formData.shipment_charge) +
+                        this.n(this.formData.shipping_charge) +
                         this.n(this.formData.other_charge) +
                         this.n(this.formData.tax_amount) -
                         this.n(this.formData.down_payment_amount);
@@ -211,7 +211,7 @@
                     };
                     body.discount_percentage = this.n(body.discount_percentage);
                     body.tax_percentage = this.n(body.tax_percentage);
-                    body.shipment_charge = this.n(body.shipment_charge);
+                    body.shipping_charge = this.n(body.shipping_charge);
                     body.other_charge = this.n(body.other_charge);
                     body.down_payment_amount = this.n(body.down_payment_amount);
                     body.details = body.details.map(d => ({
@@ -570,7 +570,7 @@
 
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Transportasi</span>
-                                <input class="input num order-summary__cost-input" x-model="formData.shipment_charge"
+                                <input class="input num order-summary__cost-input" x-model="formData.shipping_charge"
                                     x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
                             </div>
 

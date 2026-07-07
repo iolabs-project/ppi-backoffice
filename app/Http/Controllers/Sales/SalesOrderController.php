@@ -13,6 +13,7 @@ use App\Services\Sales\SalesOrderService;
 use App\Services\WarehouseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class SalesOrderController extends Controller
 {
@@ -83,7 +84,7 @@ class SalesOrderController extends Controller
                     'discount_amount' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
                     'tax_amount' => 'nullable|numeric|min:0',
-                    'shipment_charge' => 'nullable|numeric|min:0',
+                    'shipping_charge' => 'nullable|numeric|min:0',
                     'other_charge' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'down_payment_amount' => 'nullable|numeric|min:0',
@@ -122,7 +123,7 @@ class SalesOrderController extends Controller
                     'due_date' => 'nullable|date',
                     'discount_percentage' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
-                    'shipment_charge' => 'nullable|numeric|min:0',
+                    'shipping_charge' => 'nullable|numeric|min:0',
                     'other_charge' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'total_amount' => 'nullable|numeric|min:0',
@@ -204,7 +205,7 @@ class SalesOrderController extends Controller
                     'customer_id' => 'required|exists:contacts,id',
                     'warehouse_id' => 'required|exists:warehouses,id',
                     'sales_person_id' => 'nullable|exists:contacts,id',
-                    'number' => 'required|string|max:50|unique:sales_orders,number',
+                    'number' => ['required', 'string', 'max:50', Rule::unique('sales_orders', 'number')->ignore($id)],
                     'reference_number' => 'nullable|string|max:50',
                     'order_date' => 'required|date',
                     'due_date' => 'nullable|date',
@@ -213,7 +214,7 @@ class SalesOrderController extends Controller
                     'discount_amount' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
                     'tax_amount' => 'nullable|numeric|min:0',
-                    'shipment_charge' => 'nullable|numeric|min:0',
+                    'shipping_charge' => 'nullable|numeric|min:0',
                     'other_charge' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'down_payment_amount' => 'nullable|numeric|min:0',
@@ -246,13 +247,13 @@ class SalesOrderController extends Controller
                 [
                     'customer_id' => 'required|exists:contacts,id',
                     'warehouse_id' => 'required|exists:warehouses,id',
-                    'number' => 'required|string|max:50|unique:sales_orders,number',
+                    'number' => ['required', 'string', 'max:50', Rule::unique('sales_orders', 'number')->ignore($id)],
                     'reference_number' => 'nullable|string|max:50',
                     'order_date' => 'required|date',
                     'due_date' => 'nullable|date',
                     'discount_percentage' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
-                    'shipment_charge' => 'nullable|numeric|min:0',
+                    'shipping_charge' => 'nullable|numeric|min:0',
                     'other_charge' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'total_amount' => 'nullable|numeric|min:0',

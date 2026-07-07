@@ -190,7 +190,7 @@
                     this.formData.total_amount =
                         sub -
                         this.n(this.formData.discount_amount) +
-                        this.n(this.formData.shipment_charge) +
+                        this.n(this.formData.shipping_charge) +
                         this.n(this.formData.other_charge) +
                         this.n(this.formData.tax_amount) -
                         this.n(this.formData.down_payment_amount);
@@ -232,6 +232,12 @@
                         null;
                     this.cashBankSelected = this.cashBanks.find(cb => cb.id === this.formData
                         .down_payment_account_id) || null;
+                    this.warehouseSelected = this.warehouses.find(g => g.id === this.formData.warehouse_id) ||
+                        null;
+                    this.salesPersonSelected = this.salesPersons.find(s => s.id === this.formData
+                        .sales_person_id) || null;
+                    this.customerSelected = this.customers.find(c => c.id === this.formData.customer_id) ||
+                        null;
 
                     this.formData.details.forEach((d, i) => {
                         const inventory = inventories.find(inv => inv.product_id === d.product_id && inv.warehouse_id === this.formData.warehouse_id);
@@ -251,7 +257,7 @@
                     };
                     body.discount_percentage = this.n(body.discount_percentage);
                     body.tax_percentage = this.n(body.tax_percentage);
-                    body.shipment_charge = this.n(body.shipment_charge);
+                    body.shipping_charge = this.n(body.shipping_charge);
                     body.other_charge = this.n(body.other_charge);
                     body.down_payment_amount = this.n(body.down_payment_amount);
                     body.details = body.details.map(d => ({
@@ -615,13 +621,13 @@
 
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Transport (Est)</span>
-                                <input class="input num order-summary__cost-input" x-model="formData.transport_cost"
+                                <input class="input num order-summary__cost-input" x-model="formData.shipping_charge"
                                     x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
                             </div>
 
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Biaya Lain-lain</span>
-                                <input class="input num order-summary__cost-input" x-model="formData.other_cost"
+                                <input class="input num order-summary__cost-input" x-model="formData.other_charge"
                                     x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
                             </div>
 
