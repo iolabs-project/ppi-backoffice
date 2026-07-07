@@ -573,7 +573,8 @@ class PurchasingService
     {
         $query = GoodsReceiptItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol'])
             ->whereHas('goodsReceipt', function ($query) use ($id) {
-                $query->where('purchase_order_id', $id);
+                $query->where('purchase_order_id', $id)
+                ->where('status', GoodsReceiptStatus::FINISHED->value);
             })
             ->orderBy('id', 'asc');
 

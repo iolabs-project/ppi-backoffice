@@ -1,14 +1,14 @@
 @extends('layouts.app')
 @section('content')
     @php
-        use App\Enums\PurchaseInvoiceStatus;
-        $draft = PurchaseInvoiceStatus::DRAFT->value;
-        $open = PurchaseInvoiceStatus::OPEN->value;
+        use App\Enums\SalesInvoiceStatus;
+        $draft = SalesInvoiceStatus::DRAFT->value;
+        $open = SalesInvoiceStatus::OPEN->value;
     @endphp
     <div x-data="datatable()" x-init="fetchData()" class="order-page">
         <div class="order-hd">
             <div>
-                <h1 class="order-title display">Tagihan Pembelian</h1>
+                <h1 class="order-title display">Tagihan Penjualan</h1>
                 <div class="order-sub"><span x-text="tableData ? tableData.total : 0"></span> dokumen</div>
             </div>
             <div class="order-actions">
@@ -33,8 +33,8 @@
                     <tr>
                         <th>No. Tagihan</th>
                         <th>Tanggal</th>
-                        <th>Ref. PO</th>
-                        <th>Supplier</th>
+                        <th>Ref. SO</th>
+                        <th>Pelanggan</th>
                         <th>Jatuh Tempo</th>
                         <th style="text-align:right;">Total</th>
                         <th>Status</th>
@@ -63,8 +63,8 @@
                                 @click="window.location = route('purchasings.purchase_invoices.show', row.id)">
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
                                 <td style="color:var(--ink-3);" x-text="row.invoice_date ?? '-'"></td>
-                                <td class="mono" style="font-weight:600;" x-text="row.sales_order.number"></td>
-                                <td style="font-weight:500;" x-text="row.customer.name ?? '-'"></td>
+                                <td class="mono" style="font-weight:600;" x-text="row.purchase_order.number"></td>
+                                <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
                                 <td class="num" style="text-align:right;" x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
                                 <td><span class="mono" x-text="row.status"></span></td>
@@ -85,15 +85,15 @@
                                         </button>
                                         <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
                                             x-on:click.away="open = false" class="action-menu__panel">
-                                            <a :href="route('sales.sales_invoices.show', row.id)" @click.stop
+                                            <a :href="route('purchasings.purchase_invoices.show', row.id)" @click.stop
                                                 class="action-menu__item">
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
                                                 Detail
                                             </a>
-                                            <a :href="route('sales.sales_orders.show', row.sales_order_id)"
+                                            <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)"
                                                 @click.stop class="action-menu__item">
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
-                                                SO
+                                                PO
                                             </a>
                                             <button class="action-menu__item" @click.stop>
                                                 <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
@@ -101,7 +101,7 @@
                                             </button>
                                             <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('sales.sales_invoices.edit', row.id)"
+                                                    <a :href="route('purchasings.purchase_invoices.edit', row.id)"
                                                         @click.stop class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />Edit
@@ -190,7 +190,7 @@
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const response = await axios.get(route('sales.sales_invoices.datatable'), {
+                        const response = await axios.get(route('purchasings.purchase_invoices.datatable'), {
                             params: {
                                 page: this.page,
                                 per_page: this.perPage,
@@ -228,7 +228,7 @@
 
                 async handleCancel(id) {
                     Swal.fire({
-                        title: 'Apakah Anda yakin ingin membatalkan Tagihan Penjualan ini?',
+                        title: 'Apakah Anda yakin ingin membatalkan Tagihan Pembelian ini?',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Ya, batalkan',
@@ -245,7 +245,7 @@
                             });
                             try {
                                 const response = await axios.post(route(
-                                    'sales.sales_invoices.cancel', id));
+                                    'purchasings.purchase_invoices.cancel', id));
                                 Swal.close();
                                 Toast.fire({
                                     icon: 'success',
@@ -255,7 +255,7 @@
                             } catch (error) {
                                 Swal.close();
                                 let message =
-                                    'Terjadi kesalahan saat membatalkan Tagihan Penjualan. Silakan coba lagi.';
+                                    'Terjadi kesalahan saat membatalkan Tagihan Pembelian. Silakan coba lagi.';
                                 if (error.response?.data?.message) {
                                     message = error.response.data.message;
                                 }

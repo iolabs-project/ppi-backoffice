@@ -5,7 +5,7 @@
     $penjualanSubmenus = [
         ['id' => 'penjualan',            'label' => 'Sales Order', 'desc' => 'Kelola pesanan penjualan',    'url' => route('sales.sales_orders.index'),           'icon' => 'receipt',  'bg' => '#EEF2FF', 'fg' => '#6366F1'],
         ['id' => 'penjualan.pengiriman', 'label' => 'Pengiriman',  'desc' => 'Kelola pengiriman penjualan', 'url' => route('sales.sales_orders.index'), 'icon' => 'truck',  'bg' => '#F0FDF4', 'fg' => '#16A34A'],
-        ['id' => 'penjualan.tagihan',    'label' => 'Tagihan',     'desc' => 'Kelola tagihan penjualan',    'url' => route('penjualan.tagihan_list'),    'icon' => 'wallet', 'bg' => '#FFF7ED', 'fg' => '#EA580C'],
+        ['id' => 'penjualan.tagihan',    'label' => 'Tagihan',     'desc' => 'Kelola tagihan penjualan',    'url' => route('sales.sales_invoices.index'),    'icon' => 'wallet', 'bg' => '#FFF7ED', 'fg' => '#EA580C'],
     ];
     $pembelianSubmenus = [
         ['id' => 'pembelian',              'label' => 'Purchase Order', 'desc' => 'Kelola pesanan pembelian',  'url' => route('purchasings.purchase_orders.index'),            'icon' => 'receipt',   'bg' => '#EFF6FF', 'fg' => '#2563EB'],

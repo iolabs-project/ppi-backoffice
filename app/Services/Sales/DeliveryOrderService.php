@@ -204,7 +204,7 @@ class DeliveryOrderService
         foreach ($detailsCollection as $detail) {
             $quantity = (float) ($detail['quantity'] ?? 0);
             $batches = collect($detail['batches'] ?? []);
-            $batchTotal = $batches->sum(fn ($b) => (float) ($b['quantity'] ?? 0));
+            $batchTotal = $batches->sum(fn($b) => (float) ($b['quantity'] ?? 0));
 
             if (abs($batchTotal - $quantity) > 0.0001) {
                 throw ValidationException::withMessages([
@@ -313,5 +313,30 @@ class DeliveryOrderService
     {
         $deliveryOrder = DeliveryOrder::findOrFail($id);
         $deliveryOrder->update(['status' => $status]);
+    }
+
+    public function fetchDOItemsForSalesInvoice(int $id): Collection
+    {
+        $items = DeliveryOrderItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol', 'salesOrderItem:id,unit_price,discount_percentage,discount_amount,total_amount,invoiced_quantity'])
+            ->whereHas('deliveryOrder', function ($query) use ($id) {
+                $query->where('sales_order_id', $id)
+                    ->where('status', DeliveryOrderStatus::FINISHED->value);
+            })
+            ->orderBy('id', 'asc')
+            ->get();
+
+        return $items->map(function ($item) {
+            return [
+                'sales_order_item_id' => $item->sales_order_item_id,
+                'product_id' => $item->product_id,
+                'product_code' => $item->product->code,
+                'product_name' => $item->product->name,
+                'unit_id' => $item->product->unit_id,
+                'unit_symbol' => $item->product->unit->symbol,
+                'quantity' => $item->quantity,
+                'unit_price' => $item->salesOrderItem->unit_price,
+                'discount_percentage' => $item->salesOrderItem->discount_percentage,
+            ];
+        });
     }
 }
