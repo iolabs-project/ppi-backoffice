@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
-use App\Services\ContactService;
+use App\Services\Master\ContactService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 

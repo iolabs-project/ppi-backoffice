@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Master;
 
 use App\Models\Contact;
 use Illuminate\Http\Request;

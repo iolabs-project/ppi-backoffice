@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleEnum;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -27,5 +28,7 @@ class UserCompanySeeder extends Seeder
             'user_id' => $user->id,
             'company_id' => $companny->id,
         ]);
+
+        $user->assignRole(RoleEnum::SUPER_ADMIN->value);
     }
 }

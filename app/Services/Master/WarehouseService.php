@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Master;
 
 use App\Models\Warehouse;
 use Illuminate\Http\Request;

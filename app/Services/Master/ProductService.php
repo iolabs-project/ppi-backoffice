@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Master;
 
 use App\Models\Product;
 use App\Models\ProductCategory;

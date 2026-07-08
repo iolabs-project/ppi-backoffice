@@ -10,9 +10,11 @@ use App\Http\Controllers\Erp\KasBankController;
 use App\Http\Controllers\Erp\LaporanController;
 use App\Http\Controllers\Erp\MasterController;
 use App\Http\Controllers\Erp\BiayaController;
+use App\Http\Controllers\Master\AccountController;
 use App\Http\Controllers\Master\ContactController;
 use App\Http\Controllers\Master\ProductCategoryController;
 use App\Http\Controllers\Master\ProductController;
+use App\Http\Controllers\Master\UserController;
 use App\Http\Controllers\Master\WarehouseController;
 use App\Http\Controllers\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Purchasing\PurchaseInvoiceController;
@@ -218,18 +220,31 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::prefix('products')->name('products.')->controller(ProductController::class)->group(function () {
-        Route::prefix('categories')->name('categories.')->controller(ProductCategoryController::class)->group(function () {
-            Route::post('/', 'store')->name('store');
-            Route::put('/{id}', 'update')->name('update');
-        });    
-        
-        Route::get('/datatable', 'datatable')->name('datatable');
+            Route::prefix('categories')->name('categories.')->controller(ProductCategoryController::class)->group(function () {
+                Route::post('/', 'store')->name('store');
+                Route::put('/{id}', 'update')->name('update');
+            });
+
+            Route::get('/datatable', 'datatable')->name('datatable');
             Route::post('/', 'store')->name('store');
             Route::put('/{id}', 'update')->name('update');
             Route::post('/{id}/status', 'status')->name('status');
             Route::get('/options', 'options')->name('options');
+        });
 
+        Route::prefix('users')->name('users.')->controller(UserController::class)->group(function () {
+            Route::get('/datatable', 'datatable')->name('datatable');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{id}', 'update')->name('update');
+            Route::post('/{id}/status', 'status')->name('status');
+            Route::get('/options', 'options')->name('options');
+        });
 
+        Route::prefix('accounts')->name('accounts.')->controller(AccountController::class)->group(function () {
+            Route::get('/datatable', 'datatable')->name('datatable');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{id}', 'update')->name('update');
+            Route::post('/{id}/status', 'status')->name('status');
         });
     });
 });

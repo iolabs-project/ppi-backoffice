@@ -7,11 +7,12 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +22,7 @@ class User extends Authenticatable
     protected $fillable = [
         'username',
         'password',
+        'contact_id',
     ];
 
     /**
@@ -43,5 +45,25 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
         ];
+    }
+
+    // append
+    protected $appends = [
+        'role_name',
+    ];
+
+    public function contact()
+    {
+        return $this->belongsTo(Contact::class);
+    }
+
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class, 'user_companies', 'user_id', 'company_id');
+    }
+
+    public function getRoleNameAttribute()
+    {
+        return $this->roles->first()?->name;
     }
 }

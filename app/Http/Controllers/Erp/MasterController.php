@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Erp;
 use App\Enums\AccountCategory;
 use App\Http\Controllers\Controller;
 use App\Models\Unit;
-use App\Services\AccountService;
-use App\Services\ContactService;
+use App\Services\Master\AccountService;
+use App\Services\Master\ContactService;
 use App\Services\ErpDataService;
-use App\Services\ProductService;
+use App\Services\Master\ProductService;
 
 class MasterController extends Controller
 {
