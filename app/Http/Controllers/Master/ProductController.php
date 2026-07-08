@@ -39,7 +39,11 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'unit_id' => 'required|exists:units,id',
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => 'required|exists:product_categories,id',
+            'minimum_stock' => 'nullable|numeric|min:0',
+            'inventory_account_id' => 'required|exists:chart_of_accounts,id',
+            'sales_account_id' => 'required|exists:chart_of_accounts,id',
+            'cogs_account_id' => 'required|exists:chart_of_accounts,id',
         ]);
         try {
             $productService->storeProduct($request);
@@ -65,7 +69,11 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'unit_id' => 'required|exists:units,id',
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => 'required|exists:product_categories,id',
+            'minimum_stock' => 'nullable|numeric|min:0',
+            'inventory_account_id' => 'required|exists:chart_of_accounts,id',
+            'sales_account_id' => 'required|exists:chart_of_accounts,id',
+            'cogs_account_id' => 'required|exists:chart_of_accounts,id',
         ]);
         try {
             $productService->updateProduct($request, $id);

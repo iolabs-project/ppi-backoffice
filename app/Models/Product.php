@@ -8,7 +8,7 @@ class Product extends Model
 {
     protected $fillable = [
         'company_id',
-        'product_category_id',
+        'category_id',
         'unit_id',
         'code',
         'name',
@@ -22,7 +22,7 @@ class Product extends Model
 
     public function category()
     {
-        return $this->belongsTo(ProductCategory::class, 'product_category_id');
+        return $this->belongsTo(ProductCategory::class, 'category_id');
     }
 
     public function unit()

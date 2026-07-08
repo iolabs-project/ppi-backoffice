@@ -2,22 +2,32 @@
 
 namespace App\Http\Controllers\Erp;
 
+use App\Enums\AccountCategory;
 use App\Http\Controllers\Controller;
+use App\Models\Unit;
+use App\Services\AccountService;
+use App\Services\ContactService;
 use App\Services\ErpDataService;
+use App\Services\ProductService;
 
 class MasterController extends Controller
 {
-    public function index()
+    public function index(ProductService $productService, ContactService $contactService, AccountService $accountService)
     {
         return view('pages.master.index', [
-            'currentPage'      => 'master',
-            'breadcrumb'       => [['label' => 'Master Data']],
-            'produk'           => ErpDataService::produk(),
-            'kontak'           => ErpDataService::kontak(),
-            'chartOfAccounts'  => ErpDataService::chartOfAccounts(),
-            'gudang'           => ErpDataService::gudang(),
-            'users'            => ErpDataService::users(),
-            'roles'            => ErpDataService::roles(),
+            'currentPage'        => 'master',
+            'breadcrumb'         => [['label' => 'Master Data']],
+            'chartOfAccounts'    => ErpDataService::chartOfAccounts(),
+            'users'              => ErpDataService::users(),
+            'roles'              => ErpDataService::roles(),
+            'units'              => Unit::whereNull('deleted_at')->select('id', 'name', 'symbol')->get(),
+            'productCategories'  => $productService->fetchProductCategoryData(),
+            'contactOptions'     => $contactService->fetchContactData(null),
+            'inventoryAccounts'  => $accountService->fetchAccountData(AccountCategory::INVENTORY->value),
+            'salesAccounts'      => $accountService->fetchAccountData(AccountCategory::REVENUE->value),
+            'cogsAccounts'       => $accountService->fetchAccountData(AccountCategory::COST_OF_GOODS_SOLD->value),
+            'receivableAccounts' => $accountService->fetchAccountData(AccountCategory::ACCOUNT_RECEIVABLE->value),
+            'payableAccounts'    => $accountService->fetchAccountData(AccountCategory::ACCOUNT_PAYABLE->value),
         ]);
     }
 

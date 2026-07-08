@@ -6,26 +6,19 @@
                 tab: sessionStorage.getItem('master_tab') || 'produk',
                 modal: null,
 
-                produkAll: @json($produk),
-                produkPage: 1,
-                produkPerPage: 5,
-                get produkPaged() {
-                    return this.produkAll.slice((this.produkPage - 1) * this.produkPerPage, this.produkPage * this
-                        .produkPerPage);
-                },
-                get produkTotalPages() {
-                    return Math.ceil(this.produkAll.length / this.produkPerPage);
+                init() {
+                    this.fetchProduk();
+                    this.fetchKontak();
+                    this.fetchGudang();
                 },
 
-                kontakAll: @json($kontak),
-                kontakPage: 1,
-                kontakPerPage: 5,
-                get kontakPaged() {
-                    return this.kontakAll.slice((this.kontakPage - 1) * this.kontakPerPage, this.kontakPage * this
-                        .kontakPerPage);
-                },
-                get kontakTotalPages() {
-                    return Math.ceil(this.kontakAll.length / this.kontakPerPage);
+                extractError(error, fallback) {
+                    const errors = error.response?.data?.errors;
+                    if (errors) {
+                        const first = Object.values(errors)[0];
+                        if (Array.isArray(first) && first.length) return first[0];
+                    }
+                    return error.response?.data?.message || fallback;
                 },
 
                 fmtRp(n) {
@@ -44,32 +37,200 @@
                     };
                 },
 
-                produkForm: {
-                    kode: '',
-                    nama: '',
-                    satuan: '',
-                    kategori: '',
-                    hargaBeli: 0,
-                    hargaJual: 0
+                // =============== PRODUK ===============
+                unitsAll: @json($units),
+                categoriesAll: @json($productCategories),
+                inventoryAccounts: @json($inventoryAccounts),
+                salesAccounts: @json($salesAccounts),
+                cogsAccounts: @json($cogsAccounts),
+
+                produkTable: { current_page: 1, last_page: 1, per_page: 10, total: 0, data: [] },
+                produkLoading: false,
+                produkPage: 1,
+                produkPerPage: 10,
+                produkSearch: '',
+
+                async fetchProduk() {
+                    this.produkLoading = true;
+                    try {
+                        const response = await axios.get(route('master.products.datatable'), {
+                            params: { page: this.produkPage, per_page: this.produkPerPage, search: this.produkSearch },
+                        });
+                        this.produkTable = response.data;
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: 'Terjadi kesalahan saat memuat data produk.' });
+                    } finally {
+                        this.produkLoading = false;
+                    }
                 },
-                editProdukData: { kode: '', nama: '', kategori: '', satuan: '', hargaBeli: 0, hargaJual: 0 },
+                produkNext() {
+                    if (this.produkTable && this.produkPage < this.produkTable.last_page) {
+                        this.produkPage++;
+                        this.fetchProduk();
+                    }
+                },
+                produkPrev() {
+                    if (this.produkPage > 1) {
+                        this.produkPage--;
+                        this.fetchProduk();
+                    }
+                },
+
+                produkForm: {
+                    code: '', name: '', description: '', category_id: '', unit_id: '',
+                    minimum_stock: 0, inventory_account_id: '', sales_account_id: '', cogs_account_id: '',
+                },
+                editProdukData: {
+                    id: '', code: '', name: '', description: '', category_id: '', unit_id: '',
+                    minimum_stock: 0, inventory_account_id: '', sales_account_id: '', cogs_account_id: '',
+                },
                 openEditProduk(p) {
-                    this.editProdukData = { kode: p.kode, nama: p.nama, kategori: p.kategori || '', satuan: p.satuan || '', hargaBeli: p.hargaBeli || 0, hargaJual: p.hargaJual || 0 };
+                    this.editProdukData = {
+                        id: p.id, code: p.code, name: p.name, description: p.description || '',
+                        category_id: p.category_id || '', unit_id: p.unit_id || '',
+                        minimum_stock: p.minimum_stock || 0,
+                        inventory_account_id: p.inventory_account_id || '',
+                        sales_account_id: p.sales_account_id || '',
+                        cogs_account_id: p.cogs_account_id || '',
+                    };
                     this.modal = 'edit_produk';
                 },
-                kontakForm: {
-                    nama: '',
-                    tipe: 'klien',
-                    email: '',
-                    telepon: '',
-                    alamat: '',
-                    kota: ''
+                async submitAddProduk() {
+                    try {
+                        const response = await axios.post(route('master.products.store'), this.produkForm);
+                        Toast.fire({ icon: 'success', title: response.data.message });
+                        this.modal = null;
+                        this.produkForm = {
+                            code: '', name: '', description: '', category_id: '', unit_id: '',
+                            minimum_stock: 0, inventory_account_id: '', sales_account_id: '', cogs_account_id: '',
+                        };
+                        await this.fetchProduk();
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal menyimpan produk.') });
+                    }
                 },
-                editKontakData: { id: '', nama: '', tipe: 'Customer', email: '', telepon: '', kota: '', alamat: '' },
+                async submitEditProduk() {
+                    try {
+                        const response = await axios.put(route('master.products.update', this.editProdukData.id), this.editProdukData);
+                        Toast.fire({ icon: 'success', title: response.data.message });
+                        this.modal = null;
+                        await this.fetchProduk();
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal memperbarui produk.') });
+                    }
+                },
+                toggleProdukStatus(p) {
+                    Swal.fire({
+                        title: p.deleted_at ? 'Aktifkan kembali produk ini?' : 'Nonaktifkan produk ini?',
+                        icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya', cancelButtonText: 'Batal', reverseButtons: true,
+                    }).then(async (result) => {
+                        if (!result.isConfirmed) return;
+                        try {
+                            const response = await axios.post(route('master.products.status', p.id));
+                            Toast.fire({ icon: 'success', title: response.data.message });
+                            await this.fetchProduk();
+                        } catch (error) {
+                            Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal memperbarui status produk.') });
+                        }
+                    });
+                },
+
+                // =============== KONTAK ===============
+                receivableAccounts: @json($receivableAccounts),
+                payableAccounts: @json($payableAccounts),
+
+                kontakTable: { current_page: 1, last_page: 1, per_page: 10, total: 0, data: [] },
+                kontakLoading: false,
+                kontakPage: 1,
+                kontakPerPage: 10,
+                kontakSearch: '',
+
+                async fetchKontak() {
+                    this.kontakLoading = true;
+                    try {
+                        const response = await axios.get(route('master.contacts.datatable'), {
+                            params: { page: this.kontakPage, per_page: this.kontakPerPage, search: this.kontakSearch },
+                        });
+                        this.kontakTable = response.data;
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: 'Terjadi kesalahan saat memuat data kontak.' });
+                    } finally {
+                        this.kontakLoading = false;
+                    }
+                },
+                kontakNext() {
+                    if (this.kontakTable && this.kontakPage < this.kontakTable.last_page) {
+                        this.kontakPage++;
+                        this.fetchKontak();
+                    }
+                },
+                kontakPrev() {
+                    if (this.kontakPage > 1) {
+                        this.kontakPage--;
+                        this.fetchKontak();
+                    }
+                },
+
+                kontakForm: {
+                    code: '', name: '', email: '', phone: '', address: '', city: '', state: '', postal_code: '', note: '',
+                    is_customer: true, is_supplier: false, is_employee: false,
+                    receivable_account_id: '', payable_account_id: '',
+                },
+                editKontakData: {
+                    id: '', code: '', name: '', email: '', phone: '', address: '', city: '', state: '', postal_code: '', note: '',
+                    is_customer: true, is_supplier: false, is_employee: false,
+                    receivable_account_id: '', payable_account_id: '',
+                },
                 openEditKontak(k) {
-                    this.editKontakData = { id: k.id, nama: k.nama, tipe: k.tipe, email: k.email || '', telepon: k.telepon || '', kota: k.kota || '', alamat: k.alamat || '' };
+                    this.editKontakData = {
+                        id: k.id, code: k.code, name: k.name, email: k.email || '', phone: k.phone || '',
+                        address: k.address || '', city: k.city || '', state: k.state || '', postal_code: k.postal_code || '', note: k.note || '',
+                        is_customer: !!k.is_customer, is_supplier: !!k.is_supplier, is_employee: !!k.is_employee,
+                        receivable_account_id: k.receivable_account_id || '', payable_account_id: k.payable_account_id || '',
+                    };
                     this.modal = 'edit_kontak';
                 },
+                async submitAddKontak() {
+                    try {
+                        const response = await axios.post(route('master.contacts.store'), this.kontakForm);
+                        Toast.fire({ icon: 'success', title: response.data.message });
+                        this.modal = null;
+                        this.kontakForm = {
+                            code: '', name: '', email: '', phone: '', address: '', city: '', state: '', postal_code: '', note: '',
+                            is_customer: true, is_supplier: false, is_employee: false,
+                            receivable_account_id: '', payable_account_id: '',
+                        };
+                        await this.fetchKontak();
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal menyimpan kontak.') });
+                    }
+                },
+                async submitEditKontak() {
+                    try {
+                        const response = await axios.put(route('master.contacts.update', this.editKontakData.id), this.editKontakData);
+                        Toast.fire({ icon: 'success', title: response.data.message });
+                        this.modal = null;
+                        await this.fetchKontak();
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal memperbarui kontak.') });
+                    }
+                },
+                toggleKontakStatus(k) {
+                    Swal.fire({
+                        title: k.deleted_at ? 'Aktifkan kembali kontak ini?' : 'Nonaktifkan kontak ini?',
+                        icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya', cancelButtonText: 'Batal', reverseButtons: true,
+                    }).then(async (result) => {
+                        if (!result.isConfirmed) return;
+                        try {
+                            const response = await axios.post(route('master.contacts.status', k.id));
+                            Toast.fire({ icon: 'success', title: response.data.message });
+                            await this.fetchKontak();
+                        } catch (error) {
+                            Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal memperbarui status kontak.') });
+                        }
+                    });
+                },
+
                 coaAll: @json($chartOfAccounts),
                 akunForm: {
                     kode: '',
@@ -82,14 +243,84 @@
                     this.editAkunData = { kode: a.kode, nama: a.nama, tipe: a.tipe, subKategori: a.parent || '' };
                     this.modal = 'edit_akun';
                 },
-                gudangForm: {
-                    kode: '',
-                    nama: '',
-                    kota: '',
-                    kapasitas: 0,
-                    PIC: ''
+
+                // =============== GUDANG ===============
+                gudangTable: { current_page: 1, last_page: 1, per_page: 20, total: 0, data: [] },
+                gudangLoading: false,
+                gudangPage: 1,
+                gudangPerPage: 20,
+                gudangSearch: '',
+
+                async fetchGudang() {
+                    this.gudangLoading = true;
+                    try {
+                        const response = await axios.get(route('master.warehouses.datatable'), {
+                            params: { page: this.gudangPage, per_page: this.gudangPerPage, search: this.gudangSearch },
+                        });
+                        this.gudangTable = response.data;
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: 'Terjadi kesalahan saat memuat data gudang.' });
+                    } finally {
+                        this.gudangLoading = false;
+                    }
+                },
+                gudangNext() {
+                    if (this.gudangTable && this.gudangPage < this.gudangTable.last_page) {
+                        this.gudangPage++;
+                        this.fetchGudang();
+                    }
+                },
+                gudangPrev() {
+                    if (this.gudangPage > 1) {
+                        this.gudangPage--;
+                        this.fetchGudang();
+                    }
                 },
 
+                gudangForm: { code: '', name: '', address: '', note: '' },
+                editGudangData: { id: '', code: '', name: '', address: '', note: '' },
+                openEditGudang(g) {
+                    this.editGudangData = { id: g.id, code: g.code, name: g.name, address: g.address || '', note: g.note || '' };
+                    this.modal = 'edit_gudang';
+                },
+                async submitAddGudang() {
+                    try {
+                        const response = await axios.post(route('master.warehouses.store'), this.gudangForm);
+                        Toast.fire({ icon: 'success', title: response.data.message });
+                        this.modal = null;
+                        this.gudangForm = { code: '', name: '', address: '', note: '' };
+                        await this.fetchGudang();
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal menyimpan gudang.') });
+                    }
+                },
+                async submitEditGudang() {
+                    try {
+                        const response = await axios.put(route('master.warehouses.update', this.editGudangData.id), this.editGudangData);
+                        Toast.fire({ icon: 'success', title: response.data.message });
+                        this.modal = null;
+                        await this.fetchGudang();
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal memperbarui gudang.') });
+                    }
+                },
+                toggleGudangStatus(g) {
+                    Swal.fire({
+                        title: g.deleted_at ? 'Aktifkan kembali gudang ini?' : 'Nonaktifkan gudang ini?',
+                        icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya', cancelButtonText: 'Batal', reverseButtons: true,
+                    }).then(async (result) => {
+                        if (!result.isConfirmed) return;
+                        try {
+                            const response = await axios.post(route('master.warehouses.status', g.id));
+                            Toast.fire({ icon: 'success', title: response.data.message });
+                            await this.fetchGudang();
+                        } catch (error) {
+                            Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal memperbarui status gudang.') });
+                        }
+                    });
+                },
+
+                contactOptions: @json($contactOptions),
                 userAll: @json($users),
                 userPage: 1,
                 userPerPage: 10,
@@ -136,7 +367,7 @@
             };
         }
     </script>
-    <div x-data="masterPageData()" class="master-page">
+    <div x-data="masterPageData()" x-init="init()" class="master-page">
 
         <div class="master-hd">
             <div>
@@ -167,7 +398,8 @@
                     <div class="master-search">
                         <span class="master-search__icon"><x-misc.icon name="search" :size="14"
                                 stroke="var(--ink-4)" /></span>
-                        <input class="input master-search__input" placeholder="Cari produk..." />
+                        <input class="input master-search__input" placeholder="Cari produk..."
+                            x-model="produkSearch" x-on:input.debounce.400ms="produkPage = 1; fetchProduk()" />
                     </div>
                 </div>
                 <table class="tbl">
@@ -177,57 +409,72 @@
                             <th>Nama Produk</th>
                             <th>Kategori</th>
                             <th>Satuan</th>
-                            <th style="text-align:right;">Harga Beli</th>
-                            <th style="text-align:right;">Harga Jual</th>
-                            <th style="text-align:right;">Stok</th>
+                            <th style="text-align:right;">Stok Minimum</th>
+                            <th>Status</th>
                             <th style="width:40px;"></th>
                     </thead>
                     <tbody>
-                        <template x-for="p in produkPaged" :key="p.kode">
-                            <tr class="row-tap" style="cursor:pointer;" x-on:click="window.location.href='/master/produk/'+p.kode">
-                                <td class="mono" style="font-weight:600; font-size:12px; color:var(--ink-4);"
-                                    x-text="p.kode"></td>
-                                <td>
-                                    <div style="font-weight:600; font-size:13px;" x-text="p.nama"></div>
-                                    <div x-show="p.deskripsi" style="font-size:11px; color:var(--ink-4);"
-                                        x-text="p.deskripsi"></div>
-                                </td>
-                                <td><span class="chip" x-text="p.kategori"></span></td>
-                                <td style="color:var(--ink-3); font-size:13px;" x-text="p.satuan"></td>
-                                <td class="num" style="text-align:right; font-size:13px;" x-text="fmtRp(p.hargaBeli)">
-                                </td>
-                                <td class="num" style="text-align:right; font-size:13px; font-weight:600;"
-                                    x-text="fmtRp(p.hargaJual)"></td>
-                                <td class="num" style="text-align:right; font-size:13px;" x-text="p.stok ?? 0"></td>
-                                <td x-on:click.stop>
-                                    <div class="action-menu" x-data="{ open: false }">
-                                        <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
-                                                x-on:click="open = !open" x-on:click.outside="open = false">
-                                            <x-misc.icon name="more" :size="15" />
-                                        </button>
-                                        <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
-                                             style="position:absolute; right:0; top:100%; margin-top:4px;">
-                                            <button class="action-menu__item" x-on:click="openEditProduk(p)">
-                                                <x-misc.icon name="edit" :size="14" /> Edit Produk
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
+                        <template x-if="produkLoading">
+                            <tr>
+                                <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...</td>
                             </tr>
+                        </template>
+                        <template x-if="!produkLoading && produkTable.data.length === 0">
+                            <tr>
+                                <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">Tidak ada data</td>
+                            </tr>
+                        </template>
+                        <template x-if="!produkLoading">
+                            <template x-for="p in produkTable.data" :key="p.id">
+                                <tr>
+                                    <td class="mono" style="font-weight:600; font-size:12px; color:var(--ink-4);"
+                                        x-text="p.code"></td>
+                                    <td>
+                                        <div style="font-weight:600; font-size:13px;" x-text="p.name"></div>
+                                        <div x-show="p.description" style="font-size:11px; color:var(--ink-4);"
+                                            x-text="p.description"></div>
+                                    </td>
+                                    <td><span class="chip" x-text="p.category ? p.category.name : '—'"></span></td>
+                                    <td style="color:var(--ink-3); font-size:13px;" x-text="p.unit ? p.unit.symbol : '—'"></td>
+                                    <td class="num" style="text-align:right; font-size:13px;" x-text="p.minimum_stock ?? 0"></td>
+                                    <td>
+                                        <span class="chip" :style="!p.deleted_at ? 'background:oklch(0.92 0.06 145);color:oklch(0.40 0.12 145)' : 'background:oklch(0.92 0.04 15);color:oklch(0.45 0.14 15)'"
+                                            x-text="!p.deleted_at ? 'Aktif' : 'Nonaktif'"></span>
+                                    </td>
+                                    <td x-on:click.stop>
+                                        <div class="action-menu" x-data="{ open: false }">
+                                            <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                                                    x-on:click="open = !open" x-on:click.outside="open = false">
+                                                <x-misc.icon name="more" :size="15" />
+                                            </button>
+                                            <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
+                                                 style="position:absolute; right:0; top:100%; margin-top:4px;">
+                                                <button class="action-menu__item" x-on:click="openEditProduk(p)">
+                                                    <x-misc.icon name="edit" :size="14" /> Edit Produk
+                                                </button>
+                                                <button class="action-menu__item" x-on:click="toggleProdukStatus(p)">
+                                                    <x-misc.icon name="x" :size="14" />
+                                                    <span x-text="p.deleted_at ? 'Aktifkan' : 'Nonaktifkan'"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                         </template>
                     </tbody>
                 </table>
                 <div class="table-pagination">
                     <span class="pagination-info"
-                        x-text="'Menampilkan ' + ((produkPage-1)*produkPerPage+1) + '–' + Math.min(produkPage*produkPerPage, produkAll.length) + ' dari ' + produkAll.length + ' produk'"></span>
+                        x-text="(produkTable.total === 0 ? 0 : ((produkTable.current_page - 1) * produkTable.per_page + 1)) + '–' + (produkTable.total === 0 ? 0 : Math.min(produkTable.current_page * produkTable.per_page, produkTable.total)) + ' dari ' + produkTable.total + ' produk'"></span>
                     <div class="pagination-controls">
-                        <span class="pagination-page-info">Hal. <strong x-text="produkPage"></strong> / <strong
-                                x-text="produkTotalPages"></strong></span>
-                        <button class="btn btn-ghost btn-sm" :disabled="produkPage <= 1" x-on:click="produkPage--">
+                        <span class="pagination-page-info">Hal. <strong x-text="produkTable.current_page"></strong> / <strong
+                                x-text="produkTable.last_page"></strong></span>
+                        <button class="btn btn-ghost btn-sm" :disabled="produkTable.current_page <= 1" x-on:click="produkPrev()">
                             <x-misc.icon name="chev-left" :size="14" /> Prev
                         </button>
-                        <button class="btn btn-ghost btn-sm" :disabled="produkPage >= produkTotalPages"
-                            x-on:click="produkPage++">
+                        <button class="btn btn-ghost btn-sm" :disabled="produkTable.current_page >= produkTable.last_page"
+                            x-on:click="produkNext()">
                             Next <x-misc.icon name="chev-right" :size="14" />
                         </button>
                     </div>
@@ -242,7 +489,8 @@
                     <div class="master-search">
                         <span class="master-search__icon"><x-misc.icon name="search" :size="14"
                                 stroke="var(--ink-4)" /></span>
-                        <input class="input master-search__input" placeholder="Cari kontak..." />
+                        <input class="input master-search__input" placeholder="Cari kontak..."
+                            x-model="kontakSearch" x-on:input.debounce.400ms="kontakPage = 1; fetchKontak()" />
                     </div>
                 </div>
                 <table class="tbl">
@@ -253,56 +501,76 @@
                             <th>Email</th>
                             <th>Telepon</th>
                             <th>Kota</th>
+                            <th>Status</th>
                             <th style="width:40px;"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <template x-for="k in kontakPaged" :key="k.id">
-                            <tr class="row-tap" style="cursor:pointer;" x-on:click="window.location.href='/master/kontak/'+k.id">
-                                <td>
-                                    <div style="display:flex; align-items:center; gap:10px;">
-                                        <div class="avatar"
-                                            :style="'background:' + avatarMeta(k.nama).bg + '; color:' + avatarMeta(k.nama).fg"
-                                            x-text="avatarMeta(k.nama).initials"></div>
-                                        <span style="font-weight:600; font-size:13px;" x-text="k.nama"></span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="chip" :class="k.tipe.toLowerCase() === 'vendor' ? 'chip-accent' : ''"
-                                        x-text="k.tipe"></span>
-                                </td>
-                                <td style="font-size:13px; color:var(--ink-3);" x-text="k.email || '—'"></td>
-                                <td style="font-size:13px; color:var(--ink-3);" x-text="k.telepon || '—'"></td>
-                                <td style="font-size:13px; color:var(--ink-3);" x-text="k.kota || '—'"></td>
-                                <td x-on:click.stop>
-                                    <div class="action-menu" x-data="{ open: false }">
-                                        <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
-                                                x-on:click="open = !open" x-on:click.outside="open = false">
-                                            <x-misc.icon name="more" :size="15" />
-                                        </button>
-                                        <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
-                                             style="position:absolute; right:0; top:100%; margin-top:4px;">
-                                            <button class="action-menu__item" x-on:click="openEditKontak(k)">
-                                                <x-misc.icon name="edit" :size="14" /> Edit Kontak
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
+                        <template x-if="kontakLoading">
+                            <tr>
+                                <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...</td>
                             </tr>
+                        </template>
+                        <template x-if="!kontakLoading && kontakTable.data.length === 0">
+                            <tr>
+                                <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">Tidak ada data</td>
+                            </tr>
+                        </template>
+                        <template x-if="!kontakLoading">
+                            <template x-for="k in kontakTable.data" :key="k.id">
+                                <tr>
+                                    <td>
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            <div class="avatar"
+                                                :style="'background:' + avatarMeta(k.name).bg + '; color:' + avatarMeta(k.name).fg"
+                                                x-text="avatarMeta(k.name).initials"></div>
+                                            <span style="font-weight:600; font-size:13px;" x-text="k.name"></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="chip" x-text="[k.is_customer ? 'Customer' : null, k.is_supplier ? 'Vendor' : null, k.is_employee ? 'Karyawan' : null].filter(Boolean).join(', ') || '—'"></span>
+                                    </td>
+                                    <td style="font-size:13px; color:var(--ink-3);" x-text="k.email || '—'"></td>
+                                    <td style="font-size:13px; color:var(--ink-3);" x-text="k.phone || '—'"></td>
+                                    <td style="font-size:13px; color:var(--ink-3);" x-text="k.city || '—'"></td>
+                                    <td>
+                                        <span class="chip" :style="!k.deleted_at ? 'background:oklch(0.92 0.06 145);color:oklch(0.40 0.12 145)' : 'background:oklch(0.92 0.04 15);color:oklch(0.45 0.14 15)'"
+                                            x-text="!k.deleted_at ? 'Aktif' : 'Nonaktif'"></span>
+                                    </td>
+                                    <td x-on:click.stop>
+                                        <div class="action-menu" x-data="{ open: false }">
+                                            <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                                                    x-on:click="open = !open" x-on:click.outside="open = false">
+                                                <x-misc.icon name="more" :size="15" />
+                                            </button>
+                                            <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
+                                                 style="position:absolute; right:0; top:100%; margin-top:4px;">
+                                                <button class="action-menu__item" x-on:click="openEditKontak(k)">
+                                                    <x-misc.icon name="edit" :size="14" /> Edit Kontak
+                                                </button>
+                                                <button class="action-menu__item" x-on:click="toggleKontakStatus(k)">
+                                                    <x-misc.icon name="x" :size="14" />
+                                                    <span x-text="k.deleted_at ? 'Aktifkan' : 'Nonaktifkan'"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                         </template>
                     </tbody>
                 </table>
                 <div class="table-pagination">
                     <span class="pagination-info"
-                        x-text="'Menampilkan ' + ((kontakPage-1)*kontakPerPage+1) + '–' + Math.min(kontakPage*kontakPerPage, kontakAll.length) + ' dari ' + kontakAll.length + ' kontak'"></span>
+                        x-text="(kontakTable.total === 0 ? 0 : ((kontakTable.current_page - 1) * kontakTable.per_page + 1)) + '–' + (kontakTable.total === 0 ? 0 : Math.min(kontakTable.current_page * kontakTable.per_page, kontakTable.total)) + ' dari ' + kontakTable.total + ' kontak'"></span>
                     <div class="pagination-controls">
-                        <span class="pagination-page-info">Hal. <strong x-text="kontakPage"></strong> / <strong
-                                x-text="kontakTotalPages"></strong></span>
-                        <button class="btn btn-ghost btn-sm" :disabled="kontakPage <= 1" x-on:click="kontakPage--">
+                        <span class="pagination-page-info">Hal. <strong x-text="kontakTable.current_page"></strong> / <strong
+                                x-text="kontakTable.last_page"></strong></span>
+                        <button class="btn btn-ghost btn-sm" :disabled="kontakTable.current_page <= 1" x-on:click="kontakPrev()">
                             <x-misc.icon name="chev-left" :size="14" /> Prev
                         </button>
-                        <button class="btn btn-ghost btn-sm" :disabled="kontakPage >= kontakTotalPages"
-                            x-on:click="kontakPage++">
+                        <button class="btn btn-ghost btn-sm" :disabled="kontakTable.current_page >= kontakTable.last_page"
+                            x-on:click="kontakNext()">
                             Next <x-misc.icon name="chev-right" :size="14" />
                         </button>
                     </div>
@@ -369,41 +637,62 @@
 
         {{-- =================== GUDANG =================== --}}
         <div x-show="tab === 'gudang'" x-cloak>
-            <div class="gudang-grid">
-                @foreach ($gudang as $g)
-                    <div class="card gudang-card" style="cursor:pointer;"
-                         onclick="window.location.href='{{ route('master.gudang.show', $g['kode']) }}'">
+            <div class="master-toolbar" style="padding-left:0; padding-right:0;">
+                <div class="master-search">
+                    <span class="master-search__icon"><x-misc.icon name="search" :size="14"
+                            stroke="var(--ink-4)" /></span>
+                    <input class="input master-search__input" placeholder="Cari gudang..."
+                        x-model="gudangSearch" x-on:input.debounce.400ms="gudangPage = 1; fetchGudang()" />
+                </div>
+            </div>
+            <template x-if="gudangLoading">
+                <div style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...</div>
+            </template>
+            <div class="gudang-grid" x-show="!gudangLoading">
+                <template x-for="g in gudangTable.data" :key="g.id">
+                    <div class="card gudang-card">
                         <div class="gudang-card__hd">
                             <div class="gudang-card__info">
                                 <div class="gudang-card__icon">
                                     <x-misc.icon name="building" :size="18" stroke="var(--accent)" />
                                 </div>
                                 <div>
-                                    <div class="gudang-card__name">{{ $g['nama'] }}</div>
-                                    <div class="gudang-card__code mono">{{ $g['kode'] }}</div>
+                                    <div class="gudang-card__name" x-text="g.name"></div>
+                                    <div class="gudang-card__code mono" x-text="g.code"></div>
+                                </div>
+                            </div>
+                            <div class="action-menu" x-data="{ open: false }" x-on:click.stop>
+                                <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                                        x-on:click="open = !open" x-on:click.outside="open = false">
+                                    <x-misc.icon name="more" :size="15" />
+                                </button>
+                                <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
+                                     style="position:absolute; right:0; top:100%; margin-top:4px;">
+                                    <button class="action-menu__item" x-on:click="openEditGudang(g)">
+                                        <x-misc.icon name="edit" :size="14" /> Edit Gudang
+                                    </button>
+                                    <button class="action-menu__item" x-on:click="toggleGudangStatus(g)">
+                                        <x-misc.icon name="x" :size="14" />
+                                        <span x-text="g.deleted_at ? 'Aktifkan' : 'Nonaktifkan'"></span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                         <div class="gudang-card__meta">
                             <div class="gudang-card__meta-row">
                                 <x-misc.icon name="building" :size="12"
-                                    stroke="var(--ink-4)" />{{ $g['kota'] ?? '—' }}
+                                    stroke="var(--ink-4)" /><span x-text="g.address || '—'"></span>
                             </div>
-                            @if (!empty($g['PIC']))
-                                <div class="gudang-card__meta-row">
-                                    <x-misc.icon name="users" :size="12" stroke="var(--ink-4)" />PIC:
-                                    {{ $g['PIC'] }}
-                                </div>
-                            @endif
-                            @if (!empty($g['kapasitas']))
-                                <div class="gudang-card__meta-row">
-                                    <x-misc.icon name="layers" :size="12" stroke="var(--ink-4)" />Kapasitas:
-                                    {{ fmt_num($g['kapasitas']) }} unit
-                                </div>
-                            @endif
+                            <div class="gudang-card__meta-row" x-show="g.note">
+                                <x-misc.icon name="layers" :size="12" stroke="var(--ink-4)" /><span x-text="g.note"></span>
+                            </div>
+                            <div class="gudang-card__meta-row">
+                                <span class="chip" :style="!g.deleted_at ? 'background:oklch(0.92 0.06 145);color:oklch(0.40 0.12 145)' : 'background:oklch(0.92 0.04 15);color:oklch(0.45 0.14 15)'"
+                                    x-text="!g.deleted_at ? 'Aktif' : 'Nonaktif'"></span>
+                            </div>
                         </div>
                     </div>
-                @endforeach
+                </template>
 
                 {{-- Add new gudang card --}}
                 <div class="card gudang-add-card" x-on:click="modal = 'add_gudang'">
@@ -411,6 +700,21 @@
                         <x-misc.icon name="plus" :size="24" stroke="var(--ink-3)" />
                         <div class="gudang-add-label">Tambah Gudang</div>
                     </div>
+                </div>
+            </div>
+            <div class="table-pagination" x-show="!gudangLoading">
+                <span class="pagination-info"
+                    x-text="(gudangTable.total === 0 ? 0 : ((gudangTable.current_page - 1) * gudangTable.per_page + 1)) + '–' + (gudangTable.total === 0 ? 0 : Math.min(gudangTable.current_page * gudangTable.per_page, gudangTable.total)) + ' dari ' + gudangTable.total + ' gudang'"></span>
+                <div class="pagination-controls">
+                    <span class="pagination-page-info">Hal. <strong x-text="gudangTable.current_page"></strong> / <strong
+                            x-text="gudangTable.last_page"></strong></span>
+                    <button class="btn btn-ghost btn-sm" :disabled="gudangTable.current_page <= 1" x-on:click="gudangPrev()">
+                        <x-misc.icon name="chev-left" :size="14" /> Prev
+                    </button>
+                    <button class="btn btn-ghost btn-sm" :disabled="gudangTable.current_page >= gudangTable.last_page"
+                        x-on:click="gudangNext()">
+                        Next <x-misc.icon name="chev-right" :size="14" />
+                    </button>
                 </div>
             </div>
         </div>
@@ -553,30 +857,66 @@
             <div class="form-body">
                 <div class="form-grid-2">
                     <x-misc.field label="Kode Produk" :required="true">
-                        <input class="input mono" placeholder="cth. TPG-003" />
+                        <input class="input mono" x-model="produkForm.code" placeholder="cth. TPG-003" />
                     </x-misc.field>
-                    <x-misc.field label="Kategori">
-                        <input class="input" placeholder="Tepung, Gula, Minyak..." />
+                    <x-misc.field label="Kategori" :required="true">
+                        <select class="input" x-model="produkForm.category_id">
+                            <option value="">— Pilih Kategori —</option>
+                            <template x-for="c in categoriesAll" :key="c.id">
+                                <option :value="c.id" x-text="c.name"></option>
+                            </template>
+                        </select>
                     </x-misc.field>
                 </div>
                 <x-misc.field label="Nama Produk" :required="true">
-                    <input class="input" placeholder="Nama lengkap produk" />
+                    <input class="input" x-model="produkForm.name" placeholder="Nama lengkap produk" />
                 </x-misc.field>
+                <x-misc.field label="Deskripsi">
+                    <textarea class="input" rows="2" x-model="produkForm.description" placeholder="Deskripsi singkat..."></textarea>
+                </x-misc.field>
+                <div class="form-grid-2">
+                    <x-misc.field label="Satuan" :required="true">
+                        <select class="input" x-model="produkForm.unit_id">
+                            <option value="">— Pilih Satuan —</option>
+                            <template x-for="u in unitsAll" :key="u.id">
+                                <option :value="u.id" x-text="u.name + ' (' + u.symbol + ')'"></option>
+                            </template>
+                        </select>
+                    </x-misc.field>
+                    <x-misc.field label="Stok Minimum">
+                        <input class="input num" type="number" style="text-align:right;" x-model="produkForm.minimum_stock" placeholder="0" />
+                    </x-misc.field>
+                </div>
                 <div class="form-grid-3">
-                    <x-misc.field label="Satuan">
-                        <input class="input" placeholder="Sak, Kg, Liter..." />
+                    <x-misc.field label="Akun Persediaan" :required="true">
+                        <select class="input" x-model="produkForm.inventory_account_id">
+                            <option value="">— Pilih Akun —</option>
+                            <template x-for="a in inventoryAccounts" :key="a.id">
+                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
+                            </template>
+                        </select>
                     </x-misc.field>
-                    <x-misc.field label="Harga Beli">
-                        <input class="input num" style="text-align:right;" placeholder="0" />
+                    <x-misc.field label="Akun Penjualan" :required="true">
+                        <select class="input" x-model="produkForm.sales_account_id">
+                            <option value="">— Pilih Akun —</option>
+                            <template x-for="a in salesAccounts" :key="a.id">
+                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
+                            </template>
+                        </select>
                     </x-misc.field>
-                    <x-misc.field label="Harga Jual">
-                        <input class="input num" style="text-align:right;" placeholder="0" />
+                    <x-misc.field label="Akun HPP" :required="true">
+                        <select class="input" x-model="produkForm.cogs_account_id">
+                            <option value="">— Pilih Akun —</option>
+                            <template x-for="a in cogsAccounts" :key="a.id">
+                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
+                            </template>
+                        </select>
                     </x-misc.field>
                 </div>
             </div>
             <x-slot:footer>
                 <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Produk</button>
+                <button class="btn btn-primary" x-on:click="submitAddProduk()"><x-misc.icon name="check" :size="14" />Simpan Produk</button>
             </x-slot:footer>
         </x-misc.modal>
 
@@ -588,72 +928,141 @@
                         <x-misc.icon name="box" :size="20" stroke="var(--ink-3)" />
                     </div>
                     <div>
-                        <div style="font-weight:700; font-size:14px;" x-text="editProdukData.nama"></div>
-                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editProdukData.kode"></div>
+                        <div style="font-weight:700; font-size:14px;" x-text="editProdukData.name"></div>
+                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editProdukData.code"></div>
                     </div>
                 </div>
                 <div class="form-grid-2">
                     <x-misc.field label="Kode Produk" :required="true">
-                        <input class="input mono" x-model="editProdukData.kode" />
+                        <input class="input mono" x-model="editProdukData.code" />
                     </x-misc.field>
-                    <x-misc.field label="Kategori">
-                        <input class="input" x-model="editProdukData.kategori" placeholder="Tepung, Gula, Minyak..." />
+                    <x-misc.field label="Kategori" :required="true">
+                        <select class="input" x-model="editProdukData.category_id">
+                            <option value="">— Pilih Kategori —</option>
+                            <template x-for="c in categoriesAll" :key="c.id">
+                                <option :value="c.id" x-text="c.name"></option>
+                            </template>
+                        </select>
                     </x-misc.field>
                 </div>
                 <x-misc.field label="Nama Produk" :required="true">
-                    <input class="input" x-model="editProdukData.nama" />
+                    <input class="input" x-model="editProdukData.name" />
                 </x-misc.field>
+                <x-misc.field label="Deskripsi">
+                    <textarea class="input" rows="2" x-model="editProdukData.description"></textarea>
+                </x-misc.field>
+                <div class="form-grid-2">
+                    <x-misc.field label="Satuan" :required="true">
+                        <select class="input" x-model="editProdukData.unit_id">
+                            <option value="">— Pilih Satuan —</option>
+                            <template x-for="u in unitsAll" :key="u.id">
+                                <option :value="u.id" x-text="u.name + ' (' + u.symbol + ')'"></option>
+                            </template>
+                        </select>
+                    </x-misc.field>
+                    <x-misc.field label="Stok Minimum">
+                        <input class="input num" type="number" style="text-align:right;" x-model="editProdukData.minimum_stock" />
+                    </x-misc.field>
+                </div>
                 <div class="form-grid-3">
-                    <x-misc.field label="Satuan">
-                        <input class="input" x-model="editProdukData.satuan" placeholder="Sak, Kg, Liter..." />
+                    <x-misc.field label="Akun Persediaan" :required="true">
+                        <select class="input" x-model="editProdukData.inventory_account_id">
+                            <option value="">— Pilih Akun —</option>
+                            <template x-for="a in inventoryAccounts" :key="a.id">
+                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
+                            </template>
+                        </select>
                     </x-misc.field>
-                    <x-misc.field label="Harga Beli">
-                        <input class="input num" type="number" style="text-align:right;" x-model="editProdukData.hargaBeli" />
+                    <x-misc.field label="Akun Penjualan" :required="true">
+                        <select class="input" x-model="editProdukData.sales_account_id">
+                            <option value="">— Pilih Akun —</option>
+                            <template x-for="a in salesAccounts" :key="a.id">
+                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
+                            </template>
+                        </select>
                     </x-misc.field>
-                    <x-misc.field label="Harga Jual">
-                        <input class="input num" type="number" style="text-align:right;" x-model="editProdukData.hargaJual" />
+                    <x-misc.field label="Akun HPP" :required="true">
+                        <select class="input" x-model="editProdukData.cogs_account_id">
+                            <option value="">— Pilih Akun —</option>
+                            <template x-for="a in cogsAccounts" :key="a.id">
+                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
+                            </template>
+                        </select>
                     </x-misc.field>
                 </div>
             </div>
             <x-slot:footer>
                 <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Perubahan</button>
+                <button class="btn btn-primary" x-on:click="submitEditProduk()"><x-misc.icon name="check" :size="14" />Simpan Perubahan</button>
             </x-slot:footer>
         </x-misc.modal>
 
         {{-- Modal: Tambah Kontak --}}
         <x-misc.modal title="Tambah Kontak Baru" show="modal === 'add_kontak'" close-handler="modal = null">
             <div class="form-body">
-                <x-misc.field label="Nama" :required="true">
-                    <input class="input" placeholder="Nama perusahaan / individu" />
-                </x-misc.field>
                 <div class="form-grid-2">
-                    <x-misc.field label="Tipe" :required="true">
-                        <select class="input">
-                            <option>Customer</option>
-                            <option>Vendor</option>
-                            <option>Keduanya</option>
-                        </select>
+                    <x-misc.field label="Kode Kontak" :required="true">
+                        <input class="input mono" x-model="kontakForm.code" placeholder="cth. C-001" />
                     </x-misc.field>
-                    <x-misc.field label="Kota">
-                        <input class="input" placeholder="Jakarta, Surabaya..." />
+                    <x-misc.field label="Nama" :required="true">
+                        <input class="input" x-model="kontakForm.name" placeholder="Nama perusahaan / individu" />
                     </x-misc.field>
+                </div>
+                <div style="display:flex; gap:16px;">
+                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" x-model="kontakForm.is_customer" style="accent-color:var(--accent);" /> Customer
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" x-model="kontakForm.is_supplier" style="accent-color:var(--accent);" /> Vendor
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" x-model="kontakForm.is_employee" style="accent-color:var(--accent);" /> Karyawan
+                    </label>
                 </div>
                 <div class="form-grid-2">
                     <x-misc.field label="Email">
-                        <input class="input" type="email" placeholder="kontak@perusahaan.com" />
+                        <input class="input" type="email" x-model="kontakForm.email" placeholder="kontak@perusahaan.com" />
                     </x-misc.field>
                     <x-misc.field label="Telepon">
-                        <input class="input" placeholder="08xx-xxxx-xxxx" />
+                        <input class="input" x-model="kontakForm.phone" placeholder="08xx-xxxx-xxxx" />
                     </x-misc.field>
                 </div>
                 <x-misc.field label="Alamat">
-                    <textarea class="input" rows="2" placeholder="Alamat lengkap..."></textarea>
+                    <textarea class="input" rows="2" x-model="kontakForm.address" placeholder="Alamat lengkap..."></textarea>
                 </x-misc.field>
+                <div class="form-grid-3">
+                    <x-misc.field label="Kota">
+                        <input class="input" x-model="kontakForm.city" placeholder="Jakarta, Surabaya..." />
+                    </x-misc.field>
+                    <x-misc.field label="Provinsi">
+                        <input class="input" x-model="kontakForm.state" />
+                    </x-misc.field>
+                    <x-misc.field label="Kode Pos">
+                        <input class="input" x-model="kontakForm.postal_code" />
+                    </x-misc.field>
+                </div>
+                <div class="form-grid-2">
+                    <x-misc.field label="Akun Piutang">
+                        <select class="input" x-model="kontakForm.receivable_account_id">
+                            <option value="">— Tidak ada —</option>
+                            <template x-for="a in receivableAccounts" :key="a.id">
+                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
+                            </template>
+                        </select>
+                    </x-misc.field>
+                    <x-misc.field label="Akun Hutang">
+                        <select class="input" x-model="kontakForm.payable_account_id">
+                            <option value="">— Tidak ada —</option>
+                            <template x-for="a in payableAccounts" :key="a.id">
+                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
+                            </template>
+                        </select>
+                    </x-misc.field>
+                </div>
             </div>
             <x-slot:footer>
                 <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Kontak</button>
+                <button class="btn btn-primary" x-on:click="submitAddKontak()"><x-misc.icon name="check" :size="14" />Simpan Kontak</button>
             </x-slot:footer>
         </x-misc.modal>
 
@@ -662,43 +1071,76 @@
             <div class="form-body">
                 <div style="display:flex; align-items:center; gap:12px; padding-bottom:4px;">
                     <div class="avatar" style="width:44px; height:44px; font-size:14px;"
-                         :style="'background:' + avatarMeta(editKontakData.nama).bg + '; color:' + avatarMeta(editKontakData.nama).fg"
-                         x-text="avatarMeta(editKontakData.nama).initials"></div>
+                         :style="'background:' + avatarMeta(editKontakData.name).bg + '; color:' + avatarMeta(editKontakData.name).fg"
+                         x-text="avatarMeta(editKontakData.name).initials"></div>
                     <div>
-                        <div style="font-weight:700; font-size:14px;" x-text="editKontakData.nama"></div>
-                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editKontakData.id"></div>
+                        <div style="font-weight:700; font-size:14px;" x-text="editKontakData.name"></div>
+                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editKontakData.code"></div>
                     </div>
                 </div>
-                <x-misc.field label="Nama" :required="true">
-                    <input class="input" x-model="editKontakData.nama" placeholder="Nama perusahaan / individu" />
-                </x-misc.field>
                 <div class="form-grid-2">
-                    <x-misc.field label="Tipe" :required="true">
-                        <select class="input" x-model="editKontakData.tipe">
-                            <option value="Customer">Customer</option>
-                            <option value="Vendor">Vendor</option>
-                            <option value="Keduanya">Keduanya</option>
-                        </select>
+                    <x-misc.field label="Kode Kontak" :required="true">
+                        <input class="input mono" x-model="editKontakData.code" />
                     </x-misc.field>
-                    <x-misc.field label="Kota">
-                        <input class="input" x-model="editKontakData.kota" placeholder="Jakarta, Surabaya..." />
+                    <x-misc.field label="Nama" :required="true">
+                        <input class="input" x-model="editKontakData.name" placeholder="Nama perusahaan / individu" />
                     </x-misc.field>
+                </div>
+                <div style="display:flex; gap:16px;">
+                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" x-model="editKontakData.is_customer" style="accent-color:var(--accent);" /> Customer
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" x-model="editKontakData.is_supplier" style="accent-color:var(--accent);" /> Vendor
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" x-model="editKontakData.is_employee" style="accent-color:var(--accent);" /> Karyawan
+                    </label>
                 </div>
                 <div class="form-grid-2">
                     <x-misc.field label="Email">
                         <input class="input" type="email" x-model="editKontakData.email" placeholder="kontak@perusahaan.com" />
                     </x-misc.field>
                     <x-misc.field label="Telepon">
-                        <input class="input" x-model="editKontakData.telepon" placeholder="08xx-xxxx-xxxx" />
+                        <input class="input" x-model="editKontakData.phone" placeholder="08xx-xxxx-xxxx" />
                     </x-misc.field>
                 </div>
                 <x-misc.field label="Alamat">
-                    <textarea class="input" rows="2" x-model="editKontakData.alamat" placeholder="Alamat lengkap..."></textarea>
+                    <textarea class="input" rows="2" x-model="editKontakData.address" placeholder="Alamat lengkap..."></textarea>
                 </x-misc.field>
+                <div class="form-grid-3">
+                    <x-misc.field label="Kota">
+                        <input class="input" x-model="editKontakData.city" placeholder="Jakarta, Surabaya..." />
+                    </x-misc.field>
+                    <x-misc.field label="Provinsi">
+                        <input class="input" x-model="editKontakData.state" />
+                    </x-misc.field>
+                    <x-misc.field label="Kode Pos">
+                        <input class="input" x-model="editKontakData.postal_code" />
+                    </x-misc.field>
+                </div>
+                <div class="form-grid-2">
+                    <x-misc.field label="Akun Piutang">
+                        <select class="input" x-model="editKontakData.receivable_account_id">
+                            <option value="">— Tidak ada —</option>
+                            <template x-for="a in receivableAccounts" :key="a.id">
+                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
+                            </template>
+                        </select>
+                    </x-misc.field>
+                    <x-misc.field label="Akun Hutang">
+                        <select class="input" x-model="editKontakData.payable_account_id">
+                            <option value="">— Tidak ada —</option>
+                            <template x-for="a in payableAccounts" :key="a.id">
+                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
+                            </template>
+                        </select>
+                    </x-misc.field>
+                </div>
             </div>
             <x-slot:footer>
                 <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Perubahan</button>
+                <button class="btn btn-primary" x-on:click="submitEditKontak()"><x-misc.icon name="check" :size="14" />Simpan Perubahan</button>
             </x-slot:footer>
         </x-misc.modal>
 
@@ -791,18 +1233,52 @@
         <x-misc.modal title="Tambah Gudang Baru" show="modal === 'add_gudang'" close-handler="modal = null">
             <div class="form-body">
                 <x-misc.field label="Nama Gudang" :required="true">
-                    <input class="input" placeholder="Gudang Bekasi, dll." />
+                    <input class="input" x-model="gudangForm.name" placeholder="Gudang Bekasi, dll." />
                 </x-misc.field>
                 <x-misc.field label="Kode Gudang" :required="true">
-                    <input class="input mono" placeholder="GDG-xxx" />
+                    <input class="input mono" x-model="gudangForm.code" placeholder="GDG-xxx" />
                 </x-misc.field>
-                <x-misc.field label="Deskripsi">
-                    <textarea class="input" rows="3" placeholder="Keterangan gudang..."></textarea>
+                <x-misc.field label="Alamat">
+                    <textarea class="input" rows="2" x-model="gudangForm.address" placeholder="Alamat gudang..."></textarea>
+                </x-misc.field>
+                <x-misc.field label="Catatan">
+                    <textarea class="input" rows="2" x-model="gudangForm.note" placeholder="Keterangan gudang..."></textarea>
                 </x-misc.field>
             </div>
             <x-slot:footer>
                 <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Gudang</button>
+                <button class="btn btn-primary" x-on:click="submitAddGudang()"><x-misc.icon name="check" :size="14" />Simpan Gudang</button>
+            </x-slot:footer>
+        </x-misc.modal>
+
+        {{-- Modal: Edit Gudang --}}
+        <x-misc.modal title="Edit Gudang" show="modal === 'edit_gudang'" close-handler="modal = null">
+            <div class="form-body">
+                <div style="display:flex; align-items:center; gap:12px; padding-bottom:4px;">
+                    <div style="width:44px; height:44px; border-radius:10px; background:var(--bg-2); display:grid; place-items:center;">
+                        <x-misc.icon name="building" :size="20" stroke="var(--ink-3)" />
+                    </div>
+                    <div>
+                        <div style="font-weight:700; font-size:14px;" x-text="editGudangData.name"></div>
+                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editGudangData.code"></div>
+                    </div>
+                </div>
+                <x-misc.field label="Nama Gudang" :required="true">
+                    <input class="input" x-model="editGudangData.name" />
+                </x-misc.field>
+                <x-misc.field label="Kode Gudang" :required="true">
+                    <input class="input mono" x-model="editGudangData.code" />
+                </x-misc.field>
+                <x-misc.field label="Alamat">
+                    <textarea class="input" rows="2" x-model="editGudangData.address"></textarea>
+                </x-misc.field>
+                <x-misc.field label="Catatan">
+                    <textarea class="input" rows="2" x-model="editGudangData.note"></textarea>
+                </x-misc.field>
+            </div>
+            <x-slot:footer>
+                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
+                <button class="btn btn-primary" x-on:click="submitEditGudang()"><x-misc.icon name="check" :size="14" />Simpan Perubahan</button>
             </x-slot:footer>
         </x-misc.modal>
 
@@ -820,8 +1296,8 @@
                 <x-misc.field label="Kontak / Karyawan">
                     <select class="input" x-model="addUserForm.kontak">
                         <option value="">— Tidak dihubungkan —</option>
-                        <template x-for="k in kontakAll" :key="k.id">
-                            <option :value="k.nama" x-text="k.nama"></option>
+                        <template x-for="k in contactOptions" :key="k.id">
+                            <option :value="k.name" x-text="k.name"></option>
                         </template>
                     </select>
                 </x-misc.field>
@@ -863,8 +1339,8 @@
                 <x-misc.field label="Kontak / Karyawan">
                     <select class="input" x-model="editUserData.kontak">
                         <option value="">— Tidak dihubungkan —</option>
-                        <template x-for="k in kontakAll" :key="k.id">
-                            <option :value="k.nama" x-text="k.nama"></option>
+                        <template x-for="k in contactOptions" :key="k.id">
+                            <option :value="k.name" x-text="k.name"></option>
                         </template>
                     </select>
                 </x-misc.field>
