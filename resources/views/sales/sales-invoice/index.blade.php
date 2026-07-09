@@ -60,11 +60,11 @@
                     <template x-if="!loading">
                         <template x-for="row in tableData.data" :key="row.id">
                             <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
-                                @click="window.location = route('purchasings.purchase_invoices.show', row.id)">
+                                @click="row.status === '{{ $draft }}' ? window.location = route('sales.sales_invoices.edit', row.id) : null">
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
                                 <td style="color:var(--ink-3);" x-text="row.invoice_date ?? '-'"></td>
-                                <td class="mono" style="font-weight:600;" x-text="row.purchase_order.number"></td>
-                                <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
+                                <td class="mono" style="font-weight:600;" x-text="row.sales_order.number"></td>
+                                <td style="font-weight:500;" x-text="row.customer.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
                                 <td class="num" style="text-align:right;" x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
                                 <td><span class="mono" x-text="row.status"></span></td>
@@ -85,15 +85,10 @@
                                         </button>
                                         <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
                                             x-on:click.away="open = false" class="action-menu__panel">
-                                            <a :href="route('purchasings.purchase_invoices.show', row.id)" @click.stop
-                                                class="action-menu__item">
-                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
-                                                Detail
-                                            </a>
-                                            <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)"
+                                            <a :href="route('sales.sales_orders.show', row.sales_order_id)"
                                                 @click.stop class="action-menu__item">
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
-                                                PO
+                                                SO
                                             </a>
                                             <button class="action-menu__item" @click.stop>
                                                 <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
@@ -101,7 +96,7 @@
                                             </button>
                                             <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('purchasings.purchase_invoices.edit', row.id)"
+                                                    <a :href="route('sales.sales_invoices.edit', row.id)"
                                                         @click.stop class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />Edit
@@ -190,7 +185,7 @@
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const response = await axios.get(route('purchasings.purchase_invoices.datatable'), {
+                        const response = await axios.get(route('sales.sales_invoices.datatable'), {
                             params: {
                                 page: this.page,
                                 per_page: this.perPage,
@@ -228,7 +223,7 @@
 
                 async handleCancel(id) {
                     Swal.fire({
-                        title: 'Apakah Anda yakin ingin membatalkan Tagihan Pembelian ini?',
+                        title: 'Apakah Anda yakin ingin membatalkan Tagihan Penjualan ini?',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Ya, batalkan',
@@ -245,7 +240,7 @@
                             });
                             try {
                                 const response = await axios.post(route(
-                                    'purchasings.purchase_invoices.cancel', id));
+                                    'sales.sales_invoices.cancel', id));
                                 Swal.close();
                                 Toast.fire({
                                     icon: 'success',
@@ -255,7 +250,7 @@
                             } catch (error) {
                                 Swal.close();
                                 let message =
-                                    'Terjadi kesalahan saat membatalkan Tagihan Pembelian. Silakan coba lagi.';
+                                    'Terjadi kesalahan saat membatalkan Tagihan Penjualan. Silakan coba lagi.';
                                 if (error.response?.data?.message) {
                                     message = error.response.data.message;
                                 }

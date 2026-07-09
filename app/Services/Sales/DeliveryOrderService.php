@@ -327,6 +327,7 @@ class DeliveryOrderService
 
         return $items->map(function ($item) {
             return [
+                'id' => $item->id,
                 'sales_order_item_id' => $item->sales_order_item_id,
                 'product_id' => $item->product_id,
                 'product_code' => $item->product->code,
@@ -336,6 +337,7 @@ class DeliveryOrderService
                 'quantity' => $item->quantity,
                 'unit_price' => $item->salesOrderItem->unit_price,
                 'discount_percentage' => $item->salesOrderItem->discount_percentage,
+                'discount_amount' => $item->salesOrderItem->discount_amount,
             ];
         });
     }
