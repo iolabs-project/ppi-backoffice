@@ -4,7 +4,7 @@
     $pembelianActive = str_starts_with($currentPage, 'pembelian');
     $penjualanSubmenus = [
         ['id' => 'penjualan',            'label' => 'Sales Order', 'desc' => 'Kelola pesanan penjualan',    'url' => route('sales.sales_orders.index'),           'icon' => 'receipt',  'bg' => '#EEF2FF', 'fg' => '#6366F1'],
-        ['id' => 'penjualan.pengiriman', 'label' => 'Pengiriman',  'desc' => 'Kelola pengiriman penjualan', 'url' => route('sales.sales_orders.index'), 'icon' => 'truck',  'bg' => '#F0FDF4', 'fg' => '#16A34A'],
+        ['id' => 'penjualan.pengiriman', 'label' => 'Pengiriman',  'desc' => 'Kelola pengiriman penjualan', 'url' => route('sales.delivery_orders.index'), 'icon' => 'truck',  'bg' => '#F0FDF4', 'fg' => '#16A34A'],
         ['id' => 'penjualan.tagihan',    'label' => 'Tagihan',     'desc' => 'Kelola tagihan penjualan',    'url' => route('sales.sales_invoices.index'),    'icon' => 'wallet', 'bg' => '#FFF7ED', 'fg' => '#EA580C'],
     ];
     $pembelianSubmenus = [
