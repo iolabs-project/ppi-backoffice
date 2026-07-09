@@ -171,9 +171,9 @@
                                                 </button>
                                             </template>
                                             <template
-                                                x-if="row.total_invoiced_quantity < row.total_quantity && row.total_invoiced_quantity < row.total_received_quantity && row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
+                                                x-if="row.total_invoiced_quantity <= row.total_quantity && row.total_invoiced_quantity <= row.total_shipped_quantity && row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
                                                 <button class="action-menu__item"
-                                                    @click.stop="handleCreatePurchaseInvoice(row.id)">
+                                                    @click.stop="handleCreateSalesInvoice(row.id)">
                                                     <x-misc.icon name="wallet" :size="14"
                                                         stroke="var(--ink-3)" />Buat
                                                     Tagihan
@@ -464,49 +464,49 @@
                 },
 
                 async handleCreateSalesInvoice(id) {
-                    // Swal.fire({
-                    //     title: 'Apakah Anda yakin ingin membuat Tagihan untuk SO ini?',
-                    //     icon: 'warning',
-                    //     showCancelButton: true,
-                    //     confirmButtonText: 'Ya, buat',
-                    //     cancelButtonText: 'Batal',
-                    //     reverseButtons: true,
-                    // }).then(async (result) => {
-                    //     if (result.isConfirmed) {
-                    //         Swal.fire({
-                    //             title: 'Memproses...',
-                    //             allowOutsideClick: false,
-                    //             didOpen: () => {
-                    //                 Swal.showLoading();
-                    //             }
-                    //         });
-                    //         try {
-                    //             const response = await axios.post(route(
-                    //                 'sales.sales_invoices.store', {
-                    //                     sales_order_id: id
-                    //                 }));
-                    //             Swal.close();
-                    //             Toast.fire({
-                    //                 icon: 'success',
-                    //                 title: response.data.message
-                    //             });
+                    Swal.fire({
+                        title: 'Apakah Anda yakin ingin membuat Tagihan untuk SO ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Memproses...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            try {
+                                const response = await axios.post(route(
+                                    'sales.sales_invoices.store', {
+                                        sales_order_id: id
+                                    }));
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
 
-                    //             window.location.href = response.data.redirect;
-                    //         } catch (error) {
-                    //             Swal.close();
-                    //             let message =
-                    //                 'Terjadi kesalahan saat membuat Tagihan. Silakan coba lagi.';
-                    //             if (error.response?.data?.message) {
-                    //                 message = error.response.data.message;
-                    //             }
-                    //             Toast.fire({
-                    //                 icon: 'error',
-                    //                 title: message
-                    //             });
-                    //         }
+                                window.location.href = response.data.redirect;
+                            } catch (error) {
+                                Swal.close();
+                                let message =
+                                    'Terjadi kesalahan saat membuat Tagihan. Silakan coba lagi.';
+                                if (error.response?.data?.message) {
+                                    message = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: message
+                                });
+                            }
 
-                    //     }
-                    // })
+                        }
+                    })
                 }
             };
         }

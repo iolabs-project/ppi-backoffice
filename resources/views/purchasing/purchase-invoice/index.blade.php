@@ -101,7 +101,7 @@
                                             </button>
                                             <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('sales.sales_invoices.edit', row.id)"
+                                                    <a :href="route('purchasing.purchase_invoices.edit', row.id)"
                                                         @click.stop class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />Edit
@@ -190,7 +190,7 @@
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const response = await axios.get(route('sales.sales_invoices.datatable'), {
+                        const response = await axios.get(route('purchasings.purchase_invoices.datatable'), {
                             params: {
                                 page: this.page,
                                 per_page: this.perPage,
