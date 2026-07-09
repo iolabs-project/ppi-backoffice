@@ -13,128 +13,34 @@ class COASeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('account_categories')->insert([
-            [
-                'id' => 1,
-                'name' => 'Kas & Bank',
-
+        $categories = [
+            1 => 'Kas & Bank',
+            2 => 'Akun Piutang',
+            3 => 'Persediaan',
+            4 => 'Aktiva Lancar Lainnya',
+            5 => 'Aktiva Tetap',
+            6 => 'Depresiasi & Armortisasi',
+            7 => 'Aktiva Lainnya',
+            8 => 'Akun Hutang',
+            9 => 'Kewajiban Lancar Lainnya',
+            10 => 'Kewajiban Jangka Panjang',
+            11 => 'Ekuitas',
+            12 => 'Pendapatan',
+            13 => 'Harga Pokok Penjualan',
+            14 => 'Beban',
+            15 => 'Pendapatan Lainnya',
+            16 => 'Beban Lainnya',
+            17 => 'Kartu Kredit',
+        ];
+        foreach ($categories as $id => $name) {
+            DB::table('account_categories')->insert([
+                'id' => $id,
+                'name' => $name,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
-            [
-                'id' => 2,
-                'name' => 'Akun Piutang',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 3,
-                'name' => 'Persediaan',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 4,
-                'name' => 'Aktiva Lancar Lainnya',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 5,
-                'name' => 'Aktiva Tetap',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 6,
-                'name' => 'Depresiasi & Armortisasi',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 7,
-                'name' => 'Aktiva Lainnya',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 8,
-                'name' => 'Akun Hutang',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 9,
-                'name' => 'Kewajiban Lancar Lainnya',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 10,
-                'name' => 'Kewajiban Jangka Panjang',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 11,
-                'name' => 'Ekuitas',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 12,
-                'name' => 'Pendapatan',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 13,
-                'name' => 'Harga Pokok Penjualan',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 14,
-                'name' => 'Beban',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 15,
-                'name' => 'Pendapatan Lainnya',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 16,
-                'name' => 'Beban Lainnya',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 17,
-                'name' => 'Kartu Kredit',
-
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
-
+            ]);
+        }
+        
         DB::table('chart_of_accounts')->insert([
             [
                 'id' => 1,
@@ -143,7 +49,7 @@ class COASeeder extends Seeder
                 'name' => 'Kas',
                 'code' => '1-10001',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -157,7 +63,7 @@ class COASeeder extends Seeder
                 'name' => 'Rekening Bank',
                 'code' => '1-10002',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -171,7 +77,7 @@ class COASeeder extends Seeder
                 'name' => 'Giro',
                 'code' => '1-10003',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -185,7 +91,7 @@ class COASeeder extends Seeder
                 'name' => 'Piutang Usaha',
                 'code' => '1-10100',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -199,7 +105,7 @@ class COASeeder extends Seeder
                 'name' => 'Piutang Belum Ditagih',
                 'code' => '1-10101',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -213,7 +119,7 @@ class COASeeder extends Seeder
                 'name' => 'Cadangan Kerugian Piutang',
                 'code' => '1-10102',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -227,7 +133,7 @@ class COASeeder extends Seeder
                 'name' => 'Persediaan Barang',
                 'code' => '1-10200',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -241,7 +147,7 @@ class COASeeder extends Seeder
                 'name' => 'Piutang Lainnya',
                 'code' => '1-10300',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -255,7 +161,7 @@ class COASeeder extends Seeder
                 'name' => 'Piutang Karyawan',
                 'code' => '1-10301',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -269,7 +175,7 @@ class COASeeder extends Seeder
                 'name' => 'Dana Belum Disetor',
                 'code' => '1-10400',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -283,7 +189,7 @@ class COASeeder extends Seeder
                 'name' => 'Aset Lancar Lainnya',
                 'code' => '1-10401',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -294,10 +200,10 @@ class COASeeder extends Seeder
                 'id' => 12,
                 'company_id' => 1,
                 'category_id' => 4,
-                'name' => 'Biaya Dibayar Di Muka',
+                'name' => 'Uang Muka Biaya',
                 'code' => '1-10402',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -308,10 +214,10 @@ class COASeeder extends Seeder
                 'id' => 13,
                 'company_id' => 1,
                 'category_id' => 4,
-                'name' => 'Uang Muka',
+                'name' => 'Uang Muka Pembelian',
                 'code' => '1-10403',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -325,7 +231,7 @@ class COASeeder extends Seeder
                 'name' => 'PPN Masukan',
                 'code' => '1-10500',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -339,7 +245,7 @@ class COASeeder extends Seeder
                 'name' => 'Pajak Dibayar Di Muka - PPh 22',
                 'code' => '1-10501',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -353,7 +259,7 @@ class COASeeder extends Seeder
                 'name' => 'Pajak Dibayar Di Muka - PPh 23',
                 'code' => '1-10502',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -367,7 +273,7 @@ class COASeeder extends Seeder
                 'name' => 'Pajak Dibayar Di Muka - PPh 25',
                 'code' => '1-10503',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -381,7 +287,7 @@ class COASeeder extends Seeder
                 'name' => 'Aset Tetap - Tanah',
                 'code' => '1-10700',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -395,7 +301,7 @@ class COASeeder extends Seeder
                 'name' => 'Aset Tetap - Bangunan',
                 'code' => '1-10701',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -409,7 +315,7 @@ class COASeeder extends Seeder
                 'name' => 'Aset Tetap - Building Improvements',
                 'code' => '1-10702',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -423,7 +329,7 @@ class COASeeder extends Seeder
                 'name' => 'Aset Tetap - Kendaraan',
                 'code' => '1-10703',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -437,7 +343,7 @@ class COASeeder extends Seeder
                 'name' => 'Aset Tetap - Mesin & Peralatan',
                 'code' => '1-10704',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -451,7 +357,7 @@ class COASeeder extends Seeder
                 'name' => 'Aset Tetap - Perlengkapan Kantor',
                 'code' => '1-10705',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -465,7 +371,7 @@ class COASeeder extends Seeder
                 'name' => 'Aset Tetap - Aset Sewa Guna Usaha',
                 'code' => '1-10706',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -479,7 +385,7 @@ class COASeeder extends Seeder
                 'name' => 'Aset Tak Berwujud',
                 'code' => '1-10707',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -493,7 +399,7 @@ class COASeeder extends Seeder
                 'name' => 'Akumulasi Penyusutan - Bangunan',
                 'code' => '1-10751',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -507,7 +413,7 @@ class COASeeder extends Seeder
                 'name' => 'Akumulasi Penyusutan - Building Improvements',
                 'code' => '1-10752',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -521,7 +427,7 @@ class COASeeder extends Seeder
                 'name' => 'Akumulasi penyusutan - Kendaraan',
                 'code' => '1-10753',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -535,7 +441,7 @@ class COASeeder extends Seeder
                 'name' => 'Akumulasi Penyusutan - Mesin & Peralatan',
                 'code' => '1-10754',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -549,7 +455,7 @@ class COASeeder extends Seeder
                 'name' => 'Akumulasi Penyusutan - Peralatan Kantor',
                 'code' => '1-10755',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -563,7 +469,7 @@ class COASeeder extends Seeder
                 'name' => 'Akumulasi Penyusutan - Aset Sewa Guna Usaha',
                 'code' => '1-10756',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -577,7 +483,7 @@ class COASeeder extends Seeder
                 'name' => 'Akumulasi Amortisasi',
                 'code' => '1-10757',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -591,7 +497,7 @@ class COASeeder extends Seeder
                 'name' => 'Investasi',
                 'code' => '1-10800',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -605,7 +511,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Usaha',
                 'code' => '2-20100',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -619,7 +525,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Belum Ditagih',
                 'code' => '2-20101',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -633,7 +539,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Lain Lain',
                 'code' => '2-20200',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -647,7 +553,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Gaji',
                 'code' => '2-20201',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -661,7 +567,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Deviden',
                 'code' => '2-20202',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -672,10 +578,10 @@ class COASeeder extends Seeder
                 'id' => 39,
                 'company_id' => 1,
                 'category_id' => 9,
-                'name' => 'Pendapatan Diterima Di Muka',
+                'name' => 'Uang Muka Penjualan',
                 'code' => '2-20203',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -689,7 +595,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Konsinyasi',
                 'code' => '2-20205',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -703,7 +609,7 @@ class COASeeder extends Seeder
                 'name' => 'Sarana Kantor Terhutang',
                 'code' => '2-20301',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -717,7 +623,7 @@ class COASeeder extends Seeder
                 'name' => 'Bunga Terhutang',
                 'code' => '2-20302',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -731,7 +637,7 @@ class COASeeder extends Seeder
                 'name' => 'Biaya Terhutang Lainnya',
                 'code' => '2-20399',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -745,7 +651,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Bank',
                 'code' => '2-20400',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -759,7 +665,7 @@ class COASeeder extends Seeder
                 'name' => 'PPN Keluaran',
                 'code' => '2-20500',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -773,7 +679,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Pajak - PPh 21',
                 'code' => '2-20501',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -787,7 +693,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Pajak - PPh 22',
                 'code' => '2-20502',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -801,7 +707,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Pajak - PPh 23',
                 'code' => '2-20503',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -815,7 +721,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Pajak - PPh 29',
                 'code' => '2-20504',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -829,7 +735,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang Pajak Lainnya',
                 'code' => '2-20599',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -843,7 +749,7 @@ class COASeeder extends Seeder
                 'name' => 'Hutang dari Pemegang Saham',
                 'code' => '2-20600',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -857,7 +763,7 @@ class COASeeder extends Seeder
                 'name' => 'Kewajiban Lancar Lainnya',
                 'code' => '2-20601',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -871,7 +777,7 @@ class COASeeder extends Seeder
                 'name' => 'Kewajiban Manfaat Karyawan',
                 'code' => '2-20700',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -885,7 +791,7 @@ class COASeeder extends Seeder
                 'name' => 'Modal Saham',
                 'code' => '3-30000',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -899,7 +805,7 @@ class COASeeder extends Seeder
                 'name' => 'Tambahan Modal Disetor',
                 'code' => '3-30001',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -913,7 +819,7 @@ class COASeeder extends Seeder
                 'name' => 'Laba Ditahan',
                 'code' => '3-30100',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -927,7 +833,7 @@ class COASeeder extends Seeder
                 'name' => 'Deviden',
                 'code' => '3-30200',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -941,7 +847,7 @@ class COASeeder extends Seeder
                 'name' => 'Pendapatan Komprehensif Lainnya',
                 'code' => '3-30300',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -955,7 +861,7 @@ class COASeeder extends Seeder
                 'name' => 'Ekuitas Saldo Awal',
                 'code' => '3-30999',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -969,7 +875,7 @@ class COASeeder extends Seeder
                 'name' => 'Pendapatan',
                 'code' => '4-40000',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -983,7 +889,7 @@ class COASeeder extends Seeder
                 'name' => 'Diskon Penjualan',
                 'code' => '4-40100',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -997,7 +903,7 @@ class COASeeder extends Seeder
                 'name' => 'Retur Penjualan',
                 'code' => '4-40200',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -1011,7 +917,7 @@ class COASeeder extends Seeder
                 'name' => 'Pendapatan Belum Ditagih',
                 'code' => '4-40201',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -1025,7 +931,7 @@ class COASeeder extends Seeder
                 'name' => 'Beban Pokok Pendapatan',
                 'code' => '5-50000',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -1039,7 +945,7 @@ class COASeeder extends Seeder
                 'name' => 'Diskon Pembelian',
                 'code' => '5-50100',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -1053,7 +959,7 @@ class COASeeder extends Seeder
                 'name' => 'Retur Pembelian',
                 'code' => '5-50200',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1067,7 +973,7 @@ class COASeeder extends Seeder
                 'name' => 'Pengiriman & Pengangkutan',
                 'code' => '5-50300',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -1081,7 +987,7 @@ class COASeeder extends Seeder
                 'name' => 'Biaya Impor',
                 'code' => '5-50400',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1095,7 +1001,7 @@ class COASeeder extends Seeder
                 'name' => 'Biaya Produksi',
                 'code' => '5-50500',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -1109,7 +1015,7 @@ class COASeeder extends Seeder
                 'name' => 'Iklan & Promosi',
                 'code' => '6-60001',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1123,7 +1029,7 @@ class COASeeder extends Seeder
                 'name' => 'Komisi & Fee',
                 'code' => '6-60002',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1137,7 +1043,7 @@ class COASeeder extends Seeder
                 'name' => 'Bensin, Tol dan Parkir - Penjualan',
                 'code' => '6-60003',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1151,7 +1057,7 @@ class COASeeder extends Seeder
                 'name' => 'Perjalanan Dinas - Penjualan',
                 'code' => '6-60004',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1165,7 +1071,7 @@ class COASeeder extends Seeder
                 'name' => 'Komunikasi - Penjualan',
                 'code' => '6-60005',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1179,7 +1085,7 @@ class COASeeder extends Seeder
                 'name' => 'Marketing Lainnya',
                 'code' => '6-60006',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1193,7 +1099,7 @@ class COASeeder extends Seeder
                 'name' => 'Biaya MDR Penjualan',
                 'code' => '6-60007',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -1207,7 +1113,7 @@ class COASeeder extends Seeder
                 'name' => 'Gaji',
                 'code' => '6-60101',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1221,7 +1127,7 @@ class COASeeder extends Seeder
                 'name' => 'Upah',
                 'code' => '6-60102',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1235,7 +1141,7 @@ class COASeeder extends Seeder
                 'name' => 'Makanan & Transportasi',
                 'code' => '6-60103',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1249,7 +1155,7 @@ class COASeeder extends Seeder
                 'name' => 'Lembur',
                 'code' => '6-60104',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1263,7 +1169,7 @@ class COASeeder extends Seeder
                 'name' => 'Pengobatan',
                 'code' => '6-60105',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1277,7 +1183,7 @@ class COASeeder extends Seeder
                 'name' => 'THR & Bonus',
                 'code' => '6-60106',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1291,7 +1197,7 @@ class COASeeder extends Seeder
                 'name' => 'Jamsostek',
                 'code' => '6-60107',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1305,7 +1211,7 @@ class COASeeder extends Seeder
                 'name' => 'Insentif',
                 'code' => '6-60108',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1319,7 +1225,7 @@ class COASeeder extends Seeder
                 'name' => 'Pesangon',
                 'code' => '6-60109',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1333,7 +1239,7 @@ class COASeeder extends Seeder
                 'name' => 'Manfaat dan Tunjangan Lain',
                 'code' => '6-60110',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1347,7 +1253,7 @@ class COASeeder extends Seeder
                 'name' => 'Donasi',
                 'code' => '6-60200',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1361,7 +1267,7 @@ class COASeeder extends Seeder
                 'name' => 'Hiburan',
                 'code' => '6-60201',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1375,7 +1281,7 @@ class COASeeder extends Seeder
                 'name' => 'Bensin, Tol dan Parkir - Umum',
                 'code' => '6-60202',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1389,7 +1295,7 @@ class COASeeder extends Seeder
                 'name' => 'Perbaikan & Pemeliharaan',
                 'code' => '6-60203',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1403,7 +1309,7 @@ class COASeeder extends Seeder
                 'name' => 'Perjalanan Dinas - Umum',
                 'code' => '6-60204',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1417,7 +1323,7 @@ class COASeeder extends Seeder
                 'name' => 'Makanan',
                 'code' => '6-60205',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1431,7 +1337,7 @@ class COASeeder extends Seeder
                 'name' => 'Komunikasi - Umum',
                 'code' => '6-60206',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1445,7 +1351,7 @@ class COASeeder extends Seeder
                 'name' => 'Iuran & Langganan',
                 'code' => '6-60207',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1459,7 +1365,7 @@ class COASeeder extends Seeder
                 'name' => 'Asuransi',
                 'code' => '6-60208',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1473,7 +1379,7 @@ class COASeeder extends Seeder
                 'name' => 'Legal & Profesional',
                 'code' => '6-60209',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1487,7 +1393,7 @@ class COASeeder extends Seeder
                 'name' => 'Beban Manfaat Karyawan',
                 'code' => '6-60210',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1501,7 +1407,7 @@ class COASeeder extends Seeder
                 'name' => 'Sarana Kantor',
                 'code' => '6-60211',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1515,7 +1421,7 @@ class COASeeder extends Seeder
                 'name' => 'Pelatihan & Pengembangan',
                 'code' => '6-60212',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1529,7 +1435,7 @@ class COASeeder extends Seeder
                 'name' => 'Beban Piutang Tak Tertagih',
                 'code' => '6-60213',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1543,7 +1449,7 @@ class COASeeder extends Seeder
                 'name' => 'Pajak dan Perizinan',
                 'code' => '6-60214',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1557,7 +1463,7 @@ class COASeeder extends Seeder
                 'name' => 'Denda',
                 'code' => '6-60215',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1571,7 +1477,7 @@ class COASeeder extends Seeder
                 'name' => 'Pengeluaran Barang Rusak',
                 'code' => '6-60216',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -1585,7 +1491,7 @@ class COASeeder extends Seeder
                 'name' => 'Listrik',
                 'code' => '6-60217',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1599,7 +1505,7 @@ class COASeeder extends Seeder
                 'name' => 'Air',
                 'code' => '6-60218',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1613,7 +1519,7 @@ class COASeeder extends Seeder
                 'name' => 'IPL',
                 'code' => '6-60219',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1627,7 +1533,7 @@ class COASeeder extends Seeder
                 'name' => 'Langganan Software',
                 'code' => '6-60220',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1641,7 +1547,7 @@ class COASeeder extends Seeder
                 'name' => 'Beban Kantor',
                 'code' => '6-60300',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1655,7 +1561,7 @@ class COASeeder extends Seeder
                 'name' => 'Alat Tulis Kantor & Printing',
                 'code' => '6-60301',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1669,7 +1575,7 @@ class COASeeder extends Seeder
                 'name' => 'Bea Materai',
                 'code' => '6-60302',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1683,7 +1589,7 @@ class COASeeder extends Seeder
                 'name' => 'Keamanan dan Kebersihan',
                 'code' => '6-60303',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1697,7 +1603,7 @@ class COASeeder extends Seeder
                 'name' => 'Supplies dan Material',
                 'code' => '6-60304',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1711,7 +1617,7 @@ class COASeeder extends Seeder
                 'name' => 'Pemborong',
                 'code' => '6-60305',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1725,7 +1631,7 @@ class COASeeder extends Seeder
                 'name' => 'Biaya Sewa - Bangunan',
                 'code' => '6-60400',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1739,7 +1645,7 @@ class COASeeder extends Seeder
                 'name' => 'Biaya Sewa - Kendaraan',
                 'code' => '6-60401',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1753,7 +1659,7 @@ class COASeeder extends Seeder
                 'name' => 'Biaya Sewa - Operasional',
                 'code' => '6-60402',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1767,7 +1673,7 @@ class COASeeder extends Seeder
                 'name' => 'Biaya Sewa - Lain - lain',
                 'code' => '6-60403',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1781,7 +1687,7 @@ class COASeeder extends Seeder
                 'name' => 'Penyusutan - Bangunan',
                 'code' => '6-60500',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1795,7 +1701,7 @@ class COASeeder extends Seeder
                 'name' => 'Penyusutan - Perbaikan Bangunan',
                 'code' => '6-60501',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1809,7 +1715,7 @@ class COASeeder extends Seeder
                 'name' => 'Penyusutan - Kendaraan',
                 'code' => '6-60502',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1823,7 +1729,7 @@ class COASeeder extends Seeder
                 'name' => 'Penyusutan - Mesin & Peralatan',
                 'code' => '6-60503',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1837,7 +1743,7 @@ class COASeeder extends Seeder
                 'name' => 'Penyusutan - Peralatan Kantor',
                 'code' => '6-60504',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1851,7 +1757,7 @@ class COASeeder extends Seeder
                 'name' => 'Penyusutan - Aset Sewa Guna Usaha',
                 'code' => '6-60599',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1865,7 +1771,7 @@ class COASeeder extends Seeder
                 'name' => 'Pendapatan Bunga - Bank',
                 'code' => '7-70000',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1879,7 +1785,7 @@ class COASeeder extends Seeder
                 'name' => 'Pendapatan Bunga - Deposito',
                 'code' => '7-70001',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1893,7 +1799,7 @@ class COASeeder extends Seeder
                 'name' => 'Pendapatan Komisi - Barang Konsinyasi',
                 'code' => '7-70002',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1907,7 +1813,7 @@ class COASeeder extends Seeder
                 'name' => 'Pembulatan',
                 'code' => '7-70003',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1921,7 +1827,7 @@ class COASeeder extends Seeder
                 'name' => 'Pendapatan Lain - lain',
                 'code' => '7-70099',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -1935,7 +1841,7 @@ class COASeeder extends Seeder
                 'name' => 'Pendapatan lainnya (Service Charge)',
                 'code' => '7-70100',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -1949,7 +1855,7 @@ class COASeeder extends Seeder
                 'name' => 'Biaya Tambahan Pelanggan',
                 'code' => '7-70101',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -1963,7 +1869,7 @@ class COASeeder extends Seeder
                 'name' => 'Beban Bunga',
                 'code' => '8-80000',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -1977,7 +1883,7 @@ class COASeeder extends Seeder
                 'name' => 'Provisi',
                 'code' => '8-80001',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -1991,7 +1897,7 @@ class COASeeder extends Seeder
                 'name' => '(Laba)/Rugi Pelepasan Aset Tetap',
                 'code' => '8-80002',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -2005,7 +1911,7 @@ class COASeeder extends Seeder
                 'name' => 'Penyesuaian Persediaan',
                 'code' => '8-80100',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -2019,7 +1925,7 @@ class COASeeder extends Seeder
                 'name' => 'Beban Lain - lain',
                 'code' => '8-80999',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -2033,7 +1939,7 @@ class COASeeder extends Seeder
                 'name' => 'Revaluasi Bank',
                 'code' => '8-81001',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -2047,7 +1953,7 @@ class COASeeder extends Seeder
                 'name' => 'Laba/Rugi Selisih Kurs - Belum Direalisasikan',
                 'code' => '8-81002',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -2061,7 +1967,7 @@ class COASeeder extends Seeder
                 'name' => 'Laba/Rugi Selisih Kurs - Realisasikan',
                 'code' => '8-81003',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => true,
 
@@ -2075,7 +1981,7 @@ class COASeeder extends Seeder
                 'name' => 'Beban Pajak - Kini',
                 'code' => '9-90000',
                 'parent_id' => null,
-                
+
                 'is_deletable' => false,
                 'is_locked' => false,
 
@@ -2089,7 +1995,7 @@ class COASeeder extends Seeder
                 'name' => 'Beban Pajak - Tangguhan',
                 'code' => '9-90001',
                 'parent_id' => null,
-                
+
                 'is_deletable' => true,
                 'is_locked' => false,
 
@@ -2097,5 +2003,32 @@ class COASeeder extends Seeder
                 'updated_at' => now(),
             ],
         ]);
+
+        $mappings = [
+            'account_receivable' => 4,
+            'account_payable' => 34,
+            'inventory' => 7,
+            'cogs' => 64,
+            'sales_revenue' => 60,
+            'grni' => 35,
+            'purchase_discount' => 65,
+            'sales_discount' => 61,
+            'purchase_return' => 66,
+            'sales_return' => 62,
+            'input_tax' => 14,
+            'output_tax' => 45,
+            'sales_down_payment' => 39,
+            'purchase_down_payment' => 13,
+        ];
+
+        foreach ($mappings as $key => $value) {
+            DB::table('account_mappings')->insert([
+                'company_id' => 1,
+                'key' => $key,
+                'account_id' => $value,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 }

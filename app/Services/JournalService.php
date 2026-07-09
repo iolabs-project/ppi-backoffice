@@ -47,6 +47,10 @@ class JournalService
             throw new \Exception('Journal entry is already cancelled.');
         }
 
+        if ($journalEntry->status === 'posted') {
+            throw new \Exception('Cannot cancel a posted journal entry.');
+        }
+
         $journalEntry->update(['status' => 'cancelled']);
     }
 
