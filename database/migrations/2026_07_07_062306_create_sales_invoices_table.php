@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained('companies')->onDelete('restrict');
             $table->foreignId('sales_order_id')->constrained('sales_orders')->onDelete('restrict');
             $table->foreignId('customer_id')->constrained('contacts')->onDelete('restrict');
-            $table->foreignId('sales_person_id')->constrained('contacts')->onDelete('restrict');
+            $table->foreignId('sales_person_id')->nullable()->constrained('contacts')->onDelete('restrict');
             $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('restrict');
             $table->string('number', 50)->unique();
             $table->string('reference_number', 50)->nullable();

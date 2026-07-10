@@ -20,6 +20,7 @@ class ProductBatch extends Model
 
     protected $casts = [
         'quantity' => 'double',
+        'available_quantity' => 'double',
         'reserved_quantity' => 'double',
         'unit_cost' => 'double',
     ];

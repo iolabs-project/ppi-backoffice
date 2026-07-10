@@ -41,7 +41,6 @@ class AccountController extends Controller
             ],
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:account_categories,id',
-            'company_id' => 'required|exists:companies,id',
             'note' => 'nullable|string|max:255',
         ]);
         try {
@@ -75,7 +74,6 @@ class AccountController extends Controller
             ],
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:account_categories,id',
-            'company_id' => 'required|exists:companies,id',
             'note' => 'nullable|string|max:255',
         ]);
         try {
