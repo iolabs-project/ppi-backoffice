@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
-use App\Services\UserService;
+use App\Services\Master\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -37,7 +37,7 @@ class UserController extends Controller
                 'max:255',
                 Rule::unique('users', 'username'),
             ],
-            'name' => 'required|string|max:255',
+            'contact_id' => 'nullable|exists:contacts,id',
             'password' => 'required|string|min:8',
             'confirm_password' => 'required|string|min:8|same:password',
             'role_id' => 'required|exists:roles,id',
@@ -69,7 +69,7 @@ class UserController extends Controller
                 'max:255',
                 Rule::unique('users', 'username')->ignore($id),
             ],
-            'name' => 'required|string|max:255',
+            'contact_id' => 'nullable|exists:contacts,id',
             'password' => 'nullable|string|min:8',
             'confirm_password' => 'nullable|string|min:8|same:password',
             'role_id' => 'required|exists:roles,id',
@@ -108,6 +108,26 @@ class UserController extends Controller
             ]);
             return response()->json([
                 'message' => 'Terjadi kesalahan saat memperbarui status user',
+            ], 500);
+        }
+    }
+
+    public function options(Request $request, UserService $userService)
+    {
+        try {
+            $data = $userService->fetchUserOptionData($request);
+
+            return response()->json([
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error UserController@options: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat mengambil data user',
             ], 500);
         }
     }

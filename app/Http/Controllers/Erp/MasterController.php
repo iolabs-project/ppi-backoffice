@@ -9,20 +9,21 @@ use App\Services\Master\AccountService;
 use App\Services\Master\ContactService;
 use App\Services\ErpDataService;
 use App\Services\Master\ProductService;
+use App\Services\Master\RoleService;
 
 class MasterController extends Controller
 {
-    public function index(ProductService $productService, ContactService $contactService, AccountService $accountService)
+    public function index(ProductService $productService, ContactService $contactService, AccountService $accountService, RoleService $roleService)
     {
         return view('pages.master.index', [
             'currentPage'        => 'master',
             'breadcrumb'         => [['label' => 'Master Data']],
             'accountCategories'  => $accountService->fetchAccountCategoryData(),
-            'users'              => ErpDataService::users(),
+            'userRoles'          => $roleService->fetchRoleData(),
             'roles'              => ErpDataService::roles(),
             'units'              => Unit::whereNull('deleted_at')->select('id', 'name', 'symbol')->get(),
             'productCategories'  => $productService->fetchProductCategoryData(),
-            'contactOptions'     => $contactService->fetchContactData(null),
+            'contactOptions'     => $contactService->fetchContactData('employee'),
             'inventoryAccounts'  => $accountService->fetchAccountData(AccountCategory::INVENTORY->value),
             'salesAccounts'      => $accountService->fetchAccountData(AccountCategory::REVENUE->value),
             'cogsAccounts'       => $accountService->fetchAccountData(AccountCategory::COST_OF_GOODS_SOLD->value),

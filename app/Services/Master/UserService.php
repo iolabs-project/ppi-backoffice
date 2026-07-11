@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Master;
 
-use App\Enums\RoleEnum;
 use App\Models\User;
 use App\Models\UserCompany;
 use Illuminate\Http\Request;
@@ -12,49 +11,32 @@ use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
-    public function fetchUserData(Request $request)
-    {
-        $data = User::select(
-            'id',
-            'code',
-            'name',
-        )
-            ->where('company_id', config('context.selected_company_id'))
-            ->whereNull('deleted_at')
-            ->where('is_user', true);
-
-        if ($request->filled('search')) {
-            $data->where(function ($query) use ($request) {
-                $query->where('code', 'like', '%' . $request->search . '%')
-                    ->orWhere('name', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        return $data->get();
-    }
-
     public function fetchUserTableData(Request $request)
     {
-        $data = User::with(['contact:id,name'])->select(
-            'id',
-            'username',
-            'name',
-            'contact_id',
-        )
-            ->where('company_id', config('context.selected_company_id'))
-            ->whereNull('deleted_at')
-            ->where('is_user', true);
+        $data = User::with(['contact:id,name', 'roles:id,name'])
+            ->select('id', 'username', 'contact_id', 'deleted_at');
 
         if ($request->filled('search')) {
             $data->where(function ($query) use ($request) {
                 $query->where('username', 'like', '%' . $request->search . '%')
-                    ->orWhere('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('email', 'like', '%' . $request->search . '%');
+                    ->orWhereHas('contact', function ($q) use ($request) {
+                        $q->where('name', 'like', '%' . $request->search . '%');
+                    });
             });
         }
 
-        $data = $data->orderBy('username', 'asc')->paginate($request->input('per_page', 10));
-        return $data;
+        return $data->orderBy('username', 'asc')->paginate($request->input('per_page', 10));
+    }
+
+    public function fetchUserOptionData(Request $request)
+    {
+        $data = User::with('contact:id,name')->select('id', 'username', 'contact_id');
+
+        if ($request->filled('search')) {
+            $data->where('username', 'like', '%' . $request->search . '%');
+        }
+
+        return $data->get();
     }
 
     public function storeUser(Request $request)
@@ -70,6 +52,7 @@ class UserService
             $user = User::create([
                 'username' => $request->username,
                 'password' => Hash::make($request->password),
+                'contact_id' => $request->contact_id ?: null,
             ]);
 
             if ($request->filled('company_ids')) {
@@ -82,7 +65,7 @@ class UserService
             }
 
             if ($request->filled('role_id')) {
-                $user->syncRoles([$request->role_id]);
+                $user->syncRoles([(int) $request->role_id]);
             }
         });
     }
@@ -100,16 +83,20 @@ class UserService
         }
 
         DB::transaction(function () use ($request, $user) {
-            $user->update([
+            $updateData = [
                 'username' => $request->username,
-                'password' => Hash::make($request->password),
-            ]);
+                'contact_id' => $request->contact_id ?: null,
+            ];
+
+            if ($request->filled('password')) {
+                $updateData['password'] = Hash::make($request->password);
+            }
+
+            $user->update($updateData);
 
             if ($request->filled('company_ids')) {
-                // Delete existing user-company relationships
                 UserCompany::where('user_id', $user->id)->delete();
 
-                // Create new user-company relationships
                 foreach ($request->company_ids as $companyId) {
                     UserCompany::create([
                         'user_id' => $user->id,
@@ -119,15 +106,16 @@ class UserService
             }
 
             if ($request->filled('role_id')) {
-                $user->syncRoles([$request->role_id]);
+                $user->syncRoles([(int) $request->role_id]);
             }
         });
     }
 
     public function toggleUserStatus(int $id)
     {
-        User::where('id', $id)->update([
-            'deleted_at' => DB::raw('IF(deleted_at IS NULL, NOW(), NULL)'),
+        $user = User::findOrFail($id);
+        $user->update([
+            'deleted_at' => $user->deleted_at ? null : now(),
         ]);
     }
 }

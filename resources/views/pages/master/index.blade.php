@@ -11,6 +11,7 @@
                     this.fetchKontak();
                     this.fetchAkun();
                     this.fetchGudang();
+                    this.fetchUser();
                 },
 
                 extractError(error, fallback) {
@@ -403,20 +404,94 @@
                 },
 
                 contactOptions: @json($contactOptions),
-                userAll: @json($users),
+                userRoles: @json($userRoles),
+
+                userTable: { current_page: 1, last_page: 1, per_page: 10, total: 0, data: [] },
+                userLoading: false,
                 userPage: 1,
                 userPerPage: 10,
-                get userPaged() {
-                    return this.userAll.slice((this.userPage - 1) * this.userPerPage, this.userPage * this.userPerPage);
+                userSearch: '',
+
+                userName(u) {
+                    return u?.contact ? u.contact.name : (u?.username || '');
                 },
-                get userTotalPages() {
-                    return Math.ceil(this.userAll.length / this.userPerPage);
+
+                async fetchUser() {
+                    this.userLoading = true;
+                    try {
+                        const response = await axios.get(route('master.users.datatable'), {
+                            params: { page: this.userPage, per_page: this.userPerPage, search: this.userSearch },
+                        });
+                        this.userTable = response.data;
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: 'Terjadi kesalahan saat memuat data user.' });
+                    } finally {
+                        this.userLoading = false;
+                    }
                 },
-                addUserForm: { username: '', password: '', kontak: '', role: '' },
-                editUserData: { id: '', username: '', nama: '', kontak: '', role: '', aktif: true },
+                userNext() {
+                    if (this.userTable && this.userPage < this.userTable.last_page) {
+                        this.userPage++;
+                        this.fetchUser();
+                    }
+                },
+                userPrev() {
+                    if (this.userPage > 1) {
+                        this.userPage--;
+                        this.fetchUser();
+                    }
+                },
+
+                addUserForm: { username: '', password: '', confirm_password: '', contact_id: '', role_id: '' },
+                editUserData: { id: '', username: '', password: '', confirm_password: '', contact_id: '', role_id: '', deleted_at: null, nama: '' },
                 openEditUser(u) {
-                    this.editUserData = { id: u.id, username: u.username, nama: u.nama, kontak: u.kontak || '', role: u.role, aktif: u.aktif };
+                    this.editUserData = {
+                        id: u.id,
+                        username: u.username,
+                        password: '',
+                        confirm_password: '',
+                        contact_id: u.contact_id || '',
+                        role_id: u.roles && u.roles.length ? u.roles[0].id : '',
+                        deleted_at: u.deleted_at,
+                        nama: this.userName(u),
+                    };
                     this.modal = 'edit_user';
+                },
+                async submitAddUser() {
+                    try {
+                        const response = await axios.post(route('master.users.store'), this.addUserForm);
+                        Toast.fire({ icon: 'success', title: response.data.message });
+                        this.modal = null;
+                        this.addUserForm = { username: '', password: '', confirm_password: '', contact_id: '', role_id: '' };
+                        await this.fetchUser();
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal menyimpan user.') });
+                    }
+                },
+                async submitEditUser() {
+                    try {
+                        const response = await axios.put(route('master.users.update', this.editUserData.id), this.editUserData);
+                        Toast.fire({ icon: 'success', title: response.data.message });
+                        this.modal = null;
+                        await this.fetchUser();
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal memperbarui user.') });
+                    }
+                },
+                toggleUserStatus(u) {
+                    Swal.fire({
+                        title: u.deleted_at ? 'Aktifkan kembali user ini?' : 'Nonaktifkan user ini?',
+                        icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya', cancelButtonText: 'Batal', reverseButtons: true,
+                    }).then(async (result) => {
+                        if (!result.isConfirmed) return;
+                        try {
+                            const response = await axios.post(route('master.users.status', u.id));
+                            Toast.fire({ icon: 'success', title: response.data.message });
+                            await this.fetchUser();
+                        } catch (error) {
+                            Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal memperbarui status user.') });
+                        }
+                    });
                 },
 
                 rolesAll: @json($roles),
@@ -838,7 +913,8 @@
                     <div class="master-search">
                         <span class="master-search__icon"><x-misc.icon name="search" :size="14"
                                 stroke="var(--ink-4)" /></span>
-                        <input class="input master-search__input" placeholder="Cari user..." />
+                        <input class="input master-search__input" placeholder="Cari user..."
+                            x-model="userSearch" x-on:input.debounce.400ms="userPage = 1; fetchUser()" />
                     </div>
                 </div>
                 <table class="tbl">
@@ -852,24 +928,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <template x-for="u in userPaged" :key="u.id">
+                        <template x-for="u in userTable.data" :key="u.id">
                             <tr class="row-tap" style="cursor:pointer;">
                                 <td>
                                     <div style="display:flex; align-items:center; gap:10px;">
                                         <div class="avatar"
-                                            :style="'background:' + avatarMeta(u.nama).bg + '; color:' + avatarMeta(u.nama).fg"
-                                            x-text="avatarMeta(u.nama).initials"></div>
+                                            :style="'background:' + avatarMeta(userName(u)).bg + '; color:' + avatarMeta(userName(u)).fg"
+                                            x-text="avatarMeta(userName(u)).initials"></div>
                                         <div>
-                                            <div style="font-weight:600; font-size:13px;" x-text="u.nama"></div>
+                                            <div style="font-weight:600; font-size:13px;" x-text="userName(u)"></div>
                                             <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="u.username"></div>
                                         </div>
                                     </div>
                                 </td>
-                                <td><span class="chip" x-text="u.role"></span></td>
-                                <td style="font-size:13px; color:var(--ink-3);" x-text="u.kontak || '—'"></td>
+                                <td><span class="chip" x-text="u.role_name || '—'"></span></td>
+                                <td style="font-size:13px; color:var(--ink-3);" x-text="u.contact ? u.contact.name : '—'"></td>
                                 <td>
-                                    <span class="chip" :style="u.aktif ? 'background:oklch(0.92 0.06 145);color:oklch(0.40 0.12 145)' : 'background:oklch(0.92 0.04 15);color:oklch(0.45 0.14 15)'"
-                                        x-text="u.aktif ? 'Aktif' : 'Nonaktif'"></span>
+                                    <span class="chip" :style="!u.deleted_at ? 'background:oklch(0.92 0.06 145);color:oklch(0.40 0.12 145)' : 'background:oklch(0.92 0.04 15);color:oklch(0.45 0.14 15)'"
+                                        x-text="!u.deleted_at ? 'Aktif' : 'Nonaktif'"></span>
                                 </td>
                                 <td x-on:click.stop>
                                     <div class="action-menu" x-data="{ open: false }">
@@ -882,6 +958,10 @@
                                             <button class="action-menu__item" x-on:click="openEditUser(u)">
                                                 <x-misc.icon name="edit" :size="14" /> Edit User
                                             </button>
+                                            <button class="action-menu__item" x-on:click="toggleUserStatus(u)">
+                                                <x-misc.icon name="x" :size="14" />
+                                                <span x-text="u.deleted_at ? 'Aktifkan' : 'Nonaktifkan'"></span>
+                                            </button>
                                         </div>
                                     </div>
                                 </td>
@@ -891,15 +971,15 @@
                 </table>
                 <div class="table-pagination">
                     <span class="pagination-info"
-                        x-text="'Menampilkan ' + ((userPage-1)*userPerPage+1) + '–' + Math.min(userPage*userPerPage, userAll.length) + ' dari ' + userAll.length + ' user'"></span>
+                        x-text="(userTable.total === 0 ? 0 : ((userTable.current_page - 1) * userTable.per_page + 1)) + '–' + (userTable.total === 0 ? 0 : Math.min(userTable.current_page * userTable.per_page, userTable.total)) + ' dari ' + userTable.total + ' user'"></span>
                     <div class="pagination-controls">
-                        <span class="pagination-page-info">Hal. <strong x-text="userPage"></strong> / <strong
-                                x-text="userTotalPages"></strong></span>
-                        <button class="btn btn-ghost btn-sm" :disabled="userPage <= 1" x-on:click="userPage--">
+                        <span class="pagination-page-info">Hal. <strong x-text="userTable.current_page"></strong> / <strong
+                                x-text="userTable.last_page"></strong></span>
+                        <button class="btn btn-ghost btn-sm" :disabled="userTable.current_page <= 1" x-on:click="userPrev()">
                             <x-misc.icon name="chev-left" :size="14" /> Prev
                         </button>
-                        <button class="btn btn-ghost btn-sm" :disabled="userPage >= userTotalPages"
-                            x-on:click="userPage++">
+                        <button class="btn btn-ghost btn-sm" :disabled="userTable.current_page >= userTable.last_page"
+                            x-on:click="userNext()">
                             Next <x-misc.icon name="chev-right" :size="14" />
                         </button>
                     </div>
@@ -1387,26 +1467,29 @@
                         <input class="input" type="password" x-model="addUserForm.password" placeholder="••••••••" />
                     </x-misc.field>
                 </div>
+                <x-misc.field label="Konfirmasi Password" :required="true">
+                    <input class="input" type="password" x-model="addUserForm.confirm_password" placeholder="••••••••" />
+                </x-misc.field>
                 <x-misc.field label="Kontak / Karyawan">
-                    <select class="input" x-model="addUserForm.kontak">
+                    <select class="input" x-model="addUserForm.contact_id">
                         <option value="">— Tidak dihubungkan —</option>
                         <template x-for="k in contactOptions" :key="k.id">
-                            <option :value="k.name" x-text="k.name"></option>
+                            <option :value="k.id" x-text="k.name"></option>
                         </template>
                     </select>
                 </x-misc.field>
                 <x-misc.field label="Role" :required="true">
-                    <select class="input" x-model="addUserForm.role">
+                    <select class="input" x-model="addUserForm.role_id">
                         <option value="">— Pilih Role —</option>
-                        <template x-for="r in rolesAll" :key="r.id">
-                            <option :value="r.nama" x-text="r.nama"></option>
+                        <template x-for="r in userRoles" :key="r.id">
+                            <option :value="r.id" x-text="r.name"></option>
                         </template>
                     </select>
                 </x-misc.field>
             </div>
             <x-slot:footer>
                 <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan User</button>
+                <button class="btn btn-primary" x-on:click="submitAddUser()"><x-misc.icon name="check" :size="14" />Simpan User</button>
             </x-slot:footer>
         </x-misc.modal>
 
@@ -1427,36 +1510,31 @@
                         <input class="input mono" x-model="editUserData.username" />
                     </x-misc.field>
                     <x-misc.field label="Password Baru">
-                        <input class="input" type="password" placeholder="Kosongkan jika tidak diubah" />
+                        <input class="input" type="password" x-model="editUserData.password" placeholder="Kosongkan jika tidak diubah" />
                     </x-misc.field>
                 </div>
+                <x-misc.field label="Konfirmasi Password Baru">
+                    <input class="input" type="password" x-model="editUserData.confirm_password" placeholder="Kosongkan jika tidak diubah" />
+                </x-misc.field>
                 <x-misc.field label="Kontak / Karyawan">
-                    <select class="input" x-model="editUserData.kontak">
+                    <select class="input" x-model="editUserData.contact_id">
                         <option value="">— Tidak dihubungkan —</option>
                         <template x-for="k in contactOptions" :key="k.id">
-                            <option :value="k.name" x-text="k.name"></option>
+                            <option :value="k.id" x-text="k.name"></option>
                         </template>
                     </select>
                 </x-misc.field>
-                <div class="form-grid-2">
-                    <x-misc.field label="Role" :required="true">
-                        <select class="input" x-model="editUserData.role">
-                            <template x-for="r in rolesAll" :key="r.id">
-                                <option :value="r.nama" x-text="r.nama"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Status">
-                        <select class="input" x-model="editUserData.aktif">
-                            <option :value="true">Aktif</option>
-                            <option :value="false">Nonaktif</option>
-                        </select>
-                    </x-misc.field>
-                </div>
+                <x-misc.field label="Role" :required="true">
+                    <select class="input" x-model="editUserData.role_id">
+                        <template x-for="r in userRoles" :key="r.id">
+                            <option :value="r.id" x-text="r.name"></option>
+                        </template>
+                    </select>
+                </x-misc.field>
             </div>
             <x-slot:footer>
                 <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Perubahan</button>
+                <button class="btn btn-primary" x-on:click="submitEditUser()"><x-misc.icon name="check" :size="14" />Simpan Perubahan</button>
             </x-slot:footer>
         </x-misc.modal>
 

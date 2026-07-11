@@ -468,17 +468,6 @@ class ErpDataService
         ];
     }
 
-    public static function users(): array
-    {
-        return [
-            ['id' => 'USR-001', 'username' => 'admin',    'nama' => 'Administrator',       'kontak' => null,             'role' => 'Admin',   'aktif' => true],
-            ['id' => 'USR-002', 'username' => 'budi.s',   'nama' => 'Budi Santoso',        'kontak' => 'Budi Santoso',   'role' => 'Manajer', 'aktif' => true],
-            ['id' => 'USR-003', 'username' => 'ani.r',    'nama' => 'Ani Rahayu',          'kontak' => 'Ani Rahayu',     'role' => 'Sales',   'aktif' => true],
-            ['id' => 'USR-004', 'username' => 'dedi.k',   'nama' => 'Dedi Kurniawan',      'kontak' => 'Dedi Kurniawan', 'role' => 'Gudang',  'aktif' => false],
-            ['id' => 'USR-005', 'username' => 'siti.m',   'nama' => 'Siti Maulida',        'kontak' => 'Siti Maulida',   'role' => 'Finance', 'aktif' => true],
-        ];
-    }
-
     public static function roles(): array
     {
         return [
