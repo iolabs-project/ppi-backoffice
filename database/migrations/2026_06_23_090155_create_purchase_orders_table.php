@@ -24,11 +24,9 @@ return new class extends Migration
             $table->enum('status', ['draft', 'open', 'closed', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 18, 4)->default(0);
             $table->decimal('discount_percentage', 5, 2)->default(0);
-            $table->decimal('discount_amount', 18, 4)->default(0);
+            $table->decimal('discount_amount', 18, 4)->default(0); 
             $table->decimal('tax_percentage', 5, 2)->default(0);
             $table->decimal('tax_amount', 18, 4)->default(0);
-            $table->decimal('transport_cost', 18, 4)->default(0);
-            $table->decimal('other_cost', 18, 4)->default(0);
             $table->decimal('down_payment_amount', 18, 4)->default(0);
             $table->decimal('down_payment_remaining_amount', 18, 4)->default(0);
             $table->foreignId('down_payment_account_id')->nullable()->constrained('chart_of_accounts')->onDelete('restrict');
@@ -52,6 +50,17 @@ return new class extends Migration
             $table->decimal('total_amount', 18, 4)->default(0);
             $table->timestamps();
         });
+
+        Schema::table('purchase_order_costs', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('purchase_order_id')->constrained('purchase_orders')->onDelete('cascade');
+            $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->text('description')->nullable();
+            $table->decimal('amount', 18, 4)->default(0);
+            $table->timestamps();
+
+            $table->index(['purchase_order_id', 'account_id']);
+        });
     }
 
     /**
@@ -59,6 +68,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('purchase_order_costs');
         Schema::dropIfExists('purchase_order_items');
         Schema::dropIfExists('purchase_orders');
     }

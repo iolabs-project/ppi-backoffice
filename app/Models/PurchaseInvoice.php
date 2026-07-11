@@ -25,7 +25,6 @@ class PurchaseInvoice extends Model
         'discount_amount',
         'tax_percentage',
         'tax_amount',
-        'other_cost',
         'down_payment_amount',
         'total_amount',
         'remaining_amount',
@@ -40,7 +39,6 @@ class PurchaseInvoice extends Model
         'discount_amount' => 'double',
         'tax_percentage' => 'double',
         'tax_amount' => 'double',
-        'other_cost' => 'double',
         'down_payment_amount' => 'double',
         'subtotal' => 'double',
         'total_amount' => 'double',
@@ -70,6 +68,11 @@ class PurchaseInvoice extends Model
     public function items()
     {
         return $this->hasMany(PurchaseInvoiceItem::class);
+    }
+
+    public function costs()
+    {
+        return $this->hasMany(PurchaseInvoiceCost::class);
     }
 
 

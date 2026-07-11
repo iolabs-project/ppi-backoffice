@@ -7,12 +7,15 @@ use App\Enums\PaymentTerm;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Models\Company;
 use App\Models\GoodsReceipt;
+use App\Models\GoodsReceiptCost;
 use App\Models\GoodsReceiptItem;
 use App\Models\InventoryTransaction;
 use App\Models\ProductBatch;
 use App\Models\PurchaseInvoice;
+use App\Models\PurchaseInvoiceCost;
 use App\Models\PurchaseInvoiceItem;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderCost;
 use App\Models\PurchaseOrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -90,6 +93,8 @@ class PurchasingService
             'items:id,purchase_order_id,product_id,quantity,received_quantity,invoiced_quantity,unit_price,subtotal,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
+            'costs:id,purchase_order_id,account_id,description,amount',
+            'costs.account:id,category_id,code,name',
             'supplier:id,name,code',
             'warehouse:id,name,code',
             'creator:id,username'
@@ -127,6 +132,7 @@ class PurchasingService
     {
         DB::transaction(function () use ($request) {
             $detailsCollection = collect($request->input('details', []));
+            $costCollection = collect($request->input('costs', []));
             $subtotal = $detailsCollection->sum(function ($item) {
                 return (($item['quantity'] ?? 0))
                     *
@@ -134,6 +140,9 @@ class PurchasingService
 
                     *
                     (1 - (($item['discount_percentage'] ?? 0) / 100));
+            });
+            $costTotal = $costCollection->sum(function ($cost) {
+                return $cost['amount'] ?? 0;
             });
             $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
             $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
@@ -157,7 +166,7 @@ class PurchasingService
                     'down_payment_remaining_amount' => $request->down_payment_amount,
                     'down_payment_account_id' => $request->down_payment_account_id,
                     'subtotal' => $subtotal,
-                    'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $request->transport_cost + $request->other_cost,
+                    'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $costTotal,
                     'note' => $request->note,
                     'payment_terms' => $request->payment_terms,
                     'status' => $request->status,
@@ -177,6 +186,15 @@ class PurchasingService
                     'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] / 100)),
                 ]);
             }
+
+            foreach ($request->input('costs', []) as $cost) {
+                PurchaseOrderCost::create([
+                    'purchase_order_id' => $form->id,
+                    'account_id' => $cost['account_id'],
+                    'description' => $cost['description'] ?? null,
+                    'amount' => $cost['amount'],
+                ]);
+            }
         });
     }
 
@@ -185,6 +203,8 @@ class PurchasingService
         DB::transaction(function () use ($request, $id) {
             $purchaseOrder = PurchaseOrder::findOrFail($id);
             $detailsCollection = collect($request->input('details', []));
+            $costCollection = collect($request->input('costs', []));
+
             $subtotal = $detailsCollection->sum(function ($detail) {
                 return (($detail['quantity'] ?? 0))
                     *
@@ -192,7 +212,9 @@ class PurchasingService
                     *
                     (1 - (($detail['discount_percentage'] ?? 0) / 100));
             });
-
+            $costTotal = $costCollection->sum(function ($cost) {
+                return $cost['amount'] ?? 0;
+            });
             $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
             $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
 
@@ -203,19 +225,17 @@ class PurchasingService
                 'reference_number' => $request->reference_number,
                 'order_date' => $request->order_date,
                 'due_date' => $request->due_date,
-                'discount_percentage' => $request->discount_percentage,
+                'discount_percentage' => $request->input('discount_percentage', 0),
                 'discount_amount' => $discountAmount,
-                'tax_percentage' => $request->tax_percentage,
+                'tax_percentage' => $request->input('tax_percentage', 0),
                 'tax_amount' => $taxAmount,
-                'transport_cost' => $request->transport_cost,
-                'other_cost' => $request->other_cost,
                 'subtotal' => $subtotal,
-                'down_payment_amount' => $request->down_payment_amount,
-                'down_payment_account_id' => $request->down_payment_account_id,
-                'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $request->transport_cost + $request->other_cost,
-                'note' => $request->note,
-                'payment_terms' => $request->payment_terms,
-                'status' => $request->status,
+                'down_payment_amount' => $request->input('down_payment_amount', 0),
+                'down_payment_account_id' => $request->input('down_payment_account_id', null),
+                'total_amount' => $subtotal - $request->input('down_payment_amount', 0) - $discountAmount + $taxAmount + $costTotal,
+                'note' => $request->input('note', null),
+                'payment_terms' => $request->input('payment_terms', null),
+                'status' => $request->input('status', null),
             ]);
 
             // Delete existing items
@@ -232,6 +252,15 @@ class PurchasingService
                     'discount_percentage' => $detail['discount_percentage'] ?? 0,
                     'discount_amount' => $detail['quantity'] * $detail['unit_price'] * (($detail['discount_percentage'] ?? 0) / 100),
                     'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
+                ]);
+            }
+
+            foreach ($request->input('costs', []) as $cost) {
+                PurchaseOrderCost::create([
+                    'purchase_order_id' => $purchaseOrder->id,
+                    'account_id' => $cost['account_id'],
+                    'description' => $cost['description'] ?? null,
+                    'amount' => $cost['amount'],
                 ]);
             }
         });
@@ -327,7 +356,8 @@ class PurchasingService
     public function storeGoodsReceipt(Request $request): GoodsReceipt
     {
         $purchaseOrder =  $this->fetchPurchaseOrderByID($request->purchase_order_id);
-        return GoodsReceipt::create([
+        $totalCost = $purchaseOrder->costs->where('account.category_id', 13)->sum('amount');
+        $goodsReceipt = GoodsReceipt::create([
             'company_id' => $purchaseOrder->company_id,
             'purchase_order_id' => $purchaseOrder->id,
             'supplier_id' => $purchaseOrder->supplier_id,
@@ -336,13 +366,24 @@ class PurchasingService
             'receipt_date' => now(),
             'status' => GoodsReceiptStatus::DRAFT->value,
             'subtotal' => 0,
-            'discount_percentage' => $purchaseOrder->discount_percentage,
+            'discount_percentage' => $purchaseOrder->input('discount_percentage', 0),
             'discount_amount' => 0,
-            'transport_cost' => $purchaseOrder->transport_cost,
-            'other_cost' => $purchaseOrder->other_cost,
-            'total_amount' => $purchaseOrder->total_amount,
+            'total_amount' => $totalCost,
             'created_by' => auth()->user()->id,
         ]);
+
+        foreach ($purchaseOrder->costs as $cost) {
+            if ($cost->account->category_id === 13) {
+                GoodsReceiptCost::create([
+                    'goods_receipt_id' => $goodsReceipt->id,
+                    'account_id' => $cost->account_id,
+                    'description' => $cost->description,
+                    'amount' => $cost->amount,
+                ]);
+            }
+        }
+
+        return $goodsReceipt;
     }
 
     public function fetchGoodsReceiptByID(int $id): ?GoodsReceipt
@@ -383,10 +424,11 @@ class PurchasingService
     public function updateGoodsReceipt(Request $request, int $id): void
     {
         $header = GoodsReceipt::findOrFail($id);
-        $requestCollection = collect($request->except('details'));
+        $requestCollection = collect($request->except(['details', 'costs']));
         $detailsCollection = collect($request->input('details', []));
+        $costsCollection = collect($request->input('costs', []));
 
-        DB::transaction(function () use ($request, $requestCollection, $detailsCollection, $header) {
+        DB::transaction(function () use ($request, $requestCollection, $detailsCollection, $costsCollection, $header) {
             $subtotal = $detailsCollection->sum(function ($item) {
                 return (($item['received_quantity'] ?? 0))
                     *
@@ -394,6 +436,9 @@ class PurchasingService
 
                     *
                     (1 - (($item['discount_percentage'] ?? 0) / 100));
+            });
+            $costAmount = $costsCollection->sum(function ($cost) {
+                return $cost['amount'] ?? 0;
             });
             $discountAmount = $subtotal * ($requestCollection->get('discount_percentage', 0)) / 100;
             $transportCost = $requestCollection->get('transport_cost', 0);
@@ -405,21 +450,20 @@ class PurchasingService
                 'subtotal' => $subtotal,
                 'discount_percentage' => $requestCollection->get('discount_percentage', 0),
                 'discount_amount' => $discountAmount,
-                'transport_cost' => $transportCost,
-                'other_cost' => $otherCost,
                 'note' => $requestCollection->get('note', null),
             ]);
 
+            GoodsReceiptCost::where('goods_receipt_id', $header->id)->delete();
             GoodsReceiptItem::where('goods_receipt_id', $header->id)->delete();
             if ($requestCollection->get('status') === GoodsReceiptStatus::DRAFT->value) {
-                $this->saveDraftGoodsReceipt($header, $detailsCollection);
+                $this->saveDraftGoodsReceipt($header, $detailsCollection, $costsCollection);
             } elseif ($requestCollection->get('status') === GoodsReceiptStatus::FINISHED->value) {
-                $this->finalizeGoodsReceipt($header, $detailsCollection, $transportCost, $otherCost, $discountAmount);
+                $this->finalizeGoodsReceipt($header, $detailsCollection, $costsCollection);
             }
         });
     }
 
-    private function saveDraftGoodsReceipt(GoodsReceipt $goodsReceipt, Collection $detailsCollection): void
+    private function saveDraftGoodsReceipt(GoodsReceipt $goodsReceipt, Collection $detailsCollection, Collection $costsCollection): void
     {
 
         foreach ($detailsCollection as $item) {
@@ -444,14 +488,23 @@ class PurchasingService
                 'total_amount' => $receivedQty * $unitPrice - $discountAmount,
             ]);
         }
+
+        foreach ($costsCollection as $cost) {
+            GoodsReceiptCost::create([
+                'goods_receipt_id' => $goodsReceipt->id,
+                'account_id' => $cost['account_id'],
+                'description' => $cost['description'] ?? null,
+                'amount' => $cost['amount'],
+            ]);
+        }
     }
 
-    private function finalizeGoodsReceipt(GoodsReceipt $goodsReceipt, Collection $detailsCollection): void
+    private function finalizeGoodsReceipt(GoodsReceipt $goodsReceipt, Collection $detailsCollection, Collection $costsCollection): void
     {
-        $transportCost = (float) ($goodsReceipt->transport_cost ?? 0);
-        $otherCost = (float) ($goodsReceipt->other_cost ?? 0);
+        $additionalCost = $costsCollection->sum(function ($cost) {
+            return $cost['amount'] ?? 0;
+        });
         $discountAmount = (float) ($goodsReceipt->discount_amount ?? 0);
-        $additionalCost = $transportCost + $otherCost;
         $totalQty = $detailsCollection->sum(function ($item) {
             return $item['received_quantity'];
         });
@@ -460,6 +513,15 @@ class PurchasingService
             $discountAmount = $subtotal * ($item['discount_percentage'] / 100);
             return $subtotal - $discountAmount;
         });
+
+        foreach ($costsCollection as $cost) {
+            GoodsReceiptCost::create([
+                'goods_receipt_id' => $goodsReceipt->id,
+                'account_id' => $cost['account_id'],
+                'description' => $cost['description'] ?? null,
+                'amount' => $cost['amount'],
+            ]);
+        }
 
         foreach ($detailsCollection as $item) {
             $expectedQty = (float) ($item['expected_quantity'] ?? 0);
@@ -658,7 +720,8 @@ class PurchasingService
     public function storePurchaseInvoice(Request $request): PurchaseInvoice
     {
         $purchaseOrder =  $this->fetchPurchaseOrderByID($request->purchase_order_id);
-        return PurchaseInvoice::create([
+        $totalCost = $purchaseOrder->costs->sum('amount');
+        $invoice = PurchaseInvoice::create([
             'company_id' => $purchaseOrder->company_id,
             'purchase_order_id' => $purchaseOrder->id,
             'supplier_id' => $purchaseOrder->supplier_id,
@@ -673,10 +736,20 @@ class PurchasingService
             'discount_amount' => 0,
             'tax_percentage' => $purchaseOrder->tax_percentage,
             'tax_amount' => 0,
-            'other_cost' => $purchaseOrder->other_cost,
-            'total_amount' => 0,
+            'total_amount' => $totalCost,
             'created_by' => auth()->user()->id,
         ]);
+
+        foreach ($purchaseOrder->costs as $cost) {
+            PurchaseInvoiceCost::create([
+                'purchase_invoice_id' => $invoice->id,
+                'account_id' => $cost->account_id,
+                'description' => $cost->description,
+                'amount' => $cost->amount,
+            ]);
+        }
+
+        return $invoice;
     }
 
     public function updatePurchaseInvoice(Request $request, int $id): void
@@ -684,6 +757,7 @@ class PurchasingService
         DB::transaction(function () use ($request, $id) {
             $purchaseInvoice = PurchaseInvoice::findOrFail($id);
             $detailsCollection = collect($request->input('details', []));
+            $costCollection = collect($request->input('costs', []));
             $subtotal = $detailsCollection->sum(function ($detail) {
                 return (($detail['quantity'] ?? 0))
                     *
@@ -691,9 +765,12 @@ class PurchasingService
                     *
                     (1 - (($detail['discount_percentage'] ?? 0) / 100));
             });
-
+            $costAmount = $costCollection->sum(function ($cost) {
+                return $cost['amount'] ?? 0;
+            });
             $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
             $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
+            $downpaymentAmount = $request->input('down_payment_amount', 0);
 
             $purchaseInvoice->update([
                 'supplier_id' => $request->supplier_id,
@@ -706,18 +783,27 @@ class PurchasingService
                 'discount_amount' => $discountAmount,
                 'tax_percentage' => $request->tax_percentage,
                 'tax_amount' => $taxAmount,
-                'other_cost' => $request->other_cost,
                 'subtotal' => $subtotal,
-                'down_payment_amount' => $request->down_payment_amount,
-                'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $request->other_cost,
-                'remaining_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $request->other_cost,
+                'down_payment_amount' => $downpaymentAmount,
+                'total_amount' => $subtotal - $downpaymentAmount - $discountAmount + $taxAmount + $costAmount,
+                'remaining_amount' => $subtotal - $downpaymentAmount - $discountAmount + $taxAmount + $costAmount,
                 'note' => $request->note,
                 'payment_terms' => $request->payment_terms,
                 'status' => $request->status,
             ]);
 
             // Delete existing items
+            PurchaseInvoiceCost::where('purchase_invoice_id', $purchaseInvoice->id)->delete();
             PurchaseInvoiceItem::where('purchase_invoice_id', $purchaseInvoice->id)->delete();
+
+            foreach ($request->input('costs', []) as $cost) {
+                PurchaseInvoiceCost::create([
+                    'purchase_invoice_id' => $purchaseInvoice->id,
+                    'account_id' => $cost['account_id'],
+                    'description' => $cost['description'] ?? null,
+                    'amount' => $cost['amount'],
+                ]);
+            }
 
             // Create new items
             foreach ($request->details as $detail) {
@@ -742,7 +828,7 @@ class PurchasingService
 
             if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
                 PurchaseOrder::where('id', $purchaseInvoice->purchase_order_id)
-                ->decrement('down_payment_remaining_amount', $request->down_payment_amount);
+                ->decrement('down_payment_remaining_amount', $downpaymentAmount);
             }
         });
     }
@@ -754,6 +840,8 @@ class PurchasingService
             'items:id,purchase_invoice_id,purchase_order_item_id,goods_receipt_item_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
+            'costs:id,purchase_invoice_id,account_id,description,amount',
+            'costs.account:id,name,code,category_id',
             'supplier:id,name,code',
             'warehouse:id,name,code',
             'creator:id,username'

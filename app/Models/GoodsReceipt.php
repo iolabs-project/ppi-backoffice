@@ -18,8 +18,6 @@ class GoodsReceipt extends Model
         'subtotal',
         'discount_percentage',
         'discount_amount',
-        'transport_cost',
-        'other_cost',
         'note',
         'created_by',
     ];
@@ -29,8 +27,6 @@ class GoodsReceipt extends Model
         'receipt_date' => 'date:Y-m-d',
         'discount_percentage' => 'double',
         'discount_amount' => 'double',
-        'transport_cost' => 'double',
-        'other_cost' => 'double',
         'subtotal' => 'double',
         'total_amount' => 'double',
         'total_received_quantity' => 'double',
@@ -40,6 +36,11 @@ class GoodsReceipt extends Model
     public function items()
     {
         return $this->hasMany(GoodsReceiptItem::class);
+    }
+
+    public function costs()
+    {
+        return $this->hasMany(GoodsReceiptCost::class);
     }
 
     public function purchaseOrder()

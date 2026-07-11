@@ -28,7 +28,6 @@ return new class extends Migration
             $table->decimal('discount_amount', 18, 4)->default(0);
             $table->decimal('tax_percentage', 5, 2)->default(0);
             $table->decimal('tax_amount', 18, 4)->default(0);
-            $table->decimal('other_cost', 18, 4)->default(0);
             $table->decimal('down_payment_amount', 18, 4)->default(0);
             $table->decimal('total_amount', 18, 4)->default(0);
             $table->decimal('remaining_amount', 18, 4)->default(0);
@@ -49,6 +48,15 @@ return new class extends Migration
             $table->decimal('discount_percentage', 5, 2)->default(0);
             $table->decimal('discount_amount', 18, 4)->default(0);
             $table->decimal('total_amount', 18, 4)->default(0);
+            $table->timestamps();
+        });
+
+        Schema::create('purchase_invoice_costs', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('purchase_invoice_id')->constrained('purchase_invoices')->onDelete('cascade');
+            $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->text('description')->nullable();
+            $table->decimal('amount', 18, 4)->default(0);
             $table->timestamps();
         });
     }

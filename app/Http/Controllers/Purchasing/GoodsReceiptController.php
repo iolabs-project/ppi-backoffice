@@ -112,6 +112,10 @@ class GoodsReceiptController extends Controller
                     'details.*.expected_quantity' => 'nullable|numeric|min:0',
                     'details.*.unit_price' => 'required|numeric|min:0',
                     'details.*.discount_percentage' => 'nullable|numeric|min:0|max:100',
+                    'costs' => 'nullable|array',
+                    'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
+                    'costs.*.description' => 'nullable|string|max:1000',
+                    'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
                 ],
                 [
                     'receipt_date.required' => 'Tanggal penerimaan harus diisi.',
@@ -124,6 +128,8 @@ class GoodsReceiptController extends Controller
                     'details.*.received_quantity.required' => 'Terdapat produk yang belum diisi jumlah penerimaannya. Silakan isi jumlah penerimaan untuk setiap produk.',
                     'details.*.unit_price.required' => 'Terdapat produk yang belum diisi harga satuannya. Silakan isi harga satuan untuk setiap produk.',
                     'details.*.discount_percentage.required' => 'Terdapat produk yang belum diisi persentase diskon. Silakan isi persentase diskon untuk setiap produk.',
+                    'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
+                    'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
                 ]
             );
         }

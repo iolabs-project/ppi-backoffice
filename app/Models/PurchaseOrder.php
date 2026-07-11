@@ -18,8 +18,6 @@ class PurchaseOrder extends Model
         'discount_amount',
         'tax_percentage',
         'tax_amount',
-        'transport_cost',
-        'other_cost',
         'subtotal',
         'down_payment_amount',
         'down_payment_remaining_amount',
@@ -39,8 +37,6 @@ class PurchaseOrder extends Model
         'discount_amount' => 'double',
         'tax_percentage' => 'double',
         'tax_amount' => 'double',
-        'transport_cost' => 'double',
-        'other_cost' => 'double',
         'subtotal' => 'double',
         'down_payment_amount' => 'double',
         'down_payment_remaining_amount' => 'double',
@@ -53,6 +49,11 @@ class PurchaseOrder extends Model
     public function items()
     {
         return $this->hasMany(PurchaseOrderItem::class);
+    }
+
+    public function costs()
+    {
+        return $this->hasMany(PurchaseOrderCost::class);
     }
 
     public function supplier()

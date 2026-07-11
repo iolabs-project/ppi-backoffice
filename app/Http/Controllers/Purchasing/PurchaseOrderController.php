@@ -223,6 +223,10 @@ class PurchaseOrderController extends Controller
                     'details.*.unit_price' => 'required|numeric|min:0',
                     'details.*.discount_percentage' => 'nullable|numeric|min:0',
                     'details.*.discount_amount' => 'nullable|numeric|min:0',
+                    'costs' => 'nullable|array',
+                    'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
+                    'costs.*.description' => 'nullable|string|max:1000',
+                    'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
                 ],
                 [
                     'supplier_id.required' => 'Supplier harus dipilih.',
@@ -235,6 +239,8 @@ class PurchaseOrderController extends Controller
                     'details.*.product_id.required' => 'Produk harus dipilih untuk setiap item.',
                     'details.*.quantity.required' => 'Kuantitas harus diisi untuk setiap item.',
                     'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
+                    'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
+                    'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
                 ]
             );
         } else if ($request->input('status') === PurchaseOrderStatus::DRAFT->value) {

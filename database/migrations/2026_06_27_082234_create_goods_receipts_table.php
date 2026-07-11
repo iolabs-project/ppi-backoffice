@@ -24,8 +24,6 @@ return new class extends Migration
             $table->decimal('subtotal', 18, 4)->default(0);
             $table->decimal('discount_percentage', 5, 2)->default(0);
             $table->decimal('discount_amount', 18, 4)->default(0);
-            $table->decimal('transport_cost', 18, 4)->default(0);
-            $table->decimal('other_cost', 18, 4)->default(0);
             $table->text('note')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('restrict');
             $table->timestamps();
@@ -48,6 +46,15 @@ return new class extends Migration
             $table->decimal('total_amount', 18, 4)->default(0);
             $table->timestamps();
         });
+
+        Schema::table('goods_receipt_costs', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('goods_receipt_id')->constrained('goods_receipts')->onDelete('cascade');
+            $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->text('description')->nullable();
+            $table->decimal('amount', 18, 4)->default(0);
+            $table->timestamps();
+        });
     }
 
     /**
@@ -55,6 +62,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('goods_receipt_costs');
         Schema::dropIfExists('goods_receipts');
         Schema::dropIfExists('goods_receipt_items');
     }
