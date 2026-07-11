@@ -51,7 +51,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::table('purchase_order_costs', function (Blueprint $table) {
+        Schema::create('purchase_order_costs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('purchase_order_id')->constrained('purchase_orders')->onDelete('cascade');
             $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');

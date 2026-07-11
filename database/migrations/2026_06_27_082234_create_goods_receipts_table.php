@@ -47,7 +47,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::table('goods_receipt_costs', function (Blueprint $table) {
+        Schema::create('goods_receipt_costs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('goods_receipt_id')->constrained('goods_receipts')->onDelete('cascade');
             $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
