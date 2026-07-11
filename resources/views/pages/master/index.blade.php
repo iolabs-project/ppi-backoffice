@@ -9,6 +9,7 @@
                 init() {
                     this.fetchProduk();
                     this.fetchKontak();
+                    this.fetchAkun();
                     this.fetchGudang();
                 },
 
@@ -231,17 +232,98 @@
                     });
                 },
 
-                coaAll: @json($chartOfAccounts),
-                akunForm: {
-                    kode: '',
-                    nama: '',
-                    tipe: '',
-                    subKategori: ''
+                // =============== AKUN / COA ===============
+                accountCategoriesAll: @json($accountCategories),
+
+                akunTable: { current_page: 1, last_page: 1, per_page: 10, total: 0, data: [] },
+                akunLoading: false,
+                akunPage: 1,
+                akunPerPage: 10,
+                akunSearch: '',
+
+                async fetchAkun() {
+                    this.akunLoading = true;
+                    try {
+                        const response = await axios.get(route('master.accounts.datatable'), {
+                            params: { page: this.akunPage, per_page: this.akunPerPage, search: this.akunSearch },
+                        });
+                        this.akunTable = response.data;
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: 'Terjadi kesalahan saat memuat data akun.' });
+                    } finally {
+                        this.akunLoading = false;
+                    }
                 },
-                editAkunData: { kode: '', nama: '', tipe: '', subKategori: '' },
+                akunNext() {
+                    if (this.akunTable && this.akunPage < this.akunTable.last_page) {
+                        this.akunPage++;
+                        this.fetchAkun();
+                    }
+                },
+                akunPrev() {
+                    if (this.akunPage > 1) {
+                        this.akunPage--;
+                        this.fetchAkun();
+                    }
+                },
+                akunGroupedRows() {
+                    const rows = [];
+                    let lastCategoryId;
+                    for (const a of this.akunTable.data) {
+                        const categoryId = a.category_id ?? null;
+                        if (categoryId !== lastCategoryId) {
+                            rows.push({ type: 'group', key: 'g-' + a.id, label: a.category ? a.category.name : 'Lainnya' });
+                            lastCategoryId = categoryId;
+                        }
+                        rows.push({ type: 'row', key: 'r-' + a.id, data: a });
+                    }
+                    return rows;
+                },
+
+                akunForm: { code: '', name: '', category_id: '', note: '' },
+                editAkunData: { id: '', code: '', name: '', category_id: '', note: '' },
                 openEditAkun(a) {
-                    this.editAkunData = { kode: a.kode, nama: a.nama, tipe: a.tipe, subKategori: a.parent || '' };
+                    this.editAkunData = {
+                        id: a.id, code: a.code, name: a.name,
+                        category_id: a.category_id || '', note: a.note || '',
+                    };
                     this.modal = 'edit_akun';
+                },
+                async submitAddAkun() {
+                    try {
+                        const response = await axios.post(route('master.accounts.store'), this.akunForm);
+                        Toast.fire({ icon: 'success', title: response.data.message });
+                        this.modal = null;
+                        this.akunForm = { code: '', name: '', category_id: '', note: '' };
+                        await this.fetchAkun();
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal menyimpan akun.') });
+                    }
+                },
+                async submitEditAkun() {
+                    try {
+                        const response = await axios.put(route('master.accounts.update', this.editAkunData.id), this.editAkunData);
+                        Toast.fire({ icon: 'success', title: response.data.message });
+                        this.modal = null;
+                        await this.fetchAkun();
+                    } catch (error) {
+                        Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal memperbarui akun.') });
+                    }
+                },
+                toggleAkunStatus(a) {
+                    Swal.fire({
+                        title: a.deleted_at ? 'Aktifkan kembali akun ini?' : 'Nonaktifkan akun ini?',
+                        icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya', cancelButtonText: 'Batal', reverseButtons: true,
+                    }).then(async (result) => {
+                        if (!result.isConfirmed) return;
+                        try {
+                            const response = await axios.post(route('master.accounts.status', a.id));
+                            Toast.fire({ icon: 'success', title: response.data.message });
+                            await this.fetchAkun();
+                        } catch (error) {
+                            Toast.fire({ icon: 'error', title: this.extractError(error, 'Gagal memperbarui status akun.') });
+                        }
+                    });
                 },
 
                 // =============== GUDANG ===============
@@ -585,7 +667,8 @@
                     <div class="master-search">
                         <span class="master-search__icon"><x-misc.icon name="search" :size="14"
                                 stroke="var(--ink-4)" /></span>
-                        <input class="input master-search__input" placeholder="Cari akun..." />
+                        <input class="input master-search__input" placeholder="Cari akun..."
+                            x-model="akunSearch" x-on:input.debounce.400ms="akunPage = 1; fetchAkun()" />
                     </div>
                 </div>
                 <table class="tbl">
@@ -593,45 +676,74 @@
                         <tr>
                             <th>Kode</th>
                             <th>Nama Akun</th>
-                            <th>Tipe</th>
-                            <th style="text-align:right;">Saldo Normal</th>
+                            <th>Kategori</th>
+                            <th>Catatan</th>
+                            <th>Status</th>
+                            <th style="width:40px;"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            $akunGroups = [];
-                            foreach ($chartOfAccounts as $a) {
-                                $prefix = substr($a['kode'], 0, 1);
-                                $akunGroups[$prefix][] = $a;
-                            }
-                            $groupNames = [
-                                '1' => 'Aset',
-                                '2' => 'Liabilitas',
-                                '3' => 'Ekuitas',
-                                '4' => 'Pendapatan',
-                                '5' => 'Beban Pokok',
-                                '6' => 'Beban Operasional',
-                            ];
-                        @endphp
-                        @foreach ($akunGroups as $prefix => $items)
-                            <tr class="coa-group-row">
-                                <td colspan="5">{{ $groupNames[$prefix] ?? 'Lainnya' }}</td>
+                        <template x-if="akunLoading">
+                            <tr>
+                                <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...</td>
                             </tr>
-                            @foreach ($items as $a)
-                                @php $tipeLbl = $a['tipe'] ?? ucfirst($groupNames[$prefix] ?? '—'); @endphp
-                                <tr class="row-tap" style="cursor:pointer;"
-                                    x-on:click="openEditAkun({ kode: {{ json_encode($a['kode']) }}, nama: {{ json_encode($a['nama']) }}, tipe: {{ json_encode($tipeLbl) }}, parent: {{ json_encode($a['parent']) }} })">
-                                    <td class="mono" style="font-weight:600; font-size:12px; color:var(--ink-4);">
-                                        {{ $a['kode'] }}</td>
-                                    <td style="font-weight:500; font-size:13px;">{{ $a['nama'] }}</td>
-                                    <td><span class="chip">{{ $tipeLbl }}</span></td>
-                                    <td class="num" style="text-align:right; font-weight:600; font-size:13px;">
-                                        {{ fmt_rp($a['saldo']) }}</td>
+                        </template>
+                        <template x-if="!akunLoading && akunTable.data.length === 0">
+                            <tr>
+                                <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">Tidak ada data</td>
+                            </tr>
+                        </template>
+                        <template x-if="!akunLoading">
+                            <template x-for="row in akunGroupedRows()" :key="row.key">
+                                <tr :class="row.type === 'group' ? 'coa-group-row' : ''">
+                                    <td colspan="6" x-show="row.type === 'group'" x-text="row.label"></td>
+                                    <td class="mono" x-show="row.type === 'row'" style="font-weight:600; font-size:12px; color:var(--ink-4);"
+                                        x-text="row.data?.code"></td>
+                                    <td x-show="row.type === 'row'" style="font-weight:600; font-size:13px;" x-text="row.data?.name"></td>
+                                    <td x-show="row.type === 'row'"><span class="chip" x-text="row.data?.category ? row.data.category.name : '—'"></span></td>
+                                    <td x-show="row.type === 'row'" style="color:var(--ink-3); font-size:13px;" x-text="row.data?.note || '—'"></td>
+                                    <td x-show="row.type === 'row'">
+                                        <span class="chip" :style="!row.data?.deleted_at ? 'background:oklch(0.92 0.06 145);color:oklch(0.40 0.12 145)' : 'background:oklch(0.92 0.04 15);color:oklch(0.45 0.14 15)'"
+                                            x-text="!row.data?.deleted_at ? 'Aktif' : 'Nonaktif'"></span>
+                                    </td>
+                                    <td x-show="row.type === 'row'" x-on:click.stop>
+                                        <div class="action-menu" x-data="{ open: false }">
+                                            <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                                                    x-on:click="open = !open" x-on:click.outside="open = false">
+                                                <x-misc.icon name="more" :size="15" />
+                                            </button>
+                                            <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
+                                                 style="position:absolute; right:0; top:100%; margin-top:4px;">
+                                                <button class="action-menu__item" x-on:click="openEditAkun(row.data)">
+                                                    <x-misc.icon name="edit" :size="14" /> Edit Akun
+                                                </button>
+                                                <button class="action-menu__item" x-on:click="toggleAkunStatus(row.data)">
+                                                    <x-misc.icon name="x" :size="14" />
+                                                    <span x-text="row.data?.deleted_at ? 'Aktifkan' : 'Nonaktifkan'"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
-                            @endforeach
-                        @endforeach
+                            </template>
+                        </template>
                     </tbody>
                 </table>
+                <div class="table-pagination">
+                    <span class="pagination-info"
+                        x-text="(akunTable.total === 0 ? 0 : ((akunTable.current_page - 1) * akunTable.per_page + 1)) + '–' + (akunTable.total === 0 ? 0 : Math.min(akunTable.current_page * akunTable.per_page, akunTable.total)) + ' dari ' + akunTable.total + ' akun'"></span>
+                    <div class="pagination-controls">
+                        <span class="pagination-page-info">Hal. <strong x-text="akunTable.current_page"></strong> / <strong
+                                x-text="akunTable.last_page"></strong></span>
+                        <button class="btn btn-ghost btn-sm" :disabled="akunTable.current_page <= 1" x-on:click="akunPrev()">
+                            <x-misc.icon name="chev-left" :size="14" /> Prev
+                        </button>
+                        <button class="btn btn-ghost btn-sm" :disabled="akunTable.current_page >= akunTable.last_page"
+                            x-on:click="akunNext()">
+                            Next <x-misc.icon name="chev-right" :size="14" />
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1149,36 +1261,27 @@
             <div class="form-body">
                 <div class="form-grid-1-2">
                     <x-misc.field label="Kode Akun" :required="true">
-                        <input class="input mono" placeholder="1-xxx" />
+                        <input class="input mono" x-model="akunForm.code" placeholder="1-xxx" />
                     </x-misc.field>
                     <x-misc.field label="Nama Akun" :required="true">
-                        <input class="input" placeholder="Nama akun" />
+                        <input class="input" x-model="akunForm.name" placeholder="Nama akun" />
                     </x-misc.field>
                 </div>
-                <div class="form-grid-2">
-                    <x-misc.field label="Tipe Akun">
-                        <select class="input" x-model="akunForm.tipe">
-                            <option value="">— Pilih Tipe —</option>
-                            <option>Aset</option>
-                            <option>Liabilitas</option>
-                            <option>Ekuitas</option>
-                            <option>Pendapatan</option>
-                            <option>Beban</option>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Sub Kategori">
-                        <select class="input" x-model="akunForm.subKategori">
-                            <option value="">— Tidak ada (akun utama) —</option>
-                            <template x-for="c in coaAll.filter(c => c.parent === null)" :key="c.kode">
-                                <option :value="c.kode" x-text="c.kode + ' – ' + c.nama"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                </div>
+                <x-misc.field label="Kategori" :required="true">
+                    <select class="input" x-model="akunForm.category_id">
+                        <option value="">— Pilih Kategori —</option>
+                        <template x-for="c in accountCategoriesAll" :key="c.id">
+                            <option :value="c.id" x-text="c.name"></option>
+                        </template>
+                    </select>
+                </x-misc.field>
+                <x-misc.field label="Catatan">
+                    <textarea class="input" rows="2" x-model="akunForm.note" placeholder="Catatan (opsional)"></textarea>
+                </x-misc.field>
             </div>
             <x-slot:footer>
                 <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Akun</button>
+                <button class="btn btn-primary" x-on:click="submitAddAkun()"><x-misc.icon name="check" :size="14" />Simpan Akun</button>
             </x-slot:footer>
         </x-misc.modal>
 
@@ -1190,42 +1293,33 @@
                         <x-misc.icon name="book" :size="20" stroke="var(--ink-3)" />
                     </div>
                     <div>
-                        <div style="font-weight:700; font-size:14px;" x-text="editAkunData.nama"></div>
-                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editAkunData.kode"></div>
+                        <div style="font-weight:700; font-size:14px;" x-text="editAkunData.name"></div>
+                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editAkunData.code"></div>
                     </div>
                 </div>
                 <div class="form-grid-1-2">
                     <x-misc.field label="Kode Akun" :required="true">
-                        <input class="input mono" x-model="editAkunData.kode" />
+                        <input class="input mono" x-model="editAkunData.code" />
                     </x-misc.field>
                     <x-misc.field label="Nama Akun" :required="true">
-                        <input class="input" x-model="editAkunData.nama" />
+                        <input class="input" x-model="editAkunData.name" />
                     </x-misc.field>
                 </div>
-                <div class="form-grid-2">
-                    <x-misc.field label="Tipe Akun">
-                        <select class="input" x-model="editAkunData.tipe">
-                            <option value="Aset">Aset</option>
-                            <option value="Liabilitas">Liabilitas</option>
-                            <option value="Ekuitas">Ekuitas</option>
-                            <option value="Pendapatan">Pendapatan</option>
-                            <option value="Beban Pokok">Beban Pokok</option>
-                            <option value="Beban Operasional">Beban Operasional</option>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Sub Kategori">
-                        <select class="input" x-model="editAkunData.subKategori">
-                            <option value="">— Tidak ada (akun utama) —</option>
-                            <template x-for="c in coaAll.filter(c => c.parent === null)" :key="c.kode">
-                                <option :value="c.kode" x-text="c.kode + ' – ' + c.nama"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                </div>
+                <x-misc.field label="Kategori" :required="true">
+                    <select class="input" x-model="editAkunData.category_id">
+                        <option value="">— Pilih Kategori —</option>
+                        <template x-for="c in accountCategoriesAll" :key="c.id">
+                            <option :value="c.id" x-text="c.name"></option>
+                        </template>
+                    </select>
+                </x-misc.field>
+                <x-misc.field label="Catatan">
+                    <textarea class="input" rows="2" x-model="editAkunData.note" placeholder="Catatan (opsional)"></textarea>
+                </x-misc.field>
             </div>
             <x-slot:footer>
                 <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Perubahan</button>
+                <button class="btn btn-primary" x-on:click="submitEditAkun()"><x-misc.icon name="check" :size="14" />Simpan Perubahan</button>
             </x-slot:footer>
         </x-misc.modal>
 

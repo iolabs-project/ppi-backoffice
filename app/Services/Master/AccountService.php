@@ -37,7 +37,6 @@ class AccountService
             'id',
             'name',
         )
-        ->where('company_id', config('context.selected_company_id'))
         ->whereNull('deleted_at')
         ->get();
 
@@ -52,6 +51,7 @@ class AccountService
             'code',
             'name',
             'note',
+            'deleted_at',
         )
         ->where('company_id', config('context.selected_company_id'));
 

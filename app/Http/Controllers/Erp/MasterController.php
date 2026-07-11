@@ -17,7 +17,7 @@ class MasterController extends Controller
         return view('pages.master.index', [
             'currentPage'        => 'master',
             'breadcrumb'         => [['label' => 'Master Data']],
-            'chartOfAccounts'    => ErpDataService::chartOfAccounts(),
+            'accountCategories'  => $accountService->fetchAccountCategoryData(),
             'users'              => ErpDataService::users(),
             'roles'              => ErpDataService::roles(),
             'units'              => Unit::whereNull('deleted_at')->select('id', 'name', 'symbol')->get(),
