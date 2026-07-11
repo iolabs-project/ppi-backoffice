@@ -53,6 +53,7 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
             $table->text('description')->nullable();
             $table->decimal('amount', 18, 4)->default(0);
+            $table->enum('billed_by', ['supplier', 'third_party', 'internal'])->default('supplier');
             $table->timestamps();
         });
     }

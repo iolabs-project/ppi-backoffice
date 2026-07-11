@@ -11,6 +11,7 @@ class GoodsReceiptCost extends Model
         'account_id',
         'description',
         'amount',   
+        'billed_by',
     ];
 
     protected $casts = [

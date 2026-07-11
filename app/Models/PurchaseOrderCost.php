@@ -10,11 +10,14 @@ class PurchaseOrderCost extends Model
         'purchase_order_id',
         'account_id',
         'description',
+        'billed_by',
+        'is_inventory_cost',
         'amount',   
     ];
 
     protected $casts = [
         'amount' => 'double',
+        'is_inventory_cost' => 'boolean',
     ];
 
     public function purchaseOrder()

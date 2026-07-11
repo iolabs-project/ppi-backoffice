@@ -24,7 +24,7 @@ return new class extends Migration
             $table->enum('status', ['draft', 'open', 'closed', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 18, 4)->default(0);
             $table->decimal('discount_percentage', 5, 2)->default(0);
-            $table->decimal('discount_amount', 18, 4)->default(0); 
+            $table->decimal('discount_amount', 18, 4)->default(0);
             $table->decimal('tax_percentage', 5, 2)->default(0);
             $table->decimal('tax_amount', 18, 4)->default(0);
             $table->decimal('down_payment_amount', 18, 4)->default(0);
@@ -57,6 +57,8 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
             $table->text('description')->nullable();
             $table->decimal('amount', 18, 4)->default(0);
+            $table->enum('billed_by', ['supplier', 'third_party', 'internal'])->default('supplier');
+            $table->boolean('is_inventory_cost')->default(false);
             $table->timestamps();
 
             $table->index(['purchase_order_id', 'account_id']);

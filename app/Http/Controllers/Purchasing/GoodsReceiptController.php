@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Purchasing;
 
 use App\Enums\GoodsReceiptStatus;
 use App\Http\Controllers\Controller;
-use App\Services\PurchasingService;
+use App\Services\Purchasing\GoodsReceiptService;
+use App\Services\Purchasing\PurchaseOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -23,13 +24,13 @@ class GoodsReceiptController extends Controller
         return view('purchasing.goods-receipt.index', $data);
     }
 
-    public function datatable(Request $request, PurchasingService $purchasingService)
+    public function datatable(Request $request, GoodsReceiptService $goodsReceiptService)
     {
-        $data = $purchasingService->fetchGoodsReceiptTableData($request);
+        $data = $goodsReceiptService->fetchGoodsReceiptTableData($request);
         return response()->json($data);
     }
 
-    public function store(Request $request, PurchasingService $purchasingService)
+    public function store(Request $request, GoodsReceiptService $goodsReceiptService)
     {
         try {
             $request->validate(
@@ -42,7 +43,7 @@ class GoodsReceiptController extends Controller
                 ]
             );
 
-            $data = $purchasingService->storeGoodsReceipt($request);
+            $data = $goodsReceiptService->storeGoodsReceipt($request);
 
             return response()->json(['redirect' => route('purchasings.goods_receipts.edit', $data->id), 'message' => 'Goods receipt berhasil dibuat.']);
         } catch (ValidationException $e) {
@@ -62,7 +63,7 @@ class GoodsReceiptController extends Controller
         }
     }
 
-    public function show(PurchasingService $purchasingService, int $id)
+    public function show(GoodsReceiptService $goodsReceiptService, int $id)
     {
         $data = [
             'currentPage'   => 'pembelian.penerimaan',
@@ -70,15 +71,15 @@ class GoodsReceiptController extends Controller
                 ['label' => 'Penerimaan Barang', 'url' => route('purchasings.goods_receipts.index')],
                 ['label' => 'Detail'],
             ],
-            'goodsReceipt'  => $purchasingService->fetchGoodsReceiptByID($id),
+            'goodsReceipt'  => $goodsReceiptService->fetchGoodsReceiptByID($id),
         ];
 
         return view('purchasing.goods-receipt.show', $data);
     }
 
-    public function edit(PurchasingService $purchasingService, int $id)
+    public function edit(GoodsReceiptService $goodsReceiptService, PurchaseOrderService $purchaseOrderService, int $id)
     {
-        $goodsReceipt = $purchasingService->fetchGoodsReceiptByID($id);
+        $goodsReceipt = $goodsReceiptService->fetchGoodsReceiptByID($id);
         $data = [
             'currentPage'   => 'pembelian.penerimaan',
             'breadcrumb'    => [
@@ -86,13 +87,13 @@ class GoodsReceiptController extends Controller
                 ['label' => 'Edit'],
             ],
             'goodsReceipt'  => $goodsReceipt,
-            'remainingPOItems' => $purchasingService->fetchPOItemsForGoodsReceipt($goodsReceipt->purchase_order_id),
+            'remainingPOItems' => $purchaseOrderService->fetchPOItemsForGoodsReceipt($goodsReceipt->purchase_order_id),
         ];
 
         return view('purchasing.goods-receipt.edit', $data);
     }
 
-    public function update(Request $request, PurchasingService $purchasingService, int $id)
+    public function update(Request $request, GoodsReceiptService $goodsReceiptService, int $id)
     {
         if ($request->input('status') !== GoodsReceiptStatus::DRAFT->value) {
             $request->validate(
@@ -116,6 +117,7 @@ class GoodsReceiptController extends Controller
                     'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
                     'costs.*.description' => 'nullable|string|max:1000',
                     'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
+                    'costs.*.billed_by' => 'required_with:costs.*.amount|in:supplier,third_party,internal',
                 ],
                 [
                     'receipt_date.required' => 'Tanggal penerimaan harus diisi.',
@@ -130,12 +132,13 @@ class GoodsReceiptController extends Controller
                     'details.*.discount_percentage.required' => 'Terdapat produk yang belum diisi persentase diskon. Silakan isi persentase diskon untuk setiap produk.',
                     'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
                     'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
+                    'costs.*.billed_by.required_with' => 'Pihak yang menagih harus dipilih jika jumlah biaya diisi.',
                 ]
             );
         }
 
         try {
-            $purchasingService->updateGoodsReceipt($request, $id);
+            $goodsReceiptService->updateGoodsReceipt($request, $id);
             return response()->json(['redirect' => route('purchasings.goods_receipts.index'), 'message' => 'Goods Receipt berhasil diperbarui.']);
         } catch (ValidationException $e) {
             Log::error('Error GoodsReceiptController@update: ' . $e->getMessage(), [
@@ -154,10 +157,10 @@ class GoodsReceiptController extends Controller
         }
     }
 
-    public function cancel(Request $request, PurchasingService $purchasingService, int $id)
+    public function cancel(Request $request, GoodsReceiptService $goodsReceiptService, int $id)
     {
         try {
-            $purchasingService->changeGoodsReceiptStatus($id, GoodsReceiptStatus::CANCELLED->value);
+            $goodsReceiptService->changeGoodsReceiptStatus($id, GoodsReceiptStatus::CANCELLED->value);
             return response()->json(['message' => 'Goods Receipt berhasil dibatalkan.']);
         } catch (\Exception $e) {
             Log::error('Error GoodsReceiptController@cancel: ' . $e->getMessage(), [

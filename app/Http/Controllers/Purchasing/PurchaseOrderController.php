@@ -9,22 +9,22 @@ use App\Http\Controllers\Controller;
 use App\Services\Master\AccountService;
 use App\Services\Master\ContactService;
 use App\Services\Master\ProductService;
-use App\Services\PurchasingService;
+use App\Services\Purchasing\PurchaseOrderService;
 use App\Services\Master\WarehouseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PurchaseOrderController extends Controller
 {
-    private PurchasingService $purchasingService;
+    private PurchaseOrderService $purchaseOrderService;
     private ProductService $productService;
     private WarehouseService $warehouseService;
     private ContactService $contactService;
     private AccountService $accountService;
 
-    public function __construct(PurchasingService $purchasingService, ProductService $productService, WarehouseService $warehouseService, ContactService $contactService, AccountService $accountService)
+    public function __construct(PurchaseOrderService $purchaseOrderService, ProductService $productService, WarehouseService $warehouseService, ContactService $contactService, AccountService $accountService)
     {
-        $this->purchasingService = $purchasingService;
+        $this->purchaseOrderService = $purchaseOrderService;
         $this->productService = $productService;
         $this->warehouseService = $warehouseService;
         $this->contactService = $contactService;
@@ -43,7 +43,7 @@ class PurchaseOrderController extends Controller
 
     public function datatable(Request $request)
     {
-        $data = $this->purchasingService->fetchPurchaseOrderTableData($request);
+        $data = $this->purchaseOrderService->fetchPurchaseOrderTableData($request);
         return response()->json($data);
     }
 
@@ -55,7 +55,7 @@ class PurchaseOrderController extends Controller
                 ['label' => 'Pemesanan', 'url' => route('purchasings.purchase_orders.index')],
                 ['label' => 'Tambah'],
             ],
-            'number' => $this->purchasingService->generatePONumber(),
+            'number' => $this->purchaseOrderService->generatePONumber(),
             'paymentTerms' => PaymentTerm::dropdownOptions(),
             'products' => $this->productService->fetchProductData(),
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
@@ -81,8 +81,6 @@ class PurchaseOrderController extends Controller
                     'discount_amount' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
                     'tax_amount' => 'nullable|numeric|min:0',
-                    'transport_cost' => 'nullable|numeric|min:0',
-                    'other_cost' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'down_payment_amount' => 'nullable|numeric|min:0',
                     'down_payment_account_id' => 'nullable|exists:chart_of_accounts,id',
@@ -95,6 +93,11 @@ class PurchaseOrderController extends Controller
                     'details.*.unit_price' => 'required|numeric|min:0',
                     'details.*.discount_percentage' => 'nullable|numeric|min:0',
                     'details.*.discount_amount' => 'nullable|numeric|min:0',
+                    'costs' => 'nullable|array',
+                    'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
+                    'costs.*.description' => 'nullable|string|max:1000',
+                    'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
+                    'costs.*.billed_by' => 'required_with:costs.*.amount|in:supplier,third_party,internal',
                 ],
                 [
                     'supplier_id.required' => 'Supplier harus dipilih.',
@@ -107,6 +110,9 @@ class PurchaseOrderController extends Controller
                     'details.*.product_id.required' => 'Produk harus dipilih untuk setiap item.',
                     'details.*.quantity.required' => 'Kuantitas harus diisi untuk setiap item.',
                     'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
+                    'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
+                    'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
+                    'costs.*.billed_by.required_with' => 'Pihak yang menagih harus dipilih jika jumlah biaya diisi.',
                 ]
             );
         } else if ($request->input('status') === PurchaseOrderStatus::DRAFT->value) {
@@ -120,8 +126,6 @@ class PurchaseOrderController extends Controller
                     'due_date' => 'nullable|date',
                     'discount_percentage' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
-                    'transport_cost' => 'nullable|numeric|min:0',
-                    'other_cost' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'total_amount' => 'nullable|numeric|min:0',
                     'note' => 'nullable|string|max:1000',
@@ -140,7 +144,7 @@ class PurchaseOrderController extends Controller
         }
 
         try {
-            $this->purchasingService->storePurchaseOrder($request);
+            $this->purchaseOrderService->storePurchaseOrder($request);
             return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Purchase Order berhasil dibuat.']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@store: ' . $e->getMessage(), [
@@ -154,7 +158,7 @@ class PurchaseOrderController extends Controller
 
     public function show(int $id)
     {
-        $purchaseOrder = $this->purchasingService->fetchPurchaseOrderByID($id);
+        $purchaseOrder = $this->purchaseOrderService->fetchPurchaseOrderByID($id);
         if (!$purchaseOrder) {
             abort(404, 'Purchase Order tidak ditemukan.');
         }
@@ -172,7 +176,7 @@ class PurchaseOrderController extends Controller
 
     public function edit(int $id)
     {
-        $purchaseOrder = $this->purchasingService->fetchPurchaseOrderByID($id);
+        $purchaseOrder = $this->purchaseOrderService->fetchPurchaseOrderByID($id);
         if (!$purchaseOrder) {
             abort(404, 'Purchase Order tidak ditemukan.');
         }
@@ -209,8 +213,6 @@ class PurchaseOrderController extends Controller
                     'discount_amount' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
                     'tax_amount' => 'nullable|numeric|min:0',
-                    'transport_cost' => 'nullable|numeric|min:0',
-                    'other_cost' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'down_payment_amount' => 'nullable|numeric|min:0',
                     'down_payment_account_id' => 'nullable|exists:chart_of_accounts,id',
@@ -227,6 +229,7 @@ class PurchaseOrderController extends Controller
                     'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
                     'costs.*.description' => 'nullable|string|max:1000',
                     'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
+                    'costs.*.billed_by' => 'required_with:costs.*.amount|in:supplier,third_party,internal',
                 ],
                 [
                     'supplier_id.required' => 'Supplier harus dipilih.',
@@ -241,6 +244,7 @@ class PurchaseOrderController extends Controller
                     'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
                     'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
                     'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
+                    'costs.*.billed_by.required_with' => 'Pihak yang menagih harus dipilih jika jumlah biaya diisi.',
                 ]
             );
         } else if ($request->input('status') === PurchaseOrderStatus::DRAFT->value) {
@@ -254,8 +258,6 @@ class PurchaseOrderController extends Controller
                     'due_date' => 'nullable|date',
                     'discount_percentage' => 'nullable|numeric|min:0',
                     'tax_percentage' => 'nullable|numeric|min:0',
-                    'transport_cost' => 'nullable|numeric|min:0',
-                    'other_cost' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'total_amount' => 'nullable|numeric|min:0',
                     'note' => 'nullable|string|max:1000',
@@ -274,7 +276,7 @@ class PurchaseOrderController extends Controller
         }
 
         try {
-            $this->purchasingService->updatePurchaseOrder($request, $id);
+            $this->purchaseOrderService->updatePurchaseOrder($request, $id);
             return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Purchase Order berhasil diperbarui.']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@update: ' . $e->getMessage(), [
@@ -289,7 +291,7 @@ class PurchaseOrderController extends Controller
     public function open(int $id)
     {
         try {
-            $this->purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::OPEN->value);
+            $this->purchaseOrderService->changePurchaseOrderStatus($id, PurchaseOrderStatus::OPEN->value);
             return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Open"']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@open: ' . $e->getMessage(), [
@@ -304,7 +306,7 @@ class PurchaseOrderController extends Controller
     public function close(int $id)
     {
         try {
-            $this->purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CLOSED->value);
+            $this->purchaseOrderService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CLOSED->value);
             return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Closed"']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@close: ' . $e->getMessage(), [
@@ -319,7 +321,7 @@ class PurchaseOrderController extends Controller
     public function cancel(int $id)
     {
         try {
-            $this->purchasingService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CANCELLED->value);
+            $this->purchaseOrderService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CANCELLED->value);
             return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Cancelled"']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@cancel: ' . $e->getMessage(), [
@@ -330,10 +332,4 @@ class PurchaseOrderController extends Controller
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Purchase Order. Silakan coba lagi.'], 500);
         }
     }
-
-    // public function itemOptions(PurchasingService $purchasingService, Request $request)
-    // {
-    //     $options = $purchasingService->fetchPurchaseOrderItemOptions($request);
-    //     return response()->json($options);
-    // }
 }
