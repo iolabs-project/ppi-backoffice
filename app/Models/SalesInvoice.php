@@ -22,9 +22,7 @@ class SalesInvoice extends Model
         'discount_percentage',
         'discount_amount',
         'tax_percentage',
-        'tax_amount',
-        'shipping_charge',
-        'other_charge',
+        'tax_amount',,
         'down_payment_amount',
         'total_amount',
         'remaining_amount',
@@ -39,8 +37,6 @@ class SalesInvoice extends Model
         'discount_amount' => 'double',
         'tax_percentage' => 'double',
         'tax_amount' => 'double',
-        'shipping_charge' => 'double',
-        'other_charge' => 'double',
         'down_payment_amount' => 'double',
         'subtotal' => 'double',
         'total_amount' => 'double',
@@ -75,5 +71,10 @@ class SalesInvoice extends Model
     public function items()
     {
         return $this->hasMany(SalesInvoiceItem::class);
+    }
+
+    public function charges()
+    {
+        return $this->hasMany(SalesInvoiceCharge::class);
     }
 }

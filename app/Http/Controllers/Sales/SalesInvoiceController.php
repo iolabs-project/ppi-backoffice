@@ -93,8 +93,6 @@ class SalesInvoiceController extends Controller
                     'status' => 'required|in:open',
                     'payment_terms' => 'required|in:net_7,net_14,net_30,net_45',
                     'discount_amount' => 'nullable|numeric|min:0',
-                    'shipping_charge' => 'nullable|numeric|min:0',
-                    'other_charge' => 'nullable|numeric|min:0',
                     'down_payment_amount' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'total_amount' => 'nullable|numeric|min:0',
@@ -106,6 +104,10 @@ class SalesInvoiceController extends Controller
                     'details.*.quantity' => 'required|numeric|min:0',
                     'details.*.unit_price' => 'required|numeric|min:0',
                     'details.*.discount_percentage' => 'nullable|numeric|min:0|max:100',
+                    'charges' => 'nullable|array',
+                    'charges.*.account_id' => 'required|exists:chart_of_accounts,id',
+                    'charges.*.description' => 'nullable|string|max:1000',
+                    'charges.*.amount' => 'required|numeric|min:0',
                 ],
                 [
                     'invoice_date.required' => 'Tanggal invoice harus diisi.',
@@ -119,6 +121,8 @@ class SalesInvoiceController extends Controller
                     'details.*.quantity.required' => 'Terdapat produk yang belum diisi jumlah. Silakan isi jumlah yang diharapkan untuk setiap produk.',
                     'details.*.unit_price.required' => 'Terdapat produk yang belum diisi harga satuannya. Silakan isi harga satuan untuk setiap produk.',
                     'details.*.discount_percentage.required' => 'Terdapat produk yang belum diisi persentase diskon. Silakan isi persentase diskon untuk setiap produk.',
+                    'charges.*.account_id.required' => 'Terdapat biaya yang belum dipilih. Silakan pilih akun untuk setiap biaya.',
+                    'charges.*.amount.required' => 'Terdapat biaya yang belum diisi jumlahnya. Silakan isi jumlah untuk setiap biaya.',
                 ]
             );
         }

@@ -16,12 +16,16 @@ class DeliveryOrder extends Model
         'reference_number',
         'delivery_date',
         'status',
+        'subtotal',
+        'total_amount',
         'note',
         'created_by',
     ];
 
     protected $casts = [
         'delivery_date' => 'date:Y-m-d',
+        'subtotal' => 'double',
+        'total_amount' => 'double',
     ];
 
     public function customer()

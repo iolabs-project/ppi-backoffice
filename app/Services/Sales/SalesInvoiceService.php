@@ -13,8 +13,10 @@ use App\Models\DeliveryOrderItemBatch;
 use App\Models\InventoryTransaction;
 use App\Models\ProductBatch;
 use App\Models\SalesInvoice;
+use App\Models\SalesInvoiceCharge;
 use App\Models\SalesInvoiceItem;
 use App\Models\SalesOrder;
+use App\Models\SalesOrderCharge;
 use App\Models\SalesOrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -91,33 +93,45 @@ class SalesInvoiceService
     public function storeSalesInvoice(Request $request): SalesInvoice
     {
         $salesOrder =  $this->salesOrderService->fetchSalesOrderByID($request->sales_order_id);
-        return SalesInvoice::create([
-            'company_id' => $salesOrder->company_id,
-            'sales_order_id' => $salesOrder->id,
-            'customer_id' => $salesOrder->customer_id,
-            'sales_person_id' => $salesOrder->sales_person_id,
-            'warehouse_id' => $salesOrder->warehouse_id,
-            'number' => $this->generateSINumber(),
-            'invoice_date' => now(),
-            'payment_terms' => $salesOrder->payment_terms,
-            'due_date' => now()->addDays(PaymentTerm::day($salesOrder->payment_terms)),
-            'status' => SalesInvoiceStatus::DRAFT->value,
-            'subtotal' => 0,
-            'discount_percentage' => $salesOrder->discount_percentage,
-            'discount_amount' => 0,
-            'tax_percentage' => $salesOrder->tax_percentage,
-            'tax_amount' => 0,
-            'other_charge' => $salesOrder->other_charge,
-            'shipping_charge' => $salesOrder->shipping_charge,
-            'total_amount' => 0,
-            'created_by' => auth()->user()->id,
-        ]);
+        return DB::transaction(function () use ($salesOrder) {
+            $invoice =  SalesInvoice::create([
+                'company_id' => $salesOrder->company_id,
+                'sales_order_id' => $salesOrder->id,
+                'customer_id' => $salesOrder->customer_id,
+                'sales_person_id' => $salesOrder->sales_person_id,
+                'warehouse_id' => $salesOrder->warehouse_id,
+                'number' => $this->generateSINumber(),
+                'invoice_date' => now(),
+                'payment_terms' => $salesOrder->payment_terms,
+                'due_date' => now()->addDays(PaymentTerm::day($salesOrder->payment_terms)),
+                'status' => SalesInvoiceStatus::DRAFT->value,
+                'subtotal' => 0,
+                'discount_percentage' => $salesOrder->discount_percentage,
+                'discount_amount' => 0,
+                'tax_percentage' => $salesOrder->tax_percentage,
+                'tax_amount' => 0,
+                'total_amount' => $salesOrder->charges->sum('amount'),
+                'created_by' => auth()->user()->id,
+            ]);
+
+            foreach ($salesOrder->charges as $charge) {
+                SalesInvoiceCharge::create([
+                    'sales_invoice_id' => $invoice->id,
+                    'account_id' => $charge->account_id,
+                    'description' => $charge->description,
+                    'amount' => $charge->amount,
+                ]);
+            }
+
+            return $invoice;
+        });
     }
 
     public function updateSalesInvoice(Request $request, int $id)
     {
         $salesInvoice = SalesInvoice::findOrFail($id);
         $detailsCollection = collect($request->input('details', []));
+        $chargesCollection = collect($request->input('charges', []));
         $subtotal = $detailsCollection->sum(function ($detail) {
             return (($detail['quantity'] ?? 0))
                 *
@@ -125,11 +139,11 @@ class SalesInvoiceService
                 *
                 (1 - (($detail['discount_percentage'] ?? 0) / 100));
         });
-
+        $chargesTotal = $chargesCollection->sum('amount');
         $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
         $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
 
-        DB::transaction(function () use ($salesInvoice, $request, $subtotal, $discountAmount, $taxAmount) {
+        DB::transaction(function () use ($salesInvoice, $request, $subtotal, $discountAmount, $taxAmount, $chargesTotal) {
             $salesInvoice->update([
                 'customer_id' => $request->customer_id,
                 'warehouse_id' => $request->warehouse_id,
@@ -142,43 +156,51 @@ class SalesInvoiceService
                 'discount_amount' => $discountAmount,
                 'tax_percentage' => $request->tax_percentage,
                 'tax_amount' => $taxAmount,
-                'shipping_charge' => $request->shipping_charge,
-                'other_charge' => $request->other_charge,
                 'subtotal' => $subtotal,
                 'down_payment_amount' => $request->down_payment_amount,
-                'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $request->other_charge + $request->shipping_charge,
-                'remaining_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $request->other_charge + $request->shipping_charge,
+                'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $chargesTotal,
+                'remaining_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $chargesTotal,
                 'note' => $request->note,
                 'payment_terms' => $request->payment_terms,
                 'status' => $request->status,
             ]);
 
             SalesInvoiceItem::where('sales_invoice_id', $salesInvoice->id)->delete();
+            SalesInvoiceCharge::where('sales_invoice_id', $salesInvoice->id)->delete();
         });
 
         foreach ($request->details as $detail) {
-                SalesInvoiceItem::create([
-                    'sales_invoice_id' => $salesInvoice->id,
-                    'delivery_order_item_id' => $detail['delivery_order_item_id'],
-                    'sales_order_item_id' => $detail['sales_order_item_id'],
-                    'product_id' => $detail['product_id'],
-                    'quantity' => $detail['quantity'],
-                    'unit_price' => $detail['unit_price'],
-                    'discount_percentage' => $detail['discount_percentage'] ?? 0,
-                    'discount_amount' => $detail['quantity'] * $detail['unit_price'] * (($detail['discount_percentage'] ?? 0) / 100),
-                    'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
-                ]);
-
-                if ($request->status === SalesInvoiceStatus::OPEN->value) {
-                    SalesOrderItem::where('id', $detail['sales_order_item_id'])
-                        ->increment('invoiced_quantity', $detail['quantity']);
-                }
-            }
+            SalesInvoiceItem::create([
+                'sales_invoice_id' => $salesInvoice->id,
+                'delivery_order_item_id' => $detail['delivery_order_item_id'],
+                'sales_order_item_id' => $detail['sales_order_item_id'],
+                'product_id' => $detail['product_id'],
+                'quantity' => $detail['quantity'],
+                'unit_price' => $detail['unit_price'],
+                'discount_percentage' => $detail['discount_percentage'] ?? 0,
+                'discount_amount' => $detail['quantity'] * $detail['unit_price'] * (($detail['discount_percentage'] ?? 0) / 100),
+                'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
+            ]);
 
             if ($request->status === SalesInvoiceStatus::OPEN->value) {
-                SalesOrder::where('id', $salesInvoice->sales_order_id)
-                ->decrement('down_payment_remaining_amount', $request->down_payment_amount);
+                SalesOrderItem::where('id', $detail['sales_order_item_id'])
+                    ->increment('invoiced_quantity', $detail['quantity']);
             }
+        }
+
+        foreach ($request->charges as $charge) {
+            SalesInvoiceCharge::create([
+                'sales_invoice_id' => $salesInvoice->id,
+                'account_id' => $charge['account_id'],
+                'description' => $charge['description'],
+                'amount' => $charge['amount'],
+            ]);
+        }
+
+        if ($request->status === SalesInvoiceStatus::OPEN->value) {
+            SalesOrder::where('id', $salesInvoice->sales_order_id)
+                ->decrement('down_payment_remaining_amount', $request->down_payment_amount);
+        }
     }
 
     public function fetchSalesInvoiceByID(int $id): ?SalesInvoice
@@ -188,6 +210,8 @@ class SalesInvoiceService
             'items:id,sales_invoice_id,sales_order_item_id,delivery_order_item_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
+            'charges:id,sales_invoice_id,account_id,description,amount',
+            'charges.account:id,code,name,category_id',
             'customer:id,name,code',
             'salesPerson:id,name,code',
             'warehouse:id,name,code',
@@ -209,8 +233,6 @@ class SalesInvoiceService
                 'discount_amount',
                 'tax_percentage',
                 'tax_amount',
-                'shipping_charge',
-                'other_charge',
                 'down_payment_amount',
                 'subtotal',
                 'total_amount',

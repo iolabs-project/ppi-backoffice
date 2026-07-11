@@ -6,6 +6,7 @@ use App\Enums\DeliveryOrderStatus;
 use App\Enums\SalesOrderStatus;
 use App\Models\Company;
 use App\Models\DeliveryOrder;
+use App\Models\DeliveryOrderCost;
 use App\Models\DeliveryOrderItem;
 use App\Models\DeliveryOrderItemBatch;
 use App\Models\InventoryTransaction;
@@ -94,6 +95,8 @@ class DeliveryOrderService
             'warehouse_id' => $salesOrder->warehouse_id,
             'number' => $this->generateDONumber(),
             'delivery_date' => now(),
+            'subtotal' => 0,
+            'total_amount' => 0,
             'status' => DeliveryOrderStatus::DRAFT->value,
             'created_by' => auth()->user()->id,
         ]);
@@ -110,6 +113,8 @@ class DeliveryOrderService
             'items.product.unit:id,symbol',
             'items.batches:id,delivery_order_item_id,product_batch_id,quantity,unit_cost',
             'items.batches.productBatch:id,batch_number',
+            'costs:id,delivery_order_id,account_id,description,amount',
+            'costs.account:id,code,name,category_id',
         ])
             ->select(
                 'id',
@@ -121,7 +126,9 @@ class DeliveryOrderService
                 'customer_id',
                 'warehouse_id',
                 'sales_order_id',
-                'status'
+                'status',
+                'subtotal',
+                'total_amount',
             )
             ->find($id);
     }
@@ -154,17 +161,26 @@ class DeliveryOrderService
         $header = DeliveryOrder::findOrFail($id);
         $requestCollection = collect($request->except('details'));
         $detailsCollection = collect($request->input('details', []));
+        $costsCollection = collect($request->input('costs', []));
 
-        DB::transaction(function () use ($requestCollection, $detailsCollection, $header) {
+        DB::transaction(function () use ($requestCollection, $detailsCollection, $costsCollection, $header) {
+            $subtotal = $detailsCollection->sum(fn($item) => (float) ($item['quantity'] ?? 0) * (float) ($item['unit_price'] ?? 0));
+            $totalAmount = $subtotal + $costsCollection->sum(fn($cost) => (float) ($cost['amount'] ?? 0));
+
             $header->update([
                 'reference_number' => $requestCollection->get('reference_number'),
                 'delivery_date' => $requestCollection->get('delivery_date'),
                 'status' => $requestCollection->get('status'),
                 'note' => $requestCollection->get('note'),
+                'subtotal' => $subtotal,
+                'total_amount' => $totalAmount + $subtotal,
             ]);
 
+            DeliveryOrderItemBatch::whereHas('deliveryOrderItem', function ($query) use ($header) {
+                $query->where('delivery_order_id', $header->id);
+            })->delete();
             DeliveryOrderItem::where('delivery_order_id', $header->id)->delete();
-
+            DeliveryOrderCost::where('delivery_order_id', $header->id)->delete();
             if ($requestCollection->get('status') === DeliveryOrderStatus::DRAFT->value) {
                 $this->saveDraftDeliveryOrder($header, $detailsCollection);
             } elseif ($requestCollection->get('status') === DeliveryOrderStatus::FINISHED->value) {
@@ -173,7 +189,7 @@ class DeliveryOrderService
         });
     }
 
-    private function saveDraftDeliveryOrder(DeliveryOrder $deliveryOrder, Collection $detailsCollection): void
+    private function saveDraftDeliveryOrder(DeliveryOrder $deliveryOrder, Collection $detailsCollection, Collection $costsCollection): void
     {
         foreach ($detailsCollection as $detail) {
             $item = DeliveryOrderItem::create([
@@ -196,10 +212,19 @@ class DeliveryOrderService
                     'unit_cost' => $batch['unit_cost'] ?? 0,
                 ]);
             }
+
+            foreach ($costsCollection as $cost) {
+                DeliveryOrderCost::create([
+                    'delivery_order_id' => $deliveryOrder->id,
+                    'account_id' => $cost['account_id'],
+                    'description' => $cost['description'] ?? null,
+                    'amount' => (float) ($cost['amount'] ?? 0),
+                ]);
+            }
         }
     }
 
-    private function finalizeDeliveryOrder(DeliveryOrder $deliveryOrder, Collection $detailsCollection): void
+    private function finalizeDeliveryOrder(DeliveryOrder $deliveryOrder, Collection $detailsCollection, Collection $costsCollection): void
     {
         foreach ($detailsCollection as $detail) {
             $quantity = (float) ($detail['quantity'] ?? 0);
@@ -307,6 +332,19 @@ class DeliveryOrderService
                 $query->whereColumn('shipped_quantity', '<', 'quantity');
             })
             ->update(['status' => SalesOrderStatus::CLOSED->value]);
+
+
+        foreach ($costsCollection as $cost) {
+            DeliveryOrderCost::create([
+                'delivery_order_id' => $deliveryOrder->id,
+                'account_id' => $cost['account_id'],
+                'description' => $cost['description'] ?? null,
+                'amount' => (float) ($cost['amount'] ?? 0),
+            ]);
+
+            // TODO: create draft cost invoice for the delivery order cost, if needed. This part is not implemented yet.
+        }
+    
     }
 
     public function changeDeliveryOrderStatus(int $id, string $status): void

@@ -5,6 +5,8 @@ namespace App\Services\Sales;
 use App\Enums\DeliveryOrderStatus;
 use App\Models\Company;
 use App\Models\SalesOrder;
+use App\Models\SalesOrderCharge;
+use App\Models\SalesOrderCost;
 use App\Models\SalesOrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -85,6 +87,10 @@ class SalesOrderService
             'items:id,sales_order_id,product_id,quantity,shipped_quantity,invoiced_quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
+            'costs:id,sales_order_id,account_id,description,amount,billed_by',
+            'costs.account:id,code,name,category_id',
+            'charges:id,sales_order_id,account_id,description,amount',
+            'charges.account:id,code,name,category_id',
             'customer:id,name,code',
             'warehouse:id,name,code',
             'salesPerson:id,name,code',
@@ -105,8 +111,6 @@ class SalesOrderService
                 'discount_amount',
                 'tax_percentage',
                 'tax_amount',
-                'shipping_charge',
-                'other_charge',
                 'subtotal',
                 'down_payment_amount',
                 'down_payment_account_id',
@@ -124,6 +128,10 @@ class SalesOrderService
     {
         DB::transaction(function () use ($request) {
             $detailsCollection = collect($request->input('details', []));
+            $costsCollection = collect($request->input('costs', []));
+            $chargesCollection = collect($request->input('charges', []));
+            $totalCostAmount = $costsCollection->sum('amount');
+            $totalChargeAmount = $chargesCollection->sum('amount');
             $subtotal = $detailsCollection->sum(function ($item) {
                 return (($item['quantity'] ?? 0))
                     *
@@ -149,13 +157,11 @@ class SalesOrderService
                     'tax_percentage' => $request->tax_percentage,
                     'discount_amount' => $discountAmount,
                     'tax_amount' => $taxAmount,
-                    'shipping_charge' => $request->shipping_charge,
-                    'other_charge' => $request->other_charge,
                     'down_payment_amount' => $request->down_payment_amount,
                     'down_payment_remaining_amount' => $request->down_payment_amount,
                     'down_payment_account_id' => $request->down_payment_account_id,
                     'subtotal' => $subtotal,
-                    'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $request->shipping_charge + $request->other_charge,
+                    'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $totalCostAmount + $totalChargeAmount,
                     'note' => $request->note,
                     'payment_terms' => $request->payment_terms,
                     'status' => $request->status,
@@ -175,6 +181,24 @@ class SalesOrderService
                     'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] / 100)),
                 ]);
             }
+
+            foreach ($request->input('costs', []) as $cost) {
+                SalesOrderCost::create([
+                    'sales_order_id' => $form->id,
+                    'account_id' => $cost['account_id'],
+                    'description' => $cost['description'],
+                    'amount' => $cost['amount'],
+                ]);
+            }
+
+            foreach ($request->input('charges', []) as $charge) {
+                SalesOrderCharge::create([
+                    'sales_order_id' => $form->id,
+                    'account_id' => $charge['account_id'],
+                    'description' => $charge['description'],
+                    'amount' => $charge['amount'],
+                ]);
+            }
         });
     }
 
@@ -183,6 +207,10 @@ class SalesOrderService
         DB::transaction(function () use ($request, $id) {
             $salesOrder = SalesOrder::findOrFail($id);
             $detailsCollection = collect($request->input('details', []));
+            $costsCollection = collect($request->input('costs', []));
+            $chargesCollection = collect($request->input('charges', []));
+            $totalCostAmount = $costsCollection->sum('amount');
+            $totalChargeAmount = $chargesCollection->sum('amount');
             $subtotal = $detailsCollection->sum(function ($detail) {
                 return (($detail['quantity'] ?? 0))
                     *
@@ -205,18 +233,18 @@ class SalesOrderService
                 'discount_amount' => $discountAmount,
                 'tax_percentage' => $request->tax_percentage,
                 'tax_amount' => $taxAmount,
-                'shipping_charge' => $request->shipping_charge,
-                'other_charge' => $request->other_charge,
                 'subtotal' => $subtotal,
                 'down_payment_amount' => $request->down_payment_amount,
                 'down_payment_account_id' => $request->down_payment_account_id,
-                'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $request->shipping_charge + $request->other_charge,
+                'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $totalCostAmount + $totalChargeAmount,
                 'note' => $request->note,
                 'payment_terms' => $request->payment_terms,
                 'status' => $request->status,
             ]);
 
             // Delete existing items
+            SalesOrderCost::where('sales_order_id', $salesOrder->id)->delete();
+            SalesOrderCharge::where('sales_order_id', $salesOrder->id)->delete();
             SalesOrderItem::where('sales_order_id', $salesOrder->id)->delete();
 
             // Create new items
@@ -232,6 +260,24 @@ class SalesOrderService
                     'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
                 ]);
             }
+
+            foreach ($request->input('costs', []) as $cost) {
+                SalesOrderCost::create([
+                    'sales_order_id' => $salesOrder->id,
+                    'account_id' => $cost['account_id'],
+                    'description' => $cost['description'],
+                    'amount' => $cost['amount'],
+                ]);
+            }
+
+            foreach ($request->input('charges', []) as $charge) {
+                SalesOrderCharge::create([
+                    'sales_order_id' => $salesOrder->id,
+                    'account_id' => $charge['account_id'],
+                    'description' => $charge['description'],
+                    'amount' => $charge['amount'],
+                ]);
+            }
         });
     }
 
@@ -241,7 +287,7 @@ class SalesOrderService
         $salesOrder->update(['status' => $status]);
     }
 
-     public function fetchSOItemsForDeliveryOrder(int $id): Collection
+    public function fetchSOItemsForDeliveryOrder(int $id): Collection
     {
         $query = SalesOrderItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol'])
             ->where('sales_order_id', $id)
@@ -263,5 +309,4 @@ class SalesOrderService
             ];
         });
     }
-
 }

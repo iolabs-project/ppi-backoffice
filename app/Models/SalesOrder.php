@@ -19,8 +19,6 @@ class SalesOrder extends Model
         'discount_amount',
         'tax_percentage',
         'tax_amount',
-        'shipping_charge',
-        'other_charge',
         'subtotal',
         'down_payment_amount',
         'down_payment_remaining_amount',
@@ -40,8 +38,6 @@ class SalesOrder extends Model
         'discount_amount' => 'double',
         'tax_percentage' => 'double',
         'tax_amount' => 'double',
-        'shipping_charge' => 'double',
-        'other_charge' => 'double',
         'subtotal' => 'double',
         'down_payment_amount' => 'double',
         'down_payment_remaining_amount' => 'double',
@@ -54,6 +50,16 @@ class SalesOrder extends Model
     public function items()
     {
         return $this->hasMany(SalesOrderItem::class);
+    }
+
+    public function charges()
+    {
+        return $this->hasMany(SalesOrderCharge::class);
+    }
+
+    public function costs()
+    {
+        return $this->hasMany(SalesOrderCost::class);
     }
 
     public function customer()

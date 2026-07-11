@@ -29,8 +29,6 @@ return new class extends Migration
             $table->decimal('discount_amount', 18, 4)->default(0);
             $table->decimal('tax_percentage', 5, 2)->default(0);
             $table->decimal('tax_amount', 18, 4)->default(0);
-            $table->decimal('shipping_charge', 18, 4)->default(0);
-            $table->decimal('other_charge', 18, 4)->default(0);
             $table->decimal('down_payment_amount', 18, 4)->default(0);
             $table->decimal('total_amount', 18, 4)->default(0);
             $table->decimal('remaining_amount', 18, 4)->default(0);
@@ -52,6 +50,15 @@ return new class extends Migration
             $table->decimal('total_amount', 18, 4)->default(0);
             $table->timestamps();
         });
+
+        Schema::create('sales_invoice_charges', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('sales_invoice_id')->constrained('sales_invoices')->onDelete('cascade');
+            $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->text('description')->nullable();
+            $table->decimal('amount', 18, 4)->default(0);
+            $table->timestamps();
+        });
     }
 
     /**
@@ -59,6 +66,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('sales_invoice_charges');
         Schema::dropIfExists('sales_invoice_items');
         Schema::dropIfExists('sales_invoices');
     }
