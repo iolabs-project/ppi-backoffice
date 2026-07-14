@@ -23,7 +23,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-class PurchasingService
+class PurchaseInvoiceService
 {
     private PurchaseOrderService $purchaseOrderService;
     private GoodsReceiptService $goodsReceiptService;
@@ -112,6 +112,15 @@ class PurchasingService
             'total_amount' => 0,
             'created_by' => auth()->user()->id,
         ]);
+
+        foreach ($purchaseOrder->costs->where('billed_by', 'supplier') as $cost) {
+            PurchaseInvoiceCost::create([
+                'purchase_invoice_id' => $invoice->id,
+                'account_id' => $cost->account_id,
+                'description' => $cost->description,
+                'amount' => $cost->amount,
+            ]);
+        }
 
         return $invoice;
     }
@@ -226,7 +235,6 @@ class PurchasingService
                 'discount_amount',
                 'tax_percentage',
                 'tax_amount',
-                'other_cost',
                 'down_payment_amount',
                 'subtotal',
                 'total_amount',

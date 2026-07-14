@@ -19,12 +19,16 @@
                     discount_amount: purchaseInvoice.discount_amount || null,
                     tax_percentage: purchaseInvoice.tax_percentage || null,
                     tax_amount: purchaseInvoice.tax_amount || null,
-                    other_cost: purchaseInvoice.other_cost || null,
                     down_payment_amount: purchaseInvoice.down_payment_amount || 0,
                     payment_terms: purchaseInvoice.payment_terms || null,
                     subtotal: purchaseInvoice.subtotal || null,
                     total_amount: purchaseInvoice.total_amount || null,
                     note: purchaseInvoice.note || null,
+                    costs: (purchaseInvoice.costs || []).map(cost => ({
+                        account_id: cost.account_id,
+                        description: cost.description,
+                        amount: cost.amount,
+                    })),
                     details: (purchaseInvoice.items || []).map(item => ({
                         id: item.id,
                         goods_receipt_item_id: item.goods_receipt_item_id,
@@ -150,6 +154,24 @@
                     d.total_amount = d.subtotal - this.n(d.discount_amount);
                     // this.recalculate();
                 },
+                addCost() {
+                    this.formData.costs.push({
+                        account_id: null,
+                        description: null,
+                        amount: null,
+                    });
+                    this.recalculate();
+                },
+                removeCost(index) {
+                    this.formData.costs.splice(index, 1);
+                    this.recalculate();
+                },
+                handleCostInput() {
+                    this.recalculate();
+                },
+                costsTotal() {
+                    return this.formData.costs.reduce((sum, c) => sum + this.n(c.amount), 0);
+                },
                 recalculate() {
                     const sub = this.formData.details.reduce((sum, d) => sum + this.n(d.total_amount), 0);
                     this.formData.subtotal = sub;
@@ -159,7 +181,7 @@
                     this.formData.total_amount =
                         sub -
                         this.n(this.formData.discount_amount) +
-                        this.n(this.formData.other_cost) +
+                        this.costsTotal() +
                         this.n(this.formData.tax_amount) -
                         this.n(this.formData.down_payment_amount);
                 },
@@ -285,7 +307,6 @@
                     };
                     body.discount_percentage = this.n(body.discount_percentage);
                     body.tax_percentage = this.n(body.tax_percentage);
-                    body.other_cost = this.n(body.other_cost);
                     body.down_payment_amount = this.n(body.down_payment_amount);
                     body.details = body.details.map(d => ({
                         ...d,
@@ -294,6 +315,12 @@
                         discount_percentage: this.n(d.discount_percentage),
                         total_amount: this.n(d.total_amount),
                     }));
+                    body.costs = body.costs
+                        .filter(c => c.account_id && this.n(c.amount) > 0)
+                        .map(c => ({
+                            ...c,
+                            amount: this.n(c.amount),
+                        }));
 
                     Swal.fire({
                         title: 'Memproses penyimpanan draft tagihan...',
@@ -347,7 +374,6 @@
                     body.discount_percentage = this.n(body.discount_percentage);
                     body.tax_percentage = this.n(body.tax_percentage);
                     body.down_payment_amount = this.n(body.down_payment_amount);
-                    body.other_cost = this.n(body.other_cost);
                     body.details = body.details.map(d => ({
                         ...d,
                         quantity: this.n(d.quantity),
@@ -355,6 +381,12 @@
                         discount_percentage: this.n(d.discount_percentage),
                         total_amount: this.n(d.total_amount),
                     }));
+                    body.costs = body.costs
+                        .filter(c => c.account_id && this.n(c.amount) > 0)
+                        .map(c => ({
+                            ...c,
+                            amount: this.n(c.amount),
+                        }));
 
                     Swal.fire({
                         title: 'Memproses penyimpanan tagihan...',
@@ -590,7 +622,11 @@
                     </template>
                 </tbody>
             </table>
+        </div>
 
+        @include('purchasing.partials.additional-cost-table', ['accounts' => $accounts])
+
+        <div class="card" style="overflow:visible;">
             <div class="order-items-split">
                 <div class="order-extras">
                     <x-misc.field label="Catatan Internal">
@@ -655,9 +691,8 @@
                             </div>
 
                             <div class="order-summary__row">
-                                <span class="order-summary__label">Biaya Lain-lain</span>
-                                <input class="input num order-summary__cost-input" x-model="formData.other_cost"
-                                    x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
+                                <span class="order-summary__label">Biaya Tambahan</span>
+                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsTotal())"></span>
                             </div>
 
 

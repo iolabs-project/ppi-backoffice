@@ -10,12 +10,14 @@ class GoodsReceiptCost extends Model
         'goods_receipt_id',
         'account_id',
         'description',
-        'amount',   
+        'amount',
         'billed_by',
+        'is_inventory_cost',
     ];
 
     protected $casts = [
         'amount' => 'double',
+        'is_inventory_cost' => 'boolean',
     ];
 
     public function goodsReceipt()

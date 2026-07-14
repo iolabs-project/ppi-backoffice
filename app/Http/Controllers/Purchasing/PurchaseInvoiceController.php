@@ -5,13 +5,21 @@ namespace App\Http\Controllers\Purchasing;
 use App\Enums\PaymentTerm;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Http\Controllers\Controller;
-use App\Services\PurchasingService;
+use App\Services\Master\AccountService;
+use App\Services\Purchasing\PurchaseInvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class PurchaseInvoiceController extends Controller
 {
+    private AccountService $accountService;
+
+    public function __construct(AccountService $accountService)
+    {
+        $this->accountService = $accountService;
+    }
+
     public function index()
     {
         $data = [
@@ -22,13 +30,13 @@ class PurchaseInvoiceController extends Controller
         return view('purchasing.purchase-invoice.index', $data);
     }
 
-    public function datatable(Request $request, PurchasingService $purchasingService)
+    public function datatable(Request $request, PurchaseInvoiceService $purchaseInvoiceService)
     {
-        $data = $purchasingService->fetchPurchaseInvoiceTableData($request);
+        $data = $purchaseInvoiceService->fetchPurchaseInvoiceTableData($request);
         return response()->json($data);
     }
 
-    public function store(Request $request, PurchasingService $purchasingService)
+    public function store(Request $request, PurchaseInvoiceService $purchaseInvoiceService)
     {
         try {
             $request->validate(
@@ -41,7 +49,7 @@ class PurchaseInvoiceController extends Controller
                 ]
             );
 
-            $data = $purchasingService->storePurchaseInvoice($request);
+            $data = $purchaseInvoiceService->storePurchaseInvoice($request);
 
             return response()->json(['redirect' => route('purchasings.purchase_invoices.edit', $data->id), 'message' => 'Purchase invoice berhasil dibuat.']);
         } catch (ValidationException $e) {
@@ -61,9 +69,9 @@ class PurchaseInvoiceController extends Controller
         }
     }
 
-    public function edit(PurchasingService $purchasingService, int $id)
+    public function edit(PurchaseInvoiceService $purchaseInvoiceService, int $id)
     {
-        $purchaseInvoice = $purchasingService->fetchPurchaseInvoiceByID($id);
+        $purchaseInvoice = $purchaseInvoiceService->fetchPurchaseInvoiceByID($id);
         if (!$purchaseInvoice) {
             abort(404, 'Tagihan pembelian tidak ditemukan.');
         }
@@ -76,12 +84,13 @@ class PurchaseInvoiceController extends Controller
             ],
             'purchaseInvoice' => $purchaseInvoice,
             'paymentTerms' => PaymentTerm::dropdownOptions(),
-            'remainingGRItems' => $purchasingService->fetchGRItemsForPurchaseInvoice($purchaseInvoice->purchase_order_id),
+            'remainingGRItems' => $purchaseInvoiceService->fetchGRItemsForPurchaseInvoice($purchaseInvoice->purchase_order_id),
+            'accounts' => $this->accountService->fetchAccountData(null),
         ];
         return view('purchasing.purchase-invoice.edit', $data);
     }
 
-    public function update(Request $request, PurchasingService $purchasingService, int $id)
+    public function update(Request $request, PurchaseInvoiceService $purchaseInvoiceService, int $id)
     {
         if ($request->input('status') !== PurchaseInvoiceStatus::DRAFT->value) {
             $request->validate(
@@ -92,7 +101,6 @@ class PurchaseInvoiceController extends Controller
                     'status' => 'required|in:open',
                     'payment_terms' => 'required|in:net_7,net_14,net_30,net_45',
                     'discount_amount' => 'nullable|numeric|min:0',
-                    'other_cost' => 'nullable|numeric|min:0',
                     'down_payment_amount' => 'nullable|numeric|min:0',
                     'subtotal' => 'nullable|numeric|min:0',
                     'total_amount' => 'nullable|numeric|min:0',
@@ -128,7 +136,7 @@ class PurchaseInvoiceController extends Controller
         }
 
         try {
-            $purchasingService->updatePurchaseInvoice($request, $id);
+            $purchaseInvoiceService->updatePurchaseInvoice($request, $id);
             return response()->json(['redirect' => route('purchasings.purchase_invoices.index'), 'message' => 'Invoice Pembelian berhasil diperbarui.']);
         } catch (ValidationException $e) {
             Log::error('Error PurchaseInvoiceController@update: ' . $e->getMessage(), [
@@ -147,10 +155,10 @@ class PurchaseInvoiceController extends Controller
         }
     }
 
-    public function cancel(PurchasingService $purchasingService, int $id)
+    public function cancel(PurchaseInvoiceService $purchaseInvoiceService, int $id)
     {
         try {
-            $purchasingService->cancelPurchaseInvoice($id);
+            $purchaseInvoiceService->cancelPurchaseInvoice($id);
             return response()->json(['message' => 'Invoice Pembelian berhasil dibatalkan.']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseInvoiceController@cancel: ' . $e->getMessage(), [

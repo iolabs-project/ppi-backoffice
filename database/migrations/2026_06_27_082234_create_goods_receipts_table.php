@@ -54,6 +54,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('amount', 18, 4)->default(0);
             $table->enum('billed_by', ['supplier', 'third_party', 'internal'])->default('supplier');
+            $table->boolean('is_inventory_cost')->default(false);
             $table->timestamps();
         });
     }

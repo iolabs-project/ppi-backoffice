@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Purchasing;
 
+use App\Enums\BilledBy;
 use App\Enums\GoodsReceiptStatus;
 use App\Http\Controllers\Controller;
+use App\Services\Master\AccountService;
 use App\Services\Purchasing\GoodsReceiptService;
 use App\Services\Purchasing\PurchaseOrderService;
 use Illuminate\Http\Request;
@@ -12,6 +14,13 @@ use Illuminate\Validation\ValidationException;
 
 class GoodsReceiptController extends Controller
 {
+    private AccountService $accountService;
+
+    public function __construct(AccountService $accountService)
+    {
+        $this->accountService = $accountService;
+    }
+
     public function index()
     {
         $data = [
@@ -88,6 +97,8 @@ class GoodsReceiptController extends Controller
             ],
             'goodsReceipt'  => $goodsReceipt,
             'remainingPOItems' => $purchaseOrderService->fetchPOItemsForGoodsReceipt($goodsReceipt->purchase_order_id),
+            'accounts' => $this->accountService->fetchAccountData(null),
+            'billedByOptions' => BilledBy::dropdownOptions(),
         ];
 
         return view('purchasing.goods-receipt.edit', $data);
@@ -102,8 +113,6 @@ class GoodsReceiptController extends Controller
                     'receipt_date' => 'required|date',
                     'status' => 'required|in:draft,finished',
                     'discount_amount' => 'nullable|numeric|min:0',
-                    'transport_cost' => 'nullable|numeric|min:0',
-                    'other_cost' => 'nullable|numeric|min:0',
                     'note' => 'nullable|string|max:1000',
                     'details' => 'required|array|min:1',
                     'details.*.purchase_order_item_id' => 'required|exists:purchase_order_items,id',
@@ -118,6 +127,7 @@ class GoodsReceiptController extends Controller
                     'costs.*.description' => 'nullable|string|max:1000',
                     'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
                     'costs.*.billed_by' => 'required_with:costs.*.amount|in:supplier,third_party,internal',
+                    'costs.*.is_inventory_cost' => 'nullable|boolean',
                 ],
                 [
                     'receipt_date.required' => 'Tanggal penerimaan harus diisi.',

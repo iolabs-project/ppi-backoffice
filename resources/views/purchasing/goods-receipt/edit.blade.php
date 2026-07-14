@@ -16,10 +16,15 @@
                     subtotal: goodsReceipt.subtotal || null,
                     discount_percentage: goodsReceipt.discount_percentage || null,
                     discount_amount: goodsReceipt.discount_amount || null,
-                    transport_cost: goodsReceipt.transport_cost || null,
-                    other_cost: goodsReceipt.other_cost || null,
                     total_amount: goodsReceipt.total_amount || null,
                     note: goodsReceipt.note || null,
+                    costs: (goodsReceipt.costs || []).map(cost => ({
+                        account_id: cost.account_id,
+                        description: cost.description,
+                        billed_by: cost.billed_by,
+                        is_inventory_cost: !!cost.is_inventory_cost,
+                        amount: cost.amount,
+                    })),
                     details: (goodsReceipt.items || []).map(item => ({
                         id: item.id,
                         purchase_order_item_id: item.purchase_order_item_id,
@@ -113,11 +118,37 @@
                     this.calculateHPP();
                 },
 
+                addCost() {
+                    this.formData.costs.push({
+                        account_id: null,
+                        description: null,
+                        billed_by: 'supplier',
+                        is_inventory_cost: false,
+                        amount: null,
+                    });
+                    this.recalc();
+                },
+                removeCost(index) {
+                    this.formData.costs.splice(index, 1);
+                    this.recalc();
+                },
+                handleCostInput() {
+                    this.recalc();
+                },
+                costsInventoryTotal() {
+                    return this.formData.costs
+                        .filter(c => c.is_inventory_cost)
+                        .reduce((sum, c) => sum + this.n(c.amount), 0);
+                },
+                costsNonInventoryTotal() {
+                    return this.formData.costs
+                        .filter(c => !c.is_inventory_cost)
+                        .reduce((sum, c) => sum + this.n(c.amount), 0);
+                },
+
                 calculateHPP() {
                     const headerDiscount = this.n(this.formData.discount_amount);
-                    const additionalCost =
-                        this.n(this.formData.transport_cost) +
-                        this.n(this.formData.other_cost);
+                    const additionalCost = this.costsInventoryTotal();
 
                     const totalQty = this.formData.details.reduce(
                         (sum, d) => sum + this.n(d.received_quantity),
@@ -248,8 +279,6 @@
                         status: 'draft',
                     };
                     body.discount_amount = NumberUtils.parseMaskIntoNumeric(body.discount_amount);
-                    body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
-                    body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
                     body.details = body.details.map(d => ({
                         ...d,
                         expected_quantity: NumberUtils.parseMaskIntoNumeric(d.expected_quantity),
@@ -258,6 +287,12 @@
                         unit_price: NumberUtils.parseMaskIntoNumeric(d.unit_price),
                         unit_cost: NumberUtils.parseMaskIntoNumeric(d.unit_cost),
                     }));
+                    body.costs = body.costs
+                        .filter(c => c.account_id && NumberUtils.parseMaskIntoNumeric(c.amount) > 0)
+                        .map(c => ({
+                            ...c,
+                            amount: NumberUtils.parseMaskIntoNumeric(c.amount),
+                        }));
 
                     Swal.fire({
                         title: 'Memproses penyimpanan draft Penerimaan Barang...',
@@ -316,8 +351,6 @@
                                 status: 'finished',
                             };
                             body.discount_amount = NumberUtils.parseMaskIntoNumeric(body.discount_amount);
-                            body.transport_cost = NumberUtils.parseMaskIntoNumeric(body.transport_cost);
-                            body.other_cost = NumberUtils.parseMaskIntoNumeric(body.other_cost);
                             body.details = body.details.map(d => ({
                                 ...d,
                                 expected_quantity: NumberUtils.parseMaskIntoNumeric(d
@@ -331,6 +364,12 @@
                                 discount_percentage: NumberUtils.parseMaskIntoNumeric(d
                                     .discount_percentage),
                             }));
+                            body.costs = body.costs
+                                .filter(c => c.account_id && NumberUtils.parseMaskIntoNumeric(c.amount) > 0)
+                                .map(c => ({
+                                    ...c,
+                                    amount: NumberUtils.parseMaskIntoNumeric(c.amount),
+                                }));
 
                             Swal.fire({
                                 title: 'Memproses penyimpanan Penerimaan Barang...',
@@ -552,6 +591,11 @@
                     </template>
                 </tbody>
             </table>
+        </div>
+
+        @include('purchasing.partials.additional-cost-table', ['accounts' => $accounts, 'billedByOptions' => $billedByOptions])
+
+        <div class="card" style="overflow:visible;">
             <div class="order-items-split">
                 <div class="order-extras">
                     <x-misc.field label="Catatan Penerimaan">
@@ -595,22 +639,25 @@
                                         disabled />
                                 </div>
                             </div>
-                            <div class="order-summary__row" style="align-items:center;">
-                                <span class="order-summary__label">Biaya Transportasi</span>
-                                <input class="input num"
-                                    style="height:28px; width:130px; text-align:right; font-size:13px;"
-                                    x-model="formData.transport_cost" x-mask:dynamic="$money($input, ',')"
-                                    @input="recalc();" />
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Biaya Tambahan (Inventory)</span>
+                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsInventoryTotal())"></span>
                             </div>
-                            <div class="order-summary__row" style="align-items:center;">
-                                <span class="order-summary__label">Biaya Lain-lain</span>
-                                <input class="input num"
-                                    style="height:28px; width:130px; text-align:right; font-size:13px;"
-                                    x-model="formData.other_cost" x-mask:dynamic="$money($input, ',')"
-                                    @input="recalc();" />
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Biaya Tambahan (Non-Inventory)</span>
+                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsNonInventoryTotal())"></span>
                             </div>
                         </div>
                     </div>
+
+                    <template x-if="formData.details.reduce((sum, d) => sum + n(d.received_quantity), 0) > 0">
+                        <div style="margin-top:12px; padding:10px 12px; border-radius:8px; background:var(--bg-3); border:1px solid var(--line-2);">
+                            <div style="font-size:11px; color:var(--ink-4);">Estimasi Landed Cost per Unit</div>
+                            <div class="num" style="font-weight:600; font-size:14px;"
+                                x-text="'Rp ' + NumberUtils.formatNumericIntoMask(Math.round(costsInventoryTotal() / formData.details.reduce((sum, d) => sum + n(d.received_quantity), 0)))"></div>
+                            <div style="font-size:10px; color:var(--ink-4);">(Total Biaya Inventory / Total Qty Diterima)</div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>

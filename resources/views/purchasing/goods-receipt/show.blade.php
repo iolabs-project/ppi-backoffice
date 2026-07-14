@@ -94,13 +94,52 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+
+        @php
+            $inventoryCostTotal = $goodsReceipt->costs->where('is_inventory_cost', true)->sum('amount');
+            $nonInventoryCostTotal = $goodsReceipt->costs->where('is_inventory_cost', false)->sum('amount');
+        @endphp
+        @if ($goodsReceipt->costs->isNotEmpty())
+            <div class="card" style="overflow:hidden;">
+                <div class="card-hd">
+                    <div class="display card-hd-title">Biaya Tambahan (Landed Cost)</div>
+                </div>
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th style="width:48px;">#</th>
+                            <th>Deskripsi</th>
+                            <th>Akun</th>
+                            <th>Ditagih Oleh</th>
+                            <th style="text-align:center;">Biaya Inventory</th>
+                            <th style="text-align:right;">Jumlah</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($goodsReceipt->costs as $i => $cost)
+                            <tr>
+                                <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                                <td>{{ $cost->description ?: '—' }}</td>
+                                <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
+                                <td>{{ \App\Enums\BilledBy::from($cost->billed_by)->label() }}</td>
+                                <td style="text-align:center;">{{ $cost->is_inventory_cost ? 'Ya' : 'Tidak' }}</td>
+                                <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($cost->amount) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+
+        <div class="card" style="overflow:hidden;">
             <div class="order-items-split" style="grid-template-columns:1fr 320px;">
                 <div class="order-notes">
                     <div class="label">Catatan Penerimaan</div>
                     <div class="order-notes__text">{{ $goodsReceipt->note }}</div>
                 </div>
                 <div class="order-detail-summary">
-                    @foreach ([['Diskon', -$goodsReceipt->discount_amount, false], ['Ongkos Kirim', $goodsReceipt->transport_cost, false], ['Biaya Lain-Lain', $goodsReceipt->other_cost, false]] as [$lbl, $val, $bold])
+                    @foreach ([['Diskon', -$goodsReceipt->discount_amount, false], ['Biaya Tambahan (Inventory)', $inventoryCostTotal, false], ['Biaya Tambahan (Non-Inventory)', $nonInventoryCostTotal, false]] as [$lbl, $val, $bold])
                         <div
                             style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
                             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>

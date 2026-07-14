@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Purchasing;
 
 use App\Enums\AccountCategory;
+use App\Enums\BilledBy;
 use App\Enums\PaymentTerm;
 use App\Enums\PurchaseOrderStatus;
 use App\Http\Controllers\Controller;
@@ -61,6 +62,8 @@ class PurchaseOrderController extends Controller
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
             'suppliers' => $this->contactService->fetchContactData('supplier'),
             'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
+            'accounts' => $this->accountService->fetchAccountData(null),
+            'billedByOptions' => BilledBy::dropdownOptions(),
         ];
         return view('purchasing.purchase-order.create', $data);
     }
@@ -98,6 +101,7 @@ class PurchaseOrderController extends Controller
                     'costs.*.description' => 'nullable|string|max:1000',
                     'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
                     'costs.*.billed_by' => 'required_with:costs.*.amount|in:supplier,third_party,internal',
+                    'costs.*.is_inventory_cost' => 'nullable|boolean',
                 ],
                 [
                     'supplier_id.required' => 'Supplier harus dipilih.',
@@ -193,6 +197,8 @@ class PurchaseOrderController extends Controller
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
             'suppliers' => $this->contactService->fetchContactData('supplier'),
             'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
+            'accounts' => $this->accountService->fetchAccountData(null),
+            'billedByOptions' => BilledBy::dropdownOptions(),
         ];
         return view('purchasing.purchase-order.edit', $data);
     }
@@ -230,6 +236,7 @@ class PurchaseOrderController extends Controller
                     'costs.*.description' => 'nullable|string|max:1000',
                     'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
                     'costs.*.billed_by' => 'required_with:costs.*.amount|in:supplier,third_party,internal',
+                    'costs.*.is_inventory_cost' => 'nullable|boolean',
                 ],
                 [
                     'supplier_id.required' => 'Supplier harus dipilih.',

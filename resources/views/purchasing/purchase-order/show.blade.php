@@ -93,6 +93,45 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+
+        @php
+            $inventoryCostTotal = $purchaseOrder->costs->where('is_inventory_cost', true)->sum('amount');
+            $nonInventoryCostTotal = $purchaseOrder->costs->where('is_inventory_cost', false)->sum('amount');
+        @endphp
+        @if ($purchaseOrder->costs->isNotEmpty())
+            <div class="card" style="overflow:hidden;">
+                <div class="card-hd">
+                    <div class="display card-hd-title">Biaya Tambahan (Landed Cost)</div>
+                </div>
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th style="width:48px;">#</th>
+                            <th>Deskripsi</th>
+                            <th>Akun</th>
+                            <th>Ditagih Oleh</th>
+                            <th style="text-align:center;">Biaya Inventory</th>
+                            <th style="text-align:right;">Jumlah</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($purchaseOrder->costs as $i => $cost)
+                            <tr>
+                                <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                                <td>{{ $cost->description ?: '—' }}</td>
+                                <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
+                                <td>{{ \App\Enums\BilledBy::from($cost->billed_by)->label() }}</td>
+                                <td style="text-align:center;">{{ $cost->is_inventory_cost ? 'Ya' : 'Tidak' }}</td>
+                                <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($cost->amount) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+
+        <div class="card" style="overflow:hidden;">
             <div class="order-items-split" style="grid-template-columns:1fr 320px;">
                 <div class="order-notes">
                     <div class="label">Catatan Pembelian</div>
@@ -101,13 +140,13 @@
                 <div class="order-detail-summary">
                     @foreach (
                         [
-                            ['Nilai Bruto', $purchaseOrder->items->sum('subtotal'), false], 
-                            ['Diskon Item', -$purchaseOrder->items->sum('discount_amount'), false], 
-                            ['Subtotal', $purchaseOrder->subtotal, false], 
-                            ['Diskon', -$purchaseOrder->discount_amount, false], 
-                            ['Pajak', $purchaseOrder->tax_amount, false], 
-                            ['Ongkos Kirim', $purchaseOrder->transport_cost, false], 
-                            ['Biaya Lain-Lain', $purchaseOrder->other_cost, false], 
+                            ['Nilai Bruto', $purchaseOrder->items->sum('subtotal'), false],
+                            ['Diskon Item', -$purchaseOrder->items->sum('discount_amount'), false],
+                            ['Subtotal', $purchaseOrder->subtotal, false],
+                            ['Diskon', -$purchaseOrder->discount_amount, false],
+                            ['Pajak', $purchaseOrder->tax_amount, false],
+                            ['Biaya Tambahan (Inventory)', $inventoryCostTotal, false],
+                            ['Biaya Tambahan (Non-Inventory)', $nonInventoryCostTotal, false],
                             ['Total Pesanan', $purchaseOrder->total_amount, true]
                         ] as [$lbl, $val, $bold])
                         <div

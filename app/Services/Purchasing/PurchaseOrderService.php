@@ -113,8 +113,6 @@ class PurchaseOrderService
                 'discount_amount',
                 'tax_percentage',
                 'tax_amount',
-                'transport_cost',
-                'other_cost',
                 'subtotal',
                 'down_payment_amount',
                 'down_payment_account_id',
@@ -160,8 +158,6 @@ class PurchaseOrderService
                     'tax_percentage' => $request->tax_percentage,
                     'discount_amount' => $discountAmount,
                     'tax_amount' => $taxAmount,
-                    'transport_cost' => $request->transport_cost,
-                    'other_cost' => $request->other_cost,
                     'down_payment_amount' => $request->down_payment_amount,
                     'down_payment_remaining_amount' => $request->down_payment_amount,
                     'down_payment_account_id' => $request->down_payment_account_id,
@@ -256,6 +252,9 @@ class PurchaseOrderService
                     'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
                 ]);
             }
+
+            // Delete existing costs
+            PurchaseOrderCost::where('purchase_order_id', $purchaseOrder->id)->delete();
 
             foreach ($request->input('costs', []) as $cost) {
                 PurchaseOrderCost::create([

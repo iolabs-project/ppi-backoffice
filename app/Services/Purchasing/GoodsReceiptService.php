@@ -93,11 +93,22 @@ class GoodsReceiptService
             'receipt_date' => now(),
             'status' => GoodsReceiptStatus::DRAFT->value,
             'subtotal' => 0,
-            'discount_percentage' => $purchaseOrder->input('discount_percentage', 0),
+            'discount_percentage' => $purchaseOrder->discount_percentage ?? 0,
             'discount_amount' => 0,
             'total_amount' => 0,
             'created_by' => auth()->user()->id,
         ]);
+
+        foreach ($purchaseOrder->costs as $cost) {
+            GoodsReceiptCost::create([
+                'goods_receipt_id' => $goodsReceipt->id,
+                'account_id' => $cost->account_id,
+                'description' => $cost->description,
+                'billed_by' => $cost->billed_by,
+                'is_inventory_cost' => $cost->is_inventory_cost,
+                'amount' => $cost->amount,
+            ]);
+        }
 
         return $goodsReceipt;
     }
@@ -109,7 +120,7 @@ class GoodsReceiptService
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
             'items.purchaseOrderItem:id,quantity,received_quantity,discount_percentage,discount_amount,unit_price,total_amount',
-            'costs:id,goods_receipt_id,account_id,description,amount,billed_by',
+            'costs:id,goods_receipt_id,account_id,description,amount,billed_by,is_inventory_cost',
             'costs.account:id,code,name,category_id',
             'purchaseOrder:id,number',
             'supplier:id,name,code',
@@ -209,6 +220,7 @@ class GoodsReceiptService
                 'account_id' => $cost['account_id'],
                 'description' => $cost['description'] ?? null,
                 'billed_by' => $cost['billed_by'] ?? 'supplier',
+                'is_inventory_cost' => $cost['is_inventory_cost'] ?? false,
                 'amount' => $cost['amount'],
             ]);
         }
@@ -217,7 +229,7 @@ class GoodsReceiptService
     private function finalizeGoodsReceipt(GoodsReceipt $goodsReceipt, Collection $detailsCollection, Collection $costsCollection): void
     {
         $additionalCost = $costsCollection->sum(function ($cost) {
-            return $cost['amount'] ?? 0;
+            return ($cost['is_inventory_cost'] ?? false) ? ($cost['amount'] ?? 0) : 0;
         });
         $discountAmount = (float) ($goodsReceipt->discount_amount ?? 0);
         $totalQty = $detailsCollection->sum(function ($item) {
@@ -235,6 +247,7 @@ class GoodsReceiptService
                 'account_id' => $cost['account_id'],
                 'description' => $cost['description'] ?? null,
                 'billed_by' => $cost['billed_by'] ?? 'supplier',
+                'is_inventory_cost' => $cost['is_inventory_cost'] ?? false,
                 'amount' => $cost['amount'],
             ]);
         }
@@ -307,7 +320,7 @@ class GoodsReceiptService
                 'direction' => 1,
                 'quantity' => $goodsReceiptItem->received_quantity,
                 'unit_cost' => $goodsReceiptItem->unit_cost,
-                'total_cost' => $goodsReceiptItem->total_cost,
+                'total_cost' => $goodsReceiptItem->unit_cost * $goodsReceiptItem->received_quantity,
                 'stock_before' => $latestTransaction ? $latestTransaction->stock_after : 0,
                 'stock_after' => ($latestTransaction ? $latestTransaction->stock_after : 0) + $goodsReceiptItem->received_quantity,
                 'reference_type' => GoodsReceipt::class,
