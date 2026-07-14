@@ -10,11 +10,13 @@ class SalesOrderCharge extends Model
         'sales_order_id',
         'account_id',
         'description',
-        'amount',   
+        'amount',
+        'is_taxable',
     ];
 
     protected $casts = [
         'amount' => 'double',
+        'is_taxable' => 'boolean',
     ];
 
     public function salesOrder()

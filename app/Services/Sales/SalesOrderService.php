@@ -87,9 +87,9 @@ class SalesOrderService
             'items:id,sales_order_id,product_id,quantity,shipped_quantity,invoiced_quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
-            'costs:id,sales_order_id,account_id,description,amount,billed_by',
+            'costs:id,sales_order_id,account_id,description,amount,is_inventory_related',
             'costs.account:id,code,name,category_id',
-            'charges:id,sales_order_id,account_id,description,amount',
+            'charges:id,sales_order_id,account_id,description,amount,is_taxable',
             'charges.account:id,code,name,category_id',
             'customer:id,name,code',
             'warehouse:id,name,code',
@@ -130,8 +130,8 @@ class SalesOrderService
             $detailsCollection = collect($request->input('details', []));
             $costsCollection = collect($request->input('costs', []));
             $chargesCollection = collect($request->input('charges', []));
-            $totalCostAmount = $costsCollection->sum('amount');
             $totalChargeAmount = $chargesCollection->sum('amount');
+            $taxableChargeAmount = $chargesCollection->where('is_taxable', true)->sum('amount');
             $subtotal = $detailsCollection->sum(function ($item) {
                 return (($item['quantity'] ?? 0))
                     *
@@ -141,7 +141,7 @@ class SalesOrderService
                     (1 - (($item['discount_percentage'] ?? 0) / 100));
             });
             $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
-            $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
+            $taxAmount = ($subtotal - $discountAmount + $taxableChargeAmount) * ($request->tax_percentage ?? 0) / 100;
 
             $form =  SalesOrder::create(
                 [
@@ -161,7 +161,7 @@ class SalesOrderService
                     'down_payment_remaining_amount' => $request->down_payment_amount,
                     'down_payment_account_id' => $request->down_payment_account_id,
                     'subtotal' => $subtotal,
-                    'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $totalCostAmount + $totalChargeAmount,
+                    'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $totalChargeAmount,
                     'note' => $request->note,
                     'payment_terms' => $request->payment_terms,
                     'status' => $request->status,
@@ -186,7 +186,8 @@ class SalesOrderService
                 SalesOrderCost::create([
                     'sales_order_id' => $form->id,
                     'account_id' => $cost['account_id'],
-                    'description' => $cost['description'],
+                    'description' => $cost['description'] ?? null,
+                    'is_inventory_related' => $cost['is_inventory_related'] ?? false,
                     'amount' => $cost['amount'],
                 ]);
             }
@@ -195,7 +196,8 @@ class SalesOrderService
                 SalesOrderCharge::create([
                     'sales_order_id' => $form->id,
                     'account_id' => $charge['account_id'],
-                    'description' => $charge['description'],
+                    'description' => $charge['description'] ?? null,
+                    'is_taxable' => $charge['is_taxable'] ?? false,
                     'amount' => $charge['amount'],
                 ]);
             }
@@ -209,8 +211,8 @@ class SalesOrderService
             $detailsCollection = collect($request->input('details', []));
             $costsCollection = collect($request->input('costs', []));
             $chargesCollection = collect($request->input('charges', []));
-            $totalCostAmount = $costsCollection->sum('amount');
             $totalChargeAmount = $chargesCollection->sum('amount');
+            $taxableChargeAmount = $chargesCollection->where('is_taxable', true)->sum('amount');
             $subtotal = $detailsCollection->sum(function ($detail) {
                 return (($detail['quantity'] ?? 0))
                     *
@@ -220,7 +222,7 @@ class SalesOrderService
             });
 
             $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
-            $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
+            $taxAmount = ($subtotal - $discountAmount + $taxableChargeAmount) * ($request->tax_percentage ?? 0) / 100;
 
             $salesOrder->update([
                 'customer_id' => $request->customer_id,
@@ -236,7 +238,7 @@ class SalesOrderService
                 'subtotal' => $subtotal,
                 'down_payment_amount' => $request->down_payment_amount,
                 'down_payment_account_id' => $request->down_payment_account_id,
-                'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $totalCostAmount + $totalChargeAmount,
+                'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $totalChargeAmount,
                 'note' => $request->note,
                 'payment_terms' => $request->payment_terms,
                 'status' => $request->status,
@@ -265,7 +267,8 @@ class SalesOrderService
                 SalesOrderCost::create([
                     'sales_order_id' => $salesOrder->id,
                     'account_id' => $cost['account_id'],
-                    'description' => $cost['description'],
+                    'description' => $cost['description'] ?? null,
+                    'is_inventory_related' => $cost['is_inventory_related'] ?? false,
                     'amount' => $cost['amount'],
                 ]);
             }
@@ -274,7 +277,8 @@ class SalesOrderService
                 SalesOrderCharge::create([
                     'sales_order_id' => $salesOrder->id,
                     'account_id' => $charge['account_id'],
-                    'description' => $charge['description'],
+                    'description' => $charge['description'] ?? null,
+                    'is_taxable' => $charge['is_taxable'] ?? false,
                     'amount' => $charge['amount'],
                 ]);
             }

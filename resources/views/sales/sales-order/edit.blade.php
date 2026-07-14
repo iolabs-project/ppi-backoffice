@@ -19,14 +19,24 @@
                     discount_amount: salesOrder.discount_amount || null,
                     tax_percentage: salesOrder.tax_percentage || null,
                     tax_amount: salesOrder.tax_amount || null,
-                    shipping_charge: salesOrder.shipping_charge || null,
-                    other_charge: salesOrder.other_charge || null,
                     down_payment_account_id: salesOrder.down_payment_account_id || null,
                     down_payment_amount: salesOrder.down_payment_amount || null,
                     payment_terms: salesOrder.payment_terms || null,
                     subtotal: salesOrder.subtotal || null,
                     total_amount: salesOrder.total_amount || null,
                     note: salesOrder.note || null,
+                    charges: (salesOrder.charges || []).map(charge => ({
+                        account_id: charge.account_id,
+                        description: charge.description,
+                        is_taxable: !!charge.is_taxable,
+                        amount: charge.amount,
+                    })),
+                    costs: (salesOrder.costs || []).map(cost => ({
+                        account_id: cost.account_id,
+                        description: cost.description,
+                        is_inventory_related: !!cost.is_inventory_related,
+                        amount: cost.amount,
+                    })),
                     details: (salesOrder.items || []).map(item => ({
                         id: item.id,
                         product_id: item.product_id,
@@ -38,7 +48,7 @@
                         discount_percentage: item.discount_percentage,
                         discount_amount: item.discount_amount,
                         total_amount: item.total_amount,
-                        unit_cost: null,
+                        avg_unit_cost: null,
                     })),
                 },
                 // Customer Options
@@ -89,6 +99,7 @@
                         discount_percentage: null,
                         discount_amount: null,
                         total_amount: null,
+                        avg_unit_cost: null,
                     });
                 },
                 deleteInventory(index) {
@@ -110,6 +121,64 @@
                     item.code = inventory.product.code;
                     item.unit = inventory.product.unit.symbol;
                     item.available_stock = inventory.available_quantity;
+                    item.avg_unit_cost = inventory.avg_unit_cost;
+                },
+                addCharge() {
+                    this.formData.charges.push({
+                        account_id: null,
+                        description: null,
+                        is_taxable: false,
+                        amount: null,
+                    });
+                    this.recalculate();
+                },
+                removeCharge(index) {
+                    this.formData.charges.splice(index, 1);
+                    this.recalculate();
+                },
+                handleChargeInput() {
+                    this.recalculate();
+                },
+                addCost() {
+                    this.formData.costs.push({
+                        account_id: null,
+                        description: null,
+                        is_inventory_related: false,
+                        amount: null,
+                    });
+                    this.recalculate();
+                },
+                removeCost(index) {
+                    this.formData.costs.splice(index, 1);
+                    this.recalculate();
+                },
+                handleCostInput() {
+                    this.recalculate();
+                },
+                chargesTotal() {
+                    return this.formData.charges.reduce((sum, c) => sum + this.n(c.amount), 0);
+                },
+                taxableChargesTotal() {
+                    return this.formData.charges.filter(c => c.is_taxable).reduce((sum, c) => sum + this.n(c.amount), 0);
+                },
+                costsTotal() {
+                    return this.formData.costs.reduce((sum, c) => sum + this.n(c.amount), 0);
+                },
+                estimatedCOGS() {
+                    return this.formData.details.reduce((sum, d) => sum + (this.n(d.quantity) * this.n(d.avg_unit_cost)), 0);
+                },
+                estimatedRevenue() {
+                    return this.n(this.formData.subtotal) - this.n(this.formData.discount_amount) + this.chargesTotal();
+                },
+                estimatedCost() {
+                    return this.estimatedCOGS() + this.costsTotal();
+                },
+                estimatedProfit() {
+                    return this.estimatedRevenue() - this.estimatedCost();
+                },
+                estimatedMargin() {
+                    const revenue = this.estimatedRevenue();
+                    return revenue > 0 ? (this.estimatedProfit() / revenue) * 100 : 0;
                 },
                 handleWarehouseChange() {
                     if (this.warehouseSelected) {
@@ -126,7 +195,7 @@
                                 discount_percentage: null,
                                 discount_amount: null,
                                 total_amount: null,
-                                unit_cost: null,
+                                avg_unit_cost: null,
                             }];
                         }
                         this.formData.warehouse_id = this.warehouseSelected.id;
@@ -186,12 +255,11 @@
                     this.formData.subtotal = sub;
                     this.formData.discount_amount = Math.round((this.n(this.formData.discount_percentage) / 100) * sub);
                     this.formData.tax_amount = Math.round((this.n(this.formData.tax_percentage) / 100) * (sub - this.n(this
-                        .formData.discount_amount)));
+                        .formData.discount_amount) + this.taxableChargesTotal()));
                     this.formData.total_amount =
                         sub -
                         this.n(this.formData.discount_amount) +
-                        this.n(this.formData.shipping_charge) +
-                        this.n(this.formData.other_charge) +
+                        this.chargesTotal() +
                         this.n(this.formData.tax_amount) -
                         this.n(this.formData.down_payment_amount);
                 },
@@ -243,6 +311,7 @@
                         const inventory = inventories.find(inv => inv.product_id === d.product_id && inv.warehouse_id === this.formData.warehouse_id);
                         if (inventory) {
                             d.available_stock = inventory.available_quantity;
+                            d.avg_unit_cost = inventory.avg_unit_cost;
                         } else {
                             d.available_stock = 0;
                         }
@@ -257,8 +326,6 @@
                     };
                     body.discount_percentage = this.n(body.discount_percentage);
                     body.tax_percentage = this.n(body.tax_percentage);
-                    body.shipping_charge = this.n(body.shipping_charge);
-                    body.other_charge = this.n(body.other_charge);
                     body.down_payment_amount = this.n(body.down_payment_amount);
                     body.details = body.details.map(d => ({
                         ...d,
@@ -267,6 +334,12 @@
                         discount_percentage: this.n(d.discount_percentage),
                         total_amount: this.n(d.total_amount),
                     }));
+                    body.charges = body.charges
+                        .filter(c => c.account_id && this.n(c.amount) > 0)
+                        .map(c => ({ ...c, amount: this.n(c.amount) }));
+                    body.costs = body.costs
+                        .filter(c => c.account_id && this.n(c.amount) > 0)
+                        .map(c => ({ ...c, amount: this.n(c.amount) }));
                     return body;
                 },
 
@@ -554,7 +627,12 @@
                     </template>
                 </tbody>
             </table>
+        </div>
 
+        @include('sales.partials.additional-charge-table', ['accounts' => $accounts])
+        @include('sales.partials.additional-cost-table', ['accounts' => $accounts])
+
+        <div class="card" style="overflow:visible;">
             <div class="order-items-split">
                 <div class="order-extras">
                     <x-misc.field label="Catatan Internal">
@@ -620,15 +698,8 @@
                             </div>
 
                             <div class="order-summary__row">
-                                <span class="order-summary__label">Transport (Est)</span>
-                                <input class="input num order-summary__cost-input" x-model="formData.shipping_charge"
-                                    x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
-                            </div>
-
-                            <div class="order-summary__row">
-                                <span class="order-summary__label">Biaya Lain-lain</span>
-                                <input class="input num order-summary__cost-input" x-model="formData.other_charge"
-                                    x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
+                                <span class="order-summary__label">Biaya Tambahan (Customer)</span>
+                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(chargesTotal())"></span>
                             </div>
 
 
@@ -680,12 +751,35 @@
                         <span class="order-summary__total-value display num"
                             x-text="'Rp ' + (formData.total_amount ? NumberUtils.formatNumericIntoMask(formData.total_amount) : '0')"></span>
                     </div>
+
+                    <div style="margin-top:12px; padding:12px; border-radius:8px; background:var(--bg-3); border:1px solid var(--line-2);">
+                        <div class="display" style="font-size:12px; font-weight:600; margin-bottom:8px;">Profit Preview</div>
+                        <div style="display:flex; justify-content:space-between; font-size:12px; padding:3px 0;">
+                            <span style="color:var(--ink-3);">Estimasi Revenue</span>
+                            <span class="num" x-text="NumberUtils.formatNumericIntoMask(estimatedRevenue())"></span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:12px; padding:3px 0;">
+                            <span style="color:var(--ink-3);">Estimasi Total Cost</span>
+                            <span class="num" x-text="NumberUtils.formatNumericIntoMask(estimatedCost())"></span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; padding-top:6px; margin-top:4px; border-top:1px solid var(--line-2);">
+                            <span>Estimasi Profit</span>
+                            <span class="num" style="color:var(--accent);" x-text="NumberUtils.formatNumericIntoMask(estimatedProfit())"></span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:12px; padding-top:2px;">
+                            <span style="color:var(--ink-3);">Margin</span>
+                            <span class="num" x-text="estimatedMargin().toFixed(2) + '%'"></span>
+                        </div>
+                        <div style="font-size:10px; color:var(--ink-4); margin-top:6px;">
+                            Profit preview adalah estimasi. Nilai akan berubah sesuai item, biaya tambahan, atau biaya internal.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="order-form-footer">
-            <a href="{{ route('purchasings.purchase_orders.index') }}" class="btn btn-ghost">Batal</a>
+            <a href="{{ route('sales.sales_orders.index') }}" class="btn btn-ghost">Batal</a>
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
             <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check"
                     :size="14" />Simpan

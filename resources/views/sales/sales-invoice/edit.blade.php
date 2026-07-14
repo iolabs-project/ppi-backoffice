@@ -19,13 +19,17 @@
                     discount_amount: salesInvoice.discount_amount || null,
                     tax_percentage: salesInvoice.tax_percentage || null,
                     tax_amount: salesInvoice.tax_amount || null,
-                    shipping_charge: salesInvoice.shipping_charge || null,
-                    other_charge: salesInvoice.other_charge || null,
                     down_payment_amount: salesInvoice.down_payment_amount || 0,
                     payment_terms: salesInvoice.payment_terms || null,
                     subtotal: salesInvoice.subtotal || null,
                     total_amount: salesInvoice.total_amount || null,
                     note: salesInvoice.note || null,
+                    charges: (salesInvoice.charges || []).map(charge => ({
+                        account_id: charge.account_id,
+                        description: charge.description,
+                        is_taxable: !!charge.is_taxable,
+                        amount: charge.amount,
+                    })),
                     details: (salesInvoice.items || []).map(item => ({
                         id: item.id,
                         delivery_order_item_id: item.delivery_order_item_id,
@@ -139,17 +143,38 @@
                     d.discount_amount = this.n(d.subtotal) * (this.n(d.discount_percentage) / 100);
                     d.total_amount = d.subtotal - this.n(d.discount_amount);
                 },
+                addCharge() {
+                    this.formData.charges.push({
+                        account_id: null,
+                        description: null,
+                        is_taxable: false,
+                        amount: null,
+                    });
+                    this.recalculate();
+                },
+                removeCharge(index) {
+                    this.formData.charges.splice(index, 1);
+                    this.recalculate();
+                },
+                handleChargeInput() {
+                    this.recalculate();
+                },
+                chargesTotal() {
+                    return this.formData.charges.reduce((sum, c) => sum + this.n(c.amount), 0);
+                },
+                taxableChargesTotal() {
+                    return this.formData.charges.filter(c => c.is_taxable).reduce((sum, c) => sum + this.n(c.amount), 0);
+                },
                 recalculate() {
                     const sub = this.formData.details.reduce((sum, d) => sum + this.n(d.total_amount), 0);
                     this.formData.subtotal = sub;
                     this.formData.discount_amount = Math.round((this.n(this.formData.discount_percentage) / 100) * sub);
                     this.formData.tax_amount = Math.round((this.n(this.formData.tax_percentage) / 100) * (sub - this.n(this
-                        .formData.discount_amount)));
+                        .formData.discount_amount) + this.taxableChargesTotal()));
                     this.formData.total_amount =
                         sub -
                         this.n(this.formData.discount_amount) +
-                        this.n(this.formData.shipping_charge) +
-                        this.n(this.formData.other_charge) +
+                        this.chargesTotal() +
                         this.n(this.formData.tax_amount) -
                         this.n(this.formData.down_payment_amount);
                 },
@@ -204,8 +229,6 @@
                     };
                     body.discount_percentage = this.n(body.discount_percentage);
                     body.tax_percentage = this.n(body.tax_percentage);
-                    body.shipping_charge = this.n(body.shipping_charge);
-                    body.other_charge = this.n(body.other_charge);
                     body.down_payment_amount = this.n(body.down_payment_amount);
                     body.details = body.details.map(d => ({
                         ...d,
@@ -214,6 +237,9 @@
                         discount_percentage: this.n(d.discount_percentage),
                         total_amount: this.n(d.total_amount),
                     }));
+                    body.charges = body.charges
+                        .filter(c => c.account_id && this.n(c.amount) > 0)
+                        .map(c => ({ ...c, amount: this.n(c.amount) }));
 
                     Swal.fire({
                         title: 'Memproses penyimpanan draft tagihan...',
@@ -264,8 +290,6 @@
                     };
                     body.discount_percentage = this.n(body.discount_percentage);
                     body.tax_percentage = this.n(body.tax_percentage);
-                    body.shipping_charge = this.n(body.shipping_charge);
-                    body.other_charge = this.n(body.other_charge);
                     body.down_payment_amount = this.n(body.down_payment_amount);
                     body.details = body.details.map(d => ({
                         ...d,
@@ -274,6 +298,9 @@
                         discount_percentage: this.n(d.discount_percentage),
                         total_amount: this.n(d.total_amount),
                     }));
+                    body.charges = body.charges
+                        .filter(c => c.account_id && this.n(c.amount) > 0)
+                        .map(c => ({ ...c, amount: this.n(c.amount) }));
 
                     Swal.fire({
                         title: 'Memproses penyimpanan tagihan...',
@@ -507,7 +534,11 @@
                     </template>
                 </tbody>
             </table>
+        </div>
 
+        @include('sales.partials.additional-charge-table', ['accounts' => $accounts])
+
+        <div class="card" style="overflow:visible;">
             <div class="order-items-split">
                 <div class="order-extras">
                     <x-misc.field label="Catatan Internal">
@@ -571,15 +602,8 @@
                             </div>
 
                             <div class="order-summary__row">
-                                <span class="order-summary__label">Ongkos Kirim</span>
-                                <input class="input num order-summary__cost-input" x-model="formData.shipping_charge"
-                                    x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
-                            </div>
-
-                            <div class="order-summary__row">
-                                <span class="order-summary__label">Biaya Lain-lain</span>
-                                <input class="input num order-summary__cost-input" x-model="formData.other_charge"
-                                    x-mask:dynamic="$money($input, ',')" @input="recalculate()" />
+                                <span class="order-summary__label">Biaya Tambahan</span>
+                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(chargesTotal())"></span>
                             </div>
 
                         </div>

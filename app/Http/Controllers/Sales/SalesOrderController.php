@@ -63,6 +63,7 @@ class SalesOrderController extends Controller
             'customers' => $this->contactService->fetchContactData('customer'),
             'salesPersons' => $this->contactService->fetchContactData('employee'),
             'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
+            'accounts' => $this->accountService->fetchAccountData(null),
         ];
         return view('sales.sales-order.create', $data);
     }
@@ -201,6 +202,7 @@ class SalesOrderController extends Controller
             'customers' => $this->contactService->fetchContactData('customer'),
             'salesPersons' => $this->contactService->fetchContactData('employee'),
             'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
+            'accounts' => $this->accountService->fetchAccountData(null),
         ];
         return view('sales.sales-order.edit', $data);
     }
@@ -234,6 +236,14 @@ class SalesOrderController extends Controller
                     'details.*.unit_price' => 'required|numeric|min:0',
                     'details.*.discount_percentage' => 'nullable|numeric|min:0',
                     'details.*.discount_amount' => 'nullable|numeric|min:0',
+                    'costs' => 'nullable|array',
+                    'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
+                    'costs.*.description' => 'nullable|string|max:1000',
+                    'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
+                    'charges' => 'nullable|array',
+                    'charges.*.account_id' => 'required_with:charges.*.amount|exists:chart_of_accounts,id',
+                    'charges.*.description' => 'nullable|string|max:1000',
+                    'charges.*.amount' => 'required_with:charges.*.account_id|numeric|min:0',
                 ],
                 [
                     'customer_id.required' => 'Customer harus dipilih.',
@@ -246,6 +256,10 @@ class SalesOrderController extends Controller
                     'details.*.product_id.required' => 'Produk harus dipilih untuk setiap item.',
                     'details.*.quantity.required' => 'Kuantitas harus diisi untuk setiap item.',
                     'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
+                    'costs.*.account_id.required_with' => 'Akun biaya harus dipilih jika jumlah biaya diisi.',
+                    'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun biaya dipilih.',
+                    'charges.*.account_id.required_with' => 'Akun biaya tambahan harus dipilih jika jumlah biaya tambahan diisi.',
+                    'charges.*.amount.required_with' => 'Jumlah biaya tambahan harus diisi jika akun biaya tambahan dipilih.',
                 ]
             );
         } else if ($request->input('status') === SalesOrderStatus::DRAFT->value) {

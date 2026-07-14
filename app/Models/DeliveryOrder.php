@@ -49,4 +49,9 @@ class DeliveryOrder extends Model
     {
         return $this->hasMany(DeliveryOrderItem::class);
     }
+
+    public function costs()
+    {
+        return $this->hasMany(DeliveryOrderCost::class);
+    }
 }

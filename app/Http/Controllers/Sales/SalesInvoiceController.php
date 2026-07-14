@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sales;
 use App\Enums\PaymentTerm;
 use App\Enums\SalesInvoiceStatus;
 use App\Http\Controllers\Controller;
+use App\Services\Master\AccountService;
 use App\Services\Sales\DeliveryOrderService;
 use App\Services\Sales\SalesInvoiceService;
 use Illuminate\Http\Request;
@@ -13,6 +14,13 @@ use Illuminate\Validation\ValidationException;
 
 class SalesInvoiceController extends Controller
 {
+    private AccountService $accountService;
+
+    public function __construct(AccountService $accountService)
+    {
+        $this->accountService = $accountService;
+    }
+
     public function index()
     {
         $data = [
@@ -78,6 +86,7 @@ class SalesInvoiceController extends Controller
             'salesInvoice' => $salesInvoice,
             'paymentTerms' => PaymentTerm::dropdownOptions(),
             'remainingDOItems' => $deliveryOrderService->fetchDOItemsForSalesInvoice($salesInvoice->sales_order_id),
+            'accounts' => $this->accountService->fetchAccountData(null),
         ];
         return view('sales.sales-invoice.edit', $data);
     }
@@ -105,9 +114,9 @@ class SalesInvoiceController extends Controller
                     'details.*.unit_price' => 'required|numeric|min:0',
                     'details.*.discount_percentage' => 'nullable|numeric|min:0|max:100',
                     'charges' => 'nullable|array',
-                    'charges.*.account_id' => 'required|exists:chart_of_accounts,id',
+                    'charges.*.account_id' => 'required_with:charges.*.amount|exists:chart_of_accounts,id',
                     'charges.*.description' => 'nullable|string|max:1000',
-                    'charges.*.amount' => 'required|numeric|min:0',
+                    'charges.*.amount' => 'required_with:charges.*.account_id|numeric|min:0',
                 ],
                 [
                     'invoice_date.required' => 'Tanggal invoice harus diisi.',
@@ -121,8 +130,8 @@ class SalesInvoiceController extends Controller
                     'details.*.quantity.required' => 'Terdapat produk yang belum diisi jumlah. Silakan isi jumlah yang diharapkan untuk setiap produk.',
                     'details.*.unit_price.required' => 'Terdapat produk yang belum diisi harga satuannya. Silakan isi harga satuan untuk setiap produk.',
                     'details.*.discount_percentage.required' => 'Terdapat produk yang belum diisi persentase diskon. Silakan isi persentase diskon untuk setiap produk.',
-                    'charges.*.account_id.required' => 'Terdapat biaya yang belum dipilih. Silakan pilih akun untuk setiap biaya.',
-                    'charges.*.amount.required' => 'Terdapat biaya yang belum diisi jumlahnya. Silakan isi jumlah untuk setiap biaya.',
+                    'charges.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya tambahan diisi.',
+                    'charges.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
                 ]
             );
         }

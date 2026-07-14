@@ -24,6 +24,7 @@ class InventoryService
                 // 'reserved_quantity',
                 DB::raw('SUM(quantity) as quantity'),
                 DB::raw('SUM(reserved_quantity) as reserved_quantity'),
+                DB::raw('SUM(quantity * unit_cost) / NULLIF(SUM(quantity), 0) as avg_unit_cost'),
             )
             ->where('company_id', config('context.selected_company_id'))
             ->groupBy('product_id', 'company_id', 'warehouse_id')

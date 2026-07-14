@@ -19,6 +19,12 @@
                     reference_number: deliveryOrder.reference_number || null,
                     delivery_date: deliveryOrder.delivery_date ? deliveryOrder.delivery_date.substring(0, 10) : null,
                     note: deliveryOrder.note || null,
+                    costs: (deliveryOrder.costs || []).map(cost => ({
+                        account_id: cost.account_id,
+                        description: cost.description,
+                        is_inventory_related: !!cost.is_inventory_related,
+                        amount: cost.amount,
+                    })),
                     details: (deliveryOrder.items || []).map(item => {
                         const soItem = remainingSOItems.find(s => s.id === item.sales_order_item_id);
                         return {
@@ -43,6 +49,19 @@
                 n(v) {
                     return NumberUtils.parseMaskIntoNumeric(v);
                 },
+
+                addCost() {
+                    this.formData.costs.push({
+                        account_id: null,
+                        description: null,
+                        is_inventory_related: false,
+                        amount: null,
+                    });
+                },
+                removeCost(index) {
+                    this.formData.costs.splice(index, 1);
+                },
+                handleCostInput() {},
 
                 init() {
                     Object.assign(this, window.deliveryOrderTable);
@@ -121,6 +140,9 @@
                             batches,
                         };
                     });
+                    body.costs = body.costs
+                        .filter(c => c.account_id && this.n(c.amount) > 0)
+                        .map(c => ({ ...c, amount: this.n(c.amount) }));
 
                     Swal.fire({
                         title: 'Memproses penyimpanan Pengiriman Barang...',
@@ -237,6 +259,9 @@
                 </div>
             </div>
         </div>
+
+        @include('sales.partials.additional-cost-table', ['accounts' => $accounts])
+
         <div class="order-form-footer">
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
             <button class="btn btn-primary" @click="submitFinish()"><x-misc.icon name="check"

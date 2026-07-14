@@ -22,7 +22,7 @@ class SalesInvoice extends Model
         'discount_percentage',
         'discount_amount',
         'tax_percentage',
-        'tax_amount',,
+        'tax_amount',
         'down_payment_amount',
         'total_amount',
         'remaining_amount',

@@ -10,11 +10,13 @@ class SalesInvoiceCharge extends Model
         'sales_invoice_id',
         'account_id',
         'description',
-        'amount',   
+        'amount',
+        'is_taxable',
     ];
 
     protected $casts = [
         'amount' => 'double',
+        'is_taxable' => 'boolean',
     ];
 
     public function salesInvoice()

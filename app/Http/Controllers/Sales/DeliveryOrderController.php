@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Sales;
 
 use App\Enums\DeliveryOrderStatus;
 use App\Http\Controllers\Controller;
+use App\Services\Master\AccountService;
 use App\Services\Sales\DeliveryOrderService;
 use App\Services\Sales\SalesOrderService;
 use Illuminate\Http\Request;
@@ -12,6 +13,13 @@ use Illuminate\Validation\ValidationException;
 
 class DeliveryOrderController extends Controller
 {
+    private AccountService $accountService;
+
+    public function __construct(AccountService $accountService)
+    {
+        $this->accountService = $accountService;
+    }
+
     public function index()
     {
         $data = [
@@ -85,6 +93,7 @@ class DeliveryOrderController extends Controller
             'deliveryOrder' => $deliveryOrder,
             'remainingSOItems' => $remainingSOItems,
             'availableBatches' => $availableBatches,
+            'accounts' => $this->accountService->fetchAccountData(null),
         ];
         return view('sales.delivery-order.edit', $data);
     }
@@ -123,6 +132,10 @@ class DeliveryOrderController extends Controller
                     'details.*.batches' => 'required|array|min:1',
                     'details.*.batches.*.product_batch_id' => 'required|exists:product_batches,id',
                     'details.*.batches.*.quantity' => 'required|numeric|min:0.0001',
+                    'costs' => 'nullable|array',
+                    'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
+                    'costs.*.description' => 'nullable|string|max:1000',
+                    'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
                 ],
                 [
                     'delivery_date.required' => 'Tanggal pengiriman harus diisi.',
@@ -134,6 +147,8 @@ class DeliveryOrderController extends Controller
                     'details.*.batches.required' => 'Terdapat produk yang belum memilih batch. Silakan pilih batch untuk setiap produk.',
                     'details.*.batches.*.product_batch_id.required' => 'Terdapat batch yang belum dipilih.',
                     'details.*.batches.*.quantity.required' => 'Terdapat batch yang belum diisi jumlahnya.',
+                    'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
+                    'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
                 ]
             );
         }

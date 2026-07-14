@@ -97,6 +97,36 @@
                 <div class="order-notes__text">{{ $deliveryOrder->note ?? '-' }}</div>
             </div>
         </div>
+
+        @if ($deliveryOrder->costs->isNotEmpty())
+            <div class="card" style="overflow:hidden;">
+                <div class="card-hd">
+                    <div class="display card-hd-title">Biaya Tambahan (Internal Only)</div>
+                </div>
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th style="width:48px;">#</th>
+                            <th>Deskripsi</th>
+                            <th>Akun</th>
+                            <th style="text-align:center;">Terkait Inventory</th>
+                            <th style="text-align:right;">Jumlah</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($deliveryOrder->costs as $i => $cost)
+                            <tr>
+                                <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                                <td>{{ $cost->description ?: '—' }}</td>
+                                <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
+                                <td style="text-align:center;">{{ $cost->is_inventory_related ? 'Ya' : 'Tidak' }}</td>
+                                <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($cost->amount) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
     </div>
 @endsection
 

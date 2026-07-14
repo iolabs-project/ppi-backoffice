@@ -52,6 +52,7 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
             $table->text('description')->nullable();
             $table->decimal('amount', 18, 4)->default(0);
+            $table->boolean('is_inventory_related')->default(false);
             $table->timestamps();
         });
     }

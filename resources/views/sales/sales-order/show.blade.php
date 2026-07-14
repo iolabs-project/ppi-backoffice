@@ -95,6 +95,68 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+
+        @if ($salesOrder->charges->isNotEmpty() || $salesOrder->costs->isNotEmpty())
+            <div class="card" style="overflow:hidden;">
+                @if ($salesOrder->charges->isNotEmpty())
+                    <div class="card-hd">
+                        <div class="display card-hd-title">Biaya Tambahan (Tagih ke Customer)</div>
+                    </div>
+                    <table class="tbl">
+                        <thead>
+                            <tr>
+                                <th style="width:48px;">#</th>
+                                <th>Deskripsi</th>
+                                <th>Akun</th>
+                                <th style="text-align:center;">Kena Pajak</th>
+                                <th style="text-align:right;">Jumlah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($salesOrder->charges as $i => $charge)
+                                <tr>
+                                    <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                                    <td>{{ $charge->description ?: '—' }}</td>
+                                    <td>{{ $charge->account->code }} - {{ $charge->account->name }}</td>
+                                    <td style="text-align:center;">{{ $charge->is_taxable ? 'Ya' : 'Tidak' }}</td>
+                                    <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($charge->amount) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+                @if ($salesOrder->costs->isNotEmpty())
+                    <div class="card-hd" style="border-top:1px solid var(--line-2);">
+                        <div class="display card-hd-title">Biaya Tambahan (Internal Only)</div>
+                    </div>
+                    <table class="tbl">
+                        <thead>
+                            <tr>
+                                <th style="width:48px;">#</th>
+                                <th>Deskripsi</th>
+                                <th>Akun</th>
+                                <th style="text-align:center;">Terkait Inventory</th>
+                                <th style="text-align:right;">Jumlah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($salesOrder->costs as $i => $cost)
+                                <tr>
+                                    <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                                    <td>{{ $cost->description ?: '—' }}</td>
+                                    <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
+                                    <td style="text-align:center;">{{ $cost->is_inventory_related ? 'Ya' : 'Tidak' }}</td>
+                                    <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($cost->amount) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            </div>
+        @endif
+
+        <div class="card" style="overflow:hidden;">
             <div class="order-items-split" style="grid-template-columns:1fr 320px;">
                 <div class="order-notes">
                     <div class="label">Catatan Internal</div>
@@ -108,8 +170,7 @@
                             ['Subtotal', $salesOrder->subtotal, false],
                             ['Diskon', -$salesOrder->discount_amount, false],
                             ['Pajak', $salesOrder->tax_amount, false],
-                            ['Ongkos Kirim', $salesOrder->shipping_charge, false],
-                            ['Biaya Lain-Lain', $salesOrder->other_charge, false],
+                            ['Biaya Tambahan (Customer)', $salesOrder->charges->sum('amount'), false],
                             ['Uang Muka', -$salesOrder->down_payment_amount, false],
                             ['Total Penjualan', $salesOrder->total_amount, true]
                         ] as [$lbl, $val, $bold])

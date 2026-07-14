@@ -10,11 +10,13 @@ class SalesOrderCost extends Model
         'sales_order_id',
         'account_id',
         'description',
-        'amount',   
+        'amount',
+        'is_inventory_related',
     ];
 
     protected $casts = [
         'amount' => 'double',
+        'is_inventory_related' => 'boolean',
     ];
 
     public function salesOrder()

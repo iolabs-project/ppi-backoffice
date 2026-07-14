@@ -88,7 +88,7 @@ class DeliveryOrderService
     public function storeDeliveryOrder(Request $request): DeliveryOrder
     {
         $salesOrder =  $this->salesOrderService->fetchSalesOrderByID($request->sales_order_id);
-        return DeliveryOrder::create([
+        $deliveryOrder = DeliveryOrder::create([
             'company_id' => $salesOrder->company_id,
             'sales_order_id' => $salesOrder->id,
             'customer_id' => $salesOrder->customer_id,
@@ -100,6 +100,18 @@ class DeliveryOrderService
             'status' => DeliveryOrderStatus::DRAFT->value,
             'created_by' => auth()->user()->id,
         ]);
+
+        foreach ($salesOrder->costs as $cost) {
+            DeliveryOrderCost::create([
+                'delivery_order_id' => $deliveryOrder->id,
+                'account_id' => $cost->account_id,
+                'description' => $cost->description,
+                'is_inventory_related' => $cost->is_inventory_related,
+                'amount' => $cost->amount,
+            ]);
+        }
+
+        return $deliveryOrder;
     }
 
     public function fetchDeliveryOrderByID(int $id): ?DeliveryOrder
@@ -113,7 +125,7 @@ class DeliveryOrderService
             'items.product.unit:id,symbol',
             'items.batches:id,delivery_order_item_id,product_batch_id,quantity,unit_cost',
             'items.batches.productBatch:id,batch_number',
-            'costs:id,delivery_order_id,account_id,description,amount',
+            'costs:id,delivery_order_id,account_id,description,amount,is_inventory_related',
             'costs.account:id,code,name,category_id',
         ])
             ->select(
@@ -173,7 +185,7 @@ class DeliveryOrderService
                 'status' => $requestCollection->get('status'),
                 'note' => $requestCollection->get('note'),
                 'subtotal' => $subtotal,
-                'total_amount' => $totalAmount + $subtotal,
+                'total_amount' => $totalAmount,
             ]);
 
             DeliveryOrderItemBatch::whereHas('deliveryOrderItem', function ($query) use ($header) {
@@ -182,9 +194,9 @@ class DeliveryOrderService
             DeliveryOrderItem::where('delivery_order_id', $header->id)->delete();
             DeliveryOrderCost::where('delivery_order_id', $header->id)->delete();
             if ($requestCollection->get('status') === DeliveryOrderStatus::DRAFT->value) {
-                $this->saveDraftDeliveryOrder($header, $detailsCollection);
+                $this->saveDraftDeliveryOrder($header, $detailsCollection, $costsCollection);
             } elseif ($requestCollection->get('status') === DeliveryOrderStatus::FINISHED->value) {
-                $this->finalizeDeliveryOrder($header, $detailsCollection);
+                $this->finalizeDeliveryOrder($header, $detailsCollection, $costsCollection);
             }
         });
     }
@@ -212,15 +224,16 @@ class DeliveryOrderService
                     'unit_cost' => $batch['unit_cost'] ?? 0,
                 ]);
             }
+        }
 
-            foreach ($costsCollection as $cost) {
-                DeliveryOrderCost::create([
-                    'delivery_order_id' => $deliveryOrder->id,
-                    'account_id' => $cost['account_id'],
-                    'description' => $cost['description'] ?? null,
-                    'amount' => (float) ($cost['amount'] ?? 0),
-                ]);
-            }
+        foreach ($costsCollection as $cost) {
+            DeliveryOrderCost::create([
+                'delivery_order_id' => $deliveryOrder->id,
+                'account_id' => $cost['account_id'],
+                'description' => $cost['description'] ?? null,
+                'is_inventory_related' => $cost['is_inventory_related'] ?? false,
+                'amount' => (float) ($cost['amount'] ?? 0),
+            ]);
         }
     }
 
@@ -339,6 +352,7 @@ class DeliveryOrderService
                 'delivery_order_id' => $deliveryOrder->id,
                 'account_id' => $cost['account_id'],
                 'description' => $cost['description'] ?? null,
+                'is_inventory_related' => $cost['is_inventory_related'] ?? false,
                 'amount' => (float) ($cost['amount'] ?? 0),
             ]);
 
