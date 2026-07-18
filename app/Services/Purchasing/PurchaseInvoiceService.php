@@ -113,15 +113,6 @@ class PurchaseInvoiceService
             'created_by' => auth()->user()->id,
         ]);
 
-        foreach ($purchaseOrder->costs->where('billed_by', 'supplier') as $cost) {
-            PurchaseInvoiceCost::create([
-                'purchase_invoice_id' => $invoice->id,
-                'account_id' => $cost->account_id,
-                'description' => $cost->description,
-                'amount' => $cost->amount,
-            ]);
-        }
-
         return $invoice;
     }
 

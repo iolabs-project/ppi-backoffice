@@ -210,7 +210,6 @@ class PurchaseOrderController extends Controller
                 [
                     'supplier_id' => 'required|exists:contacts,id',
                     'warehouse_id' => 'required|exists:warehouses,id',
-                    'number' => 'required|string|max:50|unique:purchase_orders,number',
                     'reference_number' => 'nullable|string|max:50',
                     'order_date' => 'required|date',
                     'due_date' => 'nullable|date',
@@ -241,8 +240,6 @@ class PurchaseOrderController extends Controller
                 [
                     'supplier_id.required' => 'Supplier harus dipilih.',
                     'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'number.required' => 'Nomor PO harus diisi.',
-                    'number.unique' => 'Nomor PO sudah digunakan. Silakan gunakan nomor lain.',
                     'order_date.required' => 'Tanggal PO harus diisi.',
                     'payment_terms.required' => 'Syarat pembayaran harus dipilih.',
                     'details.required' => 'Daftar item tidak boleh kosong.',

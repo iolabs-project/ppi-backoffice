@@ -14,9 +14,6 @@
                     reference_number: goodsReceipt.reference_number || null,
                     receipt_date: goodsReceipt.receipt_date || null,
                     subtotal: goodsReceipt.subtotal || null,
-                    discount_percentage: goodsReceipt.discount_percentage || null,
-                    discount_amount: goodsReceipt.discount_amount || null,
-                    total_amount: goodsReceipt.total_amount || null,
                     note: goodsReceipt.note || null,
                     costs: (goodsReceipt.costs || []).map(cost => ({
                         account_id: cost.account_id,
@@ -147,15 +144,12 @@
                 },
 
                 calculateHPP() {
-                    const headerDiscount = this.n(this.formData.discount_amount);
                     const additionalCost = this.costsInventoryTotal();
 
                     const totalQty = this.formData.details.reduce(
                         (sum, d) => sum + this.n(d.received_quantity),
                         0
                     );
-
-                    const subtotal = this.formData.subtotal;
 
                     this.formData.details.forEach(d => {
                         const qty = this.n(d.received_quantity);
@@ -167,23 +161,14 @@
                         const qtyRatio =
                             totalQty > 0 ? qty / totalQty : 0;
 
-                        const valueRatio =
-                            subtotal > 0 ?
-                            this.n(d.total_amount) / subtotal :
-                            0;
-
                         const additionalCostPerUnit =
                             qty > 0 ?
                             (additionalCost * qtyRatio) / qty :
                             0;
 
-                        const discountPerUnit =
-                            qty > 0 ? (headerDiscount * valueRatio) / qty : 0;
-
                         d.unit_cost =
                             this.n(d.unit_price) -
-                            (qty > 0 ? this.n(d.discount_amount) / qty : 0) -
-                            discountPerUnit +
+                            (qty > 0 ? this.n(d.discount_amount) / qty : 0) +
                             additionalCostPerUnit;
 
                         d.unit_cost = Math.round(d.unit_cost);
@@ -201,9 +186,6 @@
                         return sum + item.total_amount;
                     }, 0);
                     this.formData.subtotal = subtotal;
-                    this.formData.discount_amount = Math.round(
-                        (this.n(this.formData.discount_percentage) / 100) * subtotal
-                    );
                 },
 
                 handleExpectedQuantityInput(item) {
@@ -278,7 +260,6 @@
                         ...this.formData,
                         status: 'draft',
                     };
-                    body.discount_amount = NumberUtils.parseMaskIntoNumeric(body.discount_amount);
                     body.details = body.details.map(d => ({
                         ...d,
                         expected_quantity: NumberUtils.parseMaskIntoNumeric(d.expected_quantity),
@@ -350,7 +331,6 @@
                                 ...this.formData,
                                 status: 'finished',
                             };
-                            body.discount_amount = NumberUtils.parseMaskIntoNumeric(body.discount_amount);
                             body.details = body.details.map(d => ({
                                 ...d,
                                 expected_quantity: NumberUtils.parseMaskIntoNumeric(d
@@ -624,20 +604,6 @@
                                 <span class="order-summary__label"></span>
                                 <span class="num order-summary__val"
                                     x-text="(formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
-                            </div>
-                            <div class="order-summary__row">
-                                <span class="order-summary__label">Diskon</span>
-                                <div class="order-summary__pct-group">
-                                    <input class="input num order-summary__pct-input input--readonly"
-                                        x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
-                                        disabled />
-                                    <span class="order-summary__pct-sym">%</span>
-                                    <input
-                                        class="input num input--readonly order-summary__amount-display order-summary__amount-display--negative"
-                                        :value="'- ' + (formData.discount_amount ? NumberUtils.formatNumericIntoMask(formData
-                                            .discount_amount) : '0')"
-                                        disabled />
-                                </div>
                             </div>
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Biaya Tambahan (Inventory)</span>

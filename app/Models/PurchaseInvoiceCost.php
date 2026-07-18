@@ -11,10 +11,12 @@ class PurchaseInvoiceCost extends Model
         'account_id',
         'description',
         'amount',   
+        'is_inventory_cost',
     ];
 
     protected $casts = [
         'amount' => 'double',
+        'is_inventory_cost' => 'boolean',
     ];
 
     public function purchaseInvoice()

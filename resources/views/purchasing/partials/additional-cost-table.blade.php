@@ -84,8 +84,6 @@
     </table>
     @if ($showBilledBy)
         <div style="padding:12px 16px; font-size:12px; color:var(--ink-3); line-height:1.7;">
-            <div>• Biaya <strong>Ditagih Oleh "Supplier"</strong> akan ikut masuk ke dalam tagihan pembelian dari supplier.</div>
-            <div>• Biaya <strong>Ditagih Oleh "Pihak Ketiga"</strong> akan ditagihkan terpisah oleh vendor terkait.</div>
             <div>• Hanya biaya dengan <strong>Biaya Inventory</strong> dicentang yang akan dialokasikan ke dalam nilai persediaan (HPP).</div>
         </div>
     @endif

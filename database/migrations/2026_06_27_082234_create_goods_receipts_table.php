@@ -22,8 +22,6 @@ return new class extends Migration
             $table->dateTime('receipt_date');
             $table->enum('status', ['draft', 'finished', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 18, 4)->default(0);
-            $table->decimal('discount_percentage', 5, 2)->default(0);
-            $table->decimal('discount_amount', 18, 4)->default(0);
             $table->text('note')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('restrict');
             $table->timestamps();

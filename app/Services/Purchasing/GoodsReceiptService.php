@@ -93,22 +93,9 @@ class GoodsReceiptService
             'receipt_date' => now(),
             'status' => GoodsReceiptStatus::DRAFT->value,
             'subtotal' => 0,
-            'discount_percentage' => $purchaseOrder->discount_percentage ?? 0,
-            'discount_amount' => 0,
             'total_amount' => 0,
             'created_by' => auth()->user()->id,
         ]);
-
-        foreach ($purchaseOrder->costs as $cost) {
-            GoodsReceiptCost::create([
-                'goods_receipt_id' => $goodsReceipt->id,
-                'account_id' => $cost->account_id,
-                'description' => $cost->description,
-                'billed_by' => $cost->billed_by,
-                'is_inventory_cost' => $cost->is_inventory_cost,
-                'amount' => $cost->amount,
-            ]);
-        }
 
         return $goodsReceipt;
     }
@@ -138,8 +125,6 @@ class GoodsReceiptService
                 'receipt_date',
                 'status',
                 'subtotal',
-                'discount_percentage',
-                'discount_amount',
                 'note',
                 'created_by',
                 'created_at',
@@ -164,17 +149,11 @@ class GoodsReceiptService
                     *
                     (1 - (($item['discount_percentage'] ?? 0) / 100));
             });
-            $costAmount = $costsCollection->sum(function ($cost) {
-                return $cost['amount'] ?? 0;
-            });
-            $discountAmount = $subtotal * ($requestCollection->get('discount_percentage', 0)) / 100;
             $header->update([
                 'reference_number' => $requestCollection->get('reference_number', null),
                 'receipt_date' => $requestCollection->get('receipt_date'),
                 'status' => $requestCollection->get('status'),
                 'subtotal' => $subtotal,
-                'discount_percentage' => $requestCollection->get('discount_percentage', 0),
-                'discount_amount' => $discountAmount,
                 'note' => $requestCollection->get('note', null),
             ]);
 
@@ -231,7 +210,6 @@ class GoodsReceiptService
         $additionalCost = $costsCollection->sum(function ($cost) {
             return ($cost['is_inventory_cost'] ?? false) ? ($cost['amount'] ?? 0) : 0;
         });
-        $discountAmount = (float) ($goodsReceipt->discount_amount ?? 0);
         $totalQty = $detailsCollection->sum(function ($item) {
             return $item['received_quantity'];
         });
@@ -269,9 +247,8 @@ class GoodsReceiptService
                 $valueRatio = $totalSubtotal > 0 ? ($total / $totalSubtotal) : 0;
 
                 $addtionalCostPerUnit = $qty > 0 ? ($additionalCost * $qtyRatio) / $qty : 0;
-                $discountAmountPerUnit = $qty > 0 ? ($discountAmount * $valueRatio) / $qty : 0;
 
-                $unitCost = $unitPrice - ($qty > 0 ? $unitDiscountAmount / $qty : 0) + $addtionalCostPerUnit - $discountAmountPerUnit;
+                $unitCost = $unitPrice - ($qty > 0 ? $unitDiscountAmount / $qty : 0) + $addtionalCostPerUnit;
             }
 
             if ($this->validateBatchNumber($item['batch_number'], $item['product_id'], $goodsReceipt->company_id)) {
@@ -344,12 +321,19 @@ class GoodsReceiptService
 
     private function validateBatchNumber(string $batchNumber, int $productID, int $companyID): bool
     {
-        return GoodsReceiptItem::where('batch_number', $batchNumber)
+        $goodReceiptCheck = GoodsReceiptItem::where('batch_number', $batchNumber)
             ->where('product_id', $productID)
             ->whereHas('goodsReceipt', function ($query) use ($companyID) {
                 $query->where('company_id', $companyID);
             })
             ->exists();
+
+        $productBatchCheck = ProductBatch::where('batch_number', $batchNumber)
+            ->where('product_id', $productID)
+            ->where('company_id', $companyID)
+            ->exists();
+
+        return $goodReceiptCheck || $productBatchCheck;
     }
 
     public function changeGoodsReceiptStatus(int $id, string $status): void
