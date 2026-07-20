@@ -2,6 +2,7 @@
 @section('content')
     <script>
         const deliveryOrder = @json($deliveryOrder);
+        console.log(deliveryOrder);
         const remainingSOItems = @json($remainingSOItems);
         const availableBatches = @json($availableBatches);
 

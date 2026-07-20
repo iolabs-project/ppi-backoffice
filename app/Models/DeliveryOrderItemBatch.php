@@ -9,12 +9,13 @@ class DeliveryOrderItemBatch extends Model
     protected $fillable = [
         'delivery_order_item_id',
         'product_batch_id',
-        'batch_number',
         'quantity',
+        'unit_cost',    
     ];
 
     protected $casts = [
         'quantity' => 'double',
+        'unit_cost' => 'double',
     ];
 
     public function deliveryOrderItem()

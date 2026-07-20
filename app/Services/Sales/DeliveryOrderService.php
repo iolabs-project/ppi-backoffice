@@ -101,16 +101,6 @@ class DeliveryOrderService
             'created_by' => auth()->user()->id,
         ]);
 
-        foreach ($salesOrder->costs as $cost) {
-            DeliveryOrderCost::create([
-                'delivery_order_id' => $deliveryOrder->id,
-                'account_id' => $cost->account_id,
-                'description' => $cost->description,
-                'is_inventory_related' => $cost->is_inventory_related,
-                'amount' => $cost->amount,
-            ]);
-        }
-
         return $deliveryOrder;
     }
 
@@ -231,7 +221,6 @@ class DeliveryOrderService
                 'delivery_order_id' => $deliveryOrder->id,
                 'account_id' => $cost['account_id'],
                 'description' => $cost['description'] ?? null,
-                'is_inventory_related' => $cost['is_inventory_related'] ?? false,
                 'amount' => (float) ($cost['amount'] ?? 0),
             ]);
         }

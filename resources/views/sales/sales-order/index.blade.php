@@ -171,7 +171,7 @@
                                                 </button>
                                             </template>
                                             <template
-                                                x-if="row.total_invoiced_quantity <= row.total_quantity && row.total_invoiced_quantity <= row.total_shipped_quantity && row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
+                                                x-if="row.total_invoiced_quantity <= row.total_quantity && row.total_invoiced_quantity < row.total_shipped_quantity && row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
                                                 <button class="action-menu__item"
                                                     @click.stop="handleCreateSalesInvoice(row.id)">
                                                     <x-misc.icon name="wallet" :size="14"

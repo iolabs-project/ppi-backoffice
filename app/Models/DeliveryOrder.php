@@ -26,6 +26,7 @@ class DeliveryOrder extends Model
         'delivery_date' => 'date:Y-m-d',
         'subtotal' => 'double',
         'total_amount' => 'double',
+        'total_shipped_quantity' => 'double',
     ];
 
     public function customer()
