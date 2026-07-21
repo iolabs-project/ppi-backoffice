@@ -119,7 +119,6 @@ class SalesInvoiceService
                     'sales_invoice_id' => $invoice->id,
                     'account_id' => $charge->account_id,
                     'description' => $charge->description,
-                    'is_taxable' => $charge->is_taxable,
                     'amount' => $charge->amount,
                 ]);
             }
@@ -141,9 +140,8 @@ class SalesInvoiceService
                 (1 - (($detail['discount_percentage'] ?? 0) / 100));
         });
         $chargesTotal = $chargesCollection->sum('amount');
-        $taxableChargeAmount = $chargesCollection->where('is_taxable', true)->sum('amount');
         $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
-        $taxAmount = ($subtotal - $discountAmount + $taxableChargeAmount) * ($request->tax_percentage ?? 0) / 100;
+        $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
 
         DB::transaction(function () use ($salesInvoice, $request, $subtotal, $discountAmount, $taxAmount, $chargesTotal) {
             $salesInvoice->update([
@@ -195,7 +193,6 @@ class SalesInvoiceService
                 'sales_invoice_id' => $salesInvoice->id,
                 'account_id' => $charge['account_id'],
                 'description' => $charge['description'] ?? null,
-                'is_taxable' => $charge['is_taxable'] ?? false,
                 'amount' => $charge['amount'],
             ]);
         }
@@ -213,7 +210,7 @@ class SalesInvoiceService
             'items:id,sales_invoice_id,sales_order_item_id,delivery_order_item_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
-            'charges:id,sales_invoice_id,account_id,description,amount,is_taxable',
+            'charges:id,sales_invoice_id,account_id,description,amount',
             'charges.account:id,code,name,category_id',
             'customer:id,name,code',
             'salesPerson:id,name,code',

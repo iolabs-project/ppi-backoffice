@@ -27,7 +27,6 @@
                     charges: (salesInvoice.charges || []).map(charge => ({
                         account_id: charge.account_id,
                         description: charge.description,
-                        is_taxable: !!charge.is_taxable,
                         amount: charge.amount,
                     })),
                     details: (salesInvoice.items || []).map(item => ({
@@ -156,7 +155,6 @@
                     this.formData.charges.push({
                         account_id: null,
                         description: null,
-                        is_taxable: false,
                         amount: null,
                     });
                     this.recalculate();
@@ -171,15 +169,12 @@
                 chargesTotal() {
                     return this.formData.charges.reduce((sum, c) => sum + this.n(c.amount), 0);
                 },
-                taxableChargesTotal() {
-                    return this.formData.charges.filter(c => c.is_taxable).reduce((sum, c) => sum + this.n(c.amount), 0);
-                },
                 recalculate() {
                     const sub = this.formData.details.reduce((sum, d) => sum + this.n(d.total_amount), 0);
                     this.formData.subtotal = sub;
                     this.formData.discount_amount = Math.round((this.n(this.formData.discount_percentage) / 100) * sub);
                     this.formData.tax_amount = Math.round((this.n(this.formData.tax_percentage) / 100) * (sub - this.n(this
-                        .formData.discount_amount) + this.taxableChargesTotal()));
+                        .formData.discount_amount)));
                     this.formData.total_amount =
                         sub -
                         this.n(this.formData.discount_amount) +

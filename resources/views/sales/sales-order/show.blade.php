@@ -109,7 +109,6 @@
                                 <th style="width:48px;">#</th>
                                 <th>Deskripsi</th>
                                 <th>Akun</th>
-                                <th style="text-align:center;">Kena Pajak</th>
                                 <th style="text-align:right;">Jumlah</th>
                             </tr>
                         </thead>
@@ -119,7 +118,6 @@
                                     <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
                                     <td>{{ $charge->description ?: '—' }}</td>
                                     <td>{{ $charge->account->code }} - {{ $charge->account->name }}</td>
-                                    <td style="text-align:center;">{{ $charge->is_taxable ? 'Ya' : 'Tidak' }}</td>
                                     <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($charge->amount) }}</td>
                                 </tr>
                             @endforeach

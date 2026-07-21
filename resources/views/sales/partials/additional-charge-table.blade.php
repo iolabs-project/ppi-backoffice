@@ -1,9 +1,8 @@
 {{-- Shared Additional Charges (Bill Customer) table.
      Expects the enclosing Alpine scope to expose:
-       - formData.charges: [{ account_id, description, amount, is_taxable }]
+       - formData.charges: [{ account_id, description, amount }]
        - addCharge() / removeCharge(index)
        - handleChargeInput() -- called on every change to trigger recalculation
-       - formData.tax_percentage -- shown next to Taxable rows as the effective rate
      Blade params:
        - $accounts: collection of {id, code, name}
 --}}
@@ -23,8 +22,6 @@
                 <th style="width:48px;">#</th>
                 <th>Deskripsi</th>
                 <th style="min-width:200px;">Akun (Pendapatan)</th>
-                <th style="width:90px; text-align:center;">Kena Pajak</th>
-                <th style="width:80px; text-align:right;">Pajak (%)</th>
                 <th style="width:160px; text-align:right;">Jumlah</th>
                 <th style="width:40px;"></th>
             </tr>
@@ -57,11 +54,6 @@
                             </template>
                         </x-misc.select>
                     </td>
-                    <td style="text-align:center;">
-                        <input type="checkbox" x-model="charge.is_taxable" @change="handleChargeInput()" />
-                    </td>
-                    <td class="num" style="text-align:right;"
-                        x-text="charge.is_taxable ? NumberUtils.formatNumericIntoMask(n(formData.tax_percentage)) + '%' : '0%'"></td>
                     <td>
                         <input class="input num" style="height:32px; text-align:right;" x-model="charge.amount"
                             x-mask:dynamic="$money($input, ',')" @input="handleChargeInput()" />
@@ -76,7 +68,7 @@
             </template>
             <template x-if="formData.charges.length === 0">
                 <tr>
-                    <td colspan="7" style="text-align:center; color:var(--ink-4); padding:16px 0;">
+                    <td colspan="5" style="text-align:center; color:var(--ink-4); padding:16px 0;">
                         Belum ada biaya tambahan ke customer.
                     </td>
                 </tr>
