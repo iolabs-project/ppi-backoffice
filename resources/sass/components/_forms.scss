@@ -55,17 +55,42 @@ textarea.input {
 }
 
 .dropdown-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  min-width: 100%;
+  position: fixed;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 10px;
   box-shadow: var(--shadow-2);
-  z-index: 200;
+  z-index: 300;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-search {
+  padding: 6px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+
+  &__input {
+    width: 100%;
+    height: 30px;
+    padding: 0 9px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--bg-2);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    outline: none;
+
+    &:focus {
+      border-color: var(--ink-3);
+      background: var(--paper);
+    }
+  }
+}
+
+.dropdown-list {
   max-height: 240px;
   overflow-y: auto;
 }
@@ -87,4 +112,11 @@ textarea.input {
     font-size: 11.5px;
     color: var(--ink-4);
   }
+}
+
+.dropdown-empty {
+  padding: 16px 12px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--ink-4);
 }

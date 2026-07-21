@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"Erp\\\\\\\\\\\\\\\\\" routes/web.php)",
+      "Bash(grep -n 'class=\"action-menu\\\\|@click.*getBoundingClientRect\\\\|close-menus\\\\|$refs\\\\.\\\\|x-ref=' resources/views/purchasing/goods-receipt/index.blade.php)",
+      "Bash(awk 'NR==482,NR==560' resources/views/purchasing/goods-receipt/edit.blade.php)",
+      "Bash(grep -rn \"x-text=\\\\\"{{ \\\\$\\\\|x-show=\\\\\"{{ \\\\$\\\\|x-model=\\\\\"{{ \\\\$\" resources/views/components/)",
+      "Bash(sort -t: -k1,1 -k2,2n)",
+      "Bash(php artisan *)",
+      "Bash(php -r ' *)",
+      "PowerShell(php -v)",
+      "PowerShell(php artisan --version)",
+      "PowerShell(Get-Command php -ErrorAction SilentlyContinue; Get-ChildItem \"C:\\\\laragon\\\\bin\\\\php\" -ErrorAction SilentlyContinue; Get-ChildItem \"$env:USERPROFILE\\\\.config\\\\herd\" -ErrorAction SilentlyContinue; where.exe php 2>$null; Test-Path \"c:\\\\Users\\\\albertirgi\\\\Documents\\\\.WORK\\\\ppi-backoffice\\\\docker-compose.yml\")",
+      "PowerShell($php = \"C:\\\\laragon\\\\bin\\\\php\\\\php-8.3.32-nts-Win32-vs16-x64\\\\php.exe\"; & $php -v)",
+      "PowerShell($php = \"C:\\\\laragon\\\\bin\\\\php\\\\php-8.4.23-nts-Win32-vs17-x64\\\\php.exe\"; cd \"c:\\\\Users\\\\albertirgi\\\\Documents\\\\.WORK\\\\ppi-backoffice\"; & $php artisan view:clear)",
+      "PowerShell($php = \"C:\\\\laragon\\\\bin\\\\php\\\\php-8.4.23-nts-Win32-vs17-x64\\\\php.exe\"; cd \"c:\\\\Users\\\\albertirgi\\\\Documents\\\\.WORK\\\\ppi-backoffice\"; & $php artisan view:cache 2>&1)",
+      "PowerShell($php = \"C:\\\\laragon\\\\bin\\\\php\\\\php-8.4.23-nts-Win32-vs17-x64\\\\php.exe\"; cd \"c:\\\\Users\\\\albertirgi\\\\Documents\\\\.WORK\\\\ppi-backoffice\"; & $php artisan view:clear; & $php artisan view:cache 2>&1)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(command -v chromium-cli)",
+      "Bash(chromium-cli --help)",
+      "PowerShell($php = \"C:\\\\laragon\\\\bin\\\\php\\\\php-8.4.23-nts-Win32-vs17-x64\\\\php.exe\"; cd \"c:\\\\Users\\\\albertirgi\\\\Documents\\\\.WORK\\\\ppi-backoffice\"; & $php artisan view:cache 2>&1; & $php artisan view:clear)",
+      "Bash(npm run *)"
+    ]
+  }
+}

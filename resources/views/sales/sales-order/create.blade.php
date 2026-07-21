@@ -42,34 +42,19 @@
                 },
                 // Customer Options
                 customers: @json($customers),
-                customerLoading: false,
-                customerSearch: '',
                 customerSelected: null,
-                customerOpen: false,
                 // Sales Person Options
                 salesPersons: @json($salesPersons),
-                salesPersonLoading: false,
-                salesPersonSearch: '',
                 salesPersonSelected: null,
-                salesPersonOpen: false,
                 // Warehouse Options
                 warehouses: @json($warehouses),
-                warehouseLoading: false,
-                warehouseSearch: '',
                 warehouseSelected: null,
-                warehouseOpen: false,
                 // Payment Terms
                 paymentTerms: @json($paymentTerms),
                 paymentTermSelected: null,
-                paymentTermOpen: false,
-                // Product Options
-                productSelected: [],
-                productOpen: false,
                 // Cash Bank Options
                 cashBanks: @json($cashBankAccounts),
-                cashBankLoading: false,
                 cashBankSelected: null,
-                cashBankOpen: false,
 
                 // Shorthand: parse masked string to number
                 n(v) {
@@ -256,11 +241,21 @@
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
                 },
 
-                availableInventories() {
-                    return inventories.filter(p =>
+                availableInventories(q) {
+                    let list = inventories.filter(p =>
                         !this.formData.details.some(d => d.product_id === p.id) &&
                         this.formData.warehouse_id && p.warehouse_id === this.formData.warehouse_id
                     );
+
+                    if (q) {
+                        const s = q.toLowerCase();
+                        list = list.filter(p =>
+                            (p.product.name || '').toLowerCase().includes(s) ||
+                            (p.product.code || '').toLowerCase().includes(s)
+                        );
+                    }
+
+                    return list;
                 },
 
                 buildBody(status) {
@@ -342,26 +337,21 @@
 
                 {{-- Customer Dropdown --}}
                 <x-misc.field label="Customer" :required="true">
-                    <div class="dropdown-wrap" @click.outside="customerOpen=false">
-                        <div class="input dropdown-trigger" @click="customerOpen=!customerOpen">
-                            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                x-text="initials(customerSelected ? customerSelected.name : '')"></div>
-                            <span style="flex:1; font-weight:500;"
-                                x-text="customerSelected ? customerSelected.name : 'Pilih Customer'"></span>
-                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                        </div>
-                        <div class="dropdown-menu" x-show="customerOpen" x-cloak>
-                            <template x-for="c in customers" :key="c.id">
-                                <div class="dropdown-item"
-                                    @click="customerSelected=c; formData.customer_id=c.id; customerOpen=false">
-                                    <div class="avatar"
-                                        style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                        x-text="initials(c.name)"></div>
-                                    <span x-text="c.name"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
+                    <x-misc.select display="customerSelected ? customerSelected.name : 'Pilih Customer'"
+                        hasValue="customerSelected" placeholder="Cari customer...">
+                        <template x-for="c in customers.filter(c => !q || c.name.toLowerCase().includes(q.toLowerCase()))"
+                            :key="c.id">
+                            <div class="dropdown-item"
+                                @click="customerSelected=c; formData.customer_id=c.id; open=false; q=''">
+                                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                                    x-text="initials(c.name)"></div>
+                                <span x-text="c.name"></span>
+                            </div>
+                        </template>
+                        <template x-if="!customers.some(c => !q || c.name.toLowerCase().includes(q.toLowerCase()))">
+                            <div class="dropdown-empty">Tidak ditemukan</div>
+                        </template>
+                    </x-misc.select>
                 </x-misc.field>
 
                 {{-- Nomor SO --}}
@@ -384,68 +374,56 @@
 
                 {{-- Gudang Dropdown --}}
                 <x-misc.field label="Gudang" :required="true">
-                    <div class="dropdown-wrap" @click.outside="warehouseOpen=false">
-                        <div class="input dropdown-trigger" @click="warehouseOpen=!warehouseOpen">
-                            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                x-text="initials(warehouseSelected ? warehouseSelected.name : '')"></div>
-                            <span style="flex:1; font-weight:500;"
-                                x-text="warehouseSelected ? warehouseSelected.name : 'Pilih Gudang'"></span>
-                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                        </div>
-                        <div class="dropdown-menu" x-show="warehouseOpen" x-cloak>
-                            <template x-for="g in warehouses" :key="g.id">
-                                <div class="dropdown-item"
-                                    @click="warehouseSelected=g; handleWarehouseChange(); warehouseOpen=false">
-                                    <div class="avatar"
-                                        style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                        x-text="initials(g.name)"></div>
-                                    <span x-text="g.name"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
+                    <x-misc.select display="warehouseSelected ? warehouseSelected.name : 'Pilih Gudang'"
+                        hasValue="warehouseSelected" placeholder="Cari gudang...">
+                        <template x-for="g in warehouses.filter(g => !q || g.name.toLowerCase().includes(q.toLowerCase()))"
+                            :key="g.id">
+                            <div class="dropdown-item"
+                                @click="warehouseSelected=g; handleWarehouseChange(); open=false; q=''">
+                                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                                    x-text="initials(g.name)"></div>
+                                <span x-text="g.name"></span>
+                            </div>
+                        </template>
+                        <template x-if="!warehouses.some(g => !q || g.name.toLowerCase().includes(q.toLowerCase()))">
+                            <div class="dropdown-empty">Tidak ditemukan</div>
+                        </template>
+                    </x-misc.select>
                 </x-misc.field>
 
                 <x-misc.field label="Sales">
-                    <div class="dropdown-wrap" @click.outside="salesPersonOpen=false">
-                        <div class="input dropdown-trigger" @click="salesPersonOpen=!salesPersonOpen">
-                            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                x-text="initials(salesPersonSelected ? salesPersonSelected.name : '')"></div>
-                            <span style="flex:1; font-weight:500;"
-                                x-text="salesPersonSelected ? salesPersonSelected.name : 'Pilih Sales'"></span>
-                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                        </div>
-                        <div class="dropdown-menu" x-show="salesPersonOpen" x-cloak>
-                            <template x-for="s in salesPersons" :key="s.id">
-                                <div class="dropdown-item"
-                                    @click="salesPersonSelected=s; formData.sales_person_id=s.id; salesPersonOpen=false">
-                                    <div class="avatar"
-                                        style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                        x-text="initials(s.name)"></div>
-                                    <span x-text="s.name"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
+                    <x-misc.select display="salesPersonSelected ? salesPersonSelected.name : 'Pilih Sales'"
+                        hasValue="salesPersonSelected" placeholder="Cari sales...">
+                        <template x-for="s in salesPersons.filter(s => !q || s.name.toLowerCase().includes(q.toLowerCase()))"
+                            :key="s.id">
+                            <div class="dropdown-item"
+                                @click="salesPersonSelected=s; formData.sales_person_id=s.id; open=false; q=''">
+                                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                                    x-text="initials(s.name)"></div>
+                                <span x-text="s.name"></span>
+                            </div>
+                        </template>
+                        <template x-if="!salesPersons.some(s => !q || s.name.toLowerCase().includes(q.toLowerCase()))">
+                            <div class="dropdown-empty">Tidak ditemukan</div>
+                        </template>
+                    </x-misc.select>
                 </x-misc.field>
 
                 {{-- Termin Pembayaran Dropdown --}}
                 <x-misc.field label="Termin Pembayaran" :required="true">
-                    <div class="dropdown-wrap" @click.outside="paymentTermOpen=false">
-                        <div class="input dropdown-trigger" @click="paymentTermOpen=!paymentTermOpen">
-                            <span style="flex:1; font-weight:500;"
-                                x-text="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"></span>
-                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                        </div>
-                        <div class="dropdown-menu" x-show="paymentTermOpen" x-cloak>
-                            <template x-for="t in paymentTerms" :key="t.id">
-                                <div class="dropdown-item"
-                                    @click="paymentTermSelected=t; handlePaymentTermChange(); paymentTermOpen=false">
-                                    <span x-text="t.name"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
+                    <x-misc.select display="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"
+                        hasValue="paymentTermSelected" placeholder="Cari termin...">
+                        <template x-for="t in paymentTerms.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))"
+                            :key="t.id">
+                            <div class="dropdown-item"
+                                @click="paymentTermSelected=t; handlePaymentTermChange(); open=false; q=''">
+                                <span x-text="t.name"></span>
+                            </div>
+                        </template>
+                        <template x-if="!paymentTerms.some(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))">
+                            <div class="dropdown-empty">Tidak ditemukan</div>
+                        </template>
+                    </x-misc.select>
                 </x-misc.field>
 
                 {{-- Nomor Referensi --}}
@@ -479,32 +457,19 @@
                 </thead>
                 <tbody>
                     <template x-for="(it, i) in formData.details" :key="i">
-                        <tr x-data="{ open: false }">
+                        <tr>
                             <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
                             <td>
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <div class="product-icon">
                                         <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
                                     </div>
-                                    <div style="flex:1;" class="dropdown-wrap" @click.outside="open=false">
-                                        <div class="input dropdown-trigger" style="height:32px; padding:0 10px;"
-                                            @click="open=!open">
-                                            <span
-                                                style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
-                                                :style="it.product_id ? '' : 'color:var(--ink-4);'"
-                                                x-text="it.product_id ? it.name : 'Pilih Produk'"></span>
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                                stroke="var(--ink-4)" stroke-width="1.6" stroke-linecap="round"
-                                                stroke-linejoin="round" style="flex-shrink:0;">
-                                                <path d="m6 9 6 6 6-6" />
-                                            </svg>
-                                        </div>
-                                        <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
-                                            x-text="it.product_id ? it.code + ' (' + it.available_stock + ' ' + it.unit + ')' : '— belum dipilih'">
-                                        </div>
-                                        <div class="dropdown-menu" x-show="open" x-cloak style="min-width:320px;">
-                                            <template x-for="p in availableInventories()" :key="p.id">
-                                                <div class="dropdown-item" @click="selectInventory(it, p);open=false">
+                                    <div style="flex:1;">
+                                        <x-misc.select display="it.product_id ? it.name : 'Pilih Produk'"
+                                            hasValue="it.product_id" placeholder="Cari produk..." min-width="320px"
+                                            height="32px">
+                                            <template x-for="p in availableInventories(q)" :key="p.id">
+                                                <div class="dropdown-item" @click="selectInventory(it, p);open=false;q=''">
                                                     <div style="flex:1; min-width:0;">
                                                         <div style="font-size:13px;" x-text="p.product.name"></div>
                                                         <div class="mono" style="font-size:11px; color:var(--ink-4);"
@@ -514,6 +479,12 @@
                                                         x-text="NumberUtils.formatNumericIntoMask(p.available_quantity) + ' ' + p.product.unit.symbol"></span>
                                                 </div>
                                             </template>
+                                            <template x-if="availableInventories(q).length === 0">
+                                                <div class="dropdown-empty">Tidak ditemukan</div>
+                                            </template>
+                                        </x-misc.select>
+                                        <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
+                                            x-text="it.product_id ? it.code + ' (' + it.available_stock + ' ' + it.unit + ')' : '— belum dipilih'">
                                         </div>
                                     </div>
                                 </div>
@@ -654,25 +625,22 @@
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Uang Muka</span>
                                 <div class="order-summary__dp-group">
-                                    <div class="dropdown-wrap" @click.outside="cashBankOpen=false">
-                                        <div class="input dropdown-trigger order-summary__dp-trigger"
-                                            @click="cashBankOpen=!cashBankOpen">
-                                            <span
-                                                style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
-                                                :style="cashBankSelected ? '' : 'color:var(--ink-4);'"
-                                                x-text="cashBankSelected ? cashBankSelected.name : 'Sumber Kas'"></span>
-                                            <x-misc.icon name="chev-down" :size="11" stroke="var(--ink-4)" />
-                                        </div>
-                                        <div class="dropdown-menu" x-show="cashBankOpen" x-cloak
-                                            style="right:0; left:auto; min-width:180px;">
-                                            <template x-for="cb in cashBanks" :key="cb.id">
-                                                <div class="dropdown-item"
-                                                    @click="cashBankSelected=cb; formData.down_payment_account_id=cb.id; cashBankOpen=false">
-                                                    <span x-text="cb.name"></span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </div>
+                                    <x-misc.select display="cashBankSelected ? cashBankSelected.name : 'Sumber Kas'"
+                                        hasValue="cashBankSelected" placeholder="Cari sumber kas..." align="right"
+                                        min-width="180px" trigger-class="order-summary__dp-trigger">
+                                        <template
+                                            x-for="cb in cashBanks.filter(cb => !q || cb.name.toLowerCase().includes(q.toLowerCase()))"
+                                            :key="cb.id">
+                                            <div class="dropdown-item"
+                                                @click="cashBankSelected=cb; formData.down_payment_account_id=cb.id; open=false; q=''">
+                                                <span x-text="cb.name"></span>
+                                            </div>
+                                        </template>
+                                        <template
+                                            x-if="!cashBanks.some(cb => !q || cb.name.toLowerCase().includes(q.toLowerCase()))">
+                                            <div class="dropdown-empty">Tidak ditemukan</div>
+                                        </template>
+                                    </x-misc.select>
                                     <div class="input-with-prefix">
                                         {{-- <span class="input-with-prefix__label">- Rp</span> --}}
                                         <input

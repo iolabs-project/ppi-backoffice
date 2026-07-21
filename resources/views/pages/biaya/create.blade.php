@@ -4,8 +4,6 @@
         function biayaCreateData() {
             return {
                 bayarNanti: false,
-                akunOpen: false,
-                penerimaOpen: false,
 
                 selectedAkun: null,
                 selectedPenerima: null,
@@ -15,7 +13,6 @@
                 coaList: @json($coa),
 
                 items: [{
-                    akunOpen: false,
                     selectedAkun: null,
                     deskripsi: '',
                     jumlah: 0
@@ -34,7 +31,6 @@
 
                 addItem() {
                     this.items.push({
-                        akunOpen: false,
                         selectedAkun: null,
                         deskripsi: '',
                         jumlah: 0
@@ -86,28 +82,25 @@
             <div style="display:flex; align-items:flex-end; gap:16px;">
                 <div style="flex:1;" x-show="!bayarNanti">
                     <x-misc.field label="Dibayar Dari" :required="true">
-                        <div class="dropdown-wrap" @click.outside="akunOpen=false">
-                            <div class="input dropdown-trigger" @click="akunOpen=!akunOpen">
-                                <x-misc.icon name="dollar" :size="15" stroke="var(--ink-4)" />
-                                <span style="flex:1;"
-                                    x-text="selectedAkun ? selectedAkun.nama : 'Pilih akun kas / bank'"></span>
-                                <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                            </div>
-                            <div class="dropdown-menu" x-show="akunOpen" x-cloak>
-                                <template x-for="a in akunList" :key="a.id">
-                                    <div class="dropdown-item" @click="selectedAkun=a; akunOpen=false">
-                                        <x-misc.icon name="dollar" :size="14" stroke="var(--ink-4)" />
-                                        <div style="flex:1; min-width:0;">
-                                            <div style="font-size:13px;" x-text="a.nama"></div>
-                                            <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="a.id">
-                                            </div>
+                        <x-misc.select display="selectedAkun ? selectedAkun.nama : 'Pilih akun kas / bank'"
+                            hasValue="selectedAkun" placeholder="Cari akun...">
+                            <template x-for="a in akunList.filter(a => !q || a.nama.toLowerCase().includes(q.toLowerCase()))"
+                                :key="a.id">
+                                <div class="dropdown-item" @click="selectedAkun=a; open=false; q=''">
+                                    <x-misc.icon name="dollar" :size="14" stroke="var(--ink-4)" />
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="font-size:13px;" x-text="a.nama"></div>
+                                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="a.id">
                                         </div>
-                                        <span class="dropdown-item__sub num"
-                                            x-text="'Rp ' + a.saldo.toLocaleString('id-ID')"></span>
                                     </div>
-                                </template>
-                            </div>
-                        </div>
+                                    <span class="dropdown-item__sub num"
+                                        x-text="'Rp ' + a.saldo.toLocaleString('id-ID')"></span>
+                                </div>
+                            </template>
+                            <template x-if="!akunList.some(a => !q || a.nama.toLowerCase().includes(q.toLowerCase()))">
+                                <div class="dropdown-empty">Tidak ditemukan</div>
+                            </template>
+                        </x-misc.select>
                     </x-misc.field>
                 </div>
                 <div style="flex:1;" x-show="bayarNanti" x-cloak>
@@ -129,29 +122,25 @@
 
             {{-- Penerima --}}
             <x-misc.field label="Penerima">
-                <div class="dropdown-wrap" @click.outside="penerimaOpen=false">
-                    <div class="input dropdown-trigger" @click="penerimaOpen=!penerimaOpen">
-                        <div class="avatar"
-                            style="width:26px;height:26px;font-size:10px;background:var(--bg-3);color:var(--ink-2);"
-                            x-text="initials(selectedPenerima ? selectedPenerima.nama : '')"></div>
-                        <span style="flex:1;" x-text="selectedPenerima ? selectedPenerima.nama : 'Pilih penerima'"></span>
-                        <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                    </div>
-                    <div class="dropdown-menu" x-show="penerimaOpen" x-cloak>
-                        <template x-for="k in penerimaList" :key="k.id">
-                            <div class="dropdown-item" @click="selectedPenerima=k; penerimaOpen=false">
-                                <div class="avatar"
-                                    style="width:26px;height:26px;font-size:10px;background:var(--bg-3);color:var(--ink-2);"
-                                    x-text="initials(k.nama)"></div>
-                                <div style="flex:1; min-width:0;">
-                                    <div style="font-size:13px;" x-text="k.nama"></div>
-                                    <div style="font-size:11px; color:var(--ink-4);" x-text="k.kota"></div>
-                                </div>
-                                <span class="dropdown-item__sub" x-text="k.tipe"></span>
+                <x-misc.select display="selectedPenerima ? selectedPenerima.nama : 'Pilih penerima'"
+                    hasValue="selectedPenerima" placeholder="Cari penerima...">
+                    <template x-for="k in penerimaList.filter(k => !q || k.nama.toLowerCase().includes(q.toLowerCase()))"
+                        :key="k.id">
+                        <div class="dropdown-item" @click="selectedPenerima=k; open=false; q=''">
+                            <div class="avatar"
+                                style="width:26px;height:26px;font-size:10px;background:var(--bg-3);color:var(--ink-2);"
+                                x-text="initials(k.nama)"></div>
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-size:13px;" x-text="k.nama"></div>
+                                <div style="font-size:11px; color:var(--ink-4);" x-text="k.kota"></div>
                             </div>
-                        </template>
-                    </div>
-                </div>
+                            <span class="dropdown-item__sub" x-text="k.tipe"></span>
+                        </div>
+                    </template>
+                    <template x-if="!penerimaList.some(k => !q || k.nama.toLowerCase().includes(q.toLowerCase()))">
+                        <div class="dropdown-empty">Tidak ditemukan</div>
+                    </template>
+                </x-misc.select>
             </x-misc.field>
 
             {{-- Tanggal + Nomor --}}
@@ -197,26 +186,23 @@
 
                             {{-- Akun Biaya dropdown --}}
                             <td>
-                                <div class="dropdown-wrap" @click.outside="it.akunOpen=false">
-                                    <div class="input dropdown-trigger" style="height:34px; padding:0 10px;"
-                                        @click="it.akunOpen=!it.akunOpen">
-                                        <span style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
-                                            :style="it.selectedAkun ? '' : 'color:var(--ink-4);'"
-                                            x-text="it.selectedAkun ? it.selectedAkun.nama : 'Pilih akun'"></span>
-                                        <x-misc.icon name="chev-down" :size="13" stroke="var(--ink-4)" />
-                                    </div>
-                                    <div class="dropdown-menu" x-show="it.akunOpen" x-cloak style="min-width:280px;">
-                                        <template x-for="c in coaList" :key="c.kode">
-                                            <div class="dropdown-item" @click="it.selectedAkun=c; it.akunOpen=false">
-                                                <div style="flex:1; min-width:0;">
-                                                    <div style="font-size:13px;" x-text="c.nama"></div>
-                                                    <div class="mono" style="font-size:11px; color:var(--ink-4);"
-                                                        x-text="c.kode"></div>
-                                                </div>
+                                <x-misc.select display="it.selectedAkun ? it.selectedAkun.nama : 'Pilih akun'"
+                                    hasValue="it.selectedAkun" placeholder="Cari akun..." min-width="280px"
+                                    height="34px">
+                                    <template x-for="c in coaList.filter(c => !q || c.nama.toLowerCase().includes(q.toLowerCase()))"
+                                        :key="c.kode">
+                                        <div class="dropdown-item" @click="it.selectedAkun=c; open=false; q=''">
+                                            <div style="flex:1; min-width:0;">
+                                                <div style="font-size:13px;" x-text="c.nama"></div>
+                                                <div class="mono" style="font-size:11px; color:var(--ink-4);"
+                                                    x-text="c.kode"></div>
                                             </div>
-                                        </template>
-                                    </div>
-                                </div>
+                                        </div>
+                                    </template>
+                                    <template x-if="!coaList.some(c => !q || c.nama.toLowerCase().includes(q.toLowerCase()))">
+                                        <div class="dropdown-empty">Tidak ditemukan</div>
+                                    </template>
+                                </x-misc.select>
                             </td>
 
                             {{-- Deskripsi --}}

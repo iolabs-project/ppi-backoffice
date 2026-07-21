@@ -7,7 +7,6 @@ function terimaDanaData() {
     kontakList: @json($kontak),
     coaList: @json($coa),
     selectedKontak: null,
-    kontakOpen: false,
     rows: [{ akun: '', deskripsi: '', pajak: '', total: 0 }],
     pemotongan: [],
     addRow() {
@@ -63,26 +62,23 @@ function terimaDanaData() {
 
       {{-- Dari --}}
       <x-misc.field label="Dari" :required="true">
-        <div class="dropdown-wrap" @click.outside="kontakOpen = false">
-          <div class="input dropdown-trigger" @click="kontakOpen = !kontakOpen">
-            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-              x-text="initials(selectedKontak ? selectedKontak.nama : '')"></div>
-            <span style="flex:1; font-weight:500;" x-text="selectedKontak ? selectedKontak.nama : 'Pilih kontak'"></span>
-            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-          </div>
-          <div class="dropdown-menu" x-show="kontakOpen" x-cloak>
-            <template x-for="k in kontakList" :key="k.id">
-              <div class="dropdown-item" @click="selectedKontak = k; kontakOpen = false">
-                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                  x-text="initials(k.nama)"></div>
-                <div>
-                  <div style="font-weight:500;" x-text="k.nama"></div>
-                  <div style="font-size:11px; color:var(--ink-4);" x-text="k.tipe"></div>
-                </div>
+        <x-misc.select display="selectedKontak ? selectedKontak.nama : 'Pilih kontak'" hasValue="selectedKontak"
+          placeholder="Cari kontak...">
+          <template x-for="k in kontakList.filter(k => !q || k.nama.toLowerCase().includes(q.toLowerCase()))"
+            :key="k.id">
+            <div class="dropdown-item" @click="selectedKontak = k; open = false; q = ''">
+              <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                x-text="initials(k.nama)"></div>
+              <div>
+                <div style="font-weight:500;" x-text="k.nama"></div>
+                <div style="font-size:11px; color:var(--ink-4);" x-text="k.tipe"></div>
               </div>
-            </template>
-          </div>
-        </div>
+            </div>
+          </template>
+          <template x-if="!kontakList.some(k => !q || k.nama.toLowerCase().includes(q.toLowerCase()))">
+            <div class="dropdown-empty">Tidak ditemukan</div>
+          </template>
+        </x-misc.select>
       </x-misc.field>
 
       {{-- Nomor --}}

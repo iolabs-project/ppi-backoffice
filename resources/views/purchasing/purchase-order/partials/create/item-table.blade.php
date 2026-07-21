@@ -64,30 +64,19 @@
      </thead>
      <tbody>
          <template x-for="(it, i) in formData.details" :key="i">
-             <tr x-data="{ open: false }">
+             <tr>
                  <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
                  <td>
                      <div style="display:flex; align-items:center; gap:10px;">
                          <div class="product-icon">
                              <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
                          </div>
-                         <div style="flex:1;" class="dropdown-wrap" @click.outside="open=false">
-                             <div class="input dropdown-trigger" style="height:32px; padding:0 10px;"
-                                 @click="open=!open">
-                                 <span style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
-                                     :style="it.product_id ? '' : 'color:var(--ink-4);'"
-                                     x-text="it.product_id ? it.name : 'Pilih Produk'"></span>
-                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                     stroke="var(--ink-4)" stroke-width="1.6" stroke-linecap="round"
-                                     stroke-linejoin="round" style="flex-shrink:0;">
-                                     <path d="m6 9 6 6 6-6" />
-                                 </svg>
-                             </div>
-                             <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
-                                 x-text="it.code || '— belum dipilih'"></div>
-                             <div class="dropdown-menu" x-show="open" x-cloak style="min-width:320px;">
-                                 <template x-for="p in availableProducts()" :key="p.id">
-                                     <div class="dropdown-item" @click="selectProduct(it, p);open=false">
+                         <div style="flex:1;">
+                             <x-misc.select display="it.product_id ? it.name : 'Pilih Produk'"
+                                 hasValue="it.product_id" placeholder="Cari produk..." min-width="320px"
+                                 height="32px">
+                                 <template x-for="p in availableProducts(q)" :key="p.id">
+                                     <div class="dropdown-item" @click="selectProduct(it, p);open=false;q=''">
                                          <div style="flex:1; min-width:0;">
                                              <div style="font-size:13px;" x-text="p.name"></div>
                                              <div class="mono" style="font-size:11px; color:var(--ink-4);"
@@ -96,7 +85,12 @@
                                          <span class="dropdown-item__sub" x-text="p.unit.symbol"></span>
                                      </div>
                                  </template>
-                             </div>
+                                 <template x-if="availableProducts(q).length === 0">
+                                     <div class="dropdown-empty">Tidak ditemukan</div>
+                                 </template>
+                             </x-misc.select>
+                             <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
+                                 x-text="it.code || '— belum dipilih'"></div>
                          </div>
                      </div>
                  </td>

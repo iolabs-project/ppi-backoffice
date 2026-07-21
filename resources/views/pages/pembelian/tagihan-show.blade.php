@@ -5,7 +5,6 @@
   function tagihanPembelianShowData() {
     return {
       payments: [],
-      metodeOpen: false,
       newPayment: {
         tanggal: '{{ date("Y-m-d") }}',
         jumlah: 0,
@@ -193,20 +192,15 @@
 
         {{-- Metode --}}
         <x-misc.field label="Metode Pembayaran">
-          <div class="dropdown-wrap" @click.outside="metodeOpen=false">
-            <div class="input dropdown-trigger" @click="metodeOpen=!metodeOpen">
-              <span style="flex:1;" x-text="newPayment.metode"></span>
-              <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-            </div>
-            <div class="dropdown-menu" x-show="metodeOpen" x-cloak>
-              <template x-for="m in metodeList" :key="m">
-                <div class="dropdown-item"
-                  :class="newPayment.metode === m ? 'dropdown-item--active' : ''"
-                  @click="newPayment.metode=m; metodeOpen=false"
-                  x-text="m"></div>
-              </template>
-            </div>
-          </div>
+          <x-misc.select display="newPayment.metode" hasValue="newPayment.metode" placeholder="Cari metode...">
+            <template x-for="m in metodeList.filter(m => !q || m.toLowerCase().includes(q.toLowerCase()))" :key="m">
+              <div class="dropdown-item" :class="newPayment.metode === m ? 'dropdown-item--active' : ''"
+                @click="newPayment.metode=m; open=false; q=''" x-text="m"></div>
+            </template>
+            <template x-if="!metodeList.some(m => !q || m.toLowerCase().includes(q.toLowerCase()))">
+              <div class="dropdown-empty">Tidak ditemukan</div>
+            </template>
+          </x-misc.select>
         </x-misc.field>
 
         {{-- Referensi --}}

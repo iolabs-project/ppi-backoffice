@@ -7,6 +7,9 @@
      Blade params:
        - $accounts: collection of {id, code, name}
 --}}
+<script>
+    var accounts = @json($accounts);
+</script>
 <div class="card" style="overflow:visible;">
     <div class="card-hd">
         <div class="display card-hd-title">Biaya Tambahan (Tagih ke Customer)</div>
@@ -35,13 +38,24 @@
                             x-model="charge.description" @input="handleChargeInput()" />
                     </td>
                     <td>
-                        <select class="input" style="height:32px;" x-model.number="charge.account_id"
-                            @change="handleChargeInput()">
-                            <option value="">Pilih akun</option>
-                            @foreach ($accounts as $account)
-                                <option value="{{ $account->id }}">{{ $account->code }} - {{ $account->name }}</option>
-                            @endforeach
-                        </select>
+                        <x-misc.select
+                            display="charge.account_id ? (accounts.find(a => a.id === charge.account_id)?.code + ' - ' + accounts.find(a => a.id === charge.account_id)?.name) : 'Pilih akun'"
+                            hasValue="charge.account_id" placeholder="Cari akun..." min-width="260px" height="32px">
+                            <template
+                                x-for="a in accounts.filter(a => !q || a.name.toLowerCase().includes(q.toLowerCase()) || (a.code || '').toLowerCase().includes(q.toLowerCase()))"
+                                :key="a.id">
+                                <div class="dropdown-item" @click="charge.account_id=a.id; handleChargeInput(); open=false; q=''">
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="font-size:13px;" x-text="a.name"></div>
+                                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="a.code"></div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template
+                                x-if="!accounts.some(a => !q || a.name.toLowerCase().includes(q.toLowerCase()) || (a.code || '').toLowerCase().includes(q.toLowerCase()))">
+                                <div class="dropdown-empty">Tidak ditemukan</div>
+                            </template>
+                        </x-misc.select>
                     </td>
                     <td style="text-align:center;">
                         <input type="checkbox" x-model="charge.is_taxable" @change="handleChargeInput()" />

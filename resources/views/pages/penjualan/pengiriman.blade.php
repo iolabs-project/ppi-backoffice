@@ -10,7 +10,6 @@
         { id: 'open',     label: 'Open' },
         { id: 'terkirim', label: 'Terkirim' },
       ],
-      driverOpen: false,
       driver: { id: 'DRV-001', nama: 'Sutrisno Hadi', plat: 'B 9821 KAB', eta: '14:30' },
       driverList: [
         { id: 'DRV-001', nama: 'Sutrisno Hadi',  plat: 'B 9821 KAB', eta: '14:30' },
@@ -159,8 +158,8 @@
       {{-- Driver Dropdown --}}
       <div class="shipping-driver">
         <div class="label">Driver</div>
-        <div class="dropdown-wrap" @click.outside="driverOpen=false">
-          <div class="input dropdown-trigger" @click="driverOpen=!driverOpen" style="height:auto; padding:10px 12px;">
+        <x-misc.select placeholder="Cari driver..." trigger-style="height:auto; padding:10px 12px;">
+          <x-slot:trigger>
             <div class="avatar" style="width:32px;height:32px;flex-shrink:0;background:var(--bg-3);color:var(--ink-2);"
               x-text="initials(driver.nama)"></div>
             <div style="flex:1;">
@@ -168,22 +167,22 @@
               <div class="mono" style="font-size:11px; color:var(--ink-4);"
                 x-text="driver.plat + ' · ETA ' + driver.eta"></div>
             </div>
-            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-          </div>
-          <div class="dropdown-menu" x-show="driverOpen" x-cloak>
-            <template x-for="d in driverList" :key="d.id">
-              <div class="dropdown-item" @click="driver=d; driverOpen=false">
-                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                  x-text="initials(d.nama)"></div>
-                <div style="flex:1;">
-                  <div style="font-size:13px;" x-text="d.nama"></div>
-                  <div class="mono" style="font-size:11px; color:var(--ink-4);"
-                    x-text="d.plat + ' · ETA ' + d.eta"></div>
-                </div>
+          </x-slot:trigger>
+          <template x-for="d in driverList.filter(d => !q || d.nama.toLowerCase().includes(q.toLowerCase()))" :key="d.id">
+            <div class="dropdown-item" @click="driver=d; open=false; q=''">
+              <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                x-text="initials(d.nama)"></div>
+              <div style="flex:1;">
+                <div style="font-size:13px;" x-text="d.nama"></div>
+                <div class="mono" style="font-size:11px; color:var(--ink-4);"
+                  x-text="d.plat + ' · ETA ' + d.eta"></div>
               </div>
-            </template>
-          </div>
-        </div>
+            </div>
+          </template>
+          <template x-if="!driverList.some(d => !q || d.nama.toLowerCase().includes(q.toLowerCase()))">
+            <div class="dropdown-empty">Tidak ditemukan</div>
+          </template>
+        </x-misc.select>
       </div>
 
       {{-- Biaya Pengiriman --}}

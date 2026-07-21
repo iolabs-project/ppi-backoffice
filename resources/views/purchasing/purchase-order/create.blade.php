@@ -39,28 +39,16 @@
                 },
                 // Supplier Options
                 suppliers: @json($suppliers),
-                supplierLoading: false,
-                supplierSearch: '',
                 supplierSelected: null,
-                supplierOpen: false,
                 // Warehouse Options
                 warehouses: @json($warehouses),
-                warehouseLoading: false,
-                warehouseSearch: '',
                 warehouseSelected: null,
-                warehouseOpen: false,
                 // Payment Terms
                 paymentTerms: @json($paymentTerms),
                 paymentTermSelected: null,
-                paymentTermOpen: false,
-                // Product Options
-                productSelected: [],
-                productOpen: false,
                 // Cash Bank Options
                 cashBanks: @json($cashBankAccounts),
-                cashBankLoading: false,
                 cashBankSelected: null,
-                cashBankOpen: false,
 
                 // Shorthand: parse masked string to number
                 n(v) {
@@ -181,8 +169,18 @@
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
                 },
 
-                availableProducts() {
-                    return products.filter(p => !this.formData.details.some(d => d.product_id === p.id));
+                availableProducts(q) {
+                    let list = products.filter(p => !this.formData.details.some(d => d.product_id === p.id));
+
+                    if (q) {
+                        const s = q.toLowerCase();
+                        list = list.filter(p =>
+                            (p.name || '').toLowerCase().includes(s) ||
+                            (p.code || '').toLowerCase().includes(s)
+                        );
+                    }
+
+                    return list;
                 },
 
                 buildBody(status) {
@@ -278,26 +276,21 @@
 
                 {{-- Supplier Dropdown --}}
                 <x-misc.field label="Supplier" :required="true">
-                    <div class="dropdown-wrap" @click.outside="supplierOpen=false">
-                        <div class="input dropdown-trigger" @click="supplierOpen=!supplierOpen">
-                            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                x-text="initials(supplierSelected ? supplierSelected.name : '')"></div>
-                            <span style="flex:1; font-weight:500;"
-                                x-text="supplierSelected ? supplierSelected.name : 'Pilih Supplier'"></span>
-                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                        </div>
-                        <div class="dropdown-menu" x-show="supplierOpen" x-cloak>
-                            <template x-for="s in suppliers" :key="s.id">
-                                <div class="dropdown-item"
-                                    @click="supplierSelected=s; formData.supplier_id=s.id; supplierOpen=false">
-                                    <div class="avatar"
-                                        style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                        x-text="initials(s.name)"></div>
-                                    <span x-text="s.name"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
+                    <x-misc.select display="supplierSelected ? supplierSelected.name : 'Pilih Supplier'"
+                        hasValue="supplierSelected" placeholder="Cari supplier...">
+                        <template x-for="s in suppliers.filter(s => !q || s.name.toLowerCase().includes(q.toLowerCase()))"
+                            :key="s.id">
+                            <div class="dropdown-item"
+                                @click="supplierSelected=s; formData.supplier_id=s.id; open=false; q=''">
+                                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                                    x-text="initials(s.name)"></div>
+                                <span x-text="s.name"></span>
+                            </div>
+                        </template>
+                        <template x-if="!suppliers.some(s => !q || s.name.toLowerCase().includes(q.toLowerCase()))">
+                            <div class="dropdown-empty">Tidak ditemukan</div>
+                        </template>
+                    </x-misc.select>
                 </x-misc.field>
 
                 {{-- Nomor PO --}}
@@ -320,45 +313,38 @@
 
                 {{-- Gudang Dropdown --}}
                 <x-misc.field label="Gudang" :required="true">
-                    <div class="dropdown-wrap" @click.outside="warehouseOpen=false">
-                        <div class="input dropdown-trigger" @click="warehouseOpen=!warehouseOpen">
-                            <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                x-text="initials(warehouseSelected ? warehouseSelected.name : '')"></div>
-                            <span style="flex:1; font-weight:500;"
-                                x-text="warehouseSelected ? warehouseSelected.name : 'Pilih Gudang'"></span>
-                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                        </div>
-                        <div class="dropdown-menu" x-show="warehouseOpen" x-cloak>
-                            <template x-for="g in warehouses" :key="g.id">
-                                <div class="dropdown-item"
-                                    @click="warehouseSelected=g; formData.warehouse_id=g.id; warehouseOpen=false">
-                                    <div class="avatar"
-                                        style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
-                                        x-text="initials(g.name)"></div>
-                                    <span x-text="g.name"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
+                    <x-misc.select display="warehouseSelected ? warehouseSelected.name : 'Pilih Gudang'"
+                        hasValue="warehouseSelected" placeholder="Cari gudang...">
+                        <template x-for="g in warehouses.filter(g => !q || g.name.toLowerCase().includes(q.toLowerCase()))"
+                            :key="g.id">
+                            <div class="dropdown-item"
+                                @click="warehouseSelected=g; formData.warehouse_id=g.id; open=false; q=''">
+                                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                                    x-text="initials(g.name)"></div>
+                                <span x-text="g.name"></span>
+                            </div>
+                        </template>
+                        <template x-if="!warehouses.some(g => !q || g.name.toLowerCase().includes(q.toLowerCase()))">
+                            <div class="dropdown-empty">Tidak ditemukan</div>
+                        </template>
+                    </x-misc.select>
                 </x-misc.field>
 
                 {{-- Termin Pembayaran Dropdown --}}
                 <x-misc.field label="Termin Pembayaran" :required="true">
-                    <div class="dropdown-wrap" @click.outside="paymentTermOpen=false">
-                        <div class="input dropdown-trigger" @click="paymentTermOpen=!paymentTermOpen">
-                            <span style="flex:1; font-weight:500;"
-                                x-text="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"></span>
-                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                        </div>
-                        <div class="dropdown-menu" x-show="paymentTermOpen" x-cloak>
-                            <template x-for="t in paymentTerms" :key="t.id">
-                                <div class="dropdown-item"
-                                    @click="paymentTermSelected=t; handlePaymentTermChange(); paymentTermOpen=false">
-                                    <span x-text="t.name"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
+                    <x-misc.select display="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"
+                        hasValue="paymentTermSelected" placeholder="Cari termin...">
+                        <template x-for="t in paymentTerms.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))"
+                            :key="t.id">
+                            <div class="dropdown-item"
+                                @click="paymentTermSelected=t; handlePaymentTermChange(); open=false; q=''">
+                                <span x-text="t.name"></span>
+                            </div>
+                        </template>
+                        <template x-if="!paymentTerms.some(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))">
+                            <div class="dropdown-empty">Tidak ditemukan</div>
+                        </template>
+                    </x-misc.select>
                 </x-misc.field>
 
                 {{-- Nomor Referensi --}}
@@ -470,25 +456,22 @@
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Uang Muka</span>
                                 <div class="order-summary__dp-group">
-                                    <div class="dropdown-wrap" @click.outside="cashBankOpen=false">
-                                        <div class="input dropdown-trigger order-summary__dp-trigger"
-                                            @click="cashBankOpen=!cashBankOpen">
-                                            <span
-                                                style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
-                                                :style="cashBankSelected ? '' : 'color:var(--ink-4);'"
-                                                x-text="cashBankSelected ? cashBankSelected.name : 'Sumber Kas'"></span>
-                                            <x-misc.icon name="chev-down" :size="11" stroke="var(--ink-4)" />
-                                        </div>
-                                        <div class="dropdown-menu" x-show="cashBankOpen" x-cloak
-                                            style="right:0; left:auto; min-width:180px;">
-                                            <template x-for="cb in cashBanks" :key="cb.id">
-                                                <div class="dropdown-item"
-                                                    @click="cashBankSelected=cb; formData.down_payment_account_id=cb.id; cashBankOpen=false">
-                                                    <span x-text="cb.name"></span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </div>
+                                    <x-misc.select display="cashBankSelected ? cashBankSelected.name : 'Sumber Kas'"
+                                        hasValue="cashBankSelected" placeholder="Cari sumber kas..." align="right"
+                                        min-width="180px" trigger-class="order-summary__dp-trigger">
+                                        <template
+                                            x-for="cb in cashBanks.filter(cb => !q || cb.name.toLowerCase().includes(q.toLowerCase()))"
+                                            :key="cb.id">
+                                            <div class="dropdown-item"
+                                                @click="cashBankSelected=cb; formData.down_payment_account_id=cb.id; open=false; q=''">
+                                                <span x-text="cb.name"></span>
+                                            </div>
+                                        </template>
+                                        <template
+                                            x-if="!cashBanks.some(cb => !q || cb.name.toLowerCase().includes(q.toLowerCase()))">
+                                            <div class="dropdown-empty">Tidak ditemukan</div>
+                                        </template>
+                                    </x-misc.select>
                                     <div class="input-with-prefix">
                                         {{-- <span class="input-with-prefix__label">- Rp</span> --}}
                                         <input

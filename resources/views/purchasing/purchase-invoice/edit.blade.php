@@ -55,12 +55,6 @@
                 // Payment Terms
                 paymentTerms: @json($paymentTerms),
                 paymentTermSelected: null,
-                paymentTermOpen: false,
-                // Product Options
-                products: [],
-                productLoading: false,
-                productSearch: '',
-                productOpen: false,
 
                 addProduct() {
                     this.formData.details.push({
@@ -113,12 +107,22 @@
                 },
 
 
-                availableGRItems() {
+                availableGRItems(q) {
                     const selectedIds = this.formData.details
                         .filter(d => d.goods_receipt_item_id)
                         .map(d => d.goods_receipt_item_id);
 
-                    return remainingGRItems.filter(item => !selectedIds.includes(item.id));
+                    let list = remainingGRItems.filter(item => !selectedIds.includes(item.id));
+
+                    if (q) {
+                        const s = q.toLowerCase();
+                        list = list.filter(item =>
+                            (item.product_name || '').toLowerCase().includes(s) ||
+                            (item.product_code || '').toLowerCase().includes(s)
+                        );
+                    }
+
+                    return list;
                 },
                 handleDetailDiscountPercentageInput(index) {
                     const percentage = this.n(this.formData.details[index].discount_percentage);
@@ -488,21 +492,19 @@
 
                 {{-- Termin Pembayaran Dropdown --}}
                 <x-misc.field label="Termin Pembayaran" :required="true">
-                    <div class="dropdown-wrap" @click.outside="paymentTermOpen=false">
-                        <div class="input dropdown-trigger" @click="paymentTermOpen=!paymentTermOpen">
-                            <span style="flex:1; font-weight:500;"
-                                x-text="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"></span>
-                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-4)" />
-                        </div>
-                        <div class="dropdown-menu" x-show="paymentTermOpen" x-cloak>
-                            <template x-for="t in paymentTerms" :key="t.id">
-                                <div class="dropdown-item"
-                                    @click="paymentTermSelected=t; handlePaymentTermChange(); paymentTermOpen=false">
-                                    <span x-text="t.name"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
+                    <x-misc.select display="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"
+                        hasValue="paymentTermSelected" placeholder="Cari termin...">
+                        <template x-for="t in paymentTerms.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))"
+                            :key="t.id">
+                            <div class="dropdown-item"
+                                @click="paymentTermSelected=t; handlePaymentTermChange(); open=false; q=''">
+                                <span x-text="t.name"></span>
+                            </div>
+                        </template>
+                        <template x-if="!paymentTerms.some(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))">
+                            <div class="dropdown-empty">Tidak ditemukan</div>
+                        </template>
+                    </x-misc.select>
                 </x-misc.field>
 
                 {{-- Nomor Referensi --}}
@@ -536,31 +538,20 @@
                 </thead>
                 <tbody>
                     <template x-for="(it, i) in formData.details" :key="i">
-                        <tr x-data="{ open: false }">
+                        <tr>
                             <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
                             <td>
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <div class="product-icon">
                                         <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
                                     </div>
-                                    <div style="flex:1;" class="dropdown-wrap" @click.outside="open=false">
-                                        <div class="input dropdown-trigger" style="height:32px; padding:0 10px;"
-                                            @click="open=!open">
-                                            <span
-                                                style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"
-                                                :style="it.product_id ? '' : 'color:var(--ink-4);'"
-                                                x-text="it.product_id ? it.name + ' (' + it.batch_number + ')' : 'Pilih Produk'"></span>
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                                stroke="var(--ink-4)" stroke-width="1.6" stroke-linecap="round"
-                                                stroke-linejoin="round" style="flex-shrink:0;">
-                                                <path d="m6 9 6 6 6-6" />
-                                            </svg>
-                                        </div>
-                                        <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
-                                            x-text="it.code || '— belum dipilih'"></div>
-                                        <div class="dropdown-menu" x-show="open" x-cloak style="min-width:320px;">
-                                            <template x-for="p in availableGRItems()" :key="p.id">
-                                                <div class="dropdown-item" @click="selectProduct(it, p);open=false">
+                                    <div style="flex:1;">
+                                        <x-misc.select
+                                            display="it.product_id ? it.name + ' (' + it.batch_number + ')' : 'Pilih Produk'"
+                                            hasValue="it.product_id" placeholder="Cari produk..." min-width="320px"
+                                            height="32px">
+                                            <template x-for="p in availableGRItems(q)" :key="p.id">
+                                                <div class="dropdown-item" @click="selectProduct(it, p);open=false;q=''">
                                                     <div style="flex:1; min-width:0;">
                                                         <div style="font-size:13px;"
                                                             x-text="p.product_name + ' (' + p.batch_number + ')'"></div>
@@ -570,7 +561,12 @@
                                                     <span class="dropdown-item__sub" x-text="p.unit.symbol"></span>
                                                 </div>
                                             </template>
-                                        </div>
+                                            <template x-if="availableGRItems(q).length === 0">
+                                                <div class="dropdown-empty">Tidak ditemukan</div>
+                                            </template>
+                                        </x-misc.select>
+                                        <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
+                                            x-text="it.code || '— belum dipilih'"></div>
                                     </div>
                                 </div>
                             </td>
