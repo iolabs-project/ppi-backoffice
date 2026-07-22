@@ -23,7 +23,6 @@
                     costs: (deliveryOrder.costs || []).map(cost => ({
                         account_id: cost.account_id,
                         description: cost.description,
-                        is_inventory_related: !!cost.is_inventory_related,
                         amount: cost.amount,
                     })),
                     details: (deliveryOrder.items || []).map(item => {
@@ -55,7 +54,6 @@
                     this.formData.costs.push({
                         account_id: null,
                         description: null,
-                        is_inventory_related: false,
                         amount: null,
                     });
                 },

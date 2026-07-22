@@ -1,6 +1,6 @@
 {{-- Shared Additional Costs (Internal Only) table.
      Expects the enclosing Alpine scope to expose:
-       - formData.costs: [{ account_id, description, amount, is_inventory_related }]
+       - formData.costs: [{ account_id, description, amount }]
        - addCost() / removeCost(index)
        - handleCostInput() -- called on every change to trigger recalculation
      Blade params:
@@ -22,7 +22,6 @@
                 <th style="width:48px;">#</th>
                 <th>Deskripsi</th>
                 <th style="min-width:200px;">Akun (Beban)</th>
-                <th style="width:120px; text-align:center;">Terkait Inventory</th>
                 <th style="width:160px; text-align:right;">Jumlah</th>
                 <th style="width:40px;"></th>
             </tr>
@@ -55,9 +54,6 @@
                             </template>
                         </x-misc.select>
                     </td>
-                    <td style="text-align:center;">
-                        <input type="checkbox" x-model="cost.is_inventory_related" @change="handleCostInput()" />
-                    </td>
                     <td>
                         <input class="input num" style="height:32px; text-align:right;" x-model="cost.amount"
                             x-mask:dynamic="$money($input, ',')" @input="handleCostInput()" />
@@ -72,7 +68,7 @@
             </template>
             <template x-if="formData.costs.length === 0">
                 <tr>
-                    <td colspan="6" style="text-align:center; color:var(--ink-4); padding:16px 0;">
+                    <td colspan="5" style="text-align:center; color:var(--ink-4); padding:16px 0;">
                         Belum ada biaya internal.
                     </td>
                 </tr>

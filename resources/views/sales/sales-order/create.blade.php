@@ -116,7 +116,6 @@
                     this.formData.costs.push({
                         account_id: null,
                         description: null,
-                        is_inventory_related: false,
                         amount: null,
                     });
                     this.recalculate();
@@ -135,7 +134,7 @@
                     return this.formData.costs.reduce((sum, c) => sum + this.n(c.amount), 0);
                 },
                 estimatedCOGS() {
-                    return this.formData.details.reduce((sum, d) => sum + (this.n(d.quantity) * this.n(d.avg_unit_cost)), 0);
+                    return this.formData.details.reduce((sum, d) => sum + (this.n(d.quantity) * (Number(d.avg_unit_cost) || 0)), 0);
                 },
                 estimatedRevenue() {
                     return this.n(this.formData.subtotal) - this.n(this.formData.discount_amount) + this.chargesTotal();
@@ -660,15 +659,15 @@
                         <div class="display" style="font-size:12px; font-weight:600; margin-bottom:8px;">Profit Preview</div>
                         <div style="display:flex; justify-content:space-between; font-size:12px; padding:3px 0;">
                             <span style="color:var(--ink-3);">Estimasi Revenue</span>
-                            <span class="num" x-text="NumberUtils.formatNumericIntoMask(estimatedRevenue())"></span>
+                            <span class="num" x-text="NumberUtils.formatNumericIntoMask(Math.round(estimatedRevenue()))"></span>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:12px; padding:3px 0;">
                             <span style="color:var(--ink-3);">Estimasi Total Cost</span>
-                            <span class="num" x-text="NumberUtils.formatNumericIntoMask(estimatedCost())"></span>
+                            <span class="num" x-text="NumberUtils.formatNumericIntoMask(Math.round(estimatedCost()))"></span>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; padding-top:6px; margin-top:4px; border-top:1px solid var(--line-2);">
                             <span>Estimasi Profit</span>
-                            <span class="num" style="color:var(--accent);" x-text="NumberUtils.formatNumericIntoMask(estimatedProfit())"></span>
+                            <span class="num" style="color:var(--accent);" x-text="NumberUtils.formatNumericIntoMask(Math.round(estimatedProfit()))"></span>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:12px; padding-top:2px;">
                             <span style="color:var(--ink-3);">Margin</span>

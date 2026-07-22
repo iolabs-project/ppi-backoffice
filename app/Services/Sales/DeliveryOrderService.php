@@ -115,7 +115,7 @@ class DeliveryOrderService
             'items.product.unit:id,symbol',
             'items.batches:id,delivery_order_item_id,product_batch_id,quantity,unit_cost',
             'items.batches.productBatch:id,batch_number',
-            'costs:id,delivery_order_id,account_id,description,amount,is_inventory_related',
+            'costs:id,delivery_order_id,account_id,description,amount',
             'costs.account:id,code,name,category_id',
         ])
             ->select(
@@ -341,7 +341,6 @@ class DeliveryOrderService
                 'delivery_order_id' => $deliveryOrder->id,
                 'account_id' => $cost['account_id'],
                 'description' => $cost['description'] ?? null,
-                'is_inventory_related' => $cost['is_inventory_related'] ?? false,
                 'amount' => (float) ($cost['amount'] ?? 0),
             ]);
 

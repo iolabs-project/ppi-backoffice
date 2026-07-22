@@ -87,7 +87,7 @@ class SalesOrderService
             'items:id,sales_order_id,product_id,quantity,shipped_quantity,invoiced_quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
-            'costs:id,sales_order_id,account_id,description,amount,is_inventory_related',
+            'costs:id,sales_order_id,account_id,description,amount',
             'costs.account:id,code,name,category_id',
             'charges:id,sales_order_id,account_id,description,amount',
             'charges.account:id,code,name,category_id',
@@ -186,7 +186,6 @@ class SalesOrderService
                     'sales_order_id' => $form->id,
                     'account_id' => $cost['account_id'],
                     'description' => $cost['description'] ?? null,
-                    'is_inventory_related' => $cost['is_inventory_related'] ?? false,
                     'amount' => $cost['amount'],
                 ]);
             }
@@ -265,7 +264,6 @@ class SalesOrderService
                     'sales_order_id' => $salesOrder->id,
                     'account_id' => $cost['account_id'],
                     'description' => $cost['description'] ?? null,
-                    'is_inventory_related' => $cost['is_inventory_related'] ?? false,
                     'amount' => $cost['amount'],
                 ]);
             }
