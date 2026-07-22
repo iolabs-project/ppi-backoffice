@@ -2,6 +2,12 @@
 @php
     $penjualanActive = str_starts_with($currentPage, 'penjualan');
     $pembelianActive = str_starts_with($currentPage, 'pembelian');
+    $financeActive = str_starts_with($currentPage, 'finance');
+    $financeSubmenus = [
+        ['id' => 'finance.account_payable',    'label' => 'Account Payable',    'desc' => 'Kelola hutang & pembayaran ke supplier', 'url' => route('finances.account_payables.index'),    'icon' => 'wallet', 'bg' => '#FEF2F2', 'fg' => '#DC2626'],
+        ['id' => 'finance.account_receivable', 'label' => 'Account Receivable', 'desc' => 'Kelola piutang & pembayaran dari customer', 'url' => route('finances.account_receivables.index'), 'icon' => 'coins',  'bg' => '#F0FDF4', 'fg' => '#16A34A'],
+        ['id' => 'finance.kasbank',            'label' => 'Cash Bank',          'desc' => 'Kelola akun kas & bank',                 'url' => route('kasbank.index'),                       'icon' => 'piggy-bank', 'bg' => '#EFF6FF', 'fg' => '#2563EB'],
+    ];
     $penjualanSubmenus = [
         ['id' => 'penjualan',            'label' => 'Sales Order', 'desc' => 'Kelola pesanan penjualan',    'url' => route('sales.sales_orders.index'),           'icon' => 'receipt',  'bg' => '#EEF2FF', 'fg' => '#6366F1'],
         ['id' => 'penjualan.pengiriman', 'label' => 'Pengiriman',  'desc' => 'Kelola pengiriman penjualan', 'url' => route('sales.delivery_orders.index'), 'icon' => 'truck',  'bg' => '#F0FDF4', 'fg' => '#16A34A'],
@@ -13,7 +19,6 @@
         ['id' => 'pembelian.tagihan', 'label' => 'Tagihan',        'desc' => 'Kelola tagihan pembelian',  'url' => route('purchasings.purchase_invoices.index'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A'],
     ];
     $navItems = [
-        ['id' => 'kasbank', 'icon' => 'piggy-bank', 'label' => 'Kas & Bank',  'url' => route('kasbank.index')],
         ['id' => 'biaya',   'icon' => 'receipt', 'label' => 'Biaya',       'url' => route('biaya.index')],
         ['id' => 'master',  'icon' => 'database', 'label' => 'Master Data', 'url' => route('master.index')],
         ['id' => 'laporan', 'icon' => 'clipboard', 'label' => 'Laporan',     'url' => route('laporan.index')],
@@ -25,6 +30,7 @@
     openPanel: null,
     penjualanActive: {{ $penjualanActive ? 'true' : 'false' }},
     pembelianActive: {{ $pembelianActive ? 'true' : 'false' }},
+    financeActive: {{ $financeActive ? 'true' : 'false' }},
     toggle(p) { this.openPanel = this.openPanel === p ? null : p; }
 }" style="display: contents;">
 
@@ -54,6 +60,14 @@
                 :data-active="openPanel === 'pembelian' || (openPanel === null && pembelianActive) ? '' : null"
                 @click="toggle('pembelian')">
                 <x-misc.icon name="cart" :size="18" sw="1.7" />
+            </button>
+
+            {{-- Finance --}}
+            <button type="button" title="Finance"
+                class="sidebar-item"
+                :data-active="openPanel === 'finance' || (openPanel === null && financeActive) ? '' : null"
+                @click="toggle('finance')">
+                <x-misc.icon name="piggy-bank" :size="18" sw="1.7" />
             </button>
 
             {{-- Other nav items --}}
@@ -136,6 +150,32 @@
          x-cloak>
         <p class="submenu-panel__section">Pembelian</p>
         @foreach ($pembelianSubmenus as $sub)
+            <a href="{{ $sub['url'] }}"
+               class="submenu-panel__item {{ $currentPage === $sub['id'] ? 'active' : '' }}">
+                <div class="submenu-panel__icon"
+                     style="background: {{ $sub['bg'] }}; color: {{ $sub['fg'] }};">
+                    <x-misc.icon :name="$sub['icon']" :size="18" sw="1.7" />
+                </div>
+                <div>
+                    <div class="submenu-panel__title">{{ $sub['label'] }}</div>
+                    <div class="submenu-panel__desc">{{ $sub['desc'] }}</div>
+                </div>
+            </a>
+        @endforeach
+    </div>
+
+    {{-- Finance panel --}}
+    <div class="submenu-panel"
+         x-show="openPanel === 'finance'"
+         x-transition:enter="submenu-panel-anim"
+         x-transition:enter-start="submenu-panel-start"
+         x-transition:enter-end="submenu-panel-end"
+         x-transition:leave="submenu-panel-anim"
+         x-transition:leave-start="submenu-panel-end"
+         x-transition:leave-end="submenu-panel-start"
+         x-cloak>
+        <p class="submenu-panel__section">Finance</p>
+        @foreach ($financeSubmenus as $sub)
             <a href="{{ $sub['url'] }}"
                class="submenu-panel__item {{ $currentPage === $sub['id'] ? 'active' : '' }}">
                 <div class="submenu-panel__icon"

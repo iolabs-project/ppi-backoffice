@@ -21,7 +21,7 @@ class KasBankController extends Controller
         $transaksiKas = ErpDataService::transaksiKas();
 
         return view('pages.kasbank.index', [
-            'currentPage' => 'kasbank',
+            'currentPage' => 'finance.kasbank',
             'breadcrumb'  => [['label' => 'Kas & Bank', 'url' => route('kasbank.index')]],
             'akunKas'     => $akunKas,
             'totalSaldo'  => $total,
@@ -35,7 +35,7 @@ class KasBankController extends Controller
         $akun    = collect($akunKas)->firstWhere('id', $id) ?? $akunKas[0];
 
         return view('pages.kasbank.show', [
-            'currentPage'  => 'kasbank',
+            'currentPage'  => 'finance.kasbank',
             'breadcrumb'   => [
                 ['label' => 'Kas & Bank', 'url' => route('kasbank.index')],
                 ['label' => $akun['nama']],
@@ -52,7 +52,7 @@ class KasBankController extends Controller
         $akun    = collect($akunKas)->firstWhere('id', $id) ?? $akunKas[0];
 
         return view('pages.kasbank.kirim', [
-            'currentPage' => 'kasbank',
+            'currentPage' => 'finance.kasbank',
             'breadcrumb'  => [
                 ['label' => 'Kas & Bank', 'url' => route('kasbank.index')],
                 ['label' => $akun['nama'], 'url' => route('kasbank.show', $id)],
@@ -71,7 +71,7 @@ class KasBankController extends Controller
         $akun    = collect($akunKas)->firstWhere('id', $id) ?? $akunKas[0];
 
         return view('pages.kasbank.terima', [
-            'currentPage' => 'kasbank',
+            'currentPage' => 'finance.kasbank',
             'breadcrumb'  => [
                 ['label' => 'Kas & Bank', 'url' => route('kasbank.index')],
                 ['label' => $akun['nama'], 'url' => route('kasbank.show', $id)],

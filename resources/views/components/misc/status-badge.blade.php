@@ -19,6 +19,10 @@
     'dibayar-sebagian'=> ['chip chip-warn', 'chip-dot dot-warn',  'Dibayar Sebagian'],
     'menunggu'        => ['chip chip-warn', 'chip-dot dot-warn',  'Menunggu'],
     'ditolak'         => ['chip chip-bad',  'chip-dot dot-bad',   'Ditolak'],
+    'not-yet-due'     => ['chip chip-ok',   'chip-dot dot-ok',    'Not Yet Due'],
+    'unpaid'          => ['chip chip-bad',  'chip-dot dot-bad',   'Unpaid'],
+    'partial'         => ['chip chip-warn', 'chip-dot dot-warn',  'Partial'],
+    'paid'            => ['chip',           'chip-dot dot-neutral', 'Paid'],
   ];
   [$chipClass, $dotClass, $label] = $map[$status] ?? $map['pending'];
 @endphp

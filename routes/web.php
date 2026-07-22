@@ -149,15 +149,15 @@ Route::middleware('auth')->group(function () {
     Route::prefix('finances')->name('finances.')->group(function () {
         Route::prefix('account-payables')->name('account_payables.')->controller(AccountPayableController::class)->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/datatable', 'datatable')->name('datatable');
             Route::get('/{id}', 'show')->name('show');
             Route::post('/{id}', 'store')->name('store');
-            Route::get('/datatable', 'datatable')->name('datatable');
         });
         Route::prefix('account-receivables')->name('account_receivables.')->controller(AccountReceivableController::class)->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/datatable', 'datatable')->name('datatable');
             Route::get('/{id}', 'show')->name('show');
             Route::post('/{id}', 'store')->name('store');
-            Route::get('/datatable', 'datatable')->name('datatable');
         });
     });
 

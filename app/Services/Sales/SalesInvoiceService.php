@@ -215,7 +215,10 @@ class SalesInvoiceService
             'customer:id,name,code',
             'salesPerson:id,name,code',
             'warehouse:id,name,code',
-            'creator:id,username'
+            'creator:id,username',
+            'payments' => fn ($q) => $q->orderBy('payment_date', 'desc'),
+            'payments.account:id,name,code',
+            'payments.creator:id,username',
         ])
             ->select(
                 'id',
@@ -236,6 +239,7 @@ class SalesInvoiceService
                 'down_payment_amount',
                 'subtotal',
                 'total_amount',
+                'remaining_amount',
                 'note',
                 'status',
                 'created_by',

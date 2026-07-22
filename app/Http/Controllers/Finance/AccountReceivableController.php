@@ -3,27 +3,39 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
+use App\Enums\AccountCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use App\Services\Finance\AccountReceivableService;
 use App\Services\Sales\SalesInvoiceService;
+use App\Services\Master\AccountService;
 
 class AccountReceivableController extends Controller
 {
     private AccountReceivableService $accountReceivableService;
     private SalesInvoiceService $salesInvoiceService;
+    private AccountService $accountService;
 
-    public function __construct(AccountReceivableService $accountReceivableService, SalesInvoiceService $salesInvoiceService)
+    public function __construct(AccountReceivableService $accountReceivableService, SalesInvoiceService $salesInvoiceService, AccountService $accountService)
     {
         $this->accountReceivableService = $accountReceivableService;
         $this->salesInvoiceService = $salesInvoiceService;
+        $this->accountService = $accountService;
     }
 
-   public function index()
+    public function index()
     {
         $data = [
-            'currentPage'    => 'finance',
+            'currentPage'    => 'finance.account_receivable',
             'breadcrumb'     => [['label' => 'Piutang']],
+            'status' => [
+                ['id' => 'all', 'name' => 'Semua'],
+                ['id' => 'not-yet-due', 'name' => 'Not Yet Due'],
+                ['id' => 'unpaid', 'name' => 'Unpaid'],
+                ['id' => 'partial', 'name' => 'Partial'],
+                ['id' => 'paid', 'name' => 'Paid'],
+            ],
         ];
         return view('finance.account-receivable.index', $data);
     }
@@ -47,9 +59,11 @@ class AccountReceivableController extends Controller
     {
         $salesInvoice = $this->salesInvoiceService->fetchSalesInvoiceByID($id);
         $data = [
-            'currentPage'    => 'finance',
-            'breadcrumb'     => [['label' => 'Piutang', 'url' => route('account_receivables.index')], ['label' => 'Detail']],
+            'currentPage'    => 'finance.account_receivable',
+            'breadcrumb'     => [['label' => 'Piutang', 'url' => route('finances.account_receivables.index')], ['label' => $salesInvoice->number ?? 'Detail']],
             'salesInvoice' => $salesInvoice,
+            'displayStatus' => $salesInvoice ? $this->accountReceivableService->derivePaymentStatus($salesInvoice->status, $salesInvoice->due_date) : null,
+            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
         ];
         return view('finance.account-receivable.show', $data);
     }
@@ -66,7 +80,9 @@ class AccountReceivableController extends Controller
         ]);
         try {
             $this->accountReceivableService->storePayment($request, $id);
-            return response()->json(['redirect' => route('account_receivables.show', $id), 'message' => 'Pembayaran berhasil ditambahkan.']);
+            return response()->json(['redirect' => route('finances.account_receivables.show', $id), 'message' => 'Pembayaran berhasil ditambahkan.']);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             Log::error('Error AccountReceivableController@store: ' . $e->getMessage(), [
                 'exception' => $e,

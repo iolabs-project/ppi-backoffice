@@ -209,7 +209,10 @@ class PurchaseInvoiceService
             'costs.account:id,name,code,category_id',
             'supplier:id,name,code',
             'warehouse:id,name,code',
-            'creator:id,username'
+            'creator:id,username',
+            'payments' => fn ($q) => $q->orderBy('payment_date', 'desc'),
+            'payments.account:id,name,code',
+            'payments.creator:id,username',
         ])
             ->select(
                 'id',
@@ -229,6 +232,7 @@ class PurchaseInvoiceService
                 'down_payment_amount',
                 'subtotal',
                 'total_amount',
+                'remaining_amount',
                 'note',
                 'status',
                 'created_by',

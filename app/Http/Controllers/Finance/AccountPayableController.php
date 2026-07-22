@@ -3,27 +3,39 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
+use App\Enums\AccountCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use App\Services\Finance\AccountPayableService;
 use App\Services\Purchasing\PurchaseInvoiceService;
+use App\Services\Master\AccountService;
 
 class AccountPayableController extends Controller
 {
     private AccountPayableService $accountPayableService;
     private PurchaseInvoiceService $purchaseInvoiceService;
+    private AccountService $accountService;
 
-    public function __construct(AccountPayableService $accountPayableService, PurchaseInvoiceService $purchaseInvoiceService)
+    public function __construct(AccountPayableService $accountPayableService, PurchaseInvoiceService $purchaseInvoiceService, AccountService $accountService)
     {
         $this->accountPayableService = $accountPayableService;
         $this->purchaseInvoiceService = $purchaseInvoiceService;
+        $this->accountService = $accountService;
     }
 
-   public function index()
+    public function index()
     {
         $data = [
-            'currentPage'    => 'finance',
+            'currentPage'    => 'finance.account_payable',
             'breadcrumb'     => [['label' => 'Hutang']],
+            'status' => [
+                ['id' => 'all', 'name' => 'Semua'],
+                ['id' => 'not-yet-due', 'name' => 'Not Yet Due'],
+                ['id' => 'unpaid', 'name' => 'Unpaid'],
+                ['id' => 'partial', 'name' => 'Partial'],
+                ['id' => 'paid', 'name' => 'Paid'],
+            ],
         ];
         return view('finance.account-payable.index', $data);
     }
@@ -47,9 +59,11 @@ class AccountPayableController extends Controller
     {
         $purchaseInvoice = $this->purchaseInvoiceService->fetchPurchaseInvoiceByID($id);
         $data = [
-            'currentPage'    => 'finance',
-            'breadcrumb'     => [['label' => 'Hutang', 'url' => route('account_payables.index')], ['label' => 'Detail']],
+            'currentPage'    => 'finance.account_payable',
+            'breadcrumb'     => [['label' => 'Hutang', 'url' => route('finances.account_payables.index')], ['label' => $purchaseInvoice->number ?? 'Detail']],
             'purchaseInvoice' => $purchaseInvoice,
+            'displayStatus' => $purchaseInvoice ? $this->accountPayableService->derivePaymentStatus($purchaseInvoice->status, $purchaseInvoice->due_date) : null,
+            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
         ];
         return view('finance.account-payable.show', $data);
     }
@@ -66,7 +80,9 @@ class AccountPayableController extends Controller
         ]);
         try {
             $this->accountPayableService->storePayment($request, $id);
-            return response()->json(['redirect' => route('account_payables.show', $id), 'message' => 'Pembayaran berhasil ditambahkan.']);
+            return response()->json(['redirect' => route('finances.account_payables.show', $id), 'message' => 'Pembayaran berhasil ditambahkan.']);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             Log::error('Error AccountPayableController@store: ' . $e->getMessage(), [
                 'exception' => $e,

@@ -26,6 +26,17 @@ class AccountReceivableService
         return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
     }
     
+    public function derivePaymentStatus(string $status, $dueDate): string
+    {
+        return match ($status) {
+            SalesInvoiceStatus::PAID->value => 'paid',
+            SalesInvoiceStatus::PARTIAL->value => 'partial',
+            SalesInvoiceStatus::CANCELLED->value => 'cancelled',
+            SalesInvoiceStatus::DRAFT->value => 'draft',
+            default => ($dueDate && $dueDate->isPast()) ? 'unpaid' : 'not-yet-due',
+        };
+    }
+
     public function fetchARTableData(Request $request)
     {
         $query = SalesInvoice::with([
@@ -40,7 +51,12 @@ class AccountReceivableService
                 'total_amount',
                 'remaining_amount',
                 'status'
-            );
+            )
+            ->whereIn('status', [
+                SalesInvoiceStatus::OPEN->value,
+                SalesInvoiceStatus::PARTIAL->value,
+                SalesInvoiceStatus::PAID->value,
+            ]);
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -52,7 +68,33 @@ class AccountReceivableService
             });
         }
 
+        if ($request->filled('date_from')) {
+            $query->whereDate('invoice_date', '>=', $request->input('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('invoice_date', '<=', $request->input('date_to'));
+        }
+
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $today = now()->toDateString();
+            match ($request->input('status')) {
+                'paid' => $query->where('status', SalesInvoiceStatus::PAID->value),
+                'partial' => $query->where('status', SalesInvoiceStatus::PARTIAL->value),
+                'not-yet-due' => $query->where('status', SalesInvoiceStatus::OPEN->value)
+                    ->whereDate('due_date', '>=', $today),
+                'unpaid' => $query->where('status', SalesInvoiceStatus::OPEN->value)
+                    ->whereDate('due_date', '<', $today),
+                default => null,
+            };
+        }
+
         $query = $query->orderBy('invoice_date', 'desc')->paginate($request->input('per_page', 10));
+
+        $query->getCollection()->transform(function ($invoice) {
+            $invoice->display_status = $this->derivePaymentStatus($invoice->status, $invoice->due_date);
+            return $invoice;
+        });
 
         return $query;
     }
@@ -98,8 +140,12 @@ class AccountReceivableService
             throw ValidationException::withMessages(['error' => 'Invoice ini sudah lunas. Tidak dapat menambahkan pembayaran lagi.']);
         }
 
-        if ($request->status === SalesInvoiceStatus::CANCELLED->value) {
+        if ($invoice->status === SalesInvoiceStatus::CANCELLED->value) {
             throw ValidationException::withMessages(['error' => 'Invoice ini dibatalkan. Tidak dapat menambahkan pembayaran.']);
+        }
+
+        if ($request->amount > $invoice->remaining_amount) {
+            throw ValidationException::withMessages(['amount' => 'Jumlah pembayaran tidak boleh melebihi sisa outstanding (' . fmt_rp($invoice->remaining_amount) . ').']);
         }
 
         DB::transaction(function () use ($request, $invoice) {
