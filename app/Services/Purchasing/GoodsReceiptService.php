@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Services\Purchasing;
-
+use App\Services\ExpenseService;
 use App\Enums\GoodsReceiptStatus;
 use App\Models\Company;
 use App\Models\GoodsReceipt;
@@ -20,9 +20,11 @@ class GoodsReceiptService
 {
 
     private PurchaseOrderService $purchaseOrderService;
-    public function __construct(PurchaseOrderService $purchaseOrderService)
+    private ExpenseService $expenseService;
+    public function __construct(PurchaseOrderService $purchaseOrderService, ExpenseService $expenseService)
     {
         $this->purchaseOrderService = $purchaseOrderService;
+        $this->expenseService = $expenseService;
     }
     public function generateGoodsReceiptNumber(): string
     {
@@ -315,7 +317,7 @@ class GoodsReceiptService
                 })
                 ->update(['status' => 'closed']);
 
-            // TODO: Create drafted cost invoice for costs that the billed_by is not 'supplier' 
+            $this->expenseService->storeExpenseFromGoodsReceipt($goodsReceipt->id);
         }
     }
 

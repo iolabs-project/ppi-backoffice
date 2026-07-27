@@ -192,7 +192,6 @@
                                 status: this.filter,
                             },
                         });
-                        console.log('Response data:', response.data);
                         this.tableData = response.data;
                     } catch (error) {
                         console.error('Error fetching data:', error);

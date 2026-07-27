@@ -10,6 +10,7 @@ use App\Http\Controllers\Erp\KasBankController;
 use App\Http\Controllers\Erp\LaporanController;
 use App\Http\Controllers\Erp\MasterController;
 use App\Http\Controllers\Erp\BiayaController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\Finance\AccountPayableController;
 use App\Http\Controllers\Finance\AccountReceivableController;
 use App\Http\Controllers\Master\AccountController;
@@ -158,6 +159,20 @@ Route::middleware('auth')->group(function () {
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::get('/{id}', 'show')->name('show');
             Route::post('/{id}', 'store')->name('store');
+        });
+    });
+
+    Route::prefix('expenses')->name('expenses.')->controller(ExpenseController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/datatable', 'datatable')->name('datatable');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+
+        Route::prefix('/{id}')->group(function () {
+            Route::get('/', 'show')->name('show');
+            Route::get('/edit', 'edit')->name('edit');
+            Route::put('/', 'update')->name('update');
+            Route::post('/cancel', 'cancel')->name('cancel');
         });
     });
 

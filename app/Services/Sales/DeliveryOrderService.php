@@ -13,6 +13,7 @@ use App\Models\InventoryTransaction;
 use App\Models\ProductBatch;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
+use App\Services\ExpenseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -21,9 +22,11 @@ use Illuminate\Validation\ValidationException;
 class DeliveryOrderService
 {
     private SalesOrderService $salesOrderService;
-    public function __construct(SalesOrderService $salesOrderService)
+    private ExpenseService $expenseService;
+    public function __construct(SalesOrderService $salesOrderService, ExpenseService $expenseService)
     {
         $this->salesOrderService = $salesOrderService;
+        $this->expenseService = $expenseService;
     }
     public function generateDONumber(): string
     {
@@ -344,9 +347,8 @@ class DeliveryOrderService
                 'amount' => (float) ($cost['amount'] ?? 0),
             ]);
 
-            // TODO: create draft cost invoice for the delivery order cost, if needed. This part is not implemented yet.
         }
-    
+        $this->expenseService->storeExpenseFromDeliveryOrder($deliveryOrder->id);
     }
 
     public function changeDeliveryOrderStatus(int $id, string $status): void

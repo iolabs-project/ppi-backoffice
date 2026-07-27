@@ -19,7 +19,7 @@
         ['id' => 'pembelian.tagihan', 'label' => 'Tagihan',        'desc' => 'Kelola tagihan pembelian',  'url' => route('purchasings.purchase_invoices.index'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A'],
     ];
     $navItems = [
-        ['id' => 'biaya',   'icon' => 'receipt', 'label' => 'Biaya',       'url' => route('biaya.index')],
+        ['id' => 'biaya',   'icon' => 'receipt', 'label' => 'Biaya',       'url' => route('expenses.index')],
         ['id' => 'master',  'icon' => 'database', 'label' => 'Master Data', 'url' => route('master.index')],
         ['id' => 'laporan', 'icon' => 'clipboard', 'label' => 'Laporan',     'url' => route('laporan.index')],
     ];
