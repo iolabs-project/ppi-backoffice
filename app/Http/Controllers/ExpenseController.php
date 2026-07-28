@@ -52,7 +52,6 @@ class ExpenseController extends Controller
             $request->validate(
                 [
                     'contact_id' => 'nullable|exists:contacts,id',
-                    'account_id' => 'nullable|exists:chart_of_accounts,id',
                     'expense_date' => 'required|date',
                     'due_date' => 'nullable|date|after_or_equal:expense_date',
                     'payment_terms' => 'nullable|in:net_7,net_14,net_30,net_45',
@@ -65,7 +64,6 @@ class ExpenseController extends Controller
                 ],
                 [
                     'contact_id.exists' => 'Kontak tidak ditemukan.',
-                    'account_id.exists' => 'Akun tidak ditemukan.',
                     'expense_date.required' => 'Tanggal biaya harus diisi.',
                     'expense_date.date' => 'Tanggal biaya tidak valid.',
                     'due_date.date' => 'Tanggal jatuh tempo tidak valid.',
@@ -89,7 +87,6 @@ class ExpenseController extends Controller
             $request->validate(
                 [
                     'contact_id' => 'required|exists:contacts,id',
-                    'account_id' => 'required|exists:chart_of_accounts,id',
                     'expense_date' => 'required|date',
                     'due_date' => 'nullable|date|after_or_equal:expense_date',
                     'payment_terms' => 'nullable|in:net_7,net_14,net_30,net_45',
@@ -103,8 +100,6 @@ class ExpenseController extends Controller
                 [
                     'contact_id.required' => 'Kontak harus diisi.',
                     'contact_id.exists' => 'Kontak tidak ditemukan.',
-                    'account_id.required' => 'Akun harus diisi.',
-                    'account_id.exists' => 'Akun tidak ditemukan.',
                     'expense_date.required' => 'Tanggal biaya harus diisi.',
                     'expense_date.date' => 'Tanggal biaya tidak valid.',
                     'due_date.date' => 'Tanggal jatuh tempo tidak valid.',
@@ -163,7 +158,6 @@ class ExpenseController extends Controller
             $request->validate(
                 [
                     'contact_id' => 'nullable|exists:contacts,id',
-                    'account_id' => 'nullable|exists:chart_of_accounts,id',
                     'expense_date' => 'required|date',
                     'due_date' => 'nullable|date|after_or_equal:expense_date',
                     'payment_terms' => 'nullable|in:net_7,net_14,net_30,net_45',
@@ -176,7 +170,6 @@ class ExpenseController extends Controller
                 ],
                 [
                     'contact_id.exists' => 'Kontak tidak ditemukan.',
-                    'account_id.exists' => 'Akun tidak ditemukan.',
                     'expense_date.required' => 'Tanggal biaya harus diisi.',
                     'expense_date.date' => 'Tanggal biaya tidak valid.',
                     'due_date.date' => 'Tanggal jatuh tempo tidak valid.',
@@ -200,7 +193,6 @@ class ExpenseController extends Controller
             $request->validate(
                 [
                     'contact_id' => 'required|exists:contacts,id',
-                    'account_id' => 'required|exists:chart_of_accounts,id',
                     'expense_date' => 'required|date',
                     'due_date' => 'nullable|date|after_or_equal:expense_date',
                     'payment_terms' => 'nullable|in:net_7,net_14,net_30,net_45',
@@ -214,8 +206,6 @@ class ExpenseController extends Controller
                 [
                     'contact_id.required' => 'Kontak harus diisi.',
                     'contact_id.exists' => 'Kontak tidak ditemukan.',
-                    'account_id.required' => 'Akun harus diisi.',
-                    'account_id.exists' => 'Akun tidak ditemukan.',
                     'expense_date.required' => 'Tanggal biaya harus diisi.',
                     'expense_date.date' => 'Tanggal biaya tidak valid.',
                     'due_date.date' => 'Tanggal jatuh tempo tidak valid.',

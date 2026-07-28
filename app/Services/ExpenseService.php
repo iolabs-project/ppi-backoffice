@@ -34,7 +34,6 @@ class ExpenseService
     public function fetchExpenseByID(int $id): ?Expense
     {
         return Expense::with([
-            'account',
             'company',
             'contact',
             'items.account',
@@ -42,7 +41,6 @@ class ExpenseService
             'creator'
         ])
             ->select(
-                'account_id',
                 'company_id',
                 'contact_id',
                 'number',

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('company_id')->constrained('companies')->onDelete('restrict');
             $table->foreignId('contact_id')->nullable()->constrained('contacts')->onDelete('restrict');
-            $table->foreignId('account_id')->nullable()->constrained('chart_of_accounts')->onDelete('restrict');
             $table->string('number', 50)->unique();
             $table->string('reference_number', 50)->nullable();
             $table->dateTime('expense_date');
