@@ -9,6 +9,7 @@ class Expense extends Model
     protected $fillable = [
         'company_id',
         'contact_id',
+        'account_id',
         'number',
         'reference_number',
         'expense_date',
@@ -38,6 +39,10 @@ class Expense extends Model
         'remaining_amount' => 'double',
     ];
 
+    public function account()
+    {
+        return $this->belongsTo(ChartOfAccount::class, 'account_id');
+    }
     public function company()
     {
         return $this->belongsTo(Company::class);
@@ -53,9 +58,9 @@ class Expense extends Model
         return $this->hasMany(ExpenseItem::class);
     }
 
-    public function charges()
+    public function costs()
     {
-        return $this->hasMany(ExpenseCharge::class);
+        return $this->hasMany(ExpenseCost::class);
     }
 
     public function payments()

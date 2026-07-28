@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('company_id')->constrained('companies')->onDelete('restrict');
             $table->foreignId('contact_id')->nullable()->constrained('contacts')->onDelete('restrict');
+            $table->foreignId('account_id')->nullable()->constrained('chart_of_accounts')->onDelete('restrict');
             $table->string('number', 50)->unique();
             $table->string('reference_number', 50)->nullable();
             $table->dateTime('expense_date');
@@ -42,13 +43,12 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('expense_charges', function (Blueprint $table) {
+        Schema::create('expense_costs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('expense_id')->constrained('expenses')->onDelete('cascade');
             $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
             $table->text('description')->nullable();
             $table->decimal('amount', 18, 4)->default(0);
-            $table->boolean('is_taxable')->default(false);
             $table->timestamps();
         });
 
@@ -74,7 +74,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('expense_payments');
-        Schema::dropIfExists('expense_charges');
+        Schema::dropIfExists('expense_costs');
         Schema::dropIfExists('expense_items');
         Schema::dropIfExists('expenses');
     }

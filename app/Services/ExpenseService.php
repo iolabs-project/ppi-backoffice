@@ -8,7 +8,7 @@ use App\Models\Company;
 use App\Models\DeliveryOrder;
 use App\Models\Expense;
 use App\Models\ExpenseItem;
-use App\Models\ExpenseCharge;
+use App\Models\ExpenseCost;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptCost;
 use Illuminate\Http\Request;
@@ -29,6 +29,72 @@ class ExpenseService
         $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
 
         return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+    }
+
+    public function fetchExpenseByID(int $id): ?Expense
+    {
+        return Expense::with([
+            'account',
+            'company',
+            'contact',
+            'items.account',
+            'costs.account',
+            'creator'
+        ])
+            ->select(
+                'account_id',
+                'company_id',
+                'contact_id',
+                'number',
+                'reference_number',
+                'expense_date',
+                'due_date',
+                'payment_terms',
+                'status',
+                'subtotal',
+                'discount_percentage',
+                'discount_amount',
+                'tax_percentage',
+                'tax_amount',
+                'total_amount',
+                'remaining_amount',
+                'note',
+                'created_by'
+            )
+            ->find($id);
+    }
+
+    public function fetchTableData(Request $request)
+    {
+        $query = Expense::with([
+            'contact:id,name',
+        ])
+            ->select(
+                'id',
+                'number',
+                'reference_number',
+                'expense_date',
+                'contact_id',
+                'status',
+                'total_amount',
+                'remaining_amount'
+            );
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('number', 'like', "%{$search}%")
+                    ->orWhere('reference_number', 'like', "%{$search}%");
+            });
+        }
+
+
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $query->where('status', $request->input('status'));
+        }
+
+        $query = $query->orderBy('expense_date', 'desc')->paginate($request->input('per_page', 10));
+        return $query;
     }
 
     public function storeExpense(Request $request)
@@ -70,8 +136,8 @@ class ExpenseService
             $taxAmount = ($taxPercentage / 100) * ($subtotal - $discountAmount);
 
             $chargeAmount = 0;
-            foreach ($request->input('charges', []) as $chargeData) {
-                ExpenseCharge::create([
+            foreach ($request->input('costs', []) as $chargeData) {
+                ExpenseCost::create([
                     'expense_id' => $expense->id,
                     'account_id' => $chargeData['account_id'],
                     'description' => $chargeData['description'] ?? null,
@@ -184,9 +250,9 @@ class ExpenseService
                 'note' => $request->input('note'),
             ]);
 
-            // Delete existing items and charges
+            // Delete existing items and costs
             $expense->items()->delete();
-            $expense->charges()->delete();
+            $expense->costs()->delete();
 
             // Recalculate subtotal, discount, tax, and total
             $subtotal = 0;
@@ -206,8 +272,8 @@ class ExpenseService
             $taxAmount = ($taxPercentage / 100) * ($subtotal - $discountAmount);
 
             $chargeAmount = 0;
-            foreach ($request->input('charges', []) as $chargeData) {
-                ExpenseCharge::create([
+            foreach ($request->input('costs', []) as $chargeData) {
+                ExpenseCost::create([
                     'expense_id' => $expense->id,
                     'account_id' => $chargeData['account_id'],
                     'description' => $chargeData['description'] ?? null,

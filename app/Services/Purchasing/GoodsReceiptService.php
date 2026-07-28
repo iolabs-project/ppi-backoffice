@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services\Purchasing;
+
 use App\Services\ExpenseService;
 use App\Enums\GoodsReceiptStatus;
 use App\Models\Company;
@@ -316,9 +317,8 @@ class GoodsReceiptService
                     $query->whereColumn('received_quantity', '<', 'quantity');
                 })
                 ->update(['status' => 'closed']);
-
-            $this->expenseService->storeExpenseFromGoodsReceipt($goodsReceipt->id);
         }
+        $this->expenseService->storeExpenseFromGoodsReceipt($goodsReceipt->id);
     }
 
     private function validateBatchNumber(string $batchNumber, int $productID, int $companyID): bool
@@ -349,7 +349,7 @@ class GoodsReceiptService
         $query = GoodsReceiptItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol'])
             ->whereHas('goodsReceipt', function ($query) use ($id) {
                 $query->where('purchase_order_id', $id)
-                ->where('status', GoodsReceiptStatus::FINISHED->value);
+                    ->where('status', GoodsReceiptStatus::FINISHED->value);
             })
             ->orderBy('id', 'asc');
 

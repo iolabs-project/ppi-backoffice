@@ -117,7 +117,7 @@
         $draft = ExpenseStatus::DRAFT->value;
         $open = ExpenseStatus::OPEN->value;
     @endphp
-    <div x-data="datatable()" class="biaya-page">
+    <div x-data="datatable()" x-init="fetchData()" class="biaya-page">
 
         <div class="order-hd">
             <div>
@@ -237,14 +237,9 @@
                                         </button>
                                         <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
                                             x-on:click.away="open = false" class="action-menu__panel">
-                                            <a :href="route('sales.sales_orders.show', row.sales_order_id)" @click.stop
-                                                class="action-menu__item">
-                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
-                                                SO
-                                            </a>
                                             <button class="action-menu__item" @click.stop>
                                                 <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
-                                                Tagihan
+                                                Biaya
                                             </button>
                                             <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
@@ -252,7 +247,7 @@
                                                         class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />Edit
-                                                        Tagihan
+                                                        Biaya
                                                     </a>
                                                 </div>
                                             </template>
@@ -264,7 +259,7 @@
                                                         @click.stop="handleCancel(row.id)">
                                                         <x-misc.icon name="x" :size="14"
                                                             stroke="currentColor" />Hapus
-                                                        Tagihan
+                                                        Biaya
                                                     </button>
                                                 </div>
                                             </template>
@@ -279,20 +274,28 @@
             </table>
 
             <div class="table-pagination">
-                <span class="pagination-info"
-                    x-text="'Menampilkan ' + Math.min((biayaPage-1)*biayaPerPage+1, biayaFiltered.length) + '–' + Math.min(biayaPage*biayaPerPage, biayaFiltered.length) + ' dari ' + biayaFiltered.length + ' entri'"></span>
-                <div class="pagination-controls">
-                    <span class="pagination-page-info">Hal. <strong x-text="biayaPage"></strong> / <strong
-                            x-text="biayaTotalPages"></strong></span>
-                    <button class="btn btn-ghost btn-sm" :disabled="biayaPage <= 1" x-on:click="biayaPage--">
-                        <x-misc.icon name="chev-left" :size="14" /> Prev
-                    </button>
-                    <button class="btn btn-ghost btn-sm" :disabled="biayaPage >= biayaTotalPages"
-                        x-on:click="biayaPage++">
-                        Next <x-misc.icon name="chev-right" :size="14" />
-                    </button>
-                </div>
+            <div class="pagination-actions">
+                <div class="pagination-label">Per</div>
+                <select x-model.number="perPage" x-on:change="page = 1" class="btn btn-ghost btn-sm pagination-select">
+                    <template x-for="n in perPageOptions" :key="n">
+                        <option :value="n" x-text="n"></option>
+                    </template>
+                </select>
             </div>
+            <div class="pagination-info">
+                <span
+                    x-text="( (page-1)*perPage + 1 ) + '–' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+            </div>
+            <div class="pagination-controls">
+                <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong
+                        x-text="Math.ceil(tableData.total/tableData.per_page)"></strong></div>
+                <button class="btn btn-ghost btn-sm" x-on:click="prev()" :disabled="page <= 1"><x-misc.icon
+                        name="chev-left" :size="13" /> Prev</button>
+                <button class="btn btn-ghost btn-sm" x-on:click="next()"
+                    :disabled="page >= Math.ceil(tableData.total / tableData.per_page)">Next
+                    <x-misc.icon name="chev-right" :size="13" /></button>
+            </div>
+        </div>
         </div>
 
     </div>
