@@ -12,6 +12,7 @@ use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptCost;
 use App\Models\GoodsReceiptItem;
 use App\Models\InventoryTransaction;
+use App\Models\JournalEntry;
 use App\Models\ProductBatch;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
@@ -326,7 +327,34 @@ class GoodsReceiptService
                 ->update(['status' => 'closed']);
         }
         $this->expenseService->storeExpenseFromGoodsReceipt($goodsReceipt->id);
-        $this->postJournal($goodsReceipt, $journalAmount);
+        // $this->postJournal($goodsReceipt, $journalAmount);
+
+        // Post Journal
+        $debitAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::INVENTORY->value)
+            ->value('account_id');
+        $creditAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::GRNI->value)
+            ->value('account_id');
+
+        $journalItems = [
+            [
+                'account_id' => $debitAccountID,
+                'debit' => $journalAmount,
+            ],
+            [
+                'account_id' => $creditAccountID,
+                'credit' => $journalAmount,
+            ],
+        ];
+
+        $this->journalService->post(
+            date: null,
+            referenceType: GoodsReceipt::class,
+            referenceId: $goodsReceipt->id,
+            description: 'Penerimaan Barang - GR #' . $goodsReceipt->number,
+            items: $journalItems
+        );
     }
 
     private function validateBatchNumber(string $batchNumber, int $productID, int $companyID): bool
@@ -352,52 +380,23 @@ class GoodsReceiptService
         $goodsReceipt->update(['status' => $status]);
     }
 
-    public function fetchGRItemsForPurchaseInvoice(int $id): Collection
+    private function postGRJournal(GoodsReceipt $goodsReceipt, float $journalAmount): void
     {
-        $query = GoodsReceiptItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol'])
-            ->whereHas('goodsReceipt', function ($query) use ($id) {
-                $query->where('purchase_order_id', $id)
-                    ->where('status', GoodsReceiptStatus::FINISHED->value);
-            })
-            ->orderBy('id', 'asc');
-
-        return $query->get()->map(function ($item) {
-            return [
-                'id' => $item->id,
-                'purchase_order_item_id' => $item->purchase_order_item_id,
-                'product_id' => $item->product_id,
-                'product_code' => $item->product->code,
-                'product_name' => $item->product->name,
-                'batch_number' => $item->batch_number,
-                'quantity' => $item->received_quantity,
-                'unit_price' => $item->unit_price,
-                'unit' => $item->product->unit->symbol,
-                'discount_percentage' => $item->discount_percentage,
-                'discount_amount' => $item->discount_amount,
-            ];
-        });
-    }
-
-    private function postJournal(GoodsReceipt $goodsReceipt, float $journalAmount): void{
-        $grniAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
-            ->where('setting_key', AccountSettingEnum::GRNI->value)
-            ->value('account_id');
-        $inventoryAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+        $debitAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
             ->where('setting_key', AccountSettingEnum::INVENTORY->value)
+            ->value('account_id');
+        $creditAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::GRNI->value)
             ->value('account_id');
 
         $journalItems = [
             [
-                'account_id' => $inventoryAccountID,
+                'account_id' => $debitAccountID,
                 'debit' => $journalAmount,
-                'credit' => 0,
-                'description' => 'Penerimaan Barang - GR #' . $goodsReceipt->number,
             ],
             [
-                'account_id' => $grniAccountID,
-                'debit' => 0,
+                'account_id' => $creditAccountID,
                 'credit' => $journalAmount,
-                'description' => 'Penerimaan Barang - GR #' . $goodsReceipt->number,
             ],
         ];
 
@@ -408,5 +407,21 @@ class GoodsReceiptService
             description: 'Penerimaan Barang - GR #' . $goodsReceipt->number,
             items: $journalItems
         );
+    }
+
+    private function reverseGRJournal(GoodsReceipt $goodsReceipt, float $journalAmount): void
+    {
+        $journalEntry = JournalEntry::where('reference_type', GoodsReceipt::class)
+            ->where('reference_id', $goodsReceipt->id)
+            ->get();
+
+        if ($journalEntry->count() > 0) {
+            foreach ($journalEntry as $entry) {
+                $this->journalService->reverse(
+                    journalEntryID: $entry->id,
+                    date: null,
+                    description: "Reversal of Journal Entry for Goods Receipt #{$goodsReceipt->number}"
+                );
+            }}
     }
 }

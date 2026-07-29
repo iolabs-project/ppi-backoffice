@@ -105,13 +105,13 @@
                                                         class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />Edit
-                                                        Catatan
+                                                        Penerimaan
                                                     </a>
                                                     <div class="action-menu__divider"></div>
                                                     <button class="action-menu__item action-menu__item--danger" @click.stop="handleCancel(row.id)">
                                                         <x-misc.icon name="x" :size="14"
-                                                            stroke="currentColor" />Hapus
-                                                        Catatan
+                                                            stroke="currentColor" />Batalkan
+                                                        Penerimaan
                                                     </button>
                                                 </div>
                                             </template>

@@ -5,26 +5,16 @@ namespace App\Services\Purchasing;
 use App\Enums\AccountSettingEnum;
 use App\Enums\GoodsReceiptStatus;
 use App\Services\JournalService;
-use App\Enums\PaymentTerm;
-use App\Enums\PurchaseInvoiceStatus;
 use App\Enums\PurchaseOrderStatus;
 use App\Models\AccountSetting;
 use App\Models\Company;
-use App\Models\GoodsReceipt;
-use App\Models\GoodsReceiptCost;
-use App\Models\GoodsReceiptItem;
-use App\Models\InventoryTransaction;
-use App\Models\ProductBatch;
-use App\Models\PurchaseInvoice;
-use App\Models\PurchaseInvoiceCost;
-use App\Models\PurchaseInvoiceItem;
+use App\Models\JournalEntry;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderCost;
 use App\Models\PurchaseOrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class PurchaseOrderService
 {
@@ -276,17 +266,26 @@ class PurchaseOrderService
             }
 
             if ($request->input('status') === PurchaseOrderStatus::OPEN->value) {
-                if ($request->filled('down_payment_account_id')) {
-                    $this->postJournalDP($purchaseOrder, $request->input('down_payment_amount'));
+                if ($request->filled('down_payment_account_id') && $request->input('down_payment_amount', 0) > 0) {
+                    $this->postPOJournal($purchaseOrder);
                 }
-            }   
+            }
         });
     }
 
     public function changePurchaseOrderStatus(int $id, string $status): void
     {
         $purchaseOrder = PurchaseOrder::findOrFail($id);
-        $purchaseOrder->update(['status' => $status]);
+
+        DB::transaction(function () use ($purchaseOrder, $status) {
+            if ($status === PurchaseOrderStatus::OPEN->value) {
+                if ($purchaseOrder->down_payment_amount > 0 && $purchaseOrder->down_payment_account_id) {
+                    $this->reversePOJournal($purchaseOrder);
+                }
+            }
+
+            $purchaseOrder->update(['status' => $status]);
+        });
     }
 
     public function fetchPOItemsForGoodsReceipt(int $id): Collection
@@ -312,34 +311,48 @@ class PurchaseOrderService
         });
     }
 
-    private function postJournalDP(PurchaseOrder $purchaseOrder, float $journalAmount): void{
-        $dpAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
-            ->where('setting_key', AccountSettingEnum::PURCHASE_DOWN_PAYMENT->value)
-            ->value('account_id');
+    private function postPOJournal(PurchaseOrder $purchaseOrder): void
+    {
+        if ($purchaseOrder->down_payment_amount > 0 && $purchaseOrder->down_payment_account_id) {
+            $debitAccountID = $purchaseOrder->down_payment_account_id;
+            $creditAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+                ->where('setting_key', AccountSettingEnum::PURCHASE_DOWN_PAYMENT->value)
+                ->value('account_id');
+            $amount = $purchaseOrder->down_payment_amount;
 
-        $journalItems = [
-            [
-                'account_id' => $purchaseOrder->down_payment_account_id,
-                'debit' => 0,
-                'credit' => $journalAmount,
-                'description' => 'Down Payment for Purchase Order #' . $purchaseOrder->number,
-            ],
-            [
-                'account_id' => $dpAccountID,
-                'debit' => $journalAmount,
-                'credit' => 0,
-                'description' => 'Down Payment for Purchase Order #' . $purchaseOrder->number,
-            ],
-        ];
+            $journalItems = [
+                [
+                    'account_id' => $debitAccountID,
+                    'debit' => $amount,
+                ],
+                [
+                    'account_id' => $creditAccountID,
+                    'credit' => $amount,
+                ],
+            ];
 
-        $this->journalService->post(
-            date: null,
-            referenceType: PurchaseOrder::class,
-            referenceId: $purchaseOrder->id,
-            description: 'Uang Muka Pembelian #' . $purchaseOrder->number,
-            items: $journalItems
-        );
+            $this->journalService->post(
+                date: null,
+                referenceType: PurchaseOrder::class,
+                referenceId: $purchaseOrder->id,
+                description: 'Uang Muka Pembelian #' . $purchaseOrder->number,
+                items: $journalItems
+            );
+        }
     }
 
-    
+    private function reversePOJournal(PurchaseOrder $purchaseOrder): void
+    {
+        $journalEntries = JournalEntry::where('reference_type', PurchaseOrder::class)
+            ->where('reference_id', $purchaseOrder->id)
+            ->get();
+
+        foreach ($journalEntries as $entry) {
+            $this->journalService->reverse(
+                journalEntryID: $entry->id,
+                date: null,
+                description: "Reversal of Journal Entry for Purchase Order #{$purchaseOrder->number}"
+            );
+        }
+    }
 }

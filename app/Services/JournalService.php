@@ -55,9 +55,9 @@ class JournalService
         $journalEntry->update(['status' => 'cancelled']);
     }
 
-    public function reverse(int $journalEntryId, string $date, string | null $description)
+    public function reverse(int $journalEntryID, string | null $date, string | null $description)
     {
-        $originalEntry = JournalEntry::with('items')->findOrFail($journalEntryId);
+        $originalEntry = JournalEntry::with('items')->findOrFail($journalEntryID);
 
         if ($originalEntry->status === 'cancelled') {
             throw new \Exception('Cannot reverse a cancelled journal entry.');
@@ -67,7 +67,7 @@ class JournalService
             $reversalEntry = JournalEntry::create([
                 'company_id' => config('context.selected_company_id'),
                 'number' => $this->generateJournalNumber(),
-                'journal_date' => $date,
+                'journal_date' => $date ?? now(),
                 'reference_type' => get_class($originalEntry),
                 'reference_id' => $originalEntry->id,
                 'description' => $description ?? "Reversal of Journal Entry #{$originalEntry->number}",

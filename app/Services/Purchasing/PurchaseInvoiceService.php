@@ -2,24 +2,21 @@
 
 namespace App\Services\Purchasing;
 
-use App\Enums\GoodsReceiptStatus;
+use App\Services\JournalService;
+
+use App\Enums\AccountSettingEnum;
 use App\Enums\PaymentTerm;
 use App\Enums\PurchaseInvoiceStatus;
+use App\Models\AccountSetting;
 use App\Models\Company;
-use App\Models\GoodsReceipt;
-use App\Models\GoodsReceiptCost;
-use App\Models\GoodsReceiptItem;
-use App\Models\InventoryTransaction;
-use App\Models\ProductBatch;
+use App\Models\JournalEntry;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceCost;
 use App\Models\PurchaseInvoiceItem;
 use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderCost;
 use App\Models\PurchaseOrderItem;
 use App\Services\Purchasing\GoodsReceiptService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -27,10 +24,12 @@ class PurchaseInvoiceService
 {
     private PurchaseOrderService $purchaseOrderService;
     private GoodsReceiptService $goodsReceiptService;
-    public function __construct(PurchaseOrderService $purchaseOrderService, GoodsReceiptService $goodsReceiptService)
+    private JournalService $journalService;
+    public function __construct(PurchaseOrderService $purchaseOrderService, GoodsReceiptService $goodsReceiptService, JournalService $journalService)
     {
         $this->purchaseOrderService = $purchaseOrderService;
         $this->goodsReceiptService = $goodsReceiptService;
+        $this->journalService = $journalService;
     }
     public function generatePurchaseInvoiceNumber(): string
     {
@@ -192,8 +191,11 @@ class PurchaseInvoiceService
 
             if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
                 PurchaseOrder::where('id', $purchaseInvoice->purchase_order_id)
-                    ->decrement('down_payment_remaining_amount', $downpaymentAmount); 
+                    ->decrement('down_payment_remaining_amount', $downpaymentAmount);
+            }
 
+            if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
+                $this->postPIJournal($purchaseInvoice);
             }
         });
     }
@@ -210,7 +212,7 @@ class PurchaseInvoiceService
             'supplier:id,name,code',
             'warehouse:id,name,code',
             'creator:id,username',
-            'payments' => fn ($q) => $q->orderBy('payment_date', 'desc'),
+            'payments' => fn($q) => $q->orderBy('payment_date', 'desc'),
             'payments.account:id,name,code',
             'payments.creator:id,username',
         ])
@@ -269,6 +271,116 @@ class PurchaseInvoiceService
             $purchaseInvoice->update(['status' => PurchaseInvoiceStatus::CANCELLED->value]);
             PurchaseOrder::where('id', $purchaseInvoice->purchase_order_id)
                 ->increment('down_payment_remaining_amount', $purchaseInvoice->down_payment_amount);
+
+            if ($purchaseInvoice->status === PurchaseInvoiceStatus::OPEN->value) {
+                $this->reversePIJournal($purchaseInvoice);
+            }
         });
+    }
+
+    private function postPIJournal(PurchaseInvoice $purchaseInvoice): void
+    {
+        $payableAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::ACCOUNT_PAYABLE->value)
+            ->value('account_id');
+        $payableAmount = $purchaseInvoice->total_amount;
+
+        $grniAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::GRNI->value)
+            ->value('account_id');
+        $grniAmount = $purchaseInvoice->items->sum('total_amount');
+
+        $taxAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::INPUT_TAX->value)
+            ->value('account_id');
+        $taxAmount = $purchaseInvoice->tax_amount;
+
+        $discountAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::PURCHASE_DISCOUNT->value)
+            ->value('account_id');
+        $discountAmount = $purchaseInvoice->discount_amount;
+
+        $journalItems = [];
+        if ($grniAmount > 0) {
+            $journalItems[] = [
+                'account_id' => $grniAccountID,
+                'debit' => $grniAmount,
+            ];
+        }
+
+        if ($taxAmount > 0) {
+            $journalItems[] = [
+                'account_id' => $taxAccountID,
+                'debit' => $taxAmount,
+            ];
+        }
+
+        if ($discountAmount > 0) {
+            $journalItems[] = [
+                'account_id' => $discountAccountID,
+                'credit' => $discountAmount,
+            ];
+        }
+
+        $journalItems[] = [
+            'account_id' => $payableAccountID,
+            'credit' => $payableAmount,
+        ];
+
+        $this->journalService->post(
+            date: null,
+            referenceType: PurchaseInvoice::class,
+            referenceId: $purchaseInvoice->id,
+            description: "Invoice Pembelian #{$purchaseInvoice->number}",
+            items: $journalItems
+        );
+
+         if ($purchaseInvoice->down_payment_amount <= 0) {
+            return;
+        }
+
+        $dpAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::PURCHASE_DOWN_PAYMENT->value)
+            ->value('account_id');
+
+        $payableAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::ACCOUNT_PAYABLE->value)
+            ->value('account_id');
+
+        $dpJournalItems = [
+            [
+                'account_id' => $dpAccountID,
+                'credit' => $purchaseInvoice->down_payment_amount,
+            ],
+            [
+                'account_id' => $payableAccountID,
+                'debit' => $purchaseInvoice->down_payment_amount,
+            ],
+        ];
+
+        $this->journalService->post(
+            date: null,
+            referenceType: PurchaseInvoice::class,
+            referenceId: $purchaseInvoice->id,
+            description: "Down Payment for Invoice #{$purchaseInvoice->number}",
+            items: $dpJournalItems
+        );
+    }
+
+    private function reversePIJournal(PurchaseInvoice $purchaseInvoice): void
+    {
+        $journalEntry = JournalEntry::where('reference_type', PurchaseInvoice::class)
+            ->where('reference_id', $purchaseInvoice->id)
+            ->get();
+
+        if ($journalEntry->count() > 0) {
+            foreach ($journalEntry as $entry) {
+                $this->journalService->reverse(
+                    journalEntryID: $entry->id,
+                    date: null,
+                    description: "Reversal of Journal Entry for Invoice #{$purchaseInvoice->number}"
+                );
+            }
+        }
     }
 }
