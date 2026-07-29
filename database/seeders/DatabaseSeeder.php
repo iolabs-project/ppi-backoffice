@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserCompanySeeder::class,
             COASeeder::class,
+            AccountSettingSeeder::class,
             InventorySeeder::class,
             ContactSeeder::class,
         ]);

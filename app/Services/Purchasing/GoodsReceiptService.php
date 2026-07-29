@@ -2,8 +2,11 @@
 
 namespace App\Services\Purchasing;
 
+use App\Enums\AccountSettingEnum;
 use App\Services\ExpenseService;
+use App\Services\JournalService;
 use App\Enums\GoodsReceiptStatus;
+use App\Models\AccountSetting;
 use App\Models\Company;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptCost;
@@ -22,10 +25,12 @@ class GoodsReceiptService
 
     private PurchaseOrderService $purchaseOrderService;
     private ExpenseService $expenseService;
-    public function __construct(PurchaseOrderService $purchaseOrderService, ExpenseService $expenseService)
+    private JournalService $journalService;
+    public function __construct(PurchaseOrderService $purchaseOrderService, ExpenseService $expenseService, JournalService $journalService)
     {
         $this->purchaseOrderService = $purchaseOrderService;
         $this->expenseService = $expenseService;
+        $this->journalService = $journalService;
     }
     public function generateGoodsReceiptNumber(): string
     {
@@ -233,6 +238,7 @@ class GoodsReceiptService
             ]);
         }
 
+        $journalAmount = 0;
         foreach ($detailsCollection as $item) {
             $expectedQty = (float) ($item['expected_quantity'] ?? 0);
             $qty = (float) ($item['received_quantity'] ?? 0);
@@ -291,6 +297,7 @@ class GoodsReceiptService
                 ->orderByDesc('id')
                 ->first();
 
+            $journalAmount += $goodsReceiptItem->received_quantity * $goodsReceiptItem->unit_cost;
             InventoryTransaction::create([
                 'company_id' => $goodsReceipt->company_id,
                 'warehouse_id' => $goodsReceipt->warehouse_id,
@@ -319,6 +326,7 @@ class GoodsReceiptService
                 ->update(['status' => 'closed']);
         }
         $this->expenseService->storeExpenseFromGoodsReceipt($goodsReceipt->id);
+        $this->postJournal($goodsReceipt, $journalAmount);
     }
 
     private function validateBatchNumber(string $batchNumber, int $productID, int $companyID): bool
@@ -368,5 +376,37 @@ class GoodsReceiptService
                 'discount_amount' => $item->discount_amount,
             ];
         });
+    }
+
+    private function postJournal(GoodsReceipt $goodsReceipt, float $journalAmount): void{
+        $grniAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::GRNI->value)
+            ->value('account_id');
+        $inventoryAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::INVENTORY->value)
+            ->value('account_id');
+
+        $journalItems = [
+            [
+                'account_id' => $inventoryAccountID,
+                'debit' => $journalAmount,
+                'credit' => 0,
+                'description' => 'Penerimaan Barang - GR #' . $goodsReceipt->number,
+            ],
+            [
+                'account_id' => $grniAccountID,
+                'debit' => 0,
+                'credit' => $journalAmount,
+                'description' => 'Penerimaan Barang - GR #' . $goodsReceipt->number,
+            ],
+        ];
+
+        $this->journalService->post(
+            date: null,
+            referenceType: GoodsReceipt::class,
+            referenceId: $goodsReceipt->id,
+            description: 'Penerimaan Barang - GR #' . $goodsReceipt->number,
+            items: $journalItems
+        );
     }
 }

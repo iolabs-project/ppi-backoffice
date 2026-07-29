@@ -10,16 +10,17 @@ use App\Models\ProductBatch;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Psy\Clipboard\NullClipboardMethod;
 
 class JournalService
 {
-    public function post(string $date, string | null $referenceType, int | null $referenceId, string | null $description, array $items)
+    public function post(string | null $date, string | null $referenceType, int | null $referenceId, string | null $description, array $items)
     {
         DB::transaction(function () use ($date, $referenceType, $referenceId, $description, $items) {
             $journalEntry = JournalEntry::create([
                 'company_id' => config('context.selected_company_id'),
                 'number' => $this->generateJournalNumber(),
-                'journal_date' => $date,
+                'journal_date' => $date ?? now(),
                 'reference_type' => $referenceType,
                 'reference_id' => $referenceId,
                 'description' => $description,
