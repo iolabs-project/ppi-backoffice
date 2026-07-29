@@ -2,9 +2,13 @@
 
 namespace App\Services\Purchasing;
 
+use App\Enums\AccountSettingEnum;
 use App\Enums\GoodsReceiptStatus;
+use App\Services\JournalService;
 use App\Enums\PaymentTerm;
 use App\Enums\PurchaseInvoiceStatus;
+use App\Enums\PurchaseOrderStatus;
+use App\Models\AccountSetting;
 use App\Models\Company;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptCost;
@@ -24,7 +28,11 @@ use Illuminate\Validation\ValidationException;
 
 class PurchaseOrderService
 {
-
+    private JournalService $journalService;
+    public function __construct(JournalService $journalService)
+    {
+        $this->journalService = $journalService;
+    }
     // Purchase Order
     public function generatePONumber(): string
     {
@@ -266,6 +274,12 @@ class PurchaseOrderService
                     'amount' => $cost['amount'],
                 ]);
             }
+
+            if ($request->input('status') === PurchaseOrderStatus::OPEN->value) {
+                if ($request->filled('down_payment_account_id')) {
+                    $this->postJournalDP($purchaseOrder, $request->input('down_payment_amount'));
+                }
+            }   
         });
     }
 
@@ -296,6 +310,35 @@ class PurchaseOrderService
                 'discount_amount' => $item->discount_amount,
             ];
         });
+    }
+
+    private function postJournalDP(PurchaseOrder $purchaseOrder, float $journalAmount): void{
+        $dpAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::PURCHASE_DOWN_PAYMENT->value)
+            ->value('account_id');
+
+        $journalItems = [
+            [
+                'account_id' => $purchaseOrder->down_payment_account_id,
+                'debit' => 0,
+                'credit' => $journalAmount,
+                'description' => 'Down Payment for Purchase Order #' . $purchaseOrder->number,
+            ],
+            [
+                'account_id' => $dpAccountID,
+                'debit' => $journalAmount,
+                'credit' => 0,
+                'description' => 'Down Payment for Purchase Order #' . $purchaseOrder->number,
+            ],
+        ];
+
+        $this->journalService->post(
+            date: null,
+            referenceType: PurchaseOrder::class,
+            referenceId: $purchaseOrder->id,
+            description: 'Uang Muka Pembelian #' . $purchaseOrder->number,
+            items: $journalItems
+        );
     }
 
     
