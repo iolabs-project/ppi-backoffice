@@ -127,48 +127,5 @@ class InventorySeeder extends Seeder
                 'updated_at' => now(),
             ],
         ]);
-
-        DB::table('inventory_transactions')->insert([
-            [
-                'id' => 1,
-                'company_id' => 1,
-                'product_id' => 1,
-                'product_batch_id' => 1,
-                'warehouse_id' => 1,
-                'type' => 'opening',
-                'direction' => 1,
-                'quantity' => 500,
-                'unit_cost' => 10000,
-                'total_cost' => 5000000,
-                'stock_before' => 0,
-                'stock_after' => 500,
-                'reference_type' => null,
-                'reference_id' => null,
-                'transaction_date' => now(),
-                'note' => 'Stok awal untuk produk Jagung',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 2,
-                'company_id' => 1,
-                'product_id' => 1,
-                'product_batch_id' => 2,
-                'warehouse_id' => 1,
-                'type' => 'opening',
-                'direction' => 1,
-                'quantity' => 200,
-                'unit_cost' => 10500,
-                'total_cost' => 2100000,
-                'stock_before' => 500,
-                'stock_after' => 700,
-                'reference_type' => null,
-                'reference_id' => null,
-                'transaction_date' => now(),
-                'note' => 'Stok awal tambahan untuk produk Jagung (batch kedua)',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
     }
 }

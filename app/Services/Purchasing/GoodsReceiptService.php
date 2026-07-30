@@ -5,6 +5,7 @@ namespace App\Services\Purchasing;
 use App\Enums\AccountSettingEnum;
 use App\Services\ExpenseService;
 use App\Services\JournalService;
+use App\Services\InventoryService;
 use App\Enums\GoodsReceiptStatus;
 use App\Models\AccountSetting;
 use App\Models\Company;
@@ -26,11 +27,13 @@ class GoodsReceiptService
 
     private PurchaseOrderService $purchaseOrderService;
     private ExpenseService $expenseService;
+    private InventoryService $inventoryService;
     private JournalService $journalService;
-    public function __construct(PurchaseOrderService $purchaseOrderService, ExpenseService $expenseService, JournalService $journalService)
+    public function __construct(PurchaseOrderService $purchaseOrderService, ExpenseService $expenseService, InventoryService $inventoryService, JournalService $journalService)
     {
         $this->purchaseOrderService = $purchaseOrderService;
         $this->expenseService = $expenseService;
+        $this->inventoryService = $inventoryService;
         $this->journalService = $journalService;
     }
     public function generateGoodsReceiptNumber(): string
@@ -281,41 +284,8 @@ class GoodsReceiptService
                 'unit_cost' => $unitCost,
             ]);
 
-            $batch = ProductBatch::create([
-                'company_id' => $goodsReceipt->company_id,
-                'warehouse_id' => $goodsReceipt->warehouse_id,
-                'product_id' => $goodsReceiptItem->product_id,
-                'goods_receipt_item_id' => $goodsReceiptItem->id,
-                'batch_number' => $goodsReceiptItem->batch_number,
-                'quantity' => $goodsReceiptItem->received_quantity,
-                'unit_cost' => $goodsReceiptItem->unit_cost,
-            ]);
-
-            $latestTransaction = InventoryTransaction::where('company_id', $goodsReceipt->company_id)
-                ->where('product_id', $goodsReceiptItem->product_id)
-                ->where('warehouse_id', $goodsReceipt->warehouse_id)
-                ->orderByDesc('transaction_date')
-                ->orderByDesc('id')
-                ->first();
-
             $journalAmount += $goodsReceiptItem->received_quantity * $goodsReceiptItem->unit_cost;
-            InventoryTransaction::create([
-                'company_id' => $goodsReceipt->company_id,
-                'warehouse_id' => $goodsReceipt->warehouse_id,
-                'product_id' => $goodsReceiptItem->product_id,
-                'product_batch_id' => $batch->id,
-                'type' => 'purchase',
-                'direction' => 1,
-                'quantity' => $goodsReceiptItem->received_quantity,
-                'unit_cost' => $goodsReceiptItem->unit_cost,
-                'total_cost' => $goodsReceiptItem->unit_cost * $goodsReceiptItem->received_quantity,
-                'stock_before' => $latestTransaction ? $latestTransaction->stock_after : 0,
-                'stock_after' => ($latestTransaction ? $latestTransaction->stock_after : 0) + $goodsReceiptItem->received_quantity,
-                'reference_type' => GoodsReceipt::class,
-                'reference_id' => $goodsReceipt->id,
-                'transaction_date' => now(),
-                'note' => 'Penerimaan Barang dari GR #' . $goodsReceipt->number,
-            ]);
+            $this->inventoryService->receiveInventoryFromGR($goodsReceipt, $goodsReceiptItem);
 
             PurchaseOrderItem::where('id', $goodsReceiptItem->purchase_order_item_id)
                 ->increment('received_quantity', $goodsReceiptItem->received_quantity);
@@ -359,6 +329,32 @@ class GoodsReceiptService
         });
     }
 
+    public function fetchGRItemsForPurchaseInvoice(int $id): Collection
+    {
+        $query = GoodsReceiptItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol'])
+            ->whereHas('goodsReceipt', function ($query) use ($id) {
+                $query->where('purchase_order_id', $id)
+                ->where('status', GoodsReceiptStatus::FINISHED->value);
+            })
+            ->orderBy('id', 'asc');
+
+        return $query->get()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'purchase_order_item_id' => $item->purchase_order_item_id,
+                'product_id' => $item->product_id,
+                'product_code' => $item->product->code,
+                'product_name' => $item->product->name,
+                'batch_number' => $item->batch_number,
+                'quantity' => $item->received_quantity,
+                'unit_price' => $item->unit_price,
+                'unit' => $item->product->unit->symbol,
+                'discount_percentage' => $item->discount_percentage,
+                'discount_amount' => $item->discount_amount,
+            ];
+        });
+    }
+
     private function postGRJournal(GoodsReceipt $goodsReceipt, float $journalAmount): void
     {
         $debitAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
@@ -383,7 +379,7 @@ class GoodsReceiptService
             date: null,
             referenceType: GoodsReceipt::class,
             referenceID: $goodsReceipt->id,
-            description: 'Penerimaan Barang - GR #' . $goodsReceipt->number,
+            description: 'Penerimaan Barang #' . $goodsReceipt->number,
             items: $journalItems
         );
     }

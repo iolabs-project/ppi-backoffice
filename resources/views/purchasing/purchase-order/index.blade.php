@@ -145,11 +145,11 @@
                                                         Edit Draft
                                                     </a>
 
-                                                    <button class="action-menu__item" @click.stop="handleOpen(row.id)">
+                                                    {{-- <button class="action-menu__item" @click.stop="handleOpen(row.id)">
                                                         <x-misc.icon name="check" :size="14"
                                                             stroke="var(--ink-3)" />
                                                         Konfirmasi Draft
-                                                    </button>
+                                                    </button> --}}
                                                 </div>
                                             </template>
                                             <template x-if="row.status !== '{{ $draft }}'">
