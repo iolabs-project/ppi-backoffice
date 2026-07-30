@@ -2,24 +2,19 @@
 
 namespace App\Services\Sales;
 
-use App\Enums\DeliveryOrderStatus;
 use App\Enums\PaymentTerm;
+use App\Services\JournalService;
+use App\Enums\AccountSettingEnum;
 use App\Enums\SalesInvoiceStatus;
-use App\Enums\SalesOrderStatus;
+use App\Models\AccountSetting;
 use App\Models\Company;
-use App\Models\DeliveryOrder;
-use App\Models\DeliveryOrderItem;
-use App\Models\DeliveryOrderItemBatch;
-use App\Models\InventoryTransaction;
-use App\Models\ProductBatch;
+use App\Models\JournalEntry;
 use App\Models\SalesInvoice;
 use App\Models\SalesInvoiceCharge;
 use App\Models\SalesInvoiceItem;
 use App\Models\SalesOrder;
-use App\Models\SalesOrderCharge;
 use App\Models\SalesOrderItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -27,10 +22,12 @@ class SalesInvoiceService
 {
 
     private SalesOrderService $salesOrderService;
+    private JournalService $journalService;
 
-    public function __construct(SalesOrderService $salesOrderService)
+    public function __construct(SalesOrderService $salesOrderService, JournalService $journalService)
     {
         $this->salesOrderService = $salesOrderService;
+        $this->journalService = $journalService;
     }
 
     public function generateSINumber(): string
@@ -200,6 +197,7 @@ class SalesInvoiceService
         if ($request->status === SalesInvoiceStatus::OPEN->value) {
             SalesOrder::where('id', $salesInvoice->sales_order_id)
                 ->decrement('down_payment_remaining_amount', $request->down_payment_amount);
+            $this->postSIJournal($salesInvoice->fresh()->load('charges'));
         }
     }
 
@@ -216,7 +214,7 @@ class SalesInvoiceService
             'salesPerson:id,name,code',
             'warehouse:id,name,code',
             'creator:id,username',
-            'payments' => fn ($q) => $q->orderBy('payment_date', 'desc'),
+            'payments' => fn($q) => $q->orderBy('payment_date', 'desc'),
             'payments.account:id,name,code',
             'payments.creator:id,username',
         ])
@@ -273,9 +271,120 @@ class SalesInvoiceService
                 SalesOrderItem::where('id', $item->sales_order_item_id)
                     ->decrement('invoiced_quantity', $item->quantity);
             }
+            if ($salesInvoice->status === SalesInvoiceStatus::OPEN->value) {
+                $this->reverseSIJournal($salesInvoice);
+            }
             $salesInvoice->update(['status' => SalesInvoiceStatus::CANCELLED->value]);
             SalesOrder::where('id', $salesInvoice->sales_order_id)
                 ->increment('down_payment_remaining_amount', $salesInvoice->down_payment_amount);
         });
+    }
+
+    private function postSIJournal(SalesInvoice $salesInvoice): void
+    {
+        $receivableAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::ACCOUNT_RECEIVABLE->value)
+            ->value('account_id');
+        $receivableAmount = $salesInvoice->total_amount;
+
+        $revenueID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::SALES_REVENUE->value)
+            ->value('account_id');
+        $revenueAmount = $salesInvoice->items->sum('total_amount');
+
+        $discountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::SALES_DISCOUNT->value)
+            ->value('account_id');
+        $discountAmount = $salesInvoice->discount_amount;
+
+        $taxID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::OUTPUT_TAX->value)
+            ->value('account_id');
+        $taxAmount = $salesInvoice->tax_amount;
+
+        $journalItems = [];
+        if ($receivableAmount > 0) {
+            $journalItems[] = [
+                'account_id' => $receivableAccountID,
+                'debit' => $receivableAmount,
+            ];
+        }
+
+        if ($revenueAmount > 0) {
+            $journalItems[] = [
+                'account_id' => $revenueID,
+                'credit' => $revenueAmount,
+            ];
+        }
+
+        if ($discountAmount > 0) {
+            $journalItems[] = [
+                'account_id' => $discountID,
+                'debit' => $discountAmount,
+            ];
+        }
+
+        if ($taxAmount > 0) {
+            $journalItems[] = [
+                'account_id' => $taxID,
+                'credit' => $taxAmount,
+            ];
+        }
+
+        foreach ($salesInvoice->charges as $charge) {
+            $journalItems[] = [
+                'account_id' => $charge->account_id,
+                'credit' => $charge->amount,
+            ];
+        }
+
+        $this->journalService->post(
+            date: $salesInvoice->invoice_date,
+            referenceType: SalesInvoice::class,
+            referenceID: $salesInvoice->id,
+            description: 'Invoice Penjualan #' . $salesInvoice->number,
+            items: $journalItems
+        );
+
+        if ($salesInvoice->down_payment_amount <= 0) {
+            return;
+        }
+
+        $downPaymentAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::SALES_DOWN_PAYMENT->value)
+            ->value('account_id');
+        $downPaymentAmount = $salesInvoice->down_payment_amount;
+
+        $this->journalService->post(
+            date: $salesInvoice->invoice_date,
+            referenceType: SalesInvoice::class,
+            referenceID: $salesInvoice->id,
+            description: 'Alokasi Uang Muka Penjualan #' . $salesInvoice->number,
+            items: [
+                [
+                    'account_id' => $downPaymentAccountID,
+                    'debit' => $downPaymentAmount,
+                ],
+                [
+                    'account_id' => $receivableAccountID,
+                    'credit' => $downPaymentAmount,
+                ],
+            ]
+        );
+    }
+
+    private function reverseSIJournal(SalesInvoice $salesInvoice): void
+    {
+        $journalEntries = JournalEntry::where('reference_type', SalesInvoice::class)
+            ->where('reference_id', $salesInvoice->id)
+            ->get();
+
+        foreach ($journalEntries as $entry) {
+            $this->journalService->reverse(
+                journalEntryID: $entry->id,
+                date: null,
+                description: 'Pembalikan Jurnal Untuk Invoice Penjualan #' . $salesInvoice->number
+            );
+        }
     }
 }

@@ -330,7 +330,7 @@ class PurchaseInvoiceService
         $this->journalService->post(
             date: null,
             referenceType: PurchaseInvoice::class,
-            referenceId: $purchaseInvoice->id,
+            referenceID: $purchaseInvoice->id,
             description: "Invoice Pembelian #{$purchaseInvoice->number}",
             items: $journalItems
         );
@@ -341,10 +341,6 @@ class PurchaseInvoiceService
 
         $dpAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
             ->where('setting_key', AccountSettingEnum::PURCHASE_DOWN_PAYMENT->value)
-            ->value('account_id');
-
-        $payableAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
-            ->where('setting_key', AccountSettingEnum::ACCOUNT_PAYABLE->value)
             ->value('account_id');
 
         $dpJournalItems = [
@@ -361,8 +357,8 @@ class PurchaseInvoiceService
         $this->journalService->post(
             date: null,
             referenceType: PurchaseInvoice::class,
-            referenceId: $purchaseInvoice->id,
-            description: "Down Payment for Invoice #{$purchaseInvoice->number}",
+            referenceID: $purchaseInvoice->id,
+            description: "Alokasi Uang Muka Untuk Invoice Pembelian #{$purchaseInvoice->number}",
             items: $dpJournalItems
         );
     }
@@ -378,7 +374,7 @@ class PurchaseInvoiceService
                 $this->journalService->reverse(
                     journalEntryID: $entry->id,
                     date: null,
-                    description: "Reversal of Journal Entry for Invoice #{$purchaseInvoice->number}"
+                    description: "Pembalikan Jurnal Untuk Invoice Pembelian #{$purchaseInvoice->number}"
                 );
             }
         }

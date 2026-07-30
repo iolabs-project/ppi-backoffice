@@ -14,15 +14,15 @@ use Psy\Clipboard\NullClipboardMethod;
 
 class JournalService
 {
-    public function post(string | null $date, string | null $referenceType, int | null $referenceId, string | null $description, array $items)
+    public function post(string | null $date, string | null $referenceType, int | null $referenceID, string | null $description, array $items)
     {
-        DB::transaction(function () use ($date, $referenceType, $referenceId, $description, $items) {
+        DB::transaction(function () use ($date, $referenceType, $referenceID, $description, $items) {
             $journalEntry = JournalEntry::create([
                 'company_id' => config('context.selected_company_id'),
                 'number' => $this->generateJournalNumber(),
                 'journal_date' => $date ?? now(),
                 'reference_type' => $referenceType,
-                'reference_id' => $referenceId,
+                'reference_id' => $referenceID,
                 'description' => $description,
                 'status' => 'posted',
                 'created_by' => auth()->id(),

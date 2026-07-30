@@ -2,21 +2,28 @@
 
 namespace App\Services;
 
+use App\Enums\AccountSettingEnum;
 use App\Enums\ExpenseStatus;
 use App\Enums\PaymentTerm;
+use App\Models\AccountSetting;
 use App\Models\Company;
 use App\Models\DeliveryOrder;
 use App\Models\Expense;
 use App\Models\ExpenseItem;
 use App\Models\ExpenseCost;
 use App\Models\GoodsReceipt;
-use App\Models\GoodsReceiptCost;
+use App\Models\JournalEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ExpenseService
 {
+    private JournalService $journalService;
+    public function __construct(JournalService $journalService)
+    {
+        $this->journalService = $journalService;
+    }
     public function generateNumber(): string
     {
         $prefix = 'EXP';
@@ -146,7 +153,7 @@ class ExpenseService
                 $chargeAmount += $chargeData['amount'] ?? 0;
             }
 
-            $totalAmount = $subtotal - $discountAmount + $taxAmount + $chargeAmount;
+            $totalAmount = $subtotal - $discountAmount + $taxAmount - $chargeAmount;
             $expense->update([
                 'subtotal' => $subtotal,
                 'discount_percentage' => $discountPercentage,
@@ -282,7 +289,7 @@ class ExpenseService
                 $chargeAmount += $chargeData['amount'] ?? 0;
             }
 
-            $totalAmount = $subtotal - $discountAmount + $taxAmount + $chargeAmount;
+            $totalAmount = $subtotal - $discountAmount + $taxAmount - $chargeAmount;
             $expense->update([
                 'subtotal' => $subtotal,
                 'discount_percentage' => $discountPercentage,
@@ -292,6 +299,10 @@ class ExpenseService
                 'total_amount' => $totalAmount,
                 'remaining_amount' => $totalAmount, // Assuming no payments have been made yet
             ]);
+
+            if ($request->input('status') === ExpenseStatus::OPEN->value) {
+                $this->postExpenseJournal($expense);
+            }
         });
     }
 
@@ -314,6 +325,83 @@ class ExpenseService
             throw ValidationException::withMessages(['status' => 'Biaya ini sudah dibatalkan.']);
         }
 
-        $expense->update(['status' => ExpenseStatus::CANCELLED->value]);
+        DB::transaction(function () use ($expense) {
+            if ($expense->status === ExpenseStatus::OPEN->value) {
+                $this->reverseExpenseJournal($expense);
+            }
+
+            // Update the expense status to cancelled
+            $expense->update(['status' => ExpenseStatus::CANCELLED->value]);
+        });
+    }
+
+    private function postExpenseJournal(Expense $expense)
+    {
+        $payableAmount = 0;
+        $payableID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::ACCOUNT_PAYABLE->value)
+            ->value('account_id');
+
+        $taxID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::INPUT_TAX->value)
+            ->value('account_id');
+        $taxAmount = $expense->tax_amount;
+
+        $journalItems = [];
+
+
+        foreach ($expense->items as $item) {
+            $journalItems[] = [
+                'account_id' => $item->account_id,
+                'debit' => $item->amount,
+                'description' => $item->description ?? null,
+            ];
+            $payableAmount += $item->amount;
+        }
+
+        if ($taxAmount > 0) {
+            $journalItems[] = [
+                'account_id' => $taxID,
+                'debit' => $taxAmount,
+                'description' => 'Pajak atas Biaya #' . $expense->number,
+            ];
+            $payableAmount += $taxAmount;
+        }
+
+        foreach ($expense->costs as $cost) {
+            $journalItems[] = [
+                'account_id' => $cost->account_id,
+                'credit' => $cost->amount,
+                'description' => $cost->description,
+            ];
+
+            $payableAmount -= $cost->amount;
+        }
+
+        $journalItems[] = [
+            'account_id' => $payableID,
+            'credit' => $payableAmount,
+            'description' => 'Hutang Biaya #' . $expense->number,
+        ];
+
+        $this->journalService->post(
+            date: null,
+            referenceType: Expense::class,
+            referenceID: $expense->id,
+            description: 'Biaya #' . $expense->number,
+            items: $journalItems
+        );
+    }
+
+    private function reverseExpenseJournal(Expense $expense)
+    {
+        $journalEntryID = JournalEntry::where('reference_type', Expense::class)
+            ->where('reference_id', $expense->id)
+            ->value('id');
+        $this->journalService->reverse(
+            journalEntryID: $journalEntryID,
+            date: null,
+            description: 'Pembalikan Biaya #' . $expense->number
+        );
     }
 }

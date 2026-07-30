@@ -2,14 +2,18 @@
 
 namespace App\Services\Sales;
 
+use App\Models\Company;
+use App\Services\JournalService;
+use App\Enums\AccountSettingEnum;
 use App\Enums\DeliveryOrderStatus;
 use App\Enums\SalesOrderStatus;
-use App\Models\Company;
+use App\Models\AccountSetting;
 use App\Models\DeliveryOrder;
 use App\Models\DeliveryOrderCost;
 use App\Models\DeliveryOrderItem;
 use App\Models\DeliveryOrderItemBatch;
 use App\Models\InventoryTransaction;
+use App\Models\JournalEntry;
 use App\Models\ProductBatch;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
@@ -23,10 +27,12 @@ class DeliveryOrderService
 {
     private SalesOrderService $salesOrderService;
     private ExpenseService $expenseService;
-    public function __construct(SalesOrderService $salesOrderService, ExpenseService $expenseService)
+    private JournalService $journalService;
+    public function __construct(SalesOrderService $salesOrderService, ExpenseService $expenseService, JournalService $journalService)
     {
         $this->salesOrderService = $salesOrderService;
         $this->expenseService = $expenseService;
+        $this->journalService = $journalService;
     }
     public function generateDONumber(): string
     {
@@ -346,15 +352,20 @@ class DeliveryOrderService
                 'description' => $cost['description'] ?? null,
                 'amount' => (float) ($cost['amount'] ?? 0),
             ]);
-
         }
         $this->expenseService->storeExpenseFromDeliveryOrder($deliveryOrder->id);
+        $this->postDOJournal($deliveryOrder);
     }
 
     public function changeDeliveryOrderStatus(int $id, string $status): void
     {
         $deliveryOrder = DeliveryOrder::findOrFail($id);
-        $deliveryOrder->update(['status' => $status]);
+        DB::transaction(function () use ($deliveryOrder, $status) {
+            if ($status === DeliveryOrderStatus::CANCELLED->value && $deliveryOrder->status === DeliveryOrderStatus::FINISHED->value) {
+                $this->reverseDOJournal($deliveryOrder);
+            }
+            $deliveryOrder->update(['status' => $status]);
+        });
     }
 
     public function fetchDOItemsForSalesInvoice(int $id): Collection
@@ -382,5 +393,54 @@ class DeliveryOrderService
                 'discount_amount' => $item->salesOrderItem->discount_amount,
             ];
         });
+    }
+
+    private function postDOJournal(DeliveryOrder $deliveryOrder): void
+    {
+        $deliveryOrder->loadMissing(['items.batches']);
+
+        $totalCost = 0;
+        foreach ($deliveryOrder->items as $item) {
+            foreach ($item->batches as $batch) {
+                $totalCost += $batch->quantity * $batch->unit_cost;
+            }
+        }
+        if ($totalCost <= 0) {
+            return;
+        }
+
+        $cogsAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::COGS->value)
+            ->value('account_id');
+
+        $inventoryAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::INVENTORY->value)
+            ->value('account_id');
+
+        $this->journalService->post(
+            date: $deliveryOrder->delivery_date,
+            referenceType: DeliveryOrder::class,
+            referenceID: $deliveryOrder->id,
+            description: 'Pengiriman Barang - DO #' . $deliveryOrder->number,
+            items: [
+                ['account_id' => $cogsAccountID,      'debit' => $totalCost,],
+                ['account_id' => $inventoryAccountID, 'credit' => $totalCost],
+            ]
+        );
+    }
+
+    private function reverseDOJournal(DeliveryOrder $deliveryOrder): void
+    {
+        $journalEntries = JournalEntry::where('reference_type', DeliveryOrder::class)
+            ->where('reference_id', $deliveryOrder->id)
+            ->get();
+
+        foreach ($journalEntries as $entry) {
+            $this->journalService->reverse(
+                journalEntryID: $entry->id,
+                date: null,
+                description: 'Pembalikan Jurnal Untuk Pengiriman Barang #' . $deliveryOrder->number
+            );
+        }
     }
 }

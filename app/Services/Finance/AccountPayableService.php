@@ -2,8 +2,10 @@
 
 namespace App\Services\Finance;
 
+use App\Enums\ExpenseStatus;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Models\Company;
+use App\Models\Expense;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchasePayment;
 use Illuminate\Http\Request;
@@ -12,7 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class AccountPayableService
 {
-    public function generateAPNumber() {
+    public function generateAPNumber()
+    {
         $prefix = 'PP';
         $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
         $datePart = date('Y');
@@ -24,7 +27,7 @@ class AccountPayableService
 
         return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
     }
-    
+
     public function derivePaymentStatus(string $status, $dueDate): string
     {
         return match ($status) {
@@ -38,55 +41,92 @@ class AccountPayableService
 
     public function fetchAPTableData(Request $request)
     {
-        $query = PurchaseInvoice::with([
-            'supplier:id,name,code',
-        ])
-            ->select(
-                'id',
-                'number',
-                'invoice_date',
-                'due_date',
-                'supplier_id',
-                'total_amount',
-                'remaining_amount',
-                'status'
-            )
-            ->whereIn('status', [
+        $query = PurchaseInvoice::query()
+            ->join('contacts', 'contacts.id', '=', 'purchase_invoices.supplier_id')
+            ->selectRaw("
+                purchase_invoices.id,
+                purchase_invoices.number,
+                purchase_invoices.invoice_date,
+                purchase_invoices.due_date,
+                contacts.name as contact_name,
+                contacts.code as contact_code,
+                purchase_invoices.total_amount,
+                purchase_invoices.remaining_amount,
+                purchase_invoices.status,
+                'purchase_invoice' as type
+            ")
+            ->whereIn('purchase_invoices.status', [
                 PurchaseInvoiceStatus::OPEN->value,
                 PurchaseInvoiceStatus::PARTIAL->value,
                 PurchaseInvoiceStatus::PAID->value,
             ]);
 
+        $query2 = Expense::query()
+            ->join('contacts', 'contacts.id', '=', 'expenses.contact_id')
+            ->selectRaw("
+                expenses.id,
+                expenses.number,
+                expenses.invoice_date,
+                expenses.due_date,
+                contacts.name as contact_name,
+                contacts.code as contact_code,
+                expenses.total_amount,
+                expenses.remaining_amount,
+                expenses.status,
+                'expense' as type
+            ")
+            ->whereIn('expenses.status', [
+                ExpenseStatus::OPEN->value,
+                ExpenseStatus::PARTIAL->value,
+                ExpenseStatus::PAID->value,
+            ]);
+
         if ($request->filled('search')) {
             $search = $request->input('search');
+
             $query->where(function ($q) use ($search) {
-                $q->where('number', 'like', "%{$search}%")
-                    ->orWhereHas('supplier', function ($q2) use ($search) {
-                        $q2->where('name', 'like', "%{$search}%");
-                    });
+                $q->where('purchase_invoices.number', 'like', "%{$search}%")
+                    ->orWhere('contacts.name', 'like', "%{$search}%")
+                    ->orWhere('contacts.code', 'like', "%{$search}%");
+            });
+
+            $query2->where(function ($q) use ($search) {
+                $q->where('expenses.number', 'like', "%{$search}%")
+                    ->orWhere('contacts.name', 'like', "%{$search}%")
+                    ->orWhere('contacts.code', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('date_from')) {
-            $query->whereDate('invoice_date', '>=', $request->input('date_from'));
+            $query->whereDate('purchase_invoices.invoice_date', '>=', $request->input('date_from'));
+            $query2->whereDate('expenses.invoice_date', '>=', $request->input('date_from'));
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('invoice_date', '<=', $request->input('date_to'));
+            $query->whereDate('purchase_invoices.invoice_date', '<=', $request->input('date_to'));
+            $query2->whereDate('expenses.invoice_date', '<=', $request->input('date_to'));
         }
 
         if ($request->filled('status') && $request->input('status') !== 'all') {
             $today = now()->toDateString();
-            match ($request->input('status')) {
-                'paid' => $query->where('status', PurchaseInvoiceStatus::PAID->value),
-                'partial' => $query->where('status', PurchaseInvoiceStatus::PARTIAL->value),
-                'not-yet-due' => $query->where('status', PurchaseInvoiceStatus::OPEN->value)
-                    ->whereDate('due_date', '>=', $today),
-                'unpaid' => $query->where('status', PurchaseInvoiceStatus::OPEN->value)
-                    ->whereDate('due_date', '<', $today),
-                default => null,
+
+            $applyStatusFilter = function ($builder, string $table, string $statusColumn) use ($request, $today) {
+                match ($request->input('status')) {
+                    'paid' => $builder->where($statusColumn, 'paid'),
+                    'partial' => $builder->where($statusColumn, 'partial'),
+                    'not-yet-due' => $builder->where($statusColumn, 'open')
+                        ->whereDate("$table.due_date", '>=', $today),
+                    'unpaid' => $builder->where($statusColumn, 'open')
+                        ->whereDate("$table.due_date", '<', $today),
+                    default => null,
+                };
             };
+
+            $applyStatusFilter($query, 'purchase_invoices', 'purchase_invoices.status');
+            $applyStatusFilter($query2, 'expenses', 'expenses.status');
         }
+
+        $query = $query->unionAll($query2);
 
         $query = $query->orderBy('invoice_date', 'desc')->paginate($request->input('per_page', 10));
 

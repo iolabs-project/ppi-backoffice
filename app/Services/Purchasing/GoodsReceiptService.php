@@ -327,34 +327,7 @@ class GoodsReceiptService
                 ->update(['status' => 'closed']);
         }
         $this->expenseService->storeExpenseFromGoodsReceipt($goodsReceipt->id);
-        // $this->postJournal($goodsReceipt, $journalAmount);
-
-        // Post Journal
-        $debitAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
-            ->where('setting_key', AccountSettingEnum::INVENTORY->value)
-            ->value('account_id');
-        $creditAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
-            ->where('setting_key', AccountSettingEnum::GRNI->value)
-            ->value('account_id');
-
-        $journalItems = [
-            [
-                'account_id' => $debitAccountID,
-                'debit' => $journalAmount,
-            ],
-            [
-                'account_id' => $creditAccountID,
-                'credit' => $journalAmount,
-            ],
-        ];
-
-        $this->journalService->post(
-            date: null,
-            referenceType: GoodsReceipt::class,
-            referenceId: $goodsReceipt->id,
-            description: 'Penerimaan Barang - GR #' . $goodsReceipt->number,
-            items: $journalItems
-        );
+        $this->postGRJournal($goodsReceipt, $journalAmount);
     }
 
     private function validateBatchNumber(string $batchNumber, int $productID, int $companyID): bool
@@ -377,7 +350,13 @@ class GoodsReceiptService
     public function changeGoodsReceiptStatus(int $id, string $status): void
     {
         $goodsReceipt = GoodsReceipt::findOrFail($id);
-        $goodsReceipt->update(['status' => $status]);
+        DB::transaction(function () use ($goodsReceipt, $status) {
+            if ($status === GoodsReceiptStatus::CANCELLED->value && $goodsReceipt->status === GoodsReceiptStatus::FINISHED->value) {
+                $this->reverseGRJournal($goodsReceipt, 0);
+            }
+
+            $goodsReceipt->update(['status' => $status]);
+        });
     }
 
     private function postGRJournal(GoodsReceipt $goodsReceipt, float $journalAmount): void
@@ -403,7 +382,7 @@ class GoodsReceiptService
         $this->journalService->post(
             date: null,
             referenceType: GoodsReceipt::class,
-            referenceId: $goodsReceipt->id,
+            referenceID: $goodsReceipt->id,
             description: 'Penerimaan Barang - GR #' . $goodsReceipt->number,
             items: $journalItems
         );
@@ -420,7 +399,7 @@ class GoodsReceiptService
                 $this->journalService->reverse(
                     journalEntryID: $entry->id,
                     date: null,
-                    description: "Reversal of Journal Entry for Goods Receipt #{$goodsReceipt->number}"
+                    description: "Pembalikan Jurnal Untuk Penerimaan Barang #{$goodsReceipt->number}"
                 );
             }}
     }

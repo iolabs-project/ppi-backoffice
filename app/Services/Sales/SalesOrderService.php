@@ -2,12 +2,17 @@
 
 namespace App\Services\Sales;
 
+use App\Enums\AccountSettingEnum;
 use App\Enums\DeliveryOrderStatus;
+use App\Enums\SalesOrderStatus;
+use App\Models\AccountSetting;
 use App\Models\Company;
+use App\Models\JournalEntry;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderCharge;
 use App\Models\SalesOrderCost;
 use App\Models\SalesOrderItem;
+use App\Services\JournalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +20,11 @@ use Illuminate\Validation\ValidationException;
 
 class SalesOrderService
 {
+    private JournalService $journalService;
+    public function __construct(JournalService $journalService)
+    {
+        $this->journalService = $journalService;
+    }
     public function generateSONumber(): string
     {
         $prefix = 'SO';
@@ -276,13 +286,24 @@ class SalesOrderService
                     'amount' => $charge['amount'],
                 ]);
             }
+
+            if ($salesOrder->status === SalesOrderStatus::OPEN->value) {
+                $this->postSOJournal($salesOrder);
+            }
         });
     }
 
     public function changeSalesOrderStatus(int $id, string $status): void
     {
         $salesOrder = SalesOrder::findOrFail($id);
-        $salesOrder->update(['status' => $status]);
+        // $salesOrder->update(['status' => $status]);
+        DB::transaction(function () use ($salesOrder, $status) {
+            if ($status === SalesOrderStatus::CANCELLED->value && $salesOrder->status === SalesOrderStatus::OPEN->value) {
+                $this->reverseSOJournal($salesOrder);
+            }
+
+            $salesOrder->update(['status' => $status]);
+        });
     }
 
     public function fetchSOItemsForDeliveryOrder(int $id): Collection
@@ -306,5 +327,52 @@ class SalesOrderService
                 'discount_amount' => $item->discount_amount,
             ];
         });
+    }
+
+    private function postSOJournal(SalesOrder $salesOrder): void
+    {
+        if ($salesOrder->down_payment_amount > 0 && $salesOrder->down_payment_account_id) {
+            $debitAccountID = $salesOrder->down_payment_account_id;
+            $creditAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+                ->where('setting_key', AccountSettingEnum::SALES_DOWN_PAYMENT->value)
+                ->value('account_id');
+            $amount = $salesOrder->down_payment_amount;
+
+            $journalItems = [
+                [
+                    'account_id' => $debitAccountID,
+                    'debit' => $amount,
+                ],
+                [
+                    'account_id' => $creditAccountID,
+                    'credit' => $amount,
+                ],
+            ];
+
+            $this->journalService->post(
+                date: null,
+                referenceType: SalesOrder::class,
+                referenceID: $salesOrder->id,
+                description: 'Uang Muka Penjualan #' . $salesOrder->number,
+                items: $journalItems
+            );
+        }
+    }
+
+    private function reverseSOJournal(SalesOrder $salesOrder): void
+    {
+        $journalEntries = JournalEntry::where('reference_type', SalesOrder::class)
+            ->where('reference_id', $salesOrder->id)
+            ->get();
+
+        foreach ($journalEntries as $entry) {
+            if ($entry->status === 'posted') {
+                $this->journalService->reverse(
+                    journalEntryID: $entry->id,
+                    date: null,
+                    description: "Pembalikan Jurnal Untuk Sales Order #{$salesOrder->number}"
+                );
+            }
+        }
     }
 }

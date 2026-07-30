@@ -334,7 +334,7 @@ class PurchaseOrderService
             $this->journalService->post(
                 date: null,
                 referenceType: PurchaseOrder::class,
-                referenceId: $purchaseOrder->id,
+                referenceID: $purchaseOrder->id,
                 description: 'Uang Muka Pembelian #' . $purchaseOrder->number,
                 items: $journalItems
             );
