@@ -184,14 +184,18 @@ class PurchaseInvoiceService
                 ]);
 
                 if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
-                    PurchaseOrderItem::where('id', $detail['purchase_order_item_id'])
-                        ->increment('invoiced_quantity', $detail['quantity']);
+                    $this->purchaseOrderService->updateInvoicedQuantity(
+                        purchaseOrderItemID: $detail['purchase_order_item_id'],
+                        invoicedQuantity: $detail['quantity']
+                    );
                 }
             }
 
             if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
-                PurchaseOrder::where('id', $purchaseInvoice->purchase_order_id)
-                    ->decrement('down_payment_remaining_amount', $downpaymentAmount);
+                $this->purchaseOrderService->decrementDownPaymentRemainingAmount(
+                    purchaseOrderID: $purchaseInvoice->purchase_order_id,
+                    amount: $downpaymentAmount
+                );
             }
 
             if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
@@ -335,7 +339,7 @@ class PurchaseInvoiceService
             items: $journalItems
         );
 
-         if ($purchaseInvoice->down_payment_amount <= 0) {
+        if ($purchaseInvoice->down_payment_amount <= 0) {
             return;
         }
 

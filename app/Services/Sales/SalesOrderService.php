@@ -375,4 +375,17 @@ class SalesOrderService
             }
         }
     }
+
+    public function updateShippedQuantity(int $salesOrderItemID, float $shippedQuantity): void
+    {
+        $salesOrderItem = SalesOrderItem::findOrFail($salesOrderItemID);
+        $salesOrderItem->shipped_quantity += $shippedQuantity;
+        $salesOrderItem->save();
+
+        SalesOrder::where('id', $salesOrderItem->sales_order_id)
+            ->whereDoesntHave('items', function ($query) {
+                $query->whereColumn('shipped_quantity', '<', 'quantity');
+            })
+            ->update(['status' => SalesOrderStatus::CLOSED->value]);
+    }
 }

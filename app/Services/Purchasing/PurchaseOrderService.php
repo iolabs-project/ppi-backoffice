@@ -355,4 +355,34 @@ class PurchaseOrderService
             );
         }
     }
+
+    public function updateReceivedQuantity(int $purchaseOrderItemID, float $receivedQuantity): void
+    {
+        $purchaseOrderItem = PurchaseOrderItem::findOrFail($purchaseOrderItemID);
+        $purchaseOrderItem->received_quantity += $receivedQuantity;
+        $purchaseOrderItem->save();
+
+        PurchaseOrder::where('id', $purchaseOrderItem->purchase_order_id)
+            ->whereDoesntHave('items', function ($query) {
+                $query->whereColumn('received_quantity', '<', 'quantity');
+            })
+            ->update(['status' => PurchaseOrderStatus::CLOSED->value]);
+    }
+
+    public function updateInvoicedQuantity(int $purchaseOrderItemID, float $invoicedQuantity): void
+    {
+        $purchaseOrderItem = PurchaseOrderItem::findOrFail($purchaseOrderItemID);
+        $purchaseOrderItem->invoiced_quantity += $invoicedQuantity;
+        $purchaseOrderItem->save();
+    }
+
+    public function decrementDownPaymentRemainingAmount(int $purchaseOrderID, float $amount): void
+    {
+        $purchaseOrder = PurchaseOrder::findOrFail($purchaseOrderID);
+        $purchaseOrder->down_payment_remaining_amount -= $amount;
+        if ($purchaseOrder->down_payment_remaining_amount < 0) {
+            $purchaseOrder->down_payment_remaining_amount = 0;
+        }
+        $purchaseOrder->save();
+    }
 }

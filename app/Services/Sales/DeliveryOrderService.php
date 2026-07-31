@@ -333,16 +333,12 @@ class DeliveryOrderService
                     'note' => 'Pengiriman Barang dari DO #' . $deliveryOrder->number,
                 ]);
             }
-
-            SalesOrderItem::where('id', $detail['sales_order_item_id'])
-                ->increment('shipped_quantity', $quantity);
+            
+            $this->salesOrderService->updateShippedQuantity(
+                salesOrderItemID: $detail['sales_order_item_id'],
+                shippedQuantity: $quantity
+            );
         }
-
-        SalesOrder::where('id', $deliveryOrder->sales_order_id)
-            ->whereDoesntHave('items', function ($query) {
-                $query->whereColumn('shipped_quantity', '<', 'quantity');
-            })
-            ->update(['status' => SalesOrderStatus::CLOSED->value]);
 
 
         foreach ($costsCollection as $cost) {

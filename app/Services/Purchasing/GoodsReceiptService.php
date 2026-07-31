@@ -287,14 +287,10 @@ class GoodsReceiptService
             $journalAmount += $goodsReceiptItem->received_quantity * $goodsReceiptItem->unit_cost;
             $this->inventoryService->receiveInventoryFromGR($goodsReceipt, $goodsReceiptItem);
 
-            PurchaseOrderItem::where('id', $goodsReceiptItem->purchase_order_item_id)
-                ->increment('received_quantity', $goodsReceiptItem->received_quantity);
-
-            PurchaseOrder::where('id', $goodsReceipt->purchase_order_id)
-                ->whereDoesntHave('items', function ($query) {
-                    $query->whereColumn('received_quantity', '<', 'quantity');
-                })
-                ->update(['status' => 'closed']);
+            $this->purchaseOrderService->updateReceivedQuantity(
+                purchaseOrderItemID: $goodsReceiptItem->purchase_order_item_id,
+                receivedQuantity: $goodsReceiptItem->received_quantity
+            );
         }
         $this->expenseService->storeExpenseFromGoodsReceipt($goodsReceipt->id);
         $this->postGRJournal($goodsReceipt, $journalAmount);
