@@ -17,9 +17,9 @@ return new class extends Migration
             $table->foreignId('warehouse_id')->constrained()->onDelete('restrict');
             $table->foreignId('product_id')->constrained()->onDelete('restrict');
             $table->foreignId('product_batch_id')->constrained()->onDelete('restrict');
-            $table->enum('type', ['opening', 'purchase', 'sale', 'transfer_in', 'transfer_out', 'adjustment_plus', 'adjustment_minus']);
-            $table->tinyInteger('direction')->comment('1 for incoming, -1 for outgoing');
-            $table->decimal('quantity', 18, 4);
+            $table->enum('type', ['opening', 'purchase', 'sale', 'transfer_in', 'transfer_out', 'adjustment_plus', 'adjustment_minus','cost_adjustment'])->comment('Type of transaction');
+            $table->tinyInteger('direction')->comment('1 for incoming, -1 for outgoing, 0 for neutral');
+            $table->decimal('quantity', 18, 4)->default(0);
             $table->decimal('unit_cost', 18, 4)->nullable();
             $table->decimal('total_cost', 18, 4)->nullable();
             $table->decimal('stock_before', 18, 4)->nullable();

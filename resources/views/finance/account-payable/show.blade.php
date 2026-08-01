@@ -170,7 +170,7 @@
                     </x-misc.field>
                     <x-misc.field label="Amount" :required="true">
                         <input class="input num" style="text-align:right;" x-model="form.amount"
-                            x-mask:dynamic="$money($input, ',')" />
+                            x-mask:dynamic="$money($input, '.',',')" />
                         <div style="font-size:11px; color:var(--ink-4); margin-top:4px;">
                             Maximum amount: {{ fmt_rp($purchaseInvoice->remaining_amount) }}
                         </div>

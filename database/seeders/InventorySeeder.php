@@ -101,31 +101,31 @@ class InventorySeeder extends Seeder
             ]
         ]);
 
-        DB::table('product_batches')->insert([
-            [
-                'id' => 1,
-                'company_id' => 1,
-                'product_id' => 1,
-                'warehouse_id' => 1,
-                'batch_number' => 'LOT001',
-                'quantity' => 500,
-                'reserved_quantity' => 0,
-                'unit_cost' => 10000,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 2,
-                'company_id' => 1,
-                'product_id' => 1,
-                'warehouse_id' => 1,
-                'batch_number' => 'LOT002',
-                'quantity' => 200,
-                'reserved_quantity' => 0,
-                'unit_cost' => 10500,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        // DB::table('product_batches')->insert([
+        //     [
+        //         'id' => 1,
+        //         'company_id' => 1,
+        //         'product_id' => 1,
+        //         'warehouse_id' => 1,
+        //         'batch_number' => 'LOT001',
+        //         'quantity' => 500,
+        //         'reserved_quantity' => 0,
+        //         'unit_cost' => 10000,
+        //         'created_at' => now(),
+        //         'updated_at' => now(),
+        //     ],
+        //     [
+        //         'id' => 2,
+        //         'company_id' => 1,
+        //         'product_id' => 1,
+        //         'warehouse_id' => 1,
+        //         'batch_number' => 'LOT002',
+        //         'quantity' => 200,
+        //         'reserved_quantity' => 0,
+        //         'unit_cost' => 10500,
+        //         'created_at' => now(),
+        //         'updated_at' => now(),
+        //     ],
+        // ]);
     }
 }

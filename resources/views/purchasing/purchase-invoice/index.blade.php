@@ -85,15 +85,15 @@
                                         </button>
                                         <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
                                             x-on:click.away="open = false" class="action-menu__panel">
-                                            <a :href="route('sales.sales_invoices.show', row.id)" @click.stop
+                                            <a :href="route('purchasings.purchase_invoices.show', row.id)" @click.stop
                                                 class="action-menu__item">
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
                                                 Detail
                                             </a>
-                                            <a :href="route('sales.sales_orders.show', row.sales_order_id)"
+                                            <a :href="route('purchasings.purchase_orders.show', row.sales_order_id)"
                                                 @click.stop class="action-menu__item">
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
-                                                SO
+                                                PO
                                             </a>
                                             <button class="action-menu__item" @click.stop>
                                                 <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
@@ -101,7 +101,7 @@
                                             </button>
                                             <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('purchasing.purchase_invoices.edit', row.id)"
+                                                    <a :href="route('purchasings.purchase_invoices.edit', row.id)"
                                                         @click.stop class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />Edit

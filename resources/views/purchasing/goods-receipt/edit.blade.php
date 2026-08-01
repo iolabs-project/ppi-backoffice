@@ -522,16 +522,16 @@
                             </td>
                             <td><input class="input" style="height:32px;" x-model="item.batch_number" /></td>
                             {{-- <td><input class="input num" style="height:32px; text-align:right;"
-                                    x-model.number="item.remaining_quantity" x-mask:dynamic="$money($input, ',')"
+                                    x-model.number="item.remaining_quantity" x-mask:dynamic="$money($input, '.',',')"
                                     disabled /></td> --}}
                             <td style="text-align: right"><span class="mono" style="font-weight:600"
                                     x-text="item.remaining_quantity ? NumberUtils.formatNumericIntoMask(item.remaining_quantity) : '0'"></span>
                             </td>
                             <td><input class="input num" style="height:32px; text-align:right;"
-                                    x-model="item.expected_quantity" x-mask:dynamic="$money($input, ',')"
+                                    x-model="item.expected_quantity" x-mask:dynamic="$money($input, '.',',')"
                                     @input="handleExpectedQuantityInput(item)" /></td>
                             <td><input class="input num" style="height:32px; text-align:right;"
-                                    x-model="item.received_quantity" x-mask:dynamic="$money($input, ',')"
+                                    x-model="item.received_quantity" x-mask:dynamic="$money($input, '.',',')"
                                     @input="handleReceivedQuantityInput(item); recalc()" /></td>
                             <td style="text-align: right"><span class="mono" style="font-weight:600"
                                     x-text="item.shrinkage_quantity ? NumberUtils.formatNumericIntoMask(item.shrinkage_quantity) : '0'"></span>
@@ -618,15 +618,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <template x-if="formData.details.reduce((sum, d) => sum + n(d.received_quantity), 0) > 0">
-                        <div style="margin-top:12px; padding:10px 12px; border-radius:8px; background:var(--bg-3); border:1px solid var(--line-2);">
-                            <div style="font-size:11px; color:var(--ink-4);">Estimasi Landed Cost per Unit</div>
-                            <div class="num" style="font-weight:600; font-size:14px;"
-                                x-text="'Rp ' + NumberUtils.formatNumericIntoMask(Math.round(costsInventoryTotal() / formData.details.reduce((sum, d) => sum + n(d.received_quantity), 0)))"></div>
-                            <div style="font-size:10px; color:var(--ink-4);">(Total Biaya Inventory / Total Qty Diterima)</div>
-                        </div>
-                    </template>
                 </div>
             </div>
         </div>

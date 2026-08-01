@@ -293,7 +293,7 @@
             <div style="margin-top:14px;">
                 <x-misc.field label="Quantity yang Dikirim">
                     <input class="input num" style="text-align:right;" x-model="batchForm.quantity"
-                        x-mask:dynamic="$money($input, ',')" />
+                        x-mask:dynamic="$money($input, '.',',')" />
                 </x-misc.field>
             </div>
         </div>

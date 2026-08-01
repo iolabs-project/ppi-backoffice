@@ -9,7 +9,10 @@
          Billed By + Inventory Cost columns (used for Purchase Invoice, where
          every cost is inherently supplier-billed).
 --}}
-@php($showBilledBy = !empty($billedByOptions))
+@php
+    $showBilledBy = !empty($billedByOptions);
+    $showInventoryCost = $showInventoryCost ?? $showBilledBy;
+@endphp
 <script>
     var accounts = @json($accounts);
 </script>
@@ -28,6 +31,8 @@
                 <th style="min-width:200px;">Akun</th>
                 @if ($showBilledBy)
                     <th style="width:150px;">Ditagih Oleh</th>
+                @endif
+                @if ($showInventoryCost)
                     <th style="width:110px; text-align:center;">Biaya Inventory</th>
                 @endif
                 <th style="width:160px; text-align:right;">Jumlah</th>
@@ -71,13 +76,15 @@
                                 @endforeach
                             </select>
                         </td>
+                    @endif
+                    @if ($showInventoryCost)
                         <td style="text-align:center;">
                             <input type="checkbox" x-model="cost.is_inventory_cost" @change="handleCostInput()" />
                         </td>
                     @endif
                     <td>
                         <input class="input num" style="height:32px; text-align:right;" x-model="cost.amount"
-                            x-mask:dynamic="$money($input, ',')" @input="handleCostInput()" />
+                            x-mask:dynamic="$money($input, '.',',')" @input="handleCostInput()" />
                     </td>
                     <td>
                         <button type="button" class="btn btn-ghost btn-icon btn-sm" style="border:none;"
@@ -89,14 +96,14 @@
             </template>
             <template x-if="formData.costs.length === 0">
                 <tr>
-                    <td colspan="{{ $showBilledBy ? 7 : 5 }}" style="text-align:center; color:var(--ink-4); padding:16px 0;">
+                    <td colspan="{{ 5 + ($showBilledBy ? 1 : 0) + ($showInventoryCost ? 1 : 0) }}"  style="text-align:center; color:var(--ink-4); padding:16px 0;">
                         Belum ada biaya tambahan.
                     </td>
                 </tr>
             </template>
         </tbody>
     </table>
-    @if ($showBilledBy)
+    @if ($showInventoryCost)
         <div style="padding:12px 16px; font-size:12px; color:var(--ink-3); line-height:1.7;">
             <div>• Hanya biaya dengan <strong>Biaya Inventory</strong> dicentang yang akan dialokasikan ke dalam nilai persediaan (HPP).</div>
         </div>

@@ -409,7 +409,7 @@
                                 <span class="order-summary__label">Diskon</span>
                                 <div class="order-summary__pct-group">
                                     <input class="input num order-summary__pct-input"
-                                        x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
+                                        x-model="formData.discount_percentage" x-mask:dynamic="$money($input, '.',',')"
                                         @input="handleDiscountPercentageInput()" />
                                     <span class="order-summary__pct-sym">%</span>
                                     <input
@@ -424,7 +424,7 @@
                                 <span class="order-summary__label">Pajak</span>
                                 <div class="order-summary__pct-group">
                                     <input class="input num order-summary__pct-input" x-model="formData.tax_percentage"
-                                        x-mask:dynamic="$money($input, ',')" @input="handleTaxPercentageInput()" />
+                                        x-mask:dynamic="$money($input, '.',',')" @input="handleTaxPercentageInput()" />
                                     <span class="order-summary__pct-sym">%</span>
                                     <input class="input num input--readonly order-summary__amount-display"
                                         :value="formData.tax_amount ? NumberUtils.formatNumericIntoMask(formData.tax_amount) :
@@ -476,7 +476,7 @@
                                         {{-- <span class="input-with-prefix__label">- Rp</span> --}}
                                         <input
                                             class="input num order-summary__cost-input order-summary__amount-display--negative"
-                                            x-model="formData.down_payment_amount" x-mask:dynamic="$money($input, ',')"
+                                            x-model="formData.down_payment_amount" x-mask:dynamic="$money($input, '.',',')"
                                             @input="recalculate()" placeholder="0" />
                                     </div>
                                 </div>
@@ -490,21 +490,11 @@
                         <span class="order-summary__total-value display num"
                             x-text="'Rp ' + (formData.total_amount ? NumberUtils.formatNumericIntoMask(formData.total_amount) : '0')"></span>
                     </div>
-
-                    <template x-if="formData.details.reduce((sum, d) => sum + n(d.quantity), 0) > 0">
-                        <div style="margin-top:12px; padding:10px 12px; border-radius:8px; background:var(--bg-3); border:1px solid var(--line-2);">
-                            <div style="font-size:11px; color:var(--ink-4);">Estimasi Landed Cost per Unit</div>
-                            <div class="num" style="font-weight:600; font-size:14px;"
-                                x-text="'Rp ' + NumberUtils.formatNumericIntoMask(Math.round(costsInventoryTotal() / formData.details.reduce((sum, d) => sum + n(d.quantity), 0)))"></div>
-                            <div style="font-size:10px; color:var(--ink-4);">(Total Biaya Inventory / Total Qty)</div>
-                        </div>
-                    </template>
                 </div>
             </div>
         </div>
 
         <div class="order-form-footer">
-            <a href="{{ route('purchasings.purchase_orders.index') }}" class="btn btn-ghost">Batal</a>
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
             <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check"
                     :size="14" />Simpan

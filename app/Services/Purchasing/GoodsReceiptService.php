@@ -250,14 +250,12 @@ class GoodsReceiptService
             $unitPrice = (float) ($item['unit_price'] ?? 0);
             $subtotal = $qty * $unitPrice;
             $unitDiscountAmount = $subtotal * ($unitDiscountPercentage / 100);
-            $total = $subtotal - $unitDiscountAmount;
 
             if ($qty <= 0) {
                 $unitCost = 0;
             } else {
 
                 $qtyRatio = $totalQty > 0 ? ($qty / $totalQty) : 0;
-                $valueRatio = $totalSubtotal > 0 ? ($total / $totalSubtotal) : 0;
 
                 $addtionalCostPerUnit = $qty > 0 ? ($additionalCost * $qtyRatio) / $qty : 0;
 
@@ -285,7 +283,7 @@ class GoodsReceiptService
             ]);
 
             $journalAmount += $goodsReceiptItem->received_quantity * $goodsReceiptItem->unit_cost;
-            $this->inventoryService->receiveInventoryFromGR($goodsReceipt, $goodsReceiptItem);
+            $this->inventoryService->receiveInventoryFromGR(goodsReceipt: $goodsReceipt, goodsReceiptItem: $goodsReceiptItem);
 
             $this->purchaseOrderService->updateReceivedQuantity(
                 purchaseOrderItemID: $goodsReceiptItem->purchase_order_item_id,
@@ -330,7 +328,7 @@ class GoodsReceiptService
         $query = GoodsReceiptItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol'])
             ->whereHas('goodsReceipt', function ($query) use ($id) {
                 $query->where('purchase_order_id', $id)
-                ->where('status', GoodsReceiptStatus::FINISHED->value);
+                    ->where('status', GoodsReceiptStatus::FINISHED->value);
             })
             ->orderBy('id', 'asc');
 
@@ -393,6 +391,7 @@ class GoodsReceiptService
                     date: null,
                     description: "Pembalikan Jurnal Untuk Penerimaan Barang #{$goodsReceipt->number}"
                 );
-            }}
+            }
+        }
     }
 }

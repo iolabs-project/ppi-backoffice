@@ -96,7 +96,7 @@
                  </td>
                  <td>
                      <input class="input num" style="height:32px; text-align:right;" x-model="it.quantity"
-                         @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
+                         @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, '.',',')" />
                  </td>
                  <td>
                      <div class="input input--readonly"
@@ -106,7 +106,7 @@
                  </td>
                  <td>
                      <input class="input num" style="height:32px; text-align:right;" x-model="it.unit_price"
-                         @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
+                         @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, '.',',')" />
 
                      <template x-if="it.subtotal !== null && it.subtotal !== undefined">
                          <div class="order-items__sub mono"
@@ -117,7 +117,7 @@
                  </td>
                  <td>
                      <input class="input num" style="height:32px; text-align:right;" x-model="it.discount_percentage"
-                         @input="handleDetailDiscountPercentageInput(i)" x-mask:dynamic="$money($input, ',')" />
+                         @input="handleDetailDiscountPercentageInput(i)" x-mask:dynamic="$money($input, '.',',')" />
 
                      <template x-if="it.discount_amount !== null && it.discount_amount !== undefined">
                          <div class="order-items__sub mono"
@@ -127,12 +127,12 @@
                      </template>
                  </td>
                  <td>
-                     <input class="input num" style="height:32px; text-align:right;" x-model.number="it.total_amount"
-                         x-mask:dynamic="$money($input, ',')" disabled />
+                     <input class="input num input--readonly" style="height:32px; text-align:right;" x-model.number="it.total_amount"
+                         x-mask:dynamic="$money($input, '.',',')" disabled />
                  </td>
                  <td>
-                     <input class="input num" style="height:32px; text-align:right;" x-model.number="it.unit_cost"
-                         x-mask:dynamic="$money($input, ',')" disabled />
+                     <input class="input num input--readonly" style="height:32px; text-align:right;" x-model.number="it.unit_cost"
+                         x-mask:dynamic="$money($input, '.',',')" disabled />
                  </td>
                  <td>
                      <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"

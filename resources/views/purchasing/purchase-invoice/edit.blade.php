@@ -28,6 +28,7 @@
                         account_id: cost.account_id,
                         description: cost.description,
                         amount: cost.amount,
+                        is_inventory_cost: !!cost.is_inventory_cost,
                     })),
                     details: (purchaseInvoice.items || []).map(item => ({
                         id: item.id,
@@ -163,6 +164,7 @@
                         account_id: null,
                         description: null,
                         amount: null,
+                        is_inventory_cost: false,
                     });
                     this.recalculate();
                 },
@@ -172,6 +174,16 @@
                 },
                 handleCostInput() {
                     this.recalculate();
+                },
+                costsInventoryTotal() {
+                    return this.formData.costs
+                        .filter(c => c.is_inventory_cost)
+                        .reduce((sum, c) => sum + this.n(c.amount), 0);
+                },
+                costsNonInventoryTotal() {
+                    return this.formData.costs
+                        .filter(c => !c.is_inventory_cost)
+                        .reduce((sum, c) => sum + this.n(c.amount), 0);
                 },
                 costsTotal() {
                     return this.formData.costs.reduce((sum, c) => sum + this.n(c.amount), 0);
@@ -571,8 +583,8 @@
                                 </div>
                             </td>
                             <td>
-                                <input class="input num" style="height:32px; text-align:right;" x-model="it.quantity"
-                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
+                                <input class="input num input--readonly" style="height:32px; text-align:right;" x-model="it.quantity"
+                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, '.',',')" readonly />
                             </td>
                             <td>
                                 <div class="input input--readonly"
@@ -582,7 +594,7 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.unit_price"
-                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
+                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, '.',',')" />
 
                                 <template x-if="it.subtotal !== null && it.subtotal !== undefined">
                                     <div class="order-items__sub mono"
@@ -594,7 +606,7 @@
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
                                     x-model="it.discount_percentage" @input="handleDetailDiscountPercentageInput(i)"
-                                    x-mask:dynamic="$money($input, ',')" />
+                                    x-mask:dynamic="$money($input, '.',',')" />
 
                                 <template x-if="it.discount_amount !== null && it.discount_amount !== undefined">
                                     <div class="order-items__sub mono"
@@ -604,8 +616,8 @@
                                 </template>
                             </td>
                             <td>
-                                <input class="input num" style="height:32px; text-align:right;"
-                                    x-model.number="it.total_amount" x-mask:dynamic="$money($input, ',')" disabled />
+                                <input class="input num input--readonly" style="height:32px; text-align:right;"
+                                    x-model.number="it.total_amount" x-mask:dynamic="$money($input, '.',',')" disabled />
                             </td>
                             <td>
                                 <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
@@ -620,7 +632,7 @@
             </table>
         </div>
 
-        @include('purchasing.partials.additional-cost-table', ['accounts' => $accounts])
+        @include('purchasing.partials.additional-cost-table', ['accounts' => $accounts, 'showInventoryCost' => true])
 
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">
@@ -662,7 +674,7 @@
                                 <span class="order-summary__label">Diskon</span>
                                 <div class="order-summary__pct-group">
                                     <input class="input num order-summary__pct-input"
-                                        x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
+                                        x-model="formData.discount_percentage" x-mask:dynamic="$money($input, '.',',')"
                                         @input="handleDiscountPercentageInput()" />
                                     <span class="order-summary__pct-sym">%</span>
                                     <input
@@ -677,7 +689,7 @@
                                 <span class="order-summary__label">Pajak</span>
                                 <div class="order-summary__pct-group">
                                     <input class="input num order-summary__pct-input" x-model="formData.tax_percentage"
-                                        x-mask:dynamic="$money($input, ',')" @input="handleTaxPercentageInput()" />
+                                        x-mask:dynamic="$money($input, '.',',')" @input="handleTaxPercentageInput()" />
                                     <span class="order-summary__pct-sym">%</span>
                                     <input class="input num input--readonly order-summary__amount-display"
                                         :value="formData.tax_amount ? NumberUtils.formatNumericIntoMask(formData.tax_amount) :
@@ -687,8 +699,13 @@
                             </div>
 
                             <div class="order-summary__row">
-                                <span class="order-summary__label">Biaya Tambahan</span>
-                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsTotal())"></span>
+                                <span class="order-summary__label">Biaya Tambahan (Inventory)</span>
+                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsInventoryTotal())"></span>
+                            </div>
+
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Biaya Tambahan (Non-Inventory)</span>
+                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsNonInventoryTotal())"></span>
                             </div>
 
 
@@ -715,7 +732,7 @@
                                             <input
                                                 class="input num order-summary__cost-input order-summary__amount-display--negative"
                                                 x-model="formData.down_payment_amount"
-                                                x-mask:dynamic="$money($input, ',')" @input="handleDownPaymentAmountInput()"
+                                                x-mask:dynamic="$money($input, '.',',')" @input="handleDownPaymentAmountInput()"
                                                 placeholder="0" />
                                         </div>
                                     </div>
@@ -733,7 +750,6 @@
         </div>
 
         <div class="order-form-footer">
-            <a href="{{ route('purchasings.purchase_orders.index') }}" class="btn btn-ghost">Batal</a>
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
             <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Simpan
                 SO</button>

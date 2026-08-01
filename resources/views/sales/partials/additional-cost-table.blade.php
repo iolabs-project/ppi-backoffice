@@ -56,7 +56,7 @@
                     </td>
                     <td>
                         <input class="input num" style="height:32px; text-align:right;" x-model="cost.amount"
-                            x-mask:dynamic="$money($input, ',')" @input="handleCostInput()" />
+                            x-mask:dynamic="$money($input, '.',',')" @input="handleCostInput()" />
                     </td>
                     <td>
                         <button type="button" class="btn btn-ghost btn-icon btn-sm" style="border:none;"

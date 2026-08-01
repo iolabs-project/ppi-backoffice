@@ -22,6 +22,7 @@ enum AccountSettingEnum: String
     case COGS = 'cogs';
     case PURCHASE_DISCOUNT = 'purchase_discount';
     case PURCHASE_RETURN = 'purchase_return';
+    case INVENTORY_ADJUSTMENT_GAIN = 'inventory_adjustment_gain';
     case INVENTORY_ADJUSTMENT_LOSS = 'inventory_adjustment_loss';
     case ROUNDING_GAIN = 'rounding_gain';
     case ROUNDING_LOSS = 'rounding_loss';

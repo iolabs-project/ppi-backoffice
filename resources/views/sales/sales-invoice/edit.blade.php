@@ -483,7 +483,7 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.quantity"
-                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
+                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, '.',',')" />
                             </td>
                             <td>
                                 <div class="input input--readonly"
@@ -493,7 +493,7 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.unit_price"
-                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, ',')" />
+                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, '.',',')" />
 
                                 <template x-if="it.subtotal !== null && it.subtotal !== undefined">
                                     <div class="order-items__sub mono"
@@ -505,7 +505,7 @@
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
                                     x-model="it.discount_percentage" @input="handleDetailDiscountPercentageInput(i)"
-                                    x-mask:dynamic="$money($input, ',')" />
+                                    x-mask:dynamic="$money($input, '.',',')" />
 
                                 <template x-if="it.discount_amount !== null && it.discount_amount !== undefined">
                                     <div class="order-items__sub mono"
@@ -516,7 +516,7 @@
                             </td>
                             <td>
                                 <input class="input num" style="height:32px; text-align:right;"
-                                    x-model.number="it.total_amount" x-mask:dynamic="$money($input, ',')" disabled />
+                                    x-model.number="it.total_amount" x-mask:dynamic="$money($input, '.',',')" disabled />
                             </td>
                             <td>
                                 <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
@@ -572,7 +572,7 @@
                                 <span class="order-summary__label">Diskon</span>
                                 <div class="order-summary__pct-group">
                                     <input class="input num order-summary__pct-input"
-                                        x-model="formData.discount_percentage" x-mask:dynamic="$money($input, ',')"
+                                        x-model="formData.discount_percentage" x-mask:dynamic="$money($input, '.',',')"
                                         @input="handleDiscountPercentageInput()" />
                                     <span class="order-summary__pct-sym">%</span>
                                     <input
@@ -587,7 +587,7 @@
                                 <span class="order-summary__label">Pajak</span>
                                 <div class="order-summary__pct-group">
                                     <input class="input num order-summary__pct-input" x-model="formData.tax_percentage"
-                                        x-mask:dynamic="$money($input, ',')" @input="handleTaxPercentageInput()" />
+                                        x-mask:dynamic="$money($input, '.',',')" @input="handleTaxPercentageInput()" />
                                     <span class="order-summary__pct-sym">%</span>
                                     <input class="input num input--readonly order-summary__amount-display"
                                         :value="formData.tax_amount ? NumberUtils.formatNumericIntoMask(formData.tax_amount) :
@@ -623,7 +623,7 @@
                                             <input
                                                 class="input num order-summary__cost-input order-summary__amount-display--negative"
                                                 x-model="formData.down_payment_amount"
-                                                x-mask:dynamic="$money($input, ',')" @input="handleDownPaymentAmountInput()"
+                                                x-mask:dynamic="$money($input, '.',',')" @input="handleDownPaymentAmountInput()"
                                                 placeholder="0" />
                                         </div>
                                     </div>

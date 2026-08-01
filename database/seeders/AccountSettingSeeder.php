@@ -43,6 +43,7 @@ class AccountSettingSeeder extends Seeder
             'purchase_return'           => 66,  // Retur Pembelian
 
             // Inventory Adjustment
+            'inventory_adjustment_gain' => 134, // Penyesuaian Persediaan
             'inventory_adjustment_loss' => 134, // Penyesuaian Persediaan
 
             // Other Income / Expense

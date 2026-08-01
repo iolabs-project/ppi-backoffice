@@ -191,6 +191,12 @@ class PurchaseOrderService
                     'amount' => $cost['amount'],
                 ]);
             }
+
+            if ($form->status === PurchaseOrderStatus::OPEN->value) {
+                if ($form->down_payment_account_id && $form->down_payment_amount > 0) {
+                    $this->postPOJournal($form);
+                }
+            }
         });
     }
 
@@ -264,9 +270,8 @@ class PurchaseOrderService
                     'amount' => $cost['amount'],
                 ]);
             }
-
-            if ($request->input('status') === PurchaseOrderStatus::OPEN->value) {
-                if ($request->filled('down_payment_account_id') && $request->input('down_payment_amount', 0) > 0) {
+            if ($purchaseOrder->status === PurchaseOrderStatus::OPEN->value) {
+                if ($purchaseOrder->down_payment_account_id && $purchaseOrder->down_payment_amount > 0) {
                     $this->postPOJournal($purchaseOrder);
                 }
             }
@@ -313,32 +318,30 @@ class PurchaseOrderService
 
     private function postPOJournal(PurchaseOrder $purchaseOrder): void
     {
-        if ($purchaseOrder->down_payment_amount > 0 && $purchaseOrder->down_payment_account_id) {
-            $debitAccountID = $purchaseOrder->down_payment_account_id;
-            $creditAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
-                ->where('setting_key', AccountSettingEnum::PURCHASE_DOWN_PAYMENT->value)
-                ->value('account_id');
-            $amount = $purchaseOrder->down_payment_amount;
+        $creditAccountID = $purchaseOrder->down_payment_account_id;
+        $debitAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::PURCHASE_DOWN_PAYMENT->value)
+            ->value('account_id');
+        $amount = $purchaseOrder->down_payment_amount;
 
-            $journalItems = [
-                [
-                    'account_id' => $debitAccountID,
-                    'debit' => $amount,
-                ],
-                [
-                    'account_id' => $creditAccountID,
-                    'credit' => $amount,
-                ],
-            ];
+        $journalItems = [
+            [
+                'account_id' => $debitAccountID,
+                'debit' => $amount,
+            ],
+            [
+                'account_id' => $creditAccountID,
+                'credit' => $amount,
+            ],
+        ];
 
-            $this->journalService->post(
-                date: null,
-                referenceType: PurchaseOrder::class,
-                referenceID: $purchaseOrder->id,
-                description: 'Uang Muka Pembelian #' . $purchaseOrder->number,
-                items: $journalItems
-            );
-        }
+        $this->journalService->post(
+            date: null,
+            referenceType: PurchaseOrder::class,
+            referenceID: $purchaseOrder->id,
+            description: 'Uang Muka Pembelian #' . $purchaseOrder->number,
+            items: $journalItems
+        );
     }
 
     private function reversePOJournal(PurchaseOrder $purchaseOrder): void

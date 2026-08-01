@@ -3,6 +3,7 @@
 namespace App\Services\Purchasing;
 
 use App\Services\JournalService;
+use App\Services\InventoryService;
 
 use App\Enums\AccountSettingEnum;
 use App\Enums\PaymentTerm;
@@ -25,11 +26,13 @@ class PurchaseInvoiceService
     private PurchaseOrderService $purchaseOrderService;
     private GoodsReceiptService $goodsReceiptService;
     private JournalService $journalService;
-    public function __construct(PurchaseOrderService $purchaseOrderService, GoodsReceiptService $goodsReceiptService, JournalService $journalService)
+    private InventoryService $inventoryService;
+    public function __construct(PurchaseOrderService $purchaseOrderService, GoodsReceiptService $goodsReceiptService, JournalService $journalService, InventoryService $inventoryService)
     {
         $this->purchaseOrderService = $purchaseOrderService;
         $this->goodsReceiptService = $goodsReceiptService;
         $this->journalService = $journalService;
+        $this->inventoryService = $inventoryService;
     }
     public function generatePurchaseInvoiceNumber(): string
     {
@@ -159,18 +162,25 @@ class PurchaseInvoiceService
             PurchaseInvoiceCost::where('purchase_invoice_id', $purchaseInvoice->id)->delete();
             PurchaseInvoiceItem::where('purchase_invoice_id', $purchaseInvoice->id)->delete();
 
+            $inventoryCost = 0;
             foreach ($request->input('costs', []) as $cost) {
                 PurchaseInvoiceCost::create([
                     'purchase_invoice_id' => $purchaseInvoice->id,
                     'account_id' => $cost['account_id'],
                     'description' => $cost['description'] ?? null,
+                    'is_inventory_cost' => $cost['is_inventory_cost'] ?? false,
                     'amount' => $cost['amount'],
                 ]);
+
+                if ($cost['is_inventory_cost'] ?? false) {
+                    $inventoryCost += $cost['amount'];
+                }
             }
 
             // Create new items
+            $totalQty = $detailsCollection->sum('quantity');
             foreach ($request->details as $detail) {
-                PurchaseInvoiceItem::create([
+                $item = PurchaseInvoiceItem::create([
                     'purchase_invoice_id' => $purchaseInvoice->id,
                     'goods_receipt_item_id' => $detail['goods_receipt_item_id'],
                     'purchase_order_item_id' => $detail['purchase_order_item_id'],
@@ -187,6 +197,12 @@ class PurchaseInvoiceService
                     $this->purchaseOrderService->updateInvoicedQuantity(
                         purchaseOrderItemID: $detail['purchase_order_item_id'],
                         invoicedQuantity: $detail['quantity']
+                    );
+                    $this->inventoryService->updateUnitCostFromPI(
+                        pi: $purchaseInvoice,
+                        piItem: $item,
+                        costAmount: (($inventoryCost * ($detail['quantity'] / $totalQty)) / $detail['quantity']),
+                        discountAmount: $purchaseInvoice->discount_amount * ($detail['quantity'] / $totalQty) / $detail['quantity']
                     );
                 }
             }
@@ -211,7 +227,7 @@ class PurchaseInvoiceService
             'items:id,purchase_invoice_id,purchase_order_item_id,goods_receipt_item_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
-            'costs:id,purchase_invoice_id,account_id,description,amount',
+            'costs:id,purchase_invoice_id,account_id,description,amount,is_inventory_cost',
             'costs.account:id,name,code,category_id',
             'supplier:id,name,code',
             'warehouse:id,name,code',
