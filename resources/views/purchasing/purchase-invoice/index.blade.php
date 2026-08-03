@@ -63,8 +63,8 @@
                                 @click="window.location = route('purchasings.purchase_invoices.show', row.id)">
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
                                 <td style="color:var(--ink-3);" x-text="row.invoice_date ?? '-'"></td>
-                                <td class="mono" style="font-weight:600;" x-text="row.sales_order.number"></td>
-                                <td style="font-weight:500;" x-text="row.customer.name ?? '-'"></td>
+                                <td class="mono" style="font-weight:600;" x-text="row.purchase_order.number"></td>
+                                <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
                                 <td class="num" style="text-align:right;" x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
                                 <td><span class="mono" x-text="row.status"></span></td>
@@ -90,7 +90,7 @@
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
                                                 Detail
                                             </a>
-                                            <a :href="route('purchasings.purchase_orders.show', row.sales_order_id)"
+                                            <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)"
                                                 @click.stop class="action-menu__item">
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
                                                 PO
@@ -228,7 +228,7 @@
 
                 async handleCancel(id) {
                     Swal.fire({
-                        title: 'Apakah Anda yakin ingin membatalkan Tagihan Penjualan ini?',
+                        title: 'Apakah Anda yakin ingin membatalkan Tagihan Pembelian ini?',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Ya, batalkan',
@@ -245,7 +245,7 @@
                             });
                             try {
                                 const response = await axios.post(route(
-                                    'sales.sales_invoices.cancel', id));
+                                    'purchasings.purchase_invoices.cancel', id));
                                 Swal.close();
                                 Toast.fire({
                                     icon: 'success',
@@ -255,7 +255,7 @@
                             } catch (error) {
                                 Swal.close();
                                 let message =
-                                    'Terjadi kesalahan saat membatalkan Tagihan Penjualan. Silakan coba lagi.';
+                                    'Terjadi kesalahan saat membatalkan Tagihan Pembelian. Silakan coba lagi.';
                                 if (error.response?.data?.message) {
                                     message = error.response.data.message;
                                 }

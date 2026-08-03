@@ -137,6 +137,7 @@ class PurchaseInvoiceService
             $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
             $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
             $downpaymentAmount = $request->input('down_payment_amount', 0);
+            $inventoryValue = $subtotal - $discountAmount;
 
             $purchaseInvoice->update([
                 'supplier_id' => $request->supplier_id,
@@ -162,7 +163,6 @@ class PurchaseInvoiceService
             PurchaseInvoiceCost::where('purchase_invoice_id', $purchaseInvoice->id)->delete();
             PurchaseInvoiceItem::where('purchase_invoice_id', $purchaseInvoice->id)->delete();
 
-            $inventoryCost = 0;
             foreach ($request->input('costs', []) as $cost) {
                 PurchaseInvoiceCost::create([
                     'purchase_invoice_id' => $purchaseInvoice->id,
@@ -173,12 +173,12 @@ class PurchaseInvoiceService
                 ]);
 
                 if ($cost['is_inventory_cost'] ?? false) {
-                    $inventoryCost += $cost['amount'];
+                    $inventoryValue += $cost['amount'];
                 }
             }
 
             // Create new items
-            $totalQty = $detailsCollection->sum('quantity');
+            $piItems = collect();
             foreach ($request->details as $detail) {
                 $item = PurchaseInvoiceItem::create([
                     'purchase_invoice_id' => $purchaseInvoice->id,
@@ -192,22 +192,24 @@ class PurchaseInvoiceService
                     'discount_amount' => $detail['quantity'] * $detail['unit_price'] * (($detail['discount_percentage'] ?? 0) / 100),
                     'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
                 ]);
+                $piItems->push($item);
 
                 if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
                     $this->purchaseOrderService->updateInvoicedQuantity(
                         purchaseOrderItemID: $detail['purchase_order_item_id'],
                         invoicedQuantity: $detail['quantity']
                     );
-                    $this->inventoryService->updateUnitCostFromPI(
-                        pi: $purchaseInvoice,
-                        piItem: $item,
-                        costAmount: (($inventoryCost * ($detail['quantity'] / $totalQty)) / $detail['quantity']),
-                        discountAmount: $purchaseInvoice->discount_amount * ($detail['quantity'] / $totalQty) / $detail['quantity']
-                    );
                 }
             }
 
             if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
+                $this->inventoryService->updateUnitCostFromPI(
+                    pi: $purchaseInvoice,
+                    piItems: $piItems,
+                    newInventoryValue: $inventoryValue,
+                    totalQty: $detailsCollection->sum('quantity')
+                );
+
                 $this->purchaseOrderService->decrementDownPaymentRemainingAmount(
                     purchaseOrderID: $purchaseInvoice->purchase_order_id,
                     amount: $downpaymentAmount
@@ -227,6 +229,7 @@ class PurchaseInvoiceService
             'items:id,purchase_invoice_id,purchase_order_item_id,goods_receipt_item_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
+            'items.goodsReceiptItem:id,batch_number',
             'costs:id,purchase_invoice_id,account_id,description,amount,is_inventory_cost',
             'costs.account:id,name,code,category_id',
             'supplier:id,name,code',

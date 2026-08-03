@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AccountSettingEnum;
+use App\Enums\InventoryTransactionTypeEnum;
 use App\Models\AccountSetting;
 use App\Models\GoodsReceipt;
 use App\Models\Product;
@@ -15,6 +16,7 @@ use App\Models\GoodsReceiptItem;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 
 class InventoryService
 {
@@ -64,26 +66,27 @@ class InventoryService
 
         return $productBatch;
     }
-
-    public function updateUnitCostFromPI(PurchaseInvoice $pi, PurchaseInvoiceItem $piItem, float $costAmount = 0, float $discountAmount = 0): void
+    public function updateUnitCostFromPI(PurchaseInvoice $pi, Collection $piItems, float $newInventoryValue, float $totalQty): void
     {
-        $grItem = GoodsReceiptItem::find($piItem->goods_receipt_item_id);
-        $grItemUnitPrice = $grItem->unit_price - ($grItem->received_quantity > 0 ? $grItem->discount_amount / $grItem->received_quantity : 0);
-        $piItemUnitPrice = $piItem->unit_price - ($piItem->quantity > 0 ? $piItem->discount_amount / $piItem->quantity : 0);
-        $priceDifference = $piItemUnitPrice - $grItemUnitPrice;
-        if ($priceDifference != 0 || $costAmount != 0) {
-            $unitCost = $grItem->unit_cost + $priceDifference + $costAmount - $discountAmount;
+        $grItemIDs = $piItems->pluck('goods_receipt_item_id')->toArray();
+        $oldBatches = ProductBatch::where('company_id', $pi->company_id)
+            ->where('warehouse_id', $pi->warehouse_id)
+            ->whereIn('goods_receipt_item_id', $grItemIDs)
+            ->get();
+        
+        $oldInventoryValue = 0;
+        foreach ($oldBatches as $batch) {
+            $oldInventoryValue += $batch->quantity * $batch->unit_cost;
+        }
+        $valueDifference = $newInventoryValue - $oldInventoryValue;
 
-            $batch = ProductBatch::where('company_id', $pi->company_id)
-                ->where('product_id', $piItem->product_id)
-                ->where('warehouse_id', $pi->warehouse_id)
-                ->where('goods_receipt_item_id', $grItem->id)
-                ->first();
-            $batch?->update(['unit_cost' => $unitCost]);
+        foreach ($oldBatches as $batch) {
+            $ratio = $batch->quantity / $totalQty;
+            $adjustment = ($valueDifference * $ratio) / $batch->quantity;
+            $unitCost = $batch->unit_cost + $adjustment;
+            $batch->update(['unit_cost' => $unitCost]);
 
-            $avgUnitCost = $this->recalculateMovingAverageCost(companyID: $pi->company_id, productID: $batch->product_id, warehouseID: $batch->warehouse_id);
-
-            $latestTransaction = InventoryTransaction::where('company_id', $pi->company_id)
+            $latestTransaction = InventoryTransaction::where('company_id', $batch->company_id)
                 ->where('product_id', $batch->product_id)
                 ->where('warehouse_id', $batch->warehouse_id)
                 ->orderByDesc('transaction_date')
@@ -94,18 +97,20 @@ class InventoryService
                 'warehouse_id' => $batch->warehouse_id,
                 'product_id' => $batch->product_id,
                 'product_batch_id' => $batch->id,
-                'type' => 'cost_adjustment',
+                'type' => InventoryTransactionTypeEnum::COST_ADJUSTMENT,
                 'direction' => 0,
                 'quantity' => 0,
-                'unit_cost' => $avgUnitCost,
+                'unit_cost' => $unitCost,
                 'total_cost' => 0,
                 'stock_before' => $latestTransaction ? $latestTransaction->stock_after : 0,
                 'stock_after' => $latestTransaction ? $latestTransaction->stock_after : 0,
                 'reference_type' => PurchaseInvoiceItem::class,
-                'reference_id' => $piItem->id,
+                'reference_id' => null, // You can set this to a relevant ID if needed
                 'transaction_date' => now(),
-                'note' => 'Penyesuaian Harga Unit dari PI #' . $piItem->purchase_invoice_number,
+                'note' => 'Penyesuaian HPP dari PI #' . $pi->number,
             ]);
+
+            $this->recalculateMovingAverageCost(companyID: $batch->company_id, productID: $batch->product_id, warehouseID: $batch->warehouse_id);
         }
     }
 
@@ -118,72 +123,6 @@ class InventoryService
             ->where('product_id', $productId)
             ->where('warehouse_id', $warehouseId)
             ->decrement('quantity', $quantity);
-    }
-
-    /**
-     * Update a batch's unit_cost after a Purchase Invoice adjusts the price or adds landed costs,
-     * then recalculate the WAC and propagate it to all batches for that product+warehouse.
-     */
-    public function adjustBatchUnitCost(ProductBatch $batch, float $newUnitCost): void
-    {
-        // Set the PI-corrected cost on this specific batch before WAC is recomputed
-        $batch->update(['unit_cost' => $newUnitCost]);
-
-        // Recalculate WAC from all batches (including the updated one) and propagate to all
-        $this->recalculateAVGUnitCost($batch->company_id, $batch->product_id, $batch->warehouse_id);
-    }
-
-    /**
-     * Recompute WAC from all product_batches for a given product+warehouse,
-     * update every batch's unit_cost to the new average,
-     * and upsert the result into product_stocks.
-     */
-    public function recalculateAVGUnitCost(int $companyId, int $productId, int $warehouseId): void
-    {
-        $aggregate = ProductBatch::where('company_id', $companyId)
-            ->where('product_id', $productId)
-            ->where('warehouse_id', $warehouseId)
-            ->selectRaw('SUM(quantity) as total_quantity, SUM(reserved_quantity) as total_reserved, SUM(quantity * unit_cost) as total_value')
-            ->first();
-
-        $totalQty      = (float) ($aggregate->total_quantity ?? 0);
-        $totalReserved = (float) ($aggregate->total_reserved ?? 0);
-        $totalValue    = (float) ($aggregate->total_value ?? 0);
-        $avgUnitCost   = $totalQty > 0 ? $totalValue / $totalQty : 0;
-
-        // Propagate the new average back to every batch for this product+warehouse
-        ProductBatch::where('company_id', $companyId)
-            ->where('product_id', $productId)
-            ->where('warehouse_id', $warehouseId)
-            ->update(['unit_cost' => $avgUnitCost]);
-
-        // Also update the corresponding purchase inventory transactions
-        $batchIds = ProductBatch::where('company_id', $companyId)
-            ->where('product_id', $productId)
-            ->where('warehouse_id', $warehouseId)
-            ->pluck('id');
-
-        InventoryTransaction::whereIn('product_batch_id', $batchIds)
-            ->where('type', 'purchase')
-            ->each(function (InventoryTransaction $tx) use ($avgUnitCost) {
-                $tx->update([
-                    'unit_cost'  => $avgUnitCost,
-                    'total_cost' => $avgUnitCost * $tx->quantity,
-                ]);
-            });
-
-        ProductStock::updateOrCreate(
-            [
-                'company_id'   => $companyId,
-                'product_id'   => $productId,
-                'warehouse_id' => $warehouseId,
-            ],
-            [
-                'quantity'          => $totalQty,
-                'reserved_quantity' => $totalReserved,
-                'average_unit_cost' => $avgUnitCost,
-            ]
-        );
     }
 
     private function insertInventoryTransaction(GoodsReceipt $goodsReceipt, GoodsReceiptItem $goodsReceiptItem, ProductBatch $batch): void
@@ -231,13 +170,6 @@ class InventoryService
         }
 
         $avgUnitCost = $totalQty > 0 ? $totalUnitCost / $totalQty : 0;
-
-        // ProductStock::where('company_id', $companyID)
-        //     ->where('product_id', $productID)
-        //     ->where('warehouse_id', $warehouseID)
-        //     ->update([
-        //         'average_unit_cost' => $avgUnitCost,
-        //     ]);
 
         ProductStock::updateOrCreate(
             [

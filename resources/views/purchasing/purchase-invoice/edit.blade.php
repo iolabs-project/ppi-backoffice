@@ -2,6 +2,7 @@
 @section('content')
     <script>
         const purchaseInvoice = @json($purchaseInvoice);
+        console.log('purchaseInvoice', purchaseInvoice);
         const remainingGRItems = @json($remainingGRItems);
         console.log('purchaseInvoice', purchaseInvoice);
 
@@ -37,7 +38,7 @@
                         product_id: item.product_id,
                         code: item.product.code,
                         name: item.product.name,
-                        batch_number: item.batch_number,
+                        batch_number: item.goods_receipt_item ? item.goods_receipt_item.batch_number : null,
                         unit: item.product.unit.symbol,
                         quantity: item.quantity,
                         unit_price: item.unit_price,
