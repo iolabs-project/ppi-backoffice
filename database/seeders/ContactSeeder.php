@@ -74,6 +74,21 @@ class ContactSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'id' => 5,
+                'company_id' => 1,
+                'code' => 'CUST-002',
+                'name' => 'PT. Customer Contoh 2',
+                'email' => 'customer.contoh2@example.com',
+                'phone' => '081234567893',
+                'address' => 'Jl. Contoh Alamat No. 126, Jakarta',
+                'transportation_cost' => 250000,
+                'is_customer' => true,
+                'is_supplier' => false,
+                'is_employee' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }
