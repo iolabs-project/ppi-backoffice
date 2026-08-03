@@ -37,7 +37,7 @@
                         discount_percentage: null,
                         discount_amount: null,
                         total_amount: null,
-                        avg_unit_cost: null,
+                        average_unit_cost: null,
                     }],
                 },
                 // Customer Options
@@ -73,12 +73,50 @@
                         discount_percentage: null,
                         discount_amount: null,
                         total_amount: null,
-                        avg_unit_cost: null,
+                        average_unit_cost: null,
                     });
                 },
                 deleteInventory(index) {
                     this.formData.details.splice(index, 1);
                     this.recalculate();
+                },
+                selectCustomer(customer) {
+                    // console.log('Selected customer:', customer);
+                    if (this.customerSelected && this.customerSelected.id === customer.id) {
+                        return;
+                    }
+                    this.customerSelected = customer;
+                    this.formData.customer_id = customer.id;
+
+                    if (customer.transportation_cost > 0 && this.formData.charges.length === 0) {
+                        this.formData.charges.push({
+                            account_id: null,
+                            description: 'Biaya Transportasi',
+                            amount: customer.transportation_cost,
+                        });
+                    } else if (this.formData.charges.length > 0) {
+                        Swal.fire({
+                            title: 'Perubahan Customer',
+                            text: 'Customer diganti. Apakah Anda ingin menghapus biaya-biaya sebelumnya?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, hapus biaya',
+                            cancelButtonText: 'Batal',
+                            reverseButtons: true,
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                this.formData.charges = [];
+
+                                if (customer.transportation_cost > 0) {
+                                    this.formData.charges.push({
+                                        account_id: null,
+                                        description: 'Biaya Transportasi',
+                                        amount: customer.transportation_cost,
+                                    });
+                                }
+                            }
+                        });
+                    }
                 },
                 selectInventory(item, inventory) {
                     if (this.formData.details.some(d => d.product_id === inventory.product_id)) {
@@ -95,7 +133,7 @@
                     item.code = inventory.product.code;
                     item.unit = inventory.product.unit.symbol;
                     item.available_stock = inventory.available_quantity;
-                    item.avg_unit_cost = inventory.avg_unit_cost;
+                    item.average_unit_cost = inventory.average_unit_cost;
                 },
                 addCharge() {
                     this.formData.charges.push({
@@ -130,20 +168,18 @@
                 chargesTotal() {
                     return this.formData.charges.reduce((sum, c) => sum + this.n(c.amount), 0);
                 },
-                costsTotal() {
-                    return this.formData.costs.reduce((sum, c) => sum + this.n(c.amount), 0);
-                },
                 estimatedCOGS() {
-                    return this.formData.details.reduce((sum, d) => sum + (this.n(d.quantity) * (Number(d.avg_unit_cost) || 0)), 0);
+                    return this.formData.details.reduce((sum, d) => sum + (this.n(d.quantity) * (Number(d
+                        .average_unit_cost) || 0)), 0);
                 },
                 estimatedRevenue() {
                     return this.n(this.formData.subtotal) - this.n(this.formData.discount_amount) + this.chargesTotal();
                 },
                 estimatedCost() {
-                    return this.estimatedCOGS() + this.costsTotal();
+                    return this.formData.costs.reduce((sum, c) => sum + this.n(c.amount), 0);
                 },
                 estimatedProfit() {
-                    return this.estimatedRevenue() - this.estimatedCost();
+                    return this.estimatedRevenue() - this.estimatedCOGS() - this.estimatedCost();
                 },
                 estimatedMargin() {
                     const revenue = this.estimatedRevenue();
@@ -164,7 +200,7 @@
                                 discount_percentage: null,
                                 discount_amount: null,
                                 total_amount: null,
-                                avg_unit_cost: null,
+                                average_unit_cost: null,
                             }];
                         }
                         this.formData.warehouse_id = this.warehouseSelected.id;
@@ -270,10 +306,16 @@
                     }));
                     body.charges = body.charges
                         .filter(c => c.account_id && this.n(c.amount) > 0)
-                        .map(c => ({ ...c, amount: this.n(c.amount) }));
+                        .map(c => ({
+                            ...c,
+                            amount: this.n(c.amount)
+                        }));
                     body.costs = body.costs
                         .filter(c => c.account_id && this.n(c.amount) > 0)
-                        .map(c => ({ ...c, amount: this.n(c.amount) }));
+                        .map(c => ({
+                            ...c,
+                            amount: this.n(c.amount)
+                        }));
                     return body;
                 },
 
@@ -336,9 +378,9 @@
                         hasValue="customerSelected" placeholder="Cari customer...">
                         <template x-for="c in customers.filter(c => !q || c.name.toLowerCase().includes(q.toLowerCase()))"
                             :key="c.id">
-                            <div class="dropdown-item"
-                                @click="customerSelected=c; formData.customer_id=c.id; open=false; q=''">
-                                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                            <div class="dropdown-item" @click="selectCustomer(c); open=false; q=''">
+                                <div class="avatar"
+                                    style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
                                     x-text="initials(c.name)"></div>
                                 <span x-text="c.name"></span>
                             </div>
@@ -375,7 +417,8 @@
                             :key="g.id">
                             <div class="dropdown-item"
                                 @click="warehouseSelected=g; handleWarehouseChange(); open=false; q=''">
-                                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                                <div class="avatar"
+                                    style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
                                     x-text="initials(g.name)"></div>
                                 <span x-text="g.name"></span>
                             </div>
@@ -389,11 +432,13 @@
                 <x-misc.field label="Sales">
                     <x-misc.select display="salesPersonSelected ? salesPersonSelected.name : 'Pilih Sales'"
                         hasValue="salesPersonSelected" placeholder="Cari sales...">
-                        <template x-for="s in salesPersons.filter(s => !q || s.name.toLowerCase().includes(q.toLowerCase()))"
+                        <template
+                            x-for="s in salesPersons.filter(s => !q || s.name.toLowerCase().includes(q.toLowerCase()))"
                             :key="s.id">
                             <div class="dropdown-item"
                                 @click="salesPersonSelected=s; formData.sales_person_id=s.id; open=false; q=''">
-                                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                                <div class="avatar"
+                                    style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
                                     x-text="initials(s.name)"></div>
                                 <span x-text="s.name"></span>
                             </div>
@@ -408,7 +453,8 @@
                 <x-misc.field label="Termin Pembayaran" :required="true">
                     <x-misc.select display="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"
                         hasValue="paymentTermSelected" placeholder="Cari termin...">
-                        <template x-for="t in paymentTerms.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))"
+                        <template
+                            x-for="t in paymentTerms.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))"
                             :key="t.id">
                             <div class="dropdown-item"
                                 @click="paymentTermSelected=t; handlePaymentTermChange(); open=false; q=''">
@@ -464,7 +510,8 @@
                                             hasValue="it.product_id" placeholder="Cari produk..." min-width="320px"
                                             height="32px">
                                             <template x-for="p in availableInventories(q)" :key="p.id">
-                                                <div class="dropdown-item" @click="selectInventory(it, p);open=false;q=''">
+                                                <div class="dropdown-item"
+                                                    @click="selectInventory(it, p);open=false;q=''">
                                                     <div style="flex:1; min-width:0;">
                                                         <div style="font-size:13px;" x-text="p.product.name"></div>
                                                         <div class="mono" style="font-size:11px; color:var(--ink-4);"
@@ -604,7 +651,8 @@
 
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Biaya Tambahan (Customer)</span>
-                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(chargesTotal())"></span>
+                                <span class="num order-summary__val"
+                                    x-text="NumberUtils.formatNumericIntoMask(chargesTotal())"></span>
                             </div>
 
 
@@ -640,8 +688,9 @@
                                         {{-- <span class="input-with-prefix__label">- Rp</span> --}}
                                         <input
                                             class="input num order-summary__cost-input order-summary__amount-display--negative"
-                                            x-model="formData.down_payment_amount" x-mask:dynamic="$money($input, '.',',')"
-                                            @input="recalculate()" placeholder="0" />
+                                            x-model="formData.down_payment_amount"
+                                            x-mask:dynamic="$money($input, '.',',')" @input="recalculate()"
+                                            placeholder="0" />
                                     </div>
                                 </div>
                             </div>
@@ -655,26 +704,38 @@
                             x-text="'Rp ' + (formData.total_amount ? NumberUtils.formatNumericIntoMask(formData.total_amount) : '0')"></span>
                     </div>
 
-                    <div style="margin-top:12px; padding:12px; border-radius:8px; background:var(--bg-3); border:1px solid var(--line-2);">
-                        <div class="display" style="font-size:12px; font-weight:600; margin-bottom:8px;">Profit Preview</div>
+                    <div
+                        style="margin-top:12px; padding:12px; border-radius:8px; background:var(--bg-3); border:1px solid var(--line-2);">
+                        <div class="display" style="font-size:12px; font-weight:600; margin-bottom:8px;">Profit Preview
+                        </div>
                         <div style="display:flex; justify-content:space-between; font-size:12px; padding:3px 0;">
                             <span style="color:var(--ink-3);">Estimasi Revenue</span>
-                            <span class="num" x-text="NumberUtils.formatNumericIntoMask(Math.round(estimatedRevenue()))"></span>
+                            <span class="num"
+                                x-text="NumberUtils.formatNumericIntoMask(Math.round(estimatedRevenue()))"></span>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:12px; padding:3px 0;">
-                            <span style="color:var(--ink-3);">Estimasi Total Cost</span>
-                            <span class="num" x-text="NumberUtils.formatNumericIntoMask(Math.round(estimatedCost()))"></span>
+                            <span style="color:var(--ink-3);">Estimasi HPP (Customer)</span>
+                            <span class="num"
+                                x-text="NumberUtils.formatNumericIntoMask(Math.round(estimatedCOGS()))"></span>
                         </div>
-                        <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; padding-top:6px; margin-top:4px; border-top:1px solid var(--line-2);">
+                        <div style="display:flex; justify-content:space-between; font-size:12px; padding:3px 0;">
+                            <span style="color:var(--ink-3);">Estimasi Cost (Internal)</span>
+                            <span class="num"
+                                x-text="NumberUtils.formatNumericIntoMask(Math.round(estimatedCost()))"></span>
+                        </div>
+                        <div
+                            style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; padding-top:6px; margin-top:4px; border-top:1px solid var(--line-2);">
                             <span>Estimasi Profit</span>
-                            <span class="num" style="color:var(--accent);" x-text="NumberUtils.formatNumericIntoMask(Math.round(estimatedProfit()))"></span>
+                            <span class="num" style="color:var(--accent);"
+                                x-text="NumberUtils.formatNumericIntoMask(Math.round(estimatedProfit()))"></span>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:12px; padding-top:2px;">
                             <span style="color:var(--ink-3);">Margin</span>
                             <span class="num" x-text="estimatedMargin().toFixed(2) + '%'"></span>
                         </div>
                         <div style="font-size:10px; color:var(--ink-4); margin-top:6px;">
-                            Profit preview adalah estimasi. Nilai akan berubah sesuai item, biaya tambahan, atau biaya internal.
+                            Profit preview adalah estimasi. Nilai akan berubah sesuai item, biaya tambahan, atau biaya
+                            internal.
                         </div>
                     </div>
                 </div>
@@ -682,7 +743,6 @@
         </div>
 
         <div class="order-form-footer">
-            <a href="{{ route('sales.sales_orders.index') }}" class="btn btn-ghost">Batal</a>
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
             <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check"
                     :size="14" />Simpan

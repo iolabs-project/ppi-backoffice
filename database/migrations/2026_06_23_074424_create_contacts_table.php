@@ -25,6 +25,7 @@ return new class extends Migration
             $table->text('note')->nullable();
             $table->foreignId('receivable_account_id')->nullable()->constrained('chart_of_accounts')->onDelete('set null');
             $table->foreignId('payable_account_id')->nullable()->constrained('chart_of_accounts')->onDelete('set null');
+            $table->decimal('transportation_cost', 18, 4)->default(0);
             $table->boolean('is_customer')->default(false);
             $table->boolean('is_supplier')->default(false);
             $table->boolean('is_employee')->default(false);

@@ -15,6 +15,27 @@ class ProductStock extends Model
         'average_unit_cost',
     ];
 
+    protected $casts = [
+        'quantity' => 'double',
+        'available_quantity' => 'double',
+        'reserved_quantity' => 'double',
+        'average_unit_cost' => 'double',
+    ];
+
+    public function getAvailableQuantityAttribute()
+    {
+        if (!isset($this->attributes['quantity']) || !isset($this->attributes['reserved_quantity'])) {
+            return null;
+        }
+
+        return $this->attributes['quantity'] - $this->attributes['reserved_quantity'];
+    }
+
+
+    protected $appends = [
+        'available_quantity',
+    ];
+
     public function product()
     {
         return $this->belongsTo(Product::class);

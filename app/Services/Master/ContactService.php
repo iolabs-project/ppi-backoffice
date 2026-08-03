@@ -59,7 +59,7 @@ class ContactService
         if ($type) {
             switch ($type) {
                 case 'customer':
-                    $data->where('is_customer', true);
+                    $data->addSelect('transportation_cost')->where('is_customer', true);
                     break;
                 case 'supplier':
                     $data->where('is_supplier', true);

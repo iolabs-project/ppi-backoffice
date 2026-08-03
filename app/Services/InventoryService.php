@@ -25,28 +25,47 @@ class InventoryService
     {
         $this->journalService = $journalService;
     }
-    public function fetchGlobalInventoryStock()
+    public function fetchGlobalInventoryStock(int $companyID): Collection
     {
-        $data = ProductBatch::with([
+        $data = ProductStock::with([
             'product:id,code,name,unit_id',
             'product.unit:id,name,symbol',
+            'warehouse:id,name',
         ])
             ->select(
                 'company_id',
                 'product_id',
                 'warehouse_id',
-                // 'quantity',
-                // 'reserved_quantity',
-                DB::raw('SUM(quantity) as quantity'),
-                DB::raw('SUM(reserved_quantity) as reserved_quantity'),
-                DB::raw('SUM(quantity * unit_cost) / NULLIF(SUM(quantity), 0) as avg_unit_cost'),
+                'quantity',
+                'reserved_quantity',
+                'average_unit_cost'
             )
-            ->where('company_id', config('context.selected_company_id'))
-            ->groupBy('product_id', 'company_id', 'warehouse_id')
-            ->havingRaw('quantity - reserved_quantity > 0')
+            ->where('company_id', $companyID)
+            ->whereRaw('quantity - reserved_quantity > 0')
             ->get();
 
         return $data;
+    }
+
+    public function fetchInventoryBatches(int $companyID): Collection
+    {
+        return ProductBatch::with([
+            'product:id,code,name,unit_id',
+            'product.unit:id,name,symbol',
+            'warehouse:id,name',
+        ])
+            ->select(
+                'company_id',
+                'warehouse_id',
+                'product_id',
+                'batch_number',
+                'quantity',
+                'reserved_quantity',
+                'unit_cost'
+            )
+            ->where('company_id', $companyID)
+            ->whereRaw('quantity - reserved_quantity > 0')
+            ->get();
     }
 
     public function receiveInventoryFromGR(GoodsReceipt $goodsReceipt, GoodsReceiptItem $goodsReceiptItem): ProductBatch
