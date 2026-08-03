@@ -30,8 +30,8 @@
         <div class="filter-pills">
             @php
                 $statuses = [
-                    ['id' => 'semua',   'label' => 'Semua'],
-                    ['id' => 'draft',   'label' => 'Draft'],
+                    ['id' => 'semua', 'label' => 'Semua'],
+                    ['id' => 'draft', 'label' => 'Draft'],
                     ['id' => 'selesai', 'label' => 'Selesai'],
                 ];
             @endphp
@@ -80,8 +80,7 @@
                             <td><x-misc.status-badge :status="$s['status']" /></td>
                             <td class="table-action-col" x-on:click.stop>
                                 <div x-data="{ open: false }" class="action-menu">
-                                    <button
-                                        class="btn btn-ghost btn-icon btn-sm btn--borderless"
+                                    <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
                                         x-on:click.stop="
                                             let wasOpen = open;
                                             $dispatch('close-menus');
@@ -94,38 +93,49 @@
                                         ">
                                         <x-misc.icon name="more" :size="15" />
                                     </button>
-                                    <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false" x-on:click.away="open = false" class="action-menu__panel">
+                                    <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
+                                        x-on:click.away="open = false" class="action-menu__panel">
                                         @if ($s['status'] === 'draft')
-                                        <a href="{{ route('penjualan.edit', $s['id']) }}" class="action-menu__item">
-                                            <x-misc.icon name="edit" :size="14" stroke="var(--ink-3)" />Edit Draft
-                                        </a>
-                                        <button class="action-menu__item">
-                                            <x-misc.icon name="check" :size="14" stroke="var(--ink-3)" />Konfirmasi SO
-                                        </button>
-                                        <button class="action-menu__item">
-                                            <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Pratinjau
-                                        </button>
-                                        <div class="action-menu__divider"></div>
-                                        <button class="action-menu__item action-menu__item--danger">
-                                            <x-misc.icon name="trash" :size="14" stroke="currentColor" />Hapus Draft
-                                        </button>
+                                            <a href="{{ route('penjualan.edit', $s['id']) }}" class="action-menu__item">
+                                                <x-misc.icon name="edit" :size="14" stroke="var(--ink-3)" />Edit
+                                                Draft
+                                            </a>
+                                            <button class="action-menu__item">
+                                                <x-misc.icon name="check" :size="14"
+                                                    stroke="var(--ink-3)" />Konfirmasi SO
+                                            </button>
+                                            <button class="action-menu__item">
+                                                <x-misc.icon name="print" :size="14"
+                                                    stroke="var(--ink-3)" />Pratinjau
+                                            </button>
+                                            <div class="action-menu__divider"></div>
+                                            <button class="action-menu__item action-menu__item--danger">
+                                                <x-misc.icon name="trash" :size="14" stroke="currentColor" />Hapus
+                                                Draft
+                                            </button>
                                         @else
-                                        <a href="{{ route('penjualan.show', $s['id']) }}" class="action-menu__item">
-                                            <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail
-                                        </a>
-                                        <a href="{{ route('penjualan.pengiriman', $s['id']) }}" class="action-menu__item">
-                                            <x-misc.icon name="truck" :size="14" stroke="var(--ink-3)" />Buat Pengiriman
-                                        </a>
-                                        <button class="action-menu__item">
-                                            <x-misc.icon name="receipt" :size="14" stroke="var(--ink-3)" />Buat Tagihan
-                                        </button>
-                                        <button class="action-menu__item">
-                                            <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak SO
-                                        </button>
-                                        <div class="action-menu__divider"></div>
-                                        <button class="action-menu__item action-menu__item--danger">
-                                            <x-misc.icon name="x" :size="14" stroke="currentColor" />Batalkan SO
-                                        </button>
+                                            <a href="{{ route('penjualan.show', $s['id']) }}" class="action-menu__item">
+                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                                Detail
+                                            </a>
+                                            <a href="{{ route('penjualan.pengiriman', $s['id']) }}"
+                                                class="action-menu__item">
+                                                <x-misc.icon name="truck" :size="14" stroke="var(--ink-3)" />Buat
+                                                Pengiriman
+                                            </a>
+                                            <button class="action-menu__item">
+                                                <x-misc.icon name="receipt" :size="14" stroke="var(--ink-3)" />Buat
+                                                Tagihan
+                                            </button>
+                                            <button class="action-menu__item">
+                                                <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
+                                                SO
+                                            </button>
+                                            <div class="action-menu__divider"></div>
+                                            <button class="action-menu__item action-menu__item--danger">
+                                                <x-misc.icon name="x" :size="14"
+                                                    stroke="currentColor" />Batalkan SO
+                                            </button>
                                         @endif
                                     </div>
                                 </div>
@@ -146,9 +156,14 @@
                 </select>
             </div>
             <div class="pagination-info">
-                <span x-text="( (page-1)*perPage + 1 ) + '–' + Math.min(page*perPage, total) + ' dari ' + total"></span>
+                <template x-if="tableData.total === 0">
+                    <span x-text="'0 dari 0'"></span>
+                </template>
+                <template x-if="tableData.total > 0">
+                    <span
+                        x-text="( (page-1)*perPage + 1 ) + '-' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                </template>
             </div>
-
             <div class="pagination-controls">
                 <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong
                         x-text="Math.ceil(total/perPage)"></strong></div>

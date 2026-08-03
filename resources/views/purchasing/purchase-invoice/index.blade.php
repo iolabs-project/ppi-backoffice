@@ -66,7 +66,8 @@
                                 <td class="mono" style="font-weight:600;" x-text="row.purchase_order.number"></td>
                                 <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
-                                <td class="num" style="text-align:right;" x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
+                                <td class="num" style="text-align:right;"
+                                    x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
                                 <td><span class="mono" x-text="row.status"></span></td>
                                 <td class="table-action-col">
                                     <div x-data="{ open: false }" class="action-menu">
@@ -142,8 +143,13 @@
                 </select>
             </div>
             <div class="pagination-info">
-                <span
-                    x-text="( (page-1)*perPage + 1 ) + '–' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                <template x-if="tableData.total === 0">
+                    <span x-text="'0 dari 0'"></span>
+                </template>
+                <template x-if="tableData.total > 0">
+                    <span
+                        x-text="( (page-1)*perPage + 1 ) + '-' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                </template>
             </div>
             <div class="pagination-controls">
                 <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong

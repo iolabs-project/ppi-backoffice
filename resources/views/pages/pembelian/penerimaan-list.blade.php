@@ -6,7 +6,8 @@
         perPage: 10,
         perPageOptions: [10, 25, 50],
         total: {{ count($penerimaan) }},
-        setPerPage(n) { this.perPage = n; this.page = 1 },
+        setPerPage(n) { this.perPage = n;
+            this.page = 1 },
         prev() { if (this.page > 1) this.page-- },
         next() { if (this.page < Math.ceil(this.total / this.perPage)) this.page++ }
     }" class="order-page">
@@ -48,8 +49,8 @@
         <div class="filter-pills">
             @php
                 $statuses = [
-                    ['id' => 'semua',   'label' => 'Semua'],
-                    ['id' => 'draft',   'label' => 'Draft'],
+                    ['id' => 'semua', 'label' => 'Semua'],
+                    ['id' => 'draft', 'label' => 'Draft'],
                     ['id' => 'selesai', 'label' => 'Selesai'],
                 ];
             @endphp
@@ -88,7 +89,8 @@
                             <td class="mono table-id">{{ $d['id'] }}</td>
                             <td class="table-secondary">{{ $d['tanggal'] }}</td>
                             <td class="mono">
-                                <a href="{{ route('pembelian.show', $d['poRef']) }}" class="link orange-link">{{ $d['poRef'] }}</a>
+                                <a href="{{ route('pembelian.show', $d['poRef']) }}"
+                                    class="link orange-link">{{ $d['poRef'] }}</a>
                             </td>
                             <td>
                                 <div class="table-customer-row">
@@ -101,12 +103,13 @@
                                 {{ $d['qtySusut'] }} {{ $d['satuan'] }}
                             </td>
                             <td class="num table-numeric" style="color: #EA580C;">{{ fmt_rp($d['nilaiSusut']) }}</td>
-                            <td class="table-secondary" style="max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $d['keterangan'] }}</td>
+                            <td class="table-secondary"
+                                style="max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                {{ $d['keterangan'] }}</td>
                             <td><x-misc.status-badge :status="$d['status']" /></td>
                             <td class="table-action-col">
                                 <div x-data="{ open: false }" class="action-menu">
-                                    <button
-                                        class="btn btn-ghost btn-icon btn-sm btn--borderless"
+                                    <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
                                         x-on:click.stop="
                                             let wasOpen = open;
                                             $dispatch('close-menus');
@@ -119,26 +122,29 @@
                                         ">
                                         <x-misc.icon name="more" :size="15" />
                                     </button>
-                                    <div x-ref="panel" x-show="open" x-cloak
-                                         x-on:close-menus.window="open = false"
-                                         x-on:click.away="open = false"
-                                         class="action-menu__panel">
+                                    <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
+                                        x-on:click.away="open = false" class="action-menu__panel">
                                         <a href="{{ route('pembelian.show', $d['poRef']) }}" class="action-menu__item">
-                                            <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail PO
+                                            <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                            Detail PO
                                         </a>
                                         <button class="action-menu__item">
-                                            <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak Berita Acara
+                                            <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
+                                            Berita Acara
                                         </button>
                                         <button class="action-menu__item">
-                                            <x-misc.icon name="edit" :size="14" stroke="var(--ink-3)" />Edit Catatan
+                                            <x-misc.icon name="edit" :size="14" stroke="var(--ink-3)" />Edit
+                                            Catatan
                                         </button>
                                         <div class="action-menu__divider"></div>
                                         <button class="action-menu__item">
-                                            <x-misc.icon name="check" :size="14" stroke="var(--ink-3)" />Tandai Selesai
+                                            <x-misc.icon name="check" :size="14" stroke="var(--ink-3)" />Tandai
+                                            Selesai
                                         </button>
                                         <div class="action-menu__divider"></div>
                                         <button class="action-menu__item action-menu__item--danger">
-                                            <x-misc.icon name="x" :size="14" stroke="currentColor" />Hapus Catatan
+                                            <x-misc.icon name="x" :size="14" stroke="currentColor" />Hapus
+                                            Catatan
                                         </button>
                                     </div>
                                 </div>
@@ -159,7 +165,13 @@
                 </select>
             </div>
             <div class="pagination-info">
-                <span x-text="( (page-1)*perPage + 1 ) + '–' + Math.min(page*perPage, total) + ' dari ' + total"></span>
+                <template x-if="tableData.total === 0">
+                    <span x-text="'0 dari 0'"></span>
+                </template>
+                <template x-if="tableData.total > 0">
+                    <span
+                        x-text="( (page-1)*perPage + 1 ) + '-' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                </template>
             </div>
             <div class="pagination-controls">
                 <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong

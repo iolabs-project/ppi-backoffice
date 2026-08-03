@@ -138,8 +138,8 @@
                                             x-on:click.away="open = false" class="action-menu__panel">
                                             <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('purchasings.purchase_orders.edit', row.id)"
-                                                        @click.stop class="action-menu__item">
+                                                    <a :href="route('purchasings.purchase_orders.edit', row.id)" @click.stop
+                                                        class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />
                                                         Edit Draft
@@ -154,8 +154,8 @@
                                             </template>
                                             <template x-if="row.status !== '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('purchasings.purchase_orders.show', row.id)"
-                                                        @click.stop class="action-menu__item">
+                                                    <a :href="route('purchasings.purchase_orders.show', row.id)" @click.stop
+                                                        class="action-menu__item">
                                                         <x-misc.icon name="eye" :size="14"
                                                             stroke="var(--ink-3)" />Lihat
                                                         Detail
@@ -220,8 +220,13 @@
                 </select>
             </div>
             <div class="pagination-info">
-                <span
-                    x-text="(tableData.total === 0 ? 0 : ((tableData.current_page - 1) * tableData.per_page + 1)) + '–' + (tableData.total === 0 ? 0 : Math.min(tableData.current_page * tableData.per_page, tableData.total)) + ' dari ' + tableData.total"></span>
+                <template x-if="tableData.total === 0">
+                    <span x-text="'0 dari 0'"></span>
+                </template>
+                <template x-if="tableData.total > 0">
+                    <span
+                        x-text="( (page-1)*perPage + 1 ) + '-' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                </template>
             </div>
             <div class="pagination-controls">
                 <div class="pagination-page-info">Halaman <strong x-text="tableData.current_page"></strong> / <strong

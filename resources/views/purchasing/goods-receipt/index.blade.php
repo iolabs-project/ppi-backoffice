@@ -89,11 +89,13 @@
                                             x-on:click.away="open = false" class="action-menu__panel">
                                             <a :href="route('purchasings.goods_receipts.show', row.id)" @click.stop
                                                 class="action-menu__item">
-                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail
+                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                                Detail
                                             </a>
-                                            <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)" @click.stop
-                                                class="action-menu__item">
-                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat PO
+                                            <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)"
+                                                @click.stop class="action-menu__item">
+                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                                PO
                                             </a>
                                             <button class="action-menu__item" @click.stop>
                                                 <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
@@ -108,7 +110,8 @@
                                                         Penerimaan
                                                     </a>
                                                     <div class="action-menu__divider"></div>
-                                                    <button class="action-menu__item action-menu__item--danger" @click.stop="handleCancel(row.id)">
+                                                    <button class="action-menu__item action-menu__item--danger"
+                                                        @click.stop="handleCancel(row.id)">
                                                         <x-misc.icon name="x" :size="14"
                                                             stroke="currentColor" />Batalkan
                                                         Penerimaan
@@ -145,8 +148,13 @@
                 </select>
             </div>
             <div class="pagination-info">
-                <span
-                    x-text="( (page-1)*perPage + 1 ) + '–' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                <template x-if="tableData.total === 0">
+                    <span x-text="'0 dari 0'"></span>
+                </template>
+                <template x-if="tableData.total > 0">
+                    <span
+                        x-text="( (page-1)*perPage + 1 ) + '-' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                </template>
             </div>
             <div class="pagination-controls">
                 <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong
@@ -257,7 +265,8 @@
                                 await this.fetchData();
                             } catch (error) {
                                 Swal.close();
-                                let message = 'Terjadi kesalahan saat membatalkan Penerimaan Barang. Silakan coba lagi.';
+                                let message =
+                                    'Terjadi kesalahan saat membatalkan Penerimaan Barang. Silakan coba lagi.';
                                 if (error.response?.data?.message) {
                                     message = error.response.data.message;
                                 }

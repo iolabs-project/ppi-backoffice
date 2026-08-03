@@ -274,28 +274,33 @@
             </table>
 
             <div class="table-pagination">
-            <div class="pagination-actions">
-                <div class="pagination-label">Per</div>
-                <select x-model.number="perPage" x-on:change="page = 1" class="btn btn-ghost btn-sm pagination-select">
-                    <template x-for="n in perPageOptions" :key="n">
-                        <option :value="n" x-text="n"></option>
+                <div class="pagination-actions">
+                    <div class="pagination-label">Per</div>
+                    <select x-model.number="perPage" x-on:change="page = 1" class="btn btn-ghost btn-sm pagination-select">
+                        <template x-for="n in perPageOptions" :key="n">
+                            <option :value="n" x-text="n"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="pagination-info">
+                    <template x-if="tableData.total === 0">
+                        <span x-text="'0 dari 0'"></span>
                     </template>
-                </select>
+                    <template x-if="tableData.total > 0">
+                        <span
+                            x-text="( (page-1)*perPage + 1 ) + '-' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                    </template>
+                </div>
+                <div class="pagination-controls">
+                    <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong
+                            x-text="Math.ceil(tableData.total/tableData.per_page)"></strong></div>
+                    <button class="btn btn-ghost btn-sm" x-on:click="prev()" :disabled="page <= 1"><x-misc.icon
+                            name="chev-left" :size="13" /> Prev</button>
+                    <button class="btn btn-ghost btn-sm" x-on:click="next()"
+                        :disabled="page >= Math.ceil(tableData.total / tableData.per_page)">Next
+                        <x-misc.icon name="chev-right" :size="13" /></button>
+                </div>
             </div>
-            <div class="pagination-info">
-                <span
-                    x-text="( (page-1)*perPage + 1 ) + '–' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
-            </div>
-            <div class="pagination-controls">
-                <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong
-                        x-text="Math.ceil(tableData.total/tableData.per_page)"></strong></div>
-                <button class="btn btn-ghost btn-sm" x-on:click="prev()" :disabled="page <= 1"><x-misc.icon
-                        name="chev-left" :size="13" /> Prev</button>
-                <button class="btn btn-ghost btn-sm" x-on:click="next()"
-                    :disabled="page >= Math.ceil(tableData.total / tableData.per_page)">Next
-                    <x-misc.icon name="chev-right" :size="13" /></button>
-            </div>
-        </div>
         </div>
 
     </div>

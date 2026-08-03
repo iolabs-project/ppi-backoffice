@@ -28,12 +28,15 @@
             </button>
         </div>
 
-        <div class="card" x-show="showFilters" x-cloak style="padding:12px 16px; margin-bottom:12px; display:flex; gap:12px; align-items:flex-end;">
+        <div class="card" x-show="showFilters" x-cloak
+            style="padding:12px 16px; margin-bottom:12px; display:flex; gap:12px; align-items:flex-end;">
             <x-misc.field label="Dari Tanggal">
-                <input type="date" class="input" style="height:32px;" x-model="dateFrom" x-on:change="page = 1; fetchData()" />
+                <input type="date" class="input" style="height:32px;" x-model="dateFrom"
+                    x-on:change="page = 1; fetchData()" />
             </x-misc.field>
             <x-misc.field label="Sampai Tanggal">
-                <input type="date" class="input" style="height:32px;" x-model="dateTo" x-on:change="page = 1; fetchData()" />
+                <input type="date" class="input" style="height:32px;" x-model="dateTo"
+                    x-on:change="page = 1; fetchData()" />
             </x-misc.field>
             <button class="btn btn-ghost btn-sm" @click="dateFrom = ''; dateTo = ''; page = 1; fetchData()">
                 <x-misc.icon name="x" :size="13" />Reset
@@ -58,26 +61,32 @@
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...</td>
+                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...
+                            </td>
                         </tr>
                     </template>
 
                     <template x-if="!loading && tableData.data.length === 0">
                         <tr>
-                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">Tidak ada data</td>
+                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">Tidak ada data
+                            </td>
                         </tr>
                     </template>
 
                     <template x-if="!loading">
                         <template x-for="(row, i) in tableData.data" :key="row.id">
-                            <tr class="row-tap" @click="window.location = route('finances.account_receivables.show', row.id)">
-                                <td class="mono" style="color:var(--ink-4);" x-text="(tableData.current_page - 1) * tableData.per_page + i + 1"></td>
+                            <tr class="row-tap"
+                                @click="window.location = route('finances.account_receivables.show', row.id)">
+                                <td class="mono" style="color:var(--ink-4);"
+                                    x-text="(tableData.current_page - 1) * tableData.per_page + i + 1"></td>
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
                                 <td style="font-weight:500;" x-text="row.customer?.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.invoice_date ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
-                                <td class="num" style="text-align:right;" x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
-                                <td class="num" style="text-align:right; font-weight:600;" x-text="NumberUtils.formatNumericIntoMask(row.remaining_amount)"></td>
+                                <td class="num" style="text-align:right;"
+                                    x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
+                                <td class="num" style="text-align:right; font-weight:600;"
+                                    x-text="NumberUtils.formatNumericIntoMask(row.remaining_amount)"></td>
                                 <td>
                                     <span :class="statusChip(row.display_status).chip">
                                         <span :class="statusChip(row.display_status).dot"></span>
@@ -85,7 +94,8 @@
                                     </span>
                                 </td>
                                 <td x-on:click.stop>
-                                    <a :href="route('finances.account_receivables.show', row.id)" class="btn btn-ghost btn-icon btn-sm" style="border:none;">
+                                    <a :href="route('finances.account_receivables.show', row.id)"
+                                        class="btn btn-ghost btn-icon btn-sm" style="border:none;">
                                         <x-misc.icon name="eye" :size="15" stroke="var(--ink-3)" />
                                     </a>
                                 </td>
@@ -99,17 +109,25 @@
         <div class="table-pagination">
             <div class="pagination-actions">
                 <div class="pagination-label">Per</div>
-                <select x-model.number="perPage" x-on:change="page = 1; fetchData()" class="btn btn-ghost btn-sm pagination-select">
+                <select x-model.number="perPage" x-on:change="page = 1; fetchData()"
+                    class="btn btn-ghost btn-sm pagination-select">
                     <template x-for="n in perPageOptions" :key="n">
                         <option :value="n" x-text="n" x-bind:selected="n === perPage"></option>
                     </template>
                 </select>
             </div>
             <div class="pagination-info">
-                <span x-text="(tableData.total === 0 ? 0 : ((tableData.current_page - 1) * tableData.per_page + 1)) + '–' + (tableData.total === 0 ? 0 : Math.min(tableData.current_page * tableData.per_page, tableData.total)) + ' dari ' + tableData.total"></span>
+                <template x-if="tableData.total === 0">
+                    <span x-text="'0 dari 0'"></span>
+                </template>
+                <template x-if="tableData.total > 0">
+                    <span
+                        x-text="( (page-1)*perPage + 1 ) + '-' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                </template>
             </div>
             <div class="pagination-controls">
-                <div class="pagination-page-info">Halaman <strong x-text="tableData.current_page"></strong> / <strong x-text="tableData.last_page"></strong></div>
+                <div class="pagination-page-info">Halaman <strong x-text="tableData.current_page"></strong> / <strong
+                        x-text="tableData.last_page"></strong></div>
                 <button class="btn btn-ghost btn-sm" @click="prev()" :disabled="!tableData || !tableData.prev_page_url">
                     <x-misc.icon name="chev-left" :size="13" />Prev
                 </button>
@@ -123,14 +141,17 @@
         <x-misc.modal title="Pilih Invoice" show="pickerOpen" close-handler="pickerOpen = false" :width="480">
             <div class="form-body">
                 <x-misc.field label="Invoice">
-                    <x-misc.select
-                        display="pickerSelectedLabel"
-                        hasValue="!!pickerSelected" placeholder="Cari nomor invoice / customer..." min-width="420px" height="40px">
-                        <template x-for="inv in pickerInvoices.filter(i => !q || i.number.toLowerCase().includes(q.toLowerCase()) || (i.customer?.name || '').toLowerCase().includes(q.toLowerCase()))" :key="inv.id">
+                    <x-misc.select display="pickerSelectedLabel" hasValue="!!pickerSelected"
+                        placeholder="Cari nomor invoice / customer..." min-width="420px" height="40px">
+                        <template
+                            x-for="inv in pickerInvoices.filter(i => !q || i.number.toLowerCase().includes(q.toLowerCase()) || (i.customer?.name || '').toLowerCase().includes(q.toLowerCase()))"
+                            :key="inv.id">
                             <div class="dropdown-item" @click="pickerSelected = inv; open = false; q = ''">
                                 <div style="flex:1; min-width:0;">
                                     <div style="font-size:13px; font-weight:600;" x-text="inv.number"></div>
-                                    <div style="font-size:11.5px; color:var(--ink-4);" x-text="(inv.customer?.name ?? '-') + ' · Outstanding ' + NumberUtils.formatNumericIntoMask(inv.remaining_amount)"></div>
+                                    <div style="font-size:11.5px; color:var(--ink-4);"
+                                        x-text="(inv.customer?.name ?? '-') + ' · Outstanding ' + NumberUtils.formatNumericIntoMask(inv.remaining_amount)">
+                                    </div>
                                 </div>
                             </div>
                         </template>
@@ -179,17 +200,38 @@
                 pickerSelected: null,
 
                 get pickerSelectedLabel() {
-                    return this.pickerSelected ? (this.pickerSelected.number + ' - ' + (this.pickerSelected.customer?.name ?? '-')) : 'Pilih invoice';
+                    return this.pickerSelected ? (this.pickerSelected.number + ' - ' + (this.pickerSelected.customer
+                        ?.name ?? '-')) : 'Pilih invoice';
                 },
 
                 statusChip(status) {
                     const map = {
-                        'not-yet-due': { chip: 'chip chip-ok', dot: 'chip-dot dot-ok', label: 'Not Yet Due' },
-                        'unpaid': { chip: 'chip chip-bad', dot: 'chip-dot dot-bad', label: 'Unpaid' },
-                        'partial': { chip: 'chip chip-warn', dot: 'chip-dot dot-warn', label: 'Partial' },
-                        'paid': { chip: 'chip', dot: 'chip-dot dot-neutral', label: 'Paid' },
+                        'not-yet-due': {
+                            chip: 'chip chip-ok',
+                            dot: 'chip-dot dot-ok',
+                            label: 'Not Yet Due'
+                        },
+                        'unpaid': {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Unpaid'
+                        },
+                        'partial': {
+                            chip: 'chip chip-warn',
+                            dot: 'chip-dot dot-warn',
+                            label: 'Partial'
+                        },
+                        'paid': {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-neutral',
+                            label: 'Paid'
+                        },
                     };
-                    return map[status] ?? { chip: 'chip', dot: 'chip-dot dot-neutral', label: status };
+                    return map[status] ?? {
+                        chip: 'chip',
+                        dot: 'chip-dot dot-neutral',
+                        label: status
+                    };
                 },
 
                 async setStatus(statusId) {
@@ -213,7 +255,10 @@
                         });
                         this.tableData = response.data;
                     } catch (error) {
-                        Toast.fire({ icon: 'error', title: 'Terjadi kesalahan saat memuat data. Silakan coba lagi.' });
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan saat memuat data. Silakan coba lagi.'
+                        });
                     } finally {
                         this.loading = false;
                     }
@@ -239,11 +284,17 @@
                     if (this.pickerInvoices.length === 0) {
                         try {
                             const res = await axios.get(route('finances.account_receivables.datatable'), {
-                                params: { per_page: 100, status: 'all' },
+                                params: {
+                                    per_page: 100,
+                                    status: 'all'
+                                },
                             });
                             this.pickerInvoices = res.data.data;
                         } catch (error) {
-                            Toast.fire({ icon: 'error', title: 'Gagal memuat daftar invoice.' });
+                            Toast.fire({
+                                icon: 'error',
+                                title: 'Gagal memuat daftar invoice.'
+                            });
                         }
                     }
                 },

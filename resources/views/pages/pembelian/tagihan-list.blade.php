@@ -6,7 +6,8 @@
         perPage: 10,
         perPageOptions: [10, 25, 50],
         total: {{ count($tagihan) }},
-        setPerPage(n) { this.perPage = n; this.page = 1 },
+        setPerPage(n) { this.perPage = n;
+            this.page = 1 },
         prev() { if (this.page > 1) this.page-- },
         next() { if (this.page < Math.ceil(this.total / this.perPage)) this.page++ }
     }" class="order-page">
@@ -18,7 +19,8 @@
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
-                <a href="{{ route('pembelian.tagihan_create') }}" class="btn btn-primary"><x-misc.icon name="plus" :size="15" />Buat Tagihan</a>
+                <a href="{{ route('pembelian.tagihan_create') }}" class="btn btn-primary"><x-misc.icon name="plus"
+                        :size="15" />Buat Tagihan</a>
             </div>
         </div>
 
@@ -26,10 +28,10 @@
         <div class="filter-pills">
             @php
                 $statuses = [
-                    ['id' => 'semua',            'label' => 'Semua'],
-                    ['id' => 'belum-dibayar',    'label' => 'Belum Dibayar'],
+                    ['id' => 'semua', 'label' => 'Semua'],
+                    ['id' => 'belum-dibayar', 'label' => 'Belum Dibayar'],
                     ['id' => 'dibayar-sebagian', 'label' => 'Dibayar Sebagian'],
-                    ['id' => 'lunas',            'label' => 'Lunas'],
+                    ['id' => 'lunas', 'label' => 'Lunas'],
                 ];
             @endphp
             @foreach ($statuses as $st)
@@ -60,14 +62,14 @@
                 </thead>
                 <tbody>
                     @foreach ($tagihan as $t)
-                        <tr class="row-tap"
-                            x-data="{ idx: {{ $loop->index }}, status: '{{ $t['status'] }}' }"
+                        <tr class="row-tap" x-data="{ idx: {{ $loop->index }}, status: '{{ $t['status'] }}' }"
                             x-show="(filter === 'semua' || filter === status) && idx >= (page-1)*perPage && idx < page*perPage"
                             x-on:click="window.location='{{ route('pembelian.tagihan_show', $t['id']) }}'">
                             <td class="mono table-id">{{ $t['id'] }}</td>
                             <td class="table-secondary">{{ $t['tanggal'] }}</td>
                             <td class="mono" x-on:click.stop>
-                                <a href="{{ route('pembelian.show', $t['poRef']) }}" class="link orange-link">{{ $t['poRef'] }}</a>
+                                <a href="{{ route('pembelian.show', $t['poRef']) }}"
+                                    class="link orange-link">{{ $t['poRef'] }}</a>
                             </td>
                             <td>
                                 <div class="table-customer-row">
@@ -80,8 +82,7 @@
                             <td><x-misc.status-badge :status="$t['status']" /></td>
                             <td class="table-action-col" x-on:click.stop>
                                 <div x-data="{ open: false }" class="action-menu">
-                                    <button
-                                        class="btn btn-ghost btn-icon btn-sm btn--borderless"
+                                    <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
                                         x-on:click.stop="
                                             let wasOpen = open;
                                             $dispatch('close-menus');
@@ -94,22 +95,24 @@
                                         ">
                                         <x-misc.icon name="more" :size="15" />
                                     </button>
-                                    <div x-ref="panel" x-show="open" x-cloak
-                                         x-on:close-menus.window="open = false"
-                                         x-on:click.away="open = false"
-                                         class="action-menu__panel">
-                                        <a href="{{ route('pembelian.tagihan_show', $t['id']) }}" class="action-menu__item">
-                                            <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat Detail
+                                    <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
+                                        x-on:click.away="open = false" class="action-menu__panel">
+                                        <a href="{{ route('pembelian.tagihan_show', $t['id']) }}"
+                                            class="action-menu__item">
+                                            <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                            Detail
                                         </a>
                                         <a href="{{ route('pembelian.show', $t['poRef']) }}" class="action-menu__item">
                                             <x-misc.icon name="receipt" :size="14" stroke="var(--ink-3)" />Lihat PO
                                         </a>
                                         <button class="action-menu__item">
-                                            <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak Tagihan
+                                            <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
+                                            Tagihan
                                         </button>
                                         <div class="action-menu__divider"></div>
                                         <button class="action-menu__item action-menu__item--danger">
-                                            <x-misc.icon name="x" :size="14" stroke="currentColor" />Batalkan Tagihan
+                                            <x-misc.icon name="x" :size="14" stroke="currentColor" />Batalkan
+                                            Tagihan
                                         </button>
                                     </div>
                                 </div>
@@ -130,7 +133,13 @@
                 </select>
             </div>
             <div class="pagination-info">
-                <span x-text="( (page-1)*perPage + 1 ) + '–' + Math.min(page*perPage, total) + ' dari ' + total"></span>
+                <template x-if="tableData.total === 0">
+                    <span x-text="'0 dari 0'"></span>
+                </template>
+                <template x-if="tableData.total > 0">
+                    <span
+                        x-text="( (page-1)*perPage + 1 ) + '-' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                </template>
             </div>
             <div class="pagination-controls">
                 <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong
