@@ -33,6 +33,7 @@ class InventoryService
             'warehouse:id,name',
         ])
             ->select(
+                'id',
                 'company_id',
                 'product_id',
                 'warehouse_id',

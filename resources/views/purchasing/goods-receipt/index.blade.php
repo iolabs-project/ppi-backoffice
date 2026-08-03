@@ -67,8 +67,8 @@
                                 <td class="mono" style="font-weight:600;" x-text="row.purchase_order.number"></td>
                                 <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
-                                <td class="num" style="text-align:right;" x-text="row.total_received_quantity"></td>
-                                <td class="num" style="text-align:right;" x-text="row.total_shrinkage_quantity"></td>
+                                <td class="num" style="text-align:right;" x-text="m(row.total_received_quantity)"></td>
+                                <td class="num" style="text-align:right;" x-text="m(row.total_shrinkage_quantity)"></td>
                                 <td><span class="mono" x-text="row.status"></span></td>
                                 <td class="table-action-col">
                                     <div x-data="{ open: false }" class="action-menu">
@@ -235,6 +235,10 @@
                         this.page--;
                         await this.fetchData();
                     }
+                },
+
+                m(v){
+                    return NumberUtils.formatNumericIntoMask(v);
                 },
 
                 async handleCancel(id) {

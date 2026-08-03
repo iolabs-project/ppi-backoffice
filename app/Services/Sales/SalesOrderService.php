@@ -208,6 +208,10 @@ class SalesOrderService
                     'amount' => $charge['amount'],
                 ]);
             }
+
+            if ($form->status === SalesOrderStatus::OPEN->value) {
+                $this->postSOJournal($form);
+            }
         });
     }
 

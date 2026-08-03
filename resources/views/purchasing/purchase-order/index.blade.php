@@ -82,7 +82,7 @@
                                         x-if="row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
                                         <div class="progress-cell">
                                             <span class="progress-label"
-                                                x-text="row.total_received_quantity + ' / ' + row.total_quantity"></span>
+                                                x-text="m(row.total_received_quantity) + ' / ' + m(row.total_quantity)"></span>
                                             <div class="progress-track">
                                                 <div class="progress-bar"
                                                     x-bind:style="'width:' + Math.min((row.total_received_quantity / row
@@ -101,7 +101,7 @@
                                         x-if="row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
                                         <div class="progress-cell">
                                             <span class="progress-label"
-                                                x-text="row.total_invoiced_quantity + ' / ' + row.total_quantity"></span>
+                                                x-text="m(row.total_invoiced_quantity) + ' / ' + m(row.total_quantity)"></span>
                                             <div class="progress-track">
                                                 <div class="progress-bar progress-bar--invoice"
                                                     x-bind:style="'width:' + Math.min((row.total_invoiced_quantity / row
@@ -112,7 +112,7 @@
                                     </template>
                                 </td>
                                 <td class="num" style="text-align:right; font-weight:600;"
-                                    x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
+                                    x-text="m(row.total_amount)"></td>
                                 <td>
                                     <span :class="statusChip(row.status).chip">
                                         <span :class="statusChip(row.status).dot"></span>
@@ -144,12 +144,6 @@
                                                             stroke="var(--ink-3)" />
                                                         Edit Draft
                                                     </a>
-
-                                                    {{-- <button class="action-menu__item" @click.stop="handleOpen(row.id)">
-                                                        <x-misc.icon name="check" :size="14"
-                                                            stroke="var(--ink-3)" />
-                                                        Konfirmasi Draft
-                                                    </button> --}}
                                                 </div>
                                             </template>
                                             <template x-if="row.status !== '{{ $draft }}'">
@@ -337,6 +331,10 @@
                         this.page--;
                         await this.fetchData();
                     }
+                },
+
+                m(v){
+                    return NumberUtils.formatNumericIntoMask(v);
                 },
 
                 async handleOpen(id) {

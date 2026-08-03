@@ -307,7 +307,7 @@ class SalesOrderController extends Controller
     {
         try {
             $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::OPEN->value);
-            return response()->json(['message' => 'Status Sales Order berhasil diubah menjadi "Open"']);
+            return response()->json(['message' => 'Sales Order berhasil dibuka.']);
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@open: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -322,7 +322,7 @@ class SalesOrderController extends Controller
     {
         try {
             $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::CLOSED->value);
-            return response()->json(['message' => 'Status Sales Order berhasil diubah menjadi "Closed"']);
+            return response()->json(['message' => 'Sales Order berhasil ditutup.']);
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@close: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -337,7 +337,7 @@ class SalesOrderController extends Controller
     {
         try {
             $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::CANCELLED->value);
-            return response()->json(['message' => 'Status Sales Order berhasil diubah menjadi "Cancelled"']);
+            return response()->json(['message' => 'Sales Order berhasil dibatalkan.']);
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,

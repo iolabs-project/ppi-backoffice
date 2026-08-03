@@ -96,8 +96,8 @@
                         });
                     } else if (this.formData.charges.length > 0) {
                         Swal.fire({
-                            title: 'Perubahan Customer',
-                            text: 'Customer diganti. Apakah Anda ingin menghapus biaya-biaya sebelumnya?',
+                            title: 'Konfirmasi Perubahan Customer',
+                            text: 'Customer diganti. Apakah Anda ingin menghapus biaya-biaya yang sudah ada?',
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonText: 'Ya, hapus biaya',
@@ -127,7 +127,6 @@
 
                         return;
                     }
-                    console.log('Selected inventory:', inventory);
                     item.name = inventory.product.name;
                     item.product_id = inventory.product_id;
                     item.code = inventory.product.code;
