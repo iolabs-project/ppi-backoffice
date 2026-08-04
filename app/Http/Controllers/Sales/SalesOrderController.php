@@ -6,6 +6,7 @@ use App\Enums\AccountCategory;
 use App\Enums\PaymentTerm;
 use App\Enums\SalesOrderStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Sales\SalesOrderFormRequest;
 use App\Services\Master\AccountService;
 use App\Services\Master\ContactService;
 use App\Services\InventoryService;
@@ -68,89 +69,8 @@ class SalesOrderController extends Controller
         return view('sales.sales-order.create', $data);
     }
 
-    public function store(Request $request)
+    public function store(SalesOrderFormRequest $request)
     {
-        if ($request->input('status') === SalesOrderStatus::OPEN->value) {
-            $request->validate(
-                [
-                    'customer_id' => 'required|exists:contacts,id',
-                    'warehouse_id' => 'required|exists:warehouses,id',
-                    'sales_person_id' => 'nullable|exists:contacts,id',
-                    'number' => 'required|string|max:50|unique:sales_orders,number',
-                    'reference_number' => 'nullable|string|max:50',
-                    'order_date' => 'required|date',
-                    'due_date' => 'nullable|date',
-                    'payment_terms' => 'required|in:net_7,net_14,net_30,net_45',
-                    'discount_percentage' => 'nullable|numeric|min:0',
-                    'discount_amount' => 'nullable|numeric|min:0',
-                    'tax_percentage' => 'nullable|numeric|min:0',
-                    'tax_amount' => 'nullable|numeric|min:0',
-                    'subtotal' => 'nullable|numeric|min:0',
-                    'down_payment_amount' => 'nullable|numeric|min:0',
-                    'down_payment_account_id' => 'nullable|exists:chart_of_accounts,id',
-                    'total_amount' => 'nullable|numeric|min:0',
-                    'note' => 'nullable|string|max:1000',
-                    'status' => 'required|in:draft,open',
-                    'details' => 'required|array|min:1',
-                    'details.*.product_id' => 'required|exists:products,id',
-                    'details.*.quantity' => 'required|numeric|min:1',
-                    'details.*.unit_price' => 'required|numeric|min:0',
-                    'details.*.discount_percentage' => 'nullable|numeric|min:0',
-                    'details.*.discount_amount' => 'nullable|numeric|min:0',
-                    'costs' => 'nullable|array',
-                    'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
-                    'costs.*.description' => 'nullable|string|max:1000',
-                    'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
-                    'charges' => 'nullable|array',
-                    'charges.*.account_id' => 'required_with:charges.*.amount|exists:chart_of_accounts,id',
-                    'charges.*.description' => 'nullable|string|max:1000',
-                    'charges.*.amount' => 'required_with:charges.*.account_id|numeric|min:0',
-                ],
-                [
-                    'customer_id.required' => 'Customer harus dipilih.',
-                    'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'number.required' => 'Nomor SO harus diisi.',
-                    'number.unique' => 'Nomor SO sudah digunakan. Silakan gunakan nomor lain.',
-                    'order_date.required' => 'Tanggal SO harus diisi.',
-                    'payment_terms.required' => 'Syarat pembayaran harus dipilih.',
-                    'details.required' => 'Daftar item tidak boleh kosong.',
-                    'details.*.product_id.required' => 'Produk harus dipilih untuk setiap item.',
-                    'details.*.quantity.required' => 'Kuantitas harus diisi untuk setiap item.',
-                    'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
-                    'costs.*.account_id.required_with' => 'Akun biaya harus dipilih jika jumlah biaya diisi.',
-                    'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun biaya dipilih.',
-                    'charges.*.account_id.required_with' => 'Akun biaya tambahan harus dipilih jika jumlah biaya tambahan diisi.',
-                    'charges.*.amount.required_with' => 'Jumlah biaya tambahan harus diisi jika akun biaya tambahan dipilih.',
-                ]
-            );
-        } else if ($request->input('status') === SalesOrderStatus::DRAFT->value) {
-            $request->validate(
-                [
-                    'customer_id' => 'required|exists:contacts,id',
-                    'warehouse_id' => 'required|exists:warehouses,id',
-                    'number' => 'required|string|max:50|unique:sales_orders,number',
-                    'reference_number' => 'nullable|string|max:50',
-                    'order_date' => 'required|date',
-                    'due_date' => 'nullable|date',
-                    'discount_percentage' => 'nullable|numeric|min:0',
-                    'tax_percentage' => 'nullable|numeric|min:0',
-                    'subtotal' => 'nullable|numeric|min:0',
-                    'total_amount' => 'nullable|numeric|min:0',
-                    'note' => 'nullable|string|max:1000',
-                    'status' => 'required|in:draft,open',
-                ],
-                [
-                    'customer_id.required' => 'Customer harus dipilih.',
-                    'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'number.required' => 'Nomor SO harus diisi.',
-                    'number.unique' => 'Nomor SO sudah digunakan. Silakan gunakan nomor lain.',
-                    'order_date.required' => 'Tanggal SO harus diisi.',
-                ]
-            );
-        } else {
-            return response()->json(['message' => "Status tidak valid. Harus berupa draft atau open."], 400);
-        }
-
         try {
             $this->salesOrderService->storeSalesOrder($request);
             return response()->json(['redirect' => route('sales.sales_orders.index'), 'message' => 'Sales Order berhasil dibuat.']);
@@ -207,89 +127,8 @@ class SalesOrderController extends Controller
         return view('sales.sales-order.edit', $data);
     }
 
-    public function update(Request $request, int $id)
+    public function update(SalesOrderFormRequest $request, int $id)
     {
-        if ($request->input('status') === SalesOrderStatus::OPEN->value) {
-            $request->validate(
-                [
-                    'customer_id' => 'required|exists:contacts,id',
-                    'warehouse_id' => 'required|exists:warehouses,id',
-                    'sales_person_id' => 'nullable|exists:contacts,id',
-                    'number' => ['required', 'string', 'max:50', Rule::unique('sales_orders', 'number')->ignore($id)],
-                    'reference_number' => 'nullable|string|max:50',
-                    'order_date' => 'required|date',
-                    'due_date' => 'nullable|date',
-                    'payment_terms' => 'required|in:net_7,net_14,net_30,net_45',
-                    'discount_percentage' => 'nullable|numeric|min:0',
-                    'discount_amount' => 'nullable|numeric|min:0',
-                    'tax_percentage' => 'nullable|numeric|min:0',
-                    'tax_amount' => 'nullable|numeric|min:0',
-                    'subtotal' => 'nullable|numeric|min:0',
-                    'down_payment_amount' => 'nullable|numeric|min:0',
-                    'down_payment_account_id' => 'nullable|exists:chart_of_accounts,id',
-                    'total_amount' => 'nullable|numeric|min:0',
-                    'note' => 'nullable|string|max:1000',
-                    'status' => 'required|in:draft,open',
-                    'details' => 'required|array|min:1',
-                    'details.*.product_id' => 'required|exists:products,id',
-                    'details.*.quantity' => 'required|numeric|min:1',
-                    'details.*.unit_price' => 'required|numeric|min:0',
-                    'details.*.discount_percentage' => 'nullable|numeric|min:0',
-                    'details.*.discount_amount' => 'nullable|numeric|min:0',
-                    'costs' => 'nullable|array',
-                    'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
-                    'costs.*.description' => 'nullable|string|max:1000',
-                    'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
-                    'charges' => 'nullable|array',
-                    'charges.*.account_id' => 'required_with:charges.*.amount|exists:chart_of_accounts,id',
-                    'charges.*.description' => 'nullable|string|max:1000',
-                    'charges.*.amount' => 'required_with:charges.*.account_id|numeric|min:0',
-                ],
-                [
-                    'customer_id.required' => 'Customer harus dipilih.',
-                    'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'number.required' => 'Nomor SO harus diisi.',
-                    'number.unique' => 'Nomor SO sudah digunakan. Silakan gunakan nomor lain.',
-                    'order_date.required' => 'Tanggal SO harus diisi.',
-                    'payment_terms.required' => 'Syarat pembayaran harus dipilih.',
-                    'details.required' => 'Daftar item tidak boleh kosong.',
-                    'details.*.product_id.required' => 'Produk harus dipilih untuk setiap item.',
-                    'details.*.quantity.required' => 'Kuantitas harus diisi untuk setiap item.',
-                    'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
-                    'costs.*.account_id.required_with' => 'Akun biaya harus dipilih jika jumlah biaya diisi.',
-                    'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun biaya dipilih.',
-                    'charges.*.account_id.required_with' => 'Akun biaya tambahan harus dipilih jika jumlah biaya tambahan diisi.',
-                    'charges.*.amount.required_with' => 'Jumlah biaya tambahan harus diisi jika akun biaya tambahan dipilih.',
-                ]
-            );
-        } else if ($request->input('status') === SalesOrderStatus::DRAFT->value) {
-            $request->validate(
-                [
-                    'customer_id' => 'required|exists:contacts,id',
-                    'warehouse_id' => 'required|exists:warehouses,id',
-                    'number' => ['required', 'string', 'max:50', Rule::unique('sales_orders', 'number')->ignore($id)],
-                    'reference_number' => 'nullable|string|max:50',
-                    'order_date' => 'required|date',
-                    'due_date' => 'nullable|date',
-                    'discount_percentage' => 'nullable|numeric|min:0',
-                    'tax_percentage' => 'nullable|numeric|min:0',
-                    'subtotal' => 'nullable|numeric|min:0',
-                    'total_amount' => 'nullable|numeric|min:0',
-                    'note' => 'nullable|string|max:1000',
-                    'status' => 'required|in:draft,open',
-                ],
-                [
-                    'customer_id.required' => 'Customer harus dipilih.',
-                    'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'number.required' => 'Nomor SO harus diisi.',
-                    'number.unique' => 'Nomor SO sudah digunakan. Silakan gunakan nomor lain.',
-                    'order_date.required' => 'Tanggal SO harus diisi.',
-                ]
-            );
-        } else {
-            return response()->json(['message' => "Status tidak valid. Harus berupa draft atau open."], 400);
-        }
-
         try {
             $this->salesOrderService->updateSalesOrder($request, $id);
             return response()->json(['redirect' => route('sales.sales_orders.index'), 'message' => 'Sales Order berhasil diperbarui.']);

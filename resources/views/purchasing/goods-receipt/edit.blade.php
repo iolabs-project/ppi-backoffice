@@ -308,19 +308,23 @@
                         window.location.href = response.data.redirect;
                     } catch (error) {
                         Swal.close();
-                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
+                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let html = null;
                         if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors)
+                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                Object.values(error.response.data.errors)
                                 .flat()
-                                .join(', ');
+                                .map(msg => `<li>${msg}</li>`)
+                                .join('') +
+                                '</ul>';
                         } else if (error.response?.data?.message) {
-                            message = error.response.data.message;
+                            title = error.response.data.message;
                         }
-
                         Toast.fire({
                             icon: 'error',
-                            title: message
+                            title: title,
+                            html: html
                         });
 
                     }
@@ -383,19 +387,23 @@
                                 window.location.href = response.data.redirect;
                             } catch (error) {
                                 Swal.close();
-                                let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
                                 if (error.response?.status === 422) {
-                                    message = Object.values(error.response.data.errors)
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
                                         .flat()
-                                        .join(', ');
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
                                 } else if (error.response?.data?.message) {
-                                    message = error.response.data.message;
+                                    title = error.response.data.message;
                                 }
-
                                 Toast.fire({
                                     icon: 'error',
-                                    title: message
+                                    title: title,
+                                    html: html
                                 });
 
                             }
@@ -497,10 +505,9 @@
                                         <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
                                     </div>
                                     <div style="flex:1;">
-                                        <x-misc.select
-                                            display="item.product_id ? item.name : 'Pilih Produk'"
-                                            hasValue="item.product_id" placeholder="Cari produk..."
-                                            min-width="320px" height="32px">
+                                        <x-misc.select display="item.product_id ? item.name : 'Pilih Produk'"
+                                            hasValue="item.product_id" placeholder="Cari produk..." min-width="320px"
+                                            height="32px">
                                             <template x-for="p in availablePOItems(q)" :key="p.id">
                                                 <div class="dropdown-item" @click="selectProduct(item, p);open=false;q=''">
                                                     <div style="flex:1; min-width:0;">
@@ -576,7 +583,10 @@
             </table>
         </div>
 
-        @include('purchasing.partials.additional-cost-table', ['accounts' => $accounts, 'billedByOptions' => $billedByOptions])
+        @include('purchasing.partials.additional-cost-table', [
+            'accounts' => $accounts,
+            'billedByOptions' => $billedByOptions,
+        ])
 
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">
@@ -610,11 +620,13 @@
                             </div>
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Biaya Tambahan (Inventory)</span>
-                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsInventoryTotal())"></span>
+                                <span class="num order-summary__val"
+                                    x-text="NumberUtils.formatNumericIntoMask(costsInventoryTotal())"></span>
                             </div>
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Biaya Tambahan (Non-Inventory)</span>
-                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsNonInventoryTotal())"></span>
+                                <span class="num order-summary__val"
+                                    x-text="NumberUtils.formatNumericIntoMask(costsNonInventoryTotal())"></span>
                             </div>
                         </div>
                     </div>

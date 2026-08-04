@@ -68,7 +68,10 @@
 
                 openBatchModal(index) {
                     this.activeItemIndex = index;
-                    this.batchForm = { product_batch_id: null, quantity: null };
+                    this.batchForm = {
+                        product_batch_id: null,
+                        quantity: null
+                    };
                     this.modal = 'add_batch';
                 },
 
@@ -104,12 +107,18 @@
                 validateBatches() {
                     for (const item of this.formData.details) {
                         if (!item.product_id) {
-                            Toast.fire({ icon: 'error', title: 'Terdapat baris produk yang belum dipilih.' });
+                            Toast.fire({
+                                icon: 'error',
+                                title: 'Terdapat baris produk yang belum dipilih.'
+                            });
                             return false;
                         }
                         const batchTotal = item.batches.reduce((sum, b) => sum + this.n(b.quantity), 0);
                         if (batchTotal <= 0) {
-                            Toast.fire({ icon: 'error', title: `Belum ada batch dipilih untuk ${item.name}.` });
+                            Toast.fire({
+                                icon: 'error',
+                                title: `Belum ada batch dipilih untuk ${item.name}.`
+                            });
                             return false;
                         }
                         if (batchTotal > this.n(item.remaining_quantity) + 0.0001) {
@@ -141,7 +150,10 @@
                     });
                     body.costs = body.costs
                         .filter(c => c.account_id && this.n(c.amount) > 0)
-                        .map(c => ({ ...c, amount: this.n(c.amount) }));
+                        .map(c => ({
+                            ...c,
+                            amount: this.n(c.amount)
+                        }));
 
                     Swal.fire({
                         title: 'Memproses penyimpanan Pengiriman Barang...',
@@ -165,19 +177,23 @@
                         window.location.href = response.data.redirect;
                     } catch (error) {
                         Swal.close();
-                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
+                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let html = null;
                         if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors)
+                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                Object.values(error.response.data.errors)
                                 .flat()
-                                .join(', ');
+                                .map(msg => `<li>${msg}</li>`)
+                                .join('') +
+                                '</ul>';
                         } else if (error.response?.data?.message) {
-                            message = error.response.data.message;
+                            title = error.response.data.message;
                         }
-
                         Toast.fire({
                             icon: 'error',
-                            title: message
+                            title: title,
+                            html: html
                         });
                     }
                 },

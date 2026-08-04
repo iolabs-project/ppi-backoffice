@@ -302,15 +302,23 @@
                         window.location.href = response.data.redirect;
                     } catch (error) {
                         Swal.close();
-                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let html = null;
                         if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors).flat().join(', ');
+                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                Object.values(error.response.data.errors)
+                                .flat()
+                                .map(msg => `<li>${msg}</li>`)
+                                .join('') +
+                                '</ul>';
                         } else if (error.response?.data?.message) {
-                            message = error.response.data.message;
+                            title = error.response.data.message;
                         }
                         Toast.fire({
                             icon: 'error',
-                            title: message
+                            title: title,
+                            html: html
                         });
                     } finally {
                         this.isSubmitting = false;
@@ -346,7 +354,8 @@
                             :key="s.id">
                             <div class="dropdown-item"
                                 @click="supplierSelected=s; formData.supplier_id=s.id; open=false; q=''">
-                                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                                <div class="avatar"
+                                    style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
                                     x-text="initials(s.name)"></div>
                                 <span x-text="s.name"></span>
                             </div>
@@ -383,7 +392,8 @@
                             :key="g.id">
                             <div class="dropdown-item"
                                 @click="warehouseSelected=g; formData.warehouse_id=g.id; open=false; q=''">
-                                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                                <div class="avatar"
+                                    style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
                                     x-text="initials(g.name)"></div>
                                 <span x-text="g.name"></span>
                             </div>
@@ -398,7 +408,8 @@
                 <x-misc.field label="Termin Pembayaran" :required="true">
                     <x-misc.select display="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"
                         hasValue="paymentTermSelected" placeholder="Cari termin...">
-                        <template x-for="t in paymentTerms.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))"
+                        <template
+                            x-for="t in paymentTerms.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))"
                             :key="t.id">
                             <div class="dropdown-item"
                                 @click="paymentTermSelected=t; handlePaymentTermChange(); open=false; q=''">
@@ -527,7 +538,10 @@
             </table>
         </div>
 
-        @include('purchasing.partials.additional-cost-table', ['accounts' => $accounts, 'billedByOptions' => $billedByOptions])
+        @include('purchasing.partials.additional-cost-table', [
+            'accounts' => $accounts,
+            'billedByOptions' => $billedByOptions,
+        ])
 
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">
@@ -596,12 +610,14 @@
 
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Biaya Tambahan (Inventory)</span>
-                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsInventoryTotal())"></span>
+                                <span class="num order-summary__val"
+                                    x-text="NumberUtils.formatNumericIntoMask(costsInventoryTotal())"></span>
                             </div>
 
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Biaya Tambahan (Non-Inventory)</span>
-                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsNonInventoryTotal())"></span>
+                                <span class="num order-summary__val"
+                                    x-text="NumberUtils.formatNumericIntoMask(costsNonInventoryTotal())"></span>
                             </div>
 
 
@@ -635,7 +651,9 @@
                                     </x-misc.select>
                                     <div class="input-with-prefix">
                                         {{-- <span class="input-with-prefix__label">- Rp</span> --}}
-                                        <input class="input num order-summary__cost-input order-summary__amount-display--negative" x-model="formData.down_payment_amount"
+                                        <input
+                                            class="input num order-summary__cost-input order-summary__amount-display--negative"
+                                            x-model="formData.down_payment_amount"
                                             x-mask:dynamic="$money($input, '.',',')" @input="recalculate()"
                                             placeholder="0" />
                                     </div>

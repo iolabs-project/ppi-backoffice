@@ -94,14 +94,23 @@
                                 await this.fetchData();
                             } catch (error) {
                                 Swal.close();
-                                let message =
-                                    'Terjadi kesalahan saat membatalkan Tagihan Penjualan. Silakan coba lagi.';
-                                if (error.response?.data?.message) {
-                                    message = error.response.data.message;
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
                                 }
                                 Toast.fire({
                                     icon: 'error',
-                                    title: message
+                                    title: title,
+                                    html: html
                                 });
                             }
 

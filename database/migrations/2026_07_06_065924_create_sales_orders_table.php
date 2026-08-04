@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('sales_orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained('companies')->onDelete('restrict');
-            $table->foreignId('customer_id')->constrained('contacts')->onDelete('restrict');
-            $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('restrict');
+            $table->foreignId('customer_id')->nullable()->constrained('contacts')->onDelete('restrict');
+            $table->foreignId('warehouse_id')->nullable()->constrained('warehouses')->onDelete('restrict');
             $table->foreignId('sales_person_id')->nullable()->constrained('contacts')->onDelete('restrict');
             $table->string('number', 50)->unique();
             $table->string('reference_number', 50)->nullable();
@@ -54,7 +54,7 @@ return new class extends Migration
         Schema::create('sales_order_costs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sales_order_id')->constrained('sales_orders')->onDelete('cascade');
-            $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->foreignId('account_id')->nullable()->constrained('chart_of_accounts')->onDelete('restrict');
             $table->text('description')->nullable();
             $table->decimal('amount', 18, 4)->default(0);
             $table->timestamps();
@@ -63,7 +63,7 @@ return new class extends Migration
         Schema::create('sales_order_charges', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sales_order_id')->constrained('sales_orders')->onDelete('cascade');
-            $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->foreignId('account_id')->nullable()->constrained('chart_of_accounts')->onDelete('restrict');
             $table->text('description')->nullable();
             $table->decimal('amount', 18, 4)->default(0);
             $table->timestamps();

@@ -111,8 +111,8 @@
                                         </div>
                                     </template>
                                 </td>
-                                <td class="num" style="text-align:right; font-weight:600;"
-                                    x-text="m(row.total_amount)"></td>
+                                <td class="num" style="text-align:right; font-weight:600;" x-text="m(row.total_amount)">
+                                </td>
                                 <td>
                                     <span :class="statusChip(row.status).chip">
                                         <span :class="statusChip(row.status).dot"></span>
@@ -333,7 +333,7 @@
                     }
                 },
 
-                m(v){
+                m(v) {
                     return NumberUtils.formatNumericIntoMask(v);
                 },
 
@@ -451,20 +451,24 @@
 
                                 window.location.href = response.data.redirect;
                             } catch (error) {
-                                console.error('Error creating delivery order:', error);
                                 Swal.close();
-                                let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
                                 if (error.response?.status === 422) {
-                                    message = Object.values(error.response.data.errors)
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
                                         .flat()
-                                        .join(', ');
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
                                 } else if (error.response?.data?.message) {
-                                    message = error.response.data.message;
+                                    title = error.response.data.message;
                                 }
                                 Toast.fire({
                                     icon: 'error',
-                                    title: message
+                                    title: title,
+                                    html: html
                                 });
                             }
 

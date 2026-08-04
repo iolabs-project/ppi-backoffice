@@ -209,8 +209,10 @@
                     if (this.n(salesInvoice.sales_order.down_payment_remaining_amount) > 0) {
                         if (this.n(this.formData.down_payment_amount) < 0) {
                             this.formData.down_payment_amount = 0;
-                        } else if (this.n(this.formData.down_payment_amount) > this.n(salesInvoice.sales_order.down_payment_remaining_amount)) {
-                            this.formData.down_payment_amount = this.n(salesInvoice.sales_order.down_payment_remaining_amount);
+                        } else if (this.n(this.formData.down_payment_amount) > this.n(salesInvoice.sales_order
+                                .down_payment_remaining_amount)) {
+                            this.formData.down_payment_amount = this.n(salesInvoice.sales_order
+                                .down_payment_remaining_amount);
                         }
                     } else {
                         this.formData.down_payment_amount = 0;
@@ -243,7 +245,10 @@
                     }));
                     body.charges = body.charges
                         .filter(c => c.account_id && this.n(c.amount) > 0)
-                        .map(c => ({ ...c, amount: this.n(c.amount) }));
+                        .map(c => ({
+                            ...c,
+                            amount: this.n(c.amount)
+                        }));
 
                     Swal.fire({
                         title: 'Memproses penyimpanan draft tagihan...',
@@ -267,21 +272,24 @@
                         window.location.href = response.data.redirect;
                     } catch (error) {
                         Swal.close();
-                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
+                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let html = null;
                         if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors)
+                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                Object.values(error.response.data.errors)
                                 .flat()
-                                .join(', ');
+                                .map(msg => `<li>${msg}</li>`)
+                                .join('') +
+                                '</ul>';
                         } else if (error.response?.data?.message) {
-                            message = error.response.data.message;
+                            title = error.response.data.message;
                         }
-
                         Toast.fire({
                             icon: 'error',
-                            title: message
+                            title: title,
+                            html: html
                         });
-
                     }
                 },
 
@@ -304,7 +312,10 @@
                     }));
                     body.charges = body.charges
                         .filter(c => c.account_id && this.n(c.amount) > 0)
-                        .map(c => ({ ...c, amount: this.n(c.amount) }));
+                        .map(c => ({
+                            ...c,
+                            amount: this.n(c.amount)
+                        }));
 
                     Swal.fire({
                         title: 'Memproses penyimpanan tagihan...',
@@ -328,21 +339,24 @@
                         window.location.href = response.data.redirect;
                     } catch (error) {
                         Swal.close();
-                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
+                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let html = null;
                         if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors)
+                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                Object.values(error.response.data.errors)
                                 .flat()
-                                .join(', ');
+                                .map(msg => `<li>${msg}</li>`)
+                                .join('') +
+                                '</ul>';
                         } else if (error.response?.data?.message) {
-                            message = error.response.data.message;
+                            title = error.response.data.message;
                         }
-
                         Toast.fire({
                             icon: 'error',
-                            title: message
+                            title: title,
+                            html: html
                         });
-
                     }
                 }
 
@@ -353,8 +367,7 @@
     <div x-data="salesInvoiceForm()" x-init="init()" class="order-page">
 
         <div>
-            <a href="{{ route('sales.sales_invoices.index') }}" class="btn btn-ghost btn-sm"
-                style="margin-bottom:10px;">
+            <a href="{{ route('sales.sales_invoices.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
                 <x-misc.icon name="chev-left" :size="13" />Kembali
             </a>
             <h1 class="order-title display">Edit Tagihan Penjualan</h1>
@@ -407,7 +420,8 @@
                 <x-misc.field label="Termin Pembayaran" :required="true">
                     <x-misc.select display="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"
                         hasValue="paymentTermSelected" placeholder="Cari termin...">
-                        <template x-for="t in paymentTerms.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))"
+                        <template
+                            x-for="t in paymentTerms.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))"
                             :key="t.id">
                             <div class="dropdown-item"
                                 @click="paymentTermSelected=t; handlePaymentTermChange(); open=false; q=''">
@@ -537,8 +551,7 @@
             <div class="order-items-split">
                 <div class="order-extras">
                     <x-misc.field label="Catatan Internal">
-                        <textarea class="input" rows="2" placeholder="Tulis catatan untuk tim finance…"
-                            x-model="formData.note"></textarea>
+                        <textarea class="input" rows="2" placeholder="Tulis catatan untuk tim finance…" x-model="formData.note"></textarea>
                     </x-misc.field>
                 </div>
                 <div class="order-summary">
@@ -598,12 +611,14 @@
 
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Biaya Tambahan</span>
-                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(chargesTotal())"></span>
+                                <span class="num order-summary__val"
+                                    x-text="NumberUtils.formatNumericIntoMask(chargesTotal())"></span>
                             </div>
 
                         </div>
 
-                        <template x-if="salesInvoice.sales_order && salesInvoice.sales_order.down_payment_remaining_amount > 0">
+                        <template
+                            x-if="salesInvoice.sales_order && salesInvoice.sales_order.down_payment_remaining_amount > 0">
                             <div class="order-summary__group">
                                 <div class="order-summary__row">
                                     <span class="order-summary__label"></span>
@@ -614,17 +629,18 @@
                                     <span class="order-summary__label">Uang Muka</span>
                                     <div class="order-summary__dp-group">
                                         <div class="input-with-prefix">
-                                            <input
-                                                class="input num input--readonly order-summary__cost-input"
-                                                :value="salesInvoice.sales_order.down_payment_remaining_amount ? NumberUtils.formatNumericIntoMask(salesInvoice.sales_order.down_payment_remaining_amount) : '0'"
+                                            <input class="input num input--readonly order-summary__cost-input"
+                                                :value="salesInvoice.sales_order.down_payment_remaining_amount ? NumberUtils
+                                                    .formatNumericIntoMask(salesInvoice.sales_order
+                                                        .down_payment_remaining_amount) : '0'"
                                                 disabled />
                                         </div>
                                         <div class="input-with-prefix">
                                             <input
                                                 class="input num order-summary__cost-input order-summary__amount-display--negative"
                                                 x-model="formData.down_payment_amount"
-                                                x-mask:dynamic="$money($input, '.',',')" @input="handleDownPaymentAmountInput()"
-                                                placeholder="0" />
+                                                x-mask:dynamic="$money($input, '.',',')"
+                                                @input="handleDownPaymentAmountInput()" placeholder="0" />
                                         </div>
                                     </div>
                                 </div>

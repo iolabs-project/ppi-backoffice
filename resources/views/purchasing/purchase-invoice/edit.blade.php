@@ -229,8 +229,10 @@
                     if (this.n(purchaseInvoice.purchase_order.down_payment_remaining_amount) > 0) {
                         if (this.n(this.formData.down_payment_amount) < 0) {
                             this.formData.down_payment_amount = 0;
-                        } else if (this.n(this.formData.down_payment_amount) > this.n(purchaseInvoice.purchase_order.down_payment_remaining_amount)) {
-                            this.formData.down_payment_amount = this.n(purchaseInvoice.purchase_order.down_payment_remaining_amount);
+                        } else if (this.n(this.formData.down_payment_amount) > this.n(purchaseInvoice.purchase_order
+                                .down_payment_remaining_amount)) {
+                            this.formData.down_payment_amount = this.n(purchaseInvoice.purchase_order
+                                .down_payment_remaining_amount);
                         }
                     } else {
                         this.formData.down_payment_amount = 0;
@@ -361,23 +363,25 @@
 
                         window.location.href = response.data.redirect;
                     } catch (error) {
-                        console.error('Error submitting draft PI:', error);
                         Swal.close();
-                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
+                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let html = null;
                         if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors)
+                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                Object.values(error.response.data.errors)
                                 .flat()
-                                .join(', ');
+                                .map(msg => `<li>${msg}</li>`)
+                                .join('') +
+                                '</ul>';
                         } else if (error.response?.data?.message) {
-                            message = error.response.data.message;
+                            title = error.response.data.message;
                         }
-
                         Toast.fire({
                             icon: 'error',
-                            title: message
+                            title: title,
+                            html: html
                         });
-
                     }
                 },
 
@@ -427,21 +431,24 @@
                         window.location.href = response.data.redirect;
                     } catch (error) {
                         Swal.close();
-                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-
+                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let html = null;
                         if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors)
+                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                Object.values(error.response.data.errors)
                                 .flat()
-                                .join(', ');
+                                .map(msg => `<li>${msg}</li>`)
+                                .join('') +
+                                '</ul>';
                         } else if (error.response?.data?.message) {
-                            message = error.response.data.message;
+                            title = error.response.data.message;
                         }
-
                         Toast.fire({
                             icon: 'error',
-                            title: message
+                            title: title,
+                            html: html
                         });
-
                     }
                 }
 
@@ -507,7 +514,8 @@
                 <x-misc.field label="Termin Pembayaran" :required="true">
                     <x-misc.select display="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"
                         hasValue="paymentTermSelected" placeholder="Cari termin...">
-                        <template x-for="t in paymentTerms.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))"
+                        <template
+                            x-for="t in paymentTerms.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()))"
                             :key="t.id">
                             <div class="dropdown-item"
                                 @click="paymentTermSelected=t; handlePaymentTermChange(); open=false; q=''">
@@ -584,8 +592,9 @@
                                 </div>
                             </td>
                             <td>
-                                <input class="input num input--readonly" style="height:32px; text-align:right;" x-model="it.quantity"
-                                    @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, '.',',')" readonly />
+                                <input class="input num input--readonly" style="height:32px; text-align:right;"
+                                    x-model="it.quantity" @input="calculateDetailTotal(i)"
+                                    x-mask:dynamic="$money($input, '.',',')" readonly />
                             </td>
                             <td>
                                 <div class="input input--readonly"
@@ -633,7 +642,10 @@
             </table>
         </div>
 
-        @include('purchasing.partials.additional-cost-table', ['accounts' => $accounts, 'showInventoryCost' => true])
+        @include('purchasing.partials.additional-cost-table', [
+            'accounts' => $accounts,
+            'showInventoryCost' => true,
+        ])
 
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">
@@ -701,18 +713,21 @@
 
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Biaya Tambahan (Inventory)</span>
-                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsInventoryTotal())"></span>
+                                <span class="num order-summary__val"
+                                    x-text="NumberUtils.formatNumericIntoMask(costsInventoryTotal())"></span>
                             </div>
 
                             <div class="order-summary__row">
                                 <span class="order-summary__label">Biaya Tambahan (Non-Inventory)</span>
-                                <span class="num order-summary__val" x-text="NumberUtils.formatNumericIntoMask(costsNonInventoryTotal())"></span>
+                                <span class="num order-summary__val"
+                                    x-text="NumberUtils.formatNumericIntoMask(costsNonInventoryTotal())"></span>
                             </div>
 
 
                         </div>
 
-                        <template x-if="purchaseInvoice.purchase_order && purchaseInvoice.purchase_order.down_payment_remaining_amount > 0">
+                        <template
+                            x-if="purchaseInvoice.purchase_order && purchaseInvoice.purchase_order.down_payment_remaining_amount > 0">
                             <div class="order-summary__group">
                                 <div class="order-summary__row">
                                     <span class="order-summary__label"></span>
@@ -723,9 +738,10 @@
                                     <span class="order-summary__label">Uang Muka</span>
                                     <div class="order-summary__dp-group">
                                         <div class="input-with-prefix">
-                                            <input
-                                                class="input num input--readonly order-summary__cost-input"
-                                                :value="purchaseInvoice.purchase_order.down_payment_remaining_amount ? NumberUtils.formatNumericIntoMask(purchaseInvoice.purchase_order.down_payment_remaining_amount) : '0'"
+                                            <input class="input num input--readonly order-summary__cost-input"
+                                                :value="purchaseInvoice.purchase_order.down_payment_remaining_amount ?
+                                                    NumberUtils.formatNumericIntoMask(purchaseInvoice.purchase_order
+                                                        .down_payment_remaining_amount) : '0'"
                                                 disabled />
                                         </div>
                                         <div class="input-with-prefix">
@@ -733,8 +749,8 @@
                                             <input
                                                 class="input num order-summary__cost-input order-summary__amount-display--negative"
                                                 x-model="formData.down_payment_amount"
-                                                x-mask:dynamic="$money($input, '.',',')" @input="handleDownPaymentAmountInput()"
-                                                placeholder="0" />
+                                                x-mask:dynamic="$money($input, '.',',')"
+                                                @input="handleDownPaymentAmountInput()" placeholder="0" />
                                         </div>
                                     </div>
                                 </div>

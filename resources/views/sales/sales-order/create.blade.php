@@ -296,7 +296,9 @@
                     body.discount_percentage = this.n(body.discount_percentage);
                     body.tax_percentage = this.n(body.tax_percentage);
                     body.down_payment_amount = this.n(body.down_payment_amount);
-                    body.details = body.details.map(d => ({
+                    body.details = body.details
+                    .filter(d => d.product_id !== null)
+                    .map(d => ({
                         ...d,
                         quantity: this.n(d.quantity),
                         unit_price: this.n(d.unit_price),
@@ -304,13 +306,11 @@
                         total_amount: this.n(d.total_amount),
                     }));
                     body.charges = body.charges
-                        .filter(c => c.account_id && this.n(c.amount) > 0)
                         .map(c => ({
                             ...c,
                             amount: this.n(c.amount)
                         }));
                     body.costs = body.costs
-                        .filter(c => c.account_id && this.n(c.amount) > 0)
                         .map(c => ({
                             ...c,
                             amount: this.n(c.amount)
@@ -340,15 +340,23 @@
                         window.location.href = response.data.redirect;
                     } catch (error) {
                         Swal.close();
-                        let message = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let html = null;
                         if (error.response?.status === 422) {
-                            message = Object.values(error.response.data.errors).flat().join(', ');
+                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                Object.values(error.response.data.errors)
+                                .flat()
+                                .map(msg => `<li>${msg}</li>`)
+                                .join('') +
+                                '</ul>';
                         } else if (error.response?.data?.message) {
-                            message = error.response.data.message;
+                            title = error.response.data.message;
                         }
                         Toast.fire({
                             icon: 'error',
-                            title: message
+                            title: title,
+                            html: html
                         });
                     }
                 }
