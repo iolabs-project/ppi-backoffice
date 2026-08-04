@@ -5,23 +5,28 @@ namespace App\Http\Controllers\Finance;
 use App\Http\Controllers\Controller;
 use App\Enums\AccountCategory;
 use App\Enums\AccountPayableStatusEnum;
+use App\Enums\PayablePaymentReferenceTypeEnum;
+use App\Http\Requests\Finance\AccountPayableFormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use App\Services\Finance\AccountPayableService;
 use App\Services\Purchasing\PurchaseInvoiceService;
+use App\Services\ExpenseService;
 use App\Services\Master\AccountService;
 
 class AccountPayableController extends Controller
 {
     private AccountPayableService $accountPayableService;
     private PurchaseInvoiceService $purchaseInvoiceService;
+    private ExpenseService $expenseService;
     private AccountService $accountService;
 
-    public function __construct(AccountPayableService $accountPayableService, PurchaseInvoiceService $purchaseInvoiceService, AccountService $accountService)
+    public function __construct(AccountPayableService $accountPayableService, PurchaseInvoiceService $purchaseInvoiceService, ExpenseService $expenseService, AccountService $accountService)
     {
         $this->accountPayableService = $accountPayableService;
         $this->purchaseInvoiceService = $purchaseInvoiceService;
+        $this->expenseService = $expenseService;
         $this->accountService = $accountService;
     }
 
@@ -50,36 +55,27 @@ class AccountPayableController extends Controller
         }
     }
 
-    public function show(int $id)
+    public function show(Request $request, int $id)
     {
-        $purchaseInvoice = $this->purchaseInvoiceService->fetchPurchaseInvoiceByID($id);
         $data = [
             'currentPage'    => 'finance.account_payable',
-            'breadcrumb'     => [['label' => 'Hutang', 'url' => route('finances.account_payables.index')], ['label' => $purchaseInvoice->number ?? 'Detail']],
-            'purchaseInvoice' => $purchaseInvoice,
-            'displayStatus' => $purchaseInvoice ? $this->accountPayableService->derivePaymentStatus($purchaseInvoice->status, $purchaseInvoice->due_date) : null,
+            'breadcrumb'     => [['label' => 'Hutang', 'url' => route('finances.account_payables.index')], ['label' => $invoice->number ?? 'Detail']],
+            'invoice' => $this->accountPayableService->fetchInvoiceByID($id, $request->reference_type),
+            'type' => $request->reference_type,
             'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
         ];
         return view('finance.account-payable.show', $data);
     }
 
-    public function store(Request $request, int $id)
+    public function store(AccountPayableFormRequest $request, int $id)
     {
-        $request->validate([
-            'account_id' => 'required|exists:chart_of_accounts,id',
-            'payment_date' => 'required|date',
-            'payment_method' => 'required|string|max:255',
-            'reference_number' => 'nullable|string|max:255',
-            'amount' => 'required|numeric|min:0.01',
-            'note' => 'nullable|string|max:1000',
-        ]);
         try {
             $this->accountPayableService->storePayment($request, $id);
-            return response()->json(['redirect' => route('finances.account_payables.show', $id), 'message' => 'Pembayaran berhasil ditambahkan.']);
+            return response()->json(['redirect' => route('finances.account_payables.show', ['id' => $id, 'reference_type' => $request->reference_type]), 'message' => 'Pembayaran berhasil ditambahkan.']);
         } catch (ValidationException $e) {
             return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            Log::error('Error AccountPayableController@store: ' . $e->getMessage(), [
+            Log::error('Error Finance/AccountPayableController@store: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),

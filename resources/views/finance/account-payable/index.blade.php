@@ -11,12 +11,12 @@
     <div x-data="apDatatable()" x-init="fetchData()" class="order-page">
         <div class="order-hd">
             <div>
-                <h1 class="order-title display">Account Payable</h1>
+                <h1 class="order-title display">Hutang</h1>
                 <div class="order-sub"><span x-text="tableData ? tableData.total : 0"></span> invoice dengan outstanding</div>
             </div>
             <div class="order-actions">
                 <button class="btn btn-primary" @click="openPicker()">
-                    <x-misc.icon name="plus" :size="15" />New Payment
+                    <x-misc.icon name="plus" :size="15" />Tambah Pembayaran
                 </button>
             </div>
         </div>
@@ -56,7 +56,7 @@
                 <thead>
                     <tr>
                         <th style="width:48px;">No</th>
-                        <th>Invoice No.</th>
+                        <th>No. Invoice</th>
                         <th>Supplier</th>
                         <th>Invoice Date</th>
                         <th>Due Date</th>
@@ -83,7 +83,11 @@
 
                     <template x-if="!loading">
                         <template x-for="(row, i) in tableData.data" :key="row.id">
-                            <tr class="row-tap" @click="window.location = route('finances.account_payables.show', row.id)">
+                            <tr class="row-tap"
+                                @click="window.location = route('finances.account_payables.show', {
+                                id: row.id,
+                                reference_type: row.type
+                            })">
                                 <td class="mono" style="color:var(--ink-4);"
                                     x-text="(tableData.current_page - 1) * tableData.per_page + i + 1"></td>
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
@@ -123,7 +127,7 @@
                                         </button>
                                         <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
                                             x-on:click.away="open = false" class="action-menu__panel">
-                                            <a :href="route('finances.account_payables.show', row.id)" @click.stop
+                                            <a :href="route('finances.account_payables.show', { id: row.id, reference_type: row.type })" @click.stop
                                                 class="action-menu__item">
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
                                                 Detail
@@ -268,7 +272,7 @@
                 },
 
                 statusChip(status) {
-                     const map = {
+                    const map = {
                         draft: {
                             chip: 'chip',
                             dot: 'chip-dot dot-muted',

@@ -69,7 +69,12 @@
                                 <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
                                 <td class="num" style="text-align:right;" x-text="m(row.total_received_quantity)"></td>
                                 <td class="num" style="text-align:right;" x-text="m(row.total_shrinkage_quantity)"></td>
-                                <td><span class="mono" x-text="row.status"></span></td>
+                                <td>
+                                    <span :class="statusChip(row.status).chip">
+                                        <span :class="statusChip(row.status).dot"></span>
+                                        <span x-text="statusChip(row.status).label"></span>
+                                    </span>
+                                </td>
                                 <td class="table-action-col">
                                     <div x-data="{ open: false }" class="action-menu">
                                         <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
@@ -188,6 +193,31 @@
                 perPage: 10,
                 filter: 'all',
 
+                statusChip(status) {
+                    const map = {
+                        draft: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-muted',
+                            label: 'Draft'
+                        },
+                        finished: {
+                            chip: 'chip chip-ok',
+                            dot: 'chip-dot dot-ok',
+                            label: 'Finished'
+                        },
+                        cancelled: {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Cancelled'
+                        },
+                    };
+                    return map[status] ?? {
+                        chip: 'chip',
+                        dot: 'chip-dot dot-neutral',
+                        label: status
+                    };
+                },
+
                 async setStatus(statusId) {
                     this.filter = statusId;
                     this.page = 1;
@@ -237,7 +267,7 @@
                     }
                 },
 
-                m(v){
+                m(v) {
                     return NumberUtils.formatNumericIntoMask(v);
                 },
 

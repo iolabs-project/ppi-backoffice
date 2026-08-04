@@ -206,25 +206,30 @@
 
                 statusChip(status) {
                     const map = {
-                        'not-yet-due': {
-                            chip: 'chip chip-ok',
-                            dot: 'chip-dot dot-ok',
-                            label: 'Not Yet Due'
+                        draft: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-muted',
+                            label: 'Draft'
                         },
-                        'unpaid': {
-                            chip: 'chip chip-bad',
-                            dot: 'chip-dot dot-bad',
-                            label: 'Unpaid'
+                        open: {
+                            chip: 'chip chip-info',
+                            dot: 'chip-dot dot-info',
+                            label: 'Open'
                         },
-                        'partial': {
+                        partial: {
                             chip: 'chip chip-warn',
                             dot: 'chip-dot dot-warn',
                             label: 'Partial'
                         },
-                        'paid': {
+                        paid: {
                             chip: 'chip',
-                            dot: 'chip-dot dot-neutral',
+                            dot: 'chip-dot dot-ok',
                             label: 'Paid'
+                        },
+                        cancelled: {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Cancelled'
                         },
                     };
                     return map[status] ?? {

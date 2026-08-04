@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Validation\ValidationException;
+
 use App\Models\Company;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryItem;
@@ -45,11 +47,11 @@ class JournalService
         $journalEntry = JournalEntry::findOrFail($journalEntryId);
 
         if ($journalEntry->status === 'cancelled') {
-            throw new \Exception('Journal entry is already cancelled.');
+            throw ValidationException::withMessages(['error' => 'Jurnal sudah dibatalkan.']);
         }
 
         if ($journalEntry->status === 'posted') {
-            throw new \Exception('Cannot cancel a posted journal entry.');
+            throw ValidationException::withMessages(['error' => 'Tidak dapat membatalkan jurnal yang sudah diposting.']);
         }
 
         $journalEntry->update(['status' => 'cancelled']);
@@ -60,7 +62,7 @@ class JournalService
         $originalEntry = JournalEntry::with('items')->findOrFail($journalEntryID);
 
         if ($originalEntry->status === 'cancelled') {
-            throw new \Exception('Cannot reverse a cancelled journal entry.');
+            throw ValidationException::withMessages(['error' => 'Tidak dapat membalikkan jurnal yang sudah dibatalkan.']);
         }
 
         DB::transaction(function () use ($originalEntry, $date, $description) {

@@ -8,8 +8,8 @@
         $paid = AccountPayableStatusEnum::PAID->value;
         $cancelled = AccountPayableStatusEnum::CANCELLED->value;
 
-        $canPay = $purchaseInvoice->remaining_amount > 0 && in_array($purchaseInvoice->status, [$open, $partial]);
-        $paidAmount = $purchaseInvoice->total_amount - $purchaseInvoice->remaining_amount;
+        $canPay = $invoice->remaining_amount > 0 && in_array($invoice->status, [$open, $partial]);
+        $paidAmount = $invoice->total_amount - $invoice->remaining_amount;
         $paymentMethodLabels = ['cash' => 'Cash', 'bank_transfer' => 'Bank Transfer', 'credit_card' => 'Credit Card'];
     @endphp
     <div x-data="apShowPage()" x-init="init()" class="order-page">
@@ -20,12 +20,12 @@
                     <x-misc.icon name="chev-left" :size="13" />Kembali
                 </a>
                 <div class="order-title-row">
-                    <h1 class="order-title display">{{ $purchaseInvoice->number }}</h1>
-                    <x-misc.status-badge :status="$displayStatus" />
+                    <h1 class="order-title display">{{ $invoice->number }}</h1>
+                    <x-misc.status-badge :status="$invoice->status" />
                 </div>
-                <div class="order-sub">{{ $purchaseInvoice->supplier->name }}</div>
+                <div class="order-sub">{{ $invoice->supplier->name }}</div>
             </div>
-            
+
         </div>
 
         <div class="card" style="overflow:hidden;">
@@ -35,30 +35,30 @@
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px 24px;">
                         <div>
                             <div class="label" style="font-size:11px;">No. Invoice</div>
-                            <div style="font-weight:600;">{{ $purchaseInvoice->number }}</div>
+                            <div style="font-weight:600;">{{ $invoice->number }}</div>
                         </div>
                         <div>
                             <div class="label" style="font-size:11px;">Supplier</div>
-                            <div style="font-weight:600;">{{ $purchaseInvoice->supplier->name }}</div>
+                            <div style="font-weight:600;">{{ $invoice->supplier->name }}</div>
                         </div>
                         <div>
                             <div class="label" style="font-size:11px;">Tanggal Invoice</div>
-                            <div>{{ $purchaseInvoice->invoice_date->format('d M Y') }}</div>
+                            <div>{{ $invoice->invoice_date->format('d M Y') }}</div>
                         </div>
                         <div>
                             <div class="label" style="font-size:11px;">Jatuh Tempo</div>
-                            <div>{{ $purchaseInvoice->due_date->format('d M Y') }}</div>
+                            <div>{{ $invoice->due_date->format('d M Y') }}</div>
                         </div>
                         <div>
                             <div class="label" style="font-size:11px;">Catatan</div>
-                            <div>{{ $purchaseInvoice->note ?: '—' }}</div>
+                            <div>{{ $invoice->note ?: '—' }}</div>
                         </div>
                     </div>
                 </div>
                 <div class="order-detail-summary" style="padding:20px; border-left:1px solid var(--line-2);">
                     <div style="display:flex; justify-content:space-between; padding:6px 0;">
                         <span style="color:var(--ink-3);">Jumlah Invoice</span>
-                        <span class="num" style="font-weight:600;">{{ fmt_rp($purchaseInvoice->total_amount) }}</span>
+                        <span class="num" style="font-weight:600;">{{ fmt_rp($invoice->total_amount) }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; padding:6px 0;">
                         <span style="color:var(--ink-3);">Jumlah Dibayar</span>
@@ -68,7 +68,7 @@
                         style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;">
                         <span style="color:var(--ink);font-weight:700;">Sisa Tagihan</span>
                         <span class="num"
-                            style="font-weight:700; color:var(--bad);">{{ fmt_rp($purchaseInvoice->remaining_amount) }}</span>
+                            style="font-weight:700; color:var(--bad);">{{ fmt_rp($invoice->remaining_amount) }}</span>
                     </div>
                 </div>
             </div>
@@ -95,7 +95,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($purchaseInvoice->payments as $payment)
+                    @forelse ($invoice->payments as $payment)
                         <tr>
                             <td class="mono" style="font-weight:600;">{{ $payment->number }}</td>
                             <td style="color:var(--ink-3);">{{ $payment->payment_date->format('d M Y') }}</td>
@@ -113,12 +113,12 @@
                         </tr>
                     @endforelse
                 </tbody>
-                @if ($purchaseInvoice->payments->isNotEmpty())
+                @if ($invoice->payments->isNotEmpty())
                     <tfoot>
                         <tr>
                             <td colspan="4" style="text-align:right; font-weight:700;">Total Dibayar</td>
                             <td class="num" style="text-align:right; font-weight:700;">
-                                {{ fmt_rp($purchaseInvoice->payments->sum('amount')) }}</td>
+                                {{ fmt_rp($invoice->payments->sum('amount')) }}</td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -132,14 +132,14 @@
                 <div class="card" style="padding:12px 14px; margin-bottom:14px; background:var(--bg-3);">
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; font-size:12.5px;">
                         <div><span style="color:var(--ink-3);">Invoice
-                                No.</span><br><strong>{{ $purchaseInvoice->number }}</strong></div>
+                                No.</span><br><strong>{{ $invoice->number }}</strong></div>
                         <div><span
-                                style="color:var(--ink-3);">Supplier</span><br><strong>{{ $purchaseInvoice->supplier->name }}</strong>
+                                style="color:var(--ink-3);">Supplier</span><br><strong>{{ $invoice->supplier->name }}</strong>
                         </div>
                         <div><span style="color:var(--ink-3);">Invoice
-                                Total</span><br><strong>{{ fmt_rp($purchaseInvoice->total_amount) }}</strong></div>
+                                Total</span><br><strong>{{ fmt_rp($invoice->total_amount) }}</strong></div>
                         <div><span style="color:var(--ink-3);">Outstanding</span><br><strong
-                                style="color:var(--bad);">{{ fmt_rp($purchaseInvoice->remaining_amount) }}</strong></div>
+                                style="color:var(--bad);">{{ fmt_rp($invoice->remaining_amount) }}</strong></div>
                     </div>
                 </div>
                 <div class="form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
@@ -180,7 +180,7 @@
                         <input class="input num" style="text-align:right;" x-model="form.amount"
                             x-mask:dynamic="$money($input, '.',',')" />
                         <div style="font-size:11px; color:var(--ink-4); margin-top:4px;">
-                            Maximum amount: {{ fmt_rp($purchaseInvoice->remaining_amount) }}
+                            Maximum amount: {{ fmt_rp($invoice->remaining_amount) }}
                         </div>
                     </x-misc.field>
                 </div>
@@ -206,8 +206,8 @@
     <script>
         function apShowPage() {
             return {
-                invoiceId: {{ $purchaseInvoice->id }},
-                outstanding: {{ $purchaseInvoice->remaining_amount }},
+                invoiceId: {{ $invoice->id }},
+                outstanding: {{ $invoice->remaining_amount }},
                 cashBankAccounts: @json($cashBankAccounts),
                 modalOpen: false,
                 saving: false,
@@ -216,6 +216,8 @@
                     account_id: null,
                     payment_method: 'cash',
                     reference_number: '',
+                    reference_id: {{ $invoice->id }},
+                    reference_type: '{{ $type }}',
                     amount: '',
                     note: '',
                 },
@@ -227,15 +229,56 @@
                 },
 
                 openModal() {
-                    this.form = {
-                        payment_date: new Date().toISOString().substring(0, 10),
-                        account_id: null,
-                        payment_method: 'cash',
-                        reference_number: '',
-                        amount: '',
-                        note: '',
-                    };
+                    // this.form = {
+                    //     payment_date: new Date().toISOString().substring(0, 10),
+                    //     account_id: null,
+                    //     payment_method: 'cash',
+                    //     reference_number: '',
+                    //     amount: '',
+                    //     note: '',
+                    // };
+                    this.form.payment_date = new Date().toISOString().substring(0, 10);
+                    this.form.account_id = null;
+                    this.form.payment_method = 'cash';
+                    this.form.reference_number = '';
+                    this.form.amount = '';
+                    this.form.note = '';
                     this.modalOpen = true;
+                },
+
+                statusChip(status) {
+                    const map = {
+                        draft: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-muted',
+                            label: 'Draft'
+                        },
+                        open: {
+                            chip: 'chip chip-info',
+                            dot: 'chip-dot dot-info',
+                            label: 'Open'
+                        },
+                        partial: {
+                            chip: 'chip chip-warn',
+                            dot: 'chip-dot dot-warn',
+                            label: 'Partial'
+                        },
+                        paid: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-ok',
+                            label: 'Paid'
+                        },
+                        cancelled: {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Cancelled'
+                        },
+                    };
+                    return map[status] ?? {
+                        chip: 'chip',
+                        dot: 'chip-dot dot-neutral',
+                        label: status
+                    };
                 },
 
                 async submit() {
@@ -263,32 +306,55 @@
                         return;
                     }
 
-                    this.saving = true;
+                    let body = {
+                        account_id: this.form.account_id,
+                        payment_date: this.form.payment_date,
+                        payment_method: this.form.payment_method,
+                        reference_number: this.form.reference_number,
+                        reference_id: this.form.reference_id,
+                        reference_type: this.form.reference_type,
+                        amount: amount,
+                        note: this.form.note,
+                    };
+                    console.log('Submitting payment:', body);
+
+                    Swal.fire({
+                        title: 'Memproses penyimpanan draft Penerimaan Barang...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
                     try {
-                        const response = await axios.post(route('finances.account_payables.store', this.invoiceId), {
-                            account_id: this.form.account_id,
-                            payment_date: this.form.payment_date,
-                            payment_method: this.form.payment_method,
-                            reference_number: this.form.reference_number,
-                            amount: amount,
-                            note: this.form.note,
-                        });
+                        const response = await axios.post(route('finances.account_payables.store', this.invoiceId),
+                            body);
+                        Swal.close();
                         Toast.fire({
                             icon: 'success',
                             title: response.data.message
                         });
                         window.location.href = response.data.redirect;
                     } catch (error) {
-                        let message = 'Terjadi kesalahan saat menambahkan pembayaran. Silakan coba lagi.';
-                        if (error.response?.data?.message) {
-                            message = error.response.data.message;
+                        Swal.close();
+                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let html = null;
+                        if (error.response?.status === 422) {
+                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                Object.values(error.response.data.errors)
+                                .flat()
+                                .map(msg => `<li>${msg}</li>`)
+                                .join('') +
+                                '</ul>';
+                        } else if (error.response?.data?.message) {
+                            title = error.response.data.message;
                         }
                         Toast.fire({
                             icon: 'error',
-                            title: message
+                            title: title,
+                            html: html
                         });
-                    } finally {
-                        this.saving = false;
+
                     }
                 },
             };

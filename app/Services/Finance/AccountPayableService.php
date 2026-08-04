@@ -4,8 +4,10 @@ namespace App\Services\Finance;
 
 use App\Enums\ExpenseStatus;
 use App\Enums\PurchaseInvoiceStatus;
+use App\Enums\PayablePaymentReferenceTypeEnum;
 use App\Models\Company;
 use App\Models\Expense;
+use App\Models\PayablePayment;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchasePayment;
 use Illuminate\Http\Request;
@@ -20,7 +22,7 @@ class AccountPayableService
         $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
         $datePart = date('Y');
 
-        $counter = PurchasePayment::whereYear('created_at', date('Y'))
+        $counter = PayablePayment::whereYear('created_at', date('Y'))
             ->where('company_id', config('context.selected_company_id'))
             ->count() + 1;
         $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
@@ -28,9 +30,42 @@ class AccountPayableService
         return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
     }
 
-    public function derivePaymentStatus(string $status, $dueDate): string
+    public function fetchInvoiceByID(int $id, string $type)
     {
-        return 'open';
+        if ($type === 'purchase_invoice') {
+            return PurchaseInvoice::with(['supplier:id,name,code'])
+                ->select(
+                    'id',
+                    'number',
+                    'invoice_date',
+                    'due_date',
+                    'supplier_id',
+                    'total_amount',
+                    'remaining_amount',
+                    'status'
+                )
+                ->findOrFail($id);
+        } else if ($type === 'expense') {
+            $expense = Expense::with(['contact:id,name,code'])
+                ->select(
+                    'id',
+                    'number',
+                    'expense_date',
+                    'due_date',
+                    'contact_id',
+                    'total_amount',
+                    'remaining_amount',
+                    'status'
+                )
+                ->findOrFail($id);
+
+            $expense->invoice_date = $expense->expense_date; // Map expense_date to invoice_date for consistency
+            $expense->supplier_id = $expense->contact_id; // Map contact_id to supplier
+            $expense->supplier = $expense->contact; // Map contact to supplier relationship
+            return $expense;
+        } else {
+            throw ValidationException::withMessages(['error' => 'Tipe referensi tidak valid.']);
+        }
     }
 
     public function fetchAPTableData(Request $request)
@@ -105,11 +140,12 @@ class AccountPayableService
 
     public function fetchPaymentTableData(Request $request, int $id)
     {
-        $query = PurchasePayment::with([
+        $query = PayablePayment::with([
             'account:id,name,code',
             'creator:id,name',
         ])
-            ->where('purchase_invoice_id', $id)
+            ->where('reference_type', $request->input('reference_type'))
+            ->where('reference_id', $id)
             ->select(
                 'id',
                 'number',
@@ -138,44 +174,57 @@ class AccountPayableService
 
     public function storePayment(Request $request, int $id)
     {
-        $invoice = PurchaseInvoice::findOrFail($id);
+        // $invoice = PurchaseInvoice::findOrFail($id);
 
-        if ($invoice->remaining_amount <= 0 || $invoice->status === PurchaseInvoiceStatus::PAID->value) {
-            throw ValidationException::withMessages(['error' => 'Invoice ini sudah lunas. Tidak dapat menambahkan pembayaran lagi.']);
+        // if ($invoice->remaining_amount <= 0 || $invoice->status === PurchaseInvoiceStatus::PAID->value) {
+        //     throw ValidationException::withMessages(['error' => 'Invoice ini sudah lunas. Tidak dapat menambahkan pembayaran lagi.']);
+        // }
+
+        // if ($invoice->status === PurchaseInvoiceStatus::CANCELLED->value) {
+        //     throw ValidationException::withMessages(['error' => 'Invoice ini dibatalkan. Tidak dapat menambahkan pembayaran.']);
+        // }
+
+        // if ($request->amount > $invoice->remaining_amount) {
+        //     throw ValidationException::withMessages(['amount' => 'Jumlah pembayaran tidak boleh melebihi sisa outstanding (' . fmt_rp($invoice->remaining_amount) . ').']);
+        // }
+
+        if ($request->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value) {
+            $invoice = PurchaseInvoice::findOrFail($id);
+        } elseif ($request->reference_type === PayablePaymentReferenceTypeEnum::EXPENSE->value) {
+            $invoice = Expense::findOrFail($id);
+        } else {
+            throw ValidationException::withMessages(['error' => 'Tipe referensi tidak valid.']);
         }
 
-        if ($invoice->status === PurchaseInvoiceStatus::CANCELLED->value) {
-            throw ValidationException::withMessages(['error' => 'Invoice ini dibatalkan. Tidak dapat menambahkan pembayaran.']);
-        }
+            DB::transaction(function () use ($request, $invoice) {
+                PayablePayment::create([
+                    'company_id' => $invoice->company_id,
+                    'reference_id' => $invoice->id,
+                    'reference_type' => PayablePaymentReferenceTypeEnum::from($request->reference_type)->value,
+                    'account_id' => $request->account_id,
+                    'number' => $this->generateAPNumber(),
+                    'payment_date' => $request->payment_date,
+                    'payment_method' => $request->payment_method,
+                    'reference_number' => $request->reference_number,
+                    'amount' => $request->amount,
+                    'note' => $request->note,
+                    'created_by' => auth()->id(),
+                ]);
 
-        if ($request->amount > $invoice->remaining_amount) {
-            throw ValidationException::withMessages(['amount' => 'Jumlah pembayaran tidak boleh melebihi sisa outstanding (' . fmt_rp($invoice->remaining_amount) . ').']);
-        }
+                $invoice->remaining_amount -= $request->amount;
+                if ($invoice->remaining_amount <= 0) {
+                    $invoice->status = $request->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value
+                        ? PurchaseInvoiceStatus::PAID->value
+                        : ExpenseStatus::PAID->value;
+                } elseif ($invoice->remaining_amount < $invoice->total_amount) {
+                    $invoice->status = $request->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value
+                        ? PurchaseInvoiceStatus::PARTIAL->value
+                        : ExpenseStatus::PARTIAL->value;
+                }
+                $invoice->save();
 
-        DB::transaction(function () use ($request, $invoice) {
-            PurchasePayment::create([
-                'company_id' => $invoice->company_id,
-                'purchase_invoice_id' => $invoice->id,
-                'account_id' => $request->account_id,
-                'number' => $this->generateAPNumber(),
-                'payment_date' => $request->payment_date,
-                'payment_method' => $request->payment_method,
-                'reference_number' => $request->reference_number,
-                'amount' => $request->amount,
-                'note' => $request->note,
-                'created_by' => auth()->id(),
-            ]);
+                // TODO: Insert Journal Entry for the payment
 
-            $invoice->remaining_amount -= $request->amount;
-            if ($invoice->remaining_amount <= 0) {
-                $invoice->status = PurchaseInvoiceStatus::PAID->value;
-            } elseif ($invoice->remaining_amount < $invoice->total_amount) {
-                $invoice->status = PurchaseInvoiceStatus::PARTIAL->value;
-            }
-            $invoice->save();
-
-            // TODO: Insert Journal Entry for the payment
-
-        });
+            });
     }
 }

@@ -68,7 +68,12 @@
                                 <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
                                 <td class="num" style="text-align:right;"
                                     x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
-                                <td><span class="mono" x-text="row.status"></span></td>
+                                <td>
+                                    <span :class="statusChip(row.status).chip">
+                                        <span :class="statusChip(row.status).dot"></span>
+                                        <span x-text="statusChip(row.status).label"></span>
+                                    </span>
+                                </td>
                                 <td class="table-action-col">
                                     <div x-data="{ open: false }" class="action-menu">
                                         <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
@@ -182,6 +187,41 @@
                 page: 1,
                 perPage: 10,
                 filter: 'all',
+
+                statusChip(status) {
+                    const map = {
+                        draft: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-muted',
+                            label: 'Draft'
+                        },
+                        open: {
+                            chip: 'chip chip-info',
+                            dot: 'chip-dot dot-info',
+                            label: 'Open'
+                        },
+                        partial: {
+                            chip: 'chip chip-warn',
+                            dot: 'chip-dot dot-warn',
+                            label: 'Partial'
+                        },
+                        paid: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-ok',
+                            label: 'Paid'
+                        },
+                        cancelled: {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Cancelled'
+                        },
+                    };
+                    return map[status] ?? {
+                        chip: 'chip',
+                        dot: 'chip-dot dot-neutral',
+                        label: status
+                    };
+                },
 
                 async setStatus(statusId) {
                     this.filter = statusId;

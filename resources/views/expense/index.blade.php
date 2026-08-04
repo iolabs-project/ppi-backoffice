@@ -66,6 +66,41 @@
                     }
                 },
 
+                statusChip(status) {
+                    const map = {
+                        draft: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-muted',
+                            label: 'Draft'
+                        },
+                        open: {
+                            chip: 'chip chip-info',
+                            dot: 'chip-dot dot-info',
+                            label: 'Open'
+                        },
+                        partial: {
+                            chip: 'chip chip-warn',
+                            dot: 'chip-dot dot-warn',
+                            label: 'Partial'
+                        },
+                        paid: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-ok',
+                            label: 'Paid'
+                        },
+                        cancelled: {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Cancelled'
+                        },
+                    };
+                    return map[status] ?? {
+                        chip: 'chip',
+                        dot: 'chip-dot dot-neutral',
+                        label: status
+                    };
+                },
+
                 async handleCancel(id) {
                     Swal.fire({
                         title: 'Apakah Anda yakin ingin membatalkan Tagihan Penjualan ini?',
@@ -145,7 +180,7 @@
             <div class="card stat-card stat-card--dark">
                 <div class="stat-card__label">Total Biaya Bulan Ini</div>
                 <div class="stat-card__value display num">{{ fmt_rp(0) }}</div>
-                <div class="stat-card__sub"><span x-text="tableData.data.length"></span> entri tercatat</div>
+                {{-- <div class="stat-card__sub"><span x-text="tableData.data.length"></span> entri tercatat</div> --}}
             </div>
             @php
                 $data = []; // Placeholder for actual data, replace with your data source
@@ -154,19 +189,19 @@
                 $ditolak = collect($data)->where('status', 'ditolak')->sum('jumlah');
             @endphp
             <div class="card stat-card stat-card--good">
-                <div class="stat-card__label">Disetujui</div>
+                <div class="stat-card__label">Sudah Dibayarkan</div>
                 <div class="stat-card__value display num">{{ fmt_rp($disetujui) }}</div>
-                <div class="stat-card__sub">{{ collect($data)->where('status', 'disetujui')->count() }} entri</div>
+                {{-- <div class="stat-card__sub">{{ collect($data)->where('status', 'disetujui')->count() }} entri</div> --}}
             </div>
             <div class="card stat-card stat-card--warn">
-                <div class="stat-card__label">Menunggu Persetujuan</div>
+                <div class="stat-card__label">Belum Dibayarkan</div>
                 <div class="stat-card__value display num">{{ fmt_rp($menunggu) }}</div>
-                <div class="stat-card__sub">{{ collect($data)->where('status', 'menunggu')->count() }} entri</div>
+                {{-- <div class="stat-card__sub">{{ collect($data)->where('status', 'menunggu')->count() }} entri</div> --}}
             </div>
             <div class="card stat-card stat-card--bad">
-                <div class="stat-card__label">Ditolak</div>
+                <div class="stat-card__label">Dibatalkan</div>
                 <div class="stat-card__value display num">{{ fmt_rp($ditolak) }}</div>
-                <div class="stat-card__sub">{{ collect($data)->where('status', 'ditolak')->count() }} entri</div>
+                {{-- <div class="stat-card__sub">{{ collect($data)->where('status', 'ditolak')->count() }} entri</div> --}}
             </div>
         </div>
 
@@ -223,12 +258,18 @@
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
                                 <td style="color:var(--ink-3);" x-text="row.expense_date ?? '-'"></td>
                                 <td class="mono" style="font-weight:600;" x-text="row.reference_number"></td>
-                                <td style="font-weight:500;" x-text="row.contact.name ?? '-'"></td>
+                                <td style="font-weight:500;" x-text="row.contact?.name ?? '-'"></td>
                                 <td class="num" style="text-align:right;"
                                     x-text="NumberUtils.formatNumericIntoMask(row.remainig_amount)"></td>
                                 <td class="num" style="text-align:right;"
                                     x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
-                                <td><span class="mono" x-text="row.status"></span></td>
+                                {{-- <td><span class="mono" x-text="row.status"></span></td> --}}
+                                <td>
+                                    <span :class="statusChip(row.status).chip">
+                                        <span :class="statusChip(row.status).dot"></span>
+                                        <span x-text="statusChip(row.status).label"></span>
+                                    </span>
+                                </td>
                                 <td class="table-action-col">
                                     <div x-data="{ open: false }" class="action-menu">
                                         <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
