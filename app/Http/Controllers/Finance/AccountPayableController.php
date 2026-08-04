@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
 use App\Enums\AccountCategory;
+use App\Enums\AccountPayableStatusEnum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -29,13 +30,7 @@ class AccountPayableController extends Controller
         $data = [
             'currentPage'    => 'finance.account_payable',
             'breadcrumb'     => [['label' => 'Hutang']],
-            'status' => [
-                ['id' => 'all', 'name' => 'Semua'],
-                ['id' => 'not-yet-due', 'name' => 'Not Yet Due'],
-                ['id' => 'unpaid', 'name' => 'Unpaid'],
-                ['id' => 'partial', 'name' => 'Partial'],
-                ['id' => 'paid', 'name' => 'Paid'],
-            ],
+            'status' => AccountPayableStatusEnum::dropdownOptions(),
         ];
         return view('finance.account-payable.index', $data);
     }

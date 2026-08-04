@@ -153,6 +153,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::get('/{id}', 'show')->name('show');
             Route::post('/{id}', 'store')->name('store');
+            Route::get('/{id}/edit', 'edit')->name('edit');
         });
         Route::prefix('account-receivables')->name('account_receivables.')->controller(AccountReceivableController::class)->group(function () {
             Route::get('/', 'index')->name('index');

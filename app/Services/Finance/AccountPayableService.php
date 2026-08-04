@@ -30,13 +30,7 @@ class AccountPayableService
 
     public function derivePaymentStatus(string $status, $dueDate): string
     {
-        return match ($status) {
-            PurchaseInvoiceStatus::PAID->value => 'paid',
-            PurchaseInvoiceStatus::PARTIAL->value => 'partial',
-            PurchaseInvoiceStatus::CANCELLED->value => 'cancelled',
-            PurchaseInvoiceStatus::DRAFT->value => 'draft',
-            default => ($dueDate && $dueDate->isPast()) ? 'unpaid' : 'not-yet-due',
-        };
+        return 'open';
     }
 
     public function fetchAPTableData(Request $request)
@@ -54,19 +48,14 @@ class AccountPayableService
                 purchase_invoices.remaining_amount,
                 purchase_invoices.status,
                 'purchase_invoice' as type
-            ")
-            ->whereIn('purchase_invoices.status', [
-                PurchaseInvoiceStatus::OPEN->value,
-                PurchaseInvoiceStatus::PARTIAL->value,
-                PurchaseInvoiceStatus::PAID->value,
-            ]);
+            ");
 
         $query2 = Expense::query()
             ->join('contacts', 'contacts.id', '=', 'expenses.contact_id')
             ->selectRaw("
                 expenses.id,
                 expenses.number,
-                expenses.invoice_date,
+                expenses.expense_date as invoice_date,
                 expenses.due_date,
                 contacts.name as contact_name,
                 contacts.code as contact_code,
@@ -74,12 +63,7 @@ class AccountPayableService
                 expenses.remaining_amount,
                 expenses.status,
                 'expense' as type
-            ")
-            ->whereIn('expenses.status', [
-                ExpenseStatus::OPEN->value,
-                ExpenseStatus::PARTIAL->value,
-                ExpenseStatus::PAID->value,
-            ]);
+            ");
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -99,41 +83,22 @@ class AccountPayableService
 
         if ($request->filled('date_from')) {
             $query->whereDate('purchase_invoices.invoice_date', '>=', $request->input('date_from'));
-            $query2->whereDate('expenses.invoice_date', '>=', $request->input('date_from'));
+            $query2->whereDate('expenses.expense_date', '>=', $request->input('date_from'));
         }
 
         if ($request->filled('date_to')) {
             $query->whereDate('purchase_invoices.invoice_date', '<=', $request->input('date_to'));
-            $query2->whereDate('expenses.invoice_date', '<=', $request->input('date_to'));
+            $query2->whereDate('expenses.expense_date', '<=', $request->input('date_to'));
         }
 
         if ($request->filled('status') && $request->input('status') !== 'all') {
-            $today = now()->toDateString();
-
-            $applyStatusFilter = function ($builder, string $table, string $statusColumn) use ($request, $today) {
-                match ($request->input('status')) {
-                    'paid' => $builder->where($statusColumn, 'paid'),
-                    'partial' => $builder->where($statusColumn, 'partial'),
-                    'not-yet-due' => $builder->where($statusColumn, 'open')
-                        ->whereDate("$table.due_date", '>=', $today),
-                    'unpaid' => $builder->where($statusColumn, 'open')
-                        ->whereDate("$table.due_date", '<', $today),
-                    default => null,
-                };
-            };
-
-            $applyStatusFilter($query, 'purchase_invoices', 'purchase_invoices.status');
-            $applyStatusFilter($query2, 'expenses', 'expenses.status');
+            $query->where('purchase_invoices.status', $request->input('status'));
+            $query2->where('expenses.status', $request->input('status'));
         }
 
         $query = $query->unionAll($query2);
 
         $query = $query->orderBy('invoice_date', 'desc')->paginate($request->input('per_page', 10));
-
-        $query->getCollection()->transform(function ($invoice) {
-            $invoice->display_status = $this->derivePaymentStatus($invoice->status, $invoice->due_date);
-            return $invoice;
-        });
 
         return $query;
     }

@@ -1,5 +1,13 @@
 @extends('layouts.app')
 @section('content')
+    @php
+        use App\Enums\AccountPayableStatusEnum;
+        $draft = AccountPayableStatusEnum::DRAFT->value;
+        $open = AccountPayableStatusEnum::OPEN->value;
+        $partial = AccountPayableStatusEnum::PARTIAL->value;
+        $paid = AccountPayableStatusEnum::PAID->value;
+        $cancelled = AccountPayableStatusEnum::CANCELLED->value;
+    @endphp
     <div x-data="apDatatable()" x-init="fetchData()" class="order-page">
         <div class="order-hd">
             <div>
@@ -79,7 +87,7 @@
                                 <td class="mono" style="color:var(--ink-4);"
                                     x-text="(tableData.current_page - 1) * tableData.per_page + i + 1"></td>
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
-                                <td style="font-weight:500;" x-text="row.supplier?.name ?? '-'"></td>
+                                <td style="font-weight:500;" x-text="row.contact_name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.invoice_date ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
                                 <td class="num" style="text-align:right;"
@@ -87,16 +95,72 @@
                                 <td class="num" style="text-align:right; font-weight:600;"
                                     x-text="NumberUtils.formatNumericIntoMask(row.remaining_amount)"></td>
                                 <td>
-                                    <span :class="statusChip(row.display_status).chip">
-                                        <span :class="statusChip(row.display_status).dot"></span>
-                                        <span x-text="statusChip(row.display_status).label"></span>
+                                    <span :class="statusChip(row.status).chip">
+                                        <span :class="statusChip(row.status).dot"></span>
+                                        <span x-text="statusChip(row.status).label"></span>
                                     </span>
                                 </td>
-                                <td x-on:click.stop>
+                                {{-- <td x-on:click.stop>
                                     <a :href="route('finances.account_payables.show', row.id)"
                                         class="btn btn-ghost btn-icon btn-sm" style="border:none;">
                                         <x-misc.icon name="eye" :size="15" stroke="var(--ink-3)" />
                                     </a>
+                                </td> --}}
+                                <td class="table-action-col">
+                                    <div x-data="{ open: false }" class="action-menu">
+                                        <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
+                                            x-on:click.stop="
+                                            let wasOpen = open;
+                                            $dispatch('close-menus');
+                                            if (!wasOpen) {
+                                                let r = $el.getBoundingClientRect();
+                                                $refs.panel.style.top = (r.bottom + 6) + 'px';
+                                                $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
+                                                open = true;
+                                            }
+                                        ">
+                                            <x-misc.icon name="more" :size="15" />
+                                        </button>
+                                        <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
+                                            x-on:click.away="open = false" class="action-menu__panel">
+                                            <a :href="route('finances.account_payables.show', row.id)" @click.stop
+                                                class="action-menu__item">
+                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                                Detail
+                                            </a>
+                                            {{-- <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)"
+                                                @click.stop class="action-menu__item">
+                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                                PO
+                                            </a> --}}
+                                            {{-- <button class="action-menu__item" @click.stop>
+                                                <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
+                                                Tagihan
+                                            </button> --}}
+                                            {{-- <template x-if="row.status !== '{{ $paid }}' && row.status !== '{{ $cancelled }}'">
+                                                <div>
+                                                    <a :href="route('finances.account_payables.edit', row.id)"
+                                                        @click.stop class="action-menu__item">
+                                                        <x-misc.icon name="edit" :size="14"
+                                                            stroke="var(--ink-3)" />Edit
+                                                        Hutang
+                                                    </a>
+                                                </div>
+                                            </template> --}}
+                                            {{-- <template
+                                                x-if="row.status === '{{ $draft }}' || row.status === '{{ $open }}'">
+                                                <div>
+                                                    <div class="action-menu__divider"></div>
+                                                    <button class="action-menu__item action-menu__item--danger"
+                                                        @click.stop="handleCancel(row.id)">
+                                                        <x-misc.icon name="x" :size="14"
+                                                            stroke="currentColor" />Hapus
+                                                        Tagihan
+                                                    </button>
+                                                </div>
+                                            </template> --}}
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         </template>
@@ -204,26 +268,31 @@
                 },
 
                 statusChip(status) {
-                    const map = {
-                        'not-yet-due': {
-                            chip: 'chip chip-ok',
-                            dot: 'chip-dot dot-ok',
-                            label: 'Not Yet Due'
+                     const map = {
+                        draft: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-muted',
+                            label: 'Draft'
                         },
-                        'unpaid': {
-                            chip: 'chip chip-bad',
-                            dot: 'chip-dot dot-bad',
-                            label: 'Unpaid'
+                        open: {
+                            chip: 'chip chip-info',
+                            dot: 'chip-dot dot-info',
+                            label: 'Open'
                         },
-                        'partial': {
+                        partial: {
                             chip: 'chip chip-warn',
                             dot: 'chip-dot dot-warn',
                             label: 'Partial'
                         },
-                        'paid': {
+                        paid: {
                             chip: 'chip',
                             dot: 'chip-dot dot-neutral',
                             label: 'Paid'
+                        },
+                        cancelled: {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Cancelled'
                         },
                     };
                     return map[status] ?? {
