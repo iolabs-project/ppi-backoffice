@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Services\Sales;
-
+use App\Services\InventoryService;
 use App\Models\Company;
 use App\Services\JournalService;
 use App\Enums\AccountSettingEnum;
@@ -28,11 +28,13 @@ class DeliveryOrderService
     private SalesOrderService $salesOrderService;
     private ExpenseService $expenseService;
     private JournalService $journalService;
-    public function __construct(SalesOrderService $salesOrderService, ExpenseService $expenseService, JournalService $journalService)
+    private InventoryService $inventoryService;
+    public function __construct(SalesOrderService $salesOrderService, ExpenseService $expenseService, JournalService $journalService, InventoryService $inventoryService)
     {
         $this->salesOrderService = $salesOrderService;
         $this->expenseService = $expenseService;
         $this->journalService = $journalService;
+        $this->inventoryService = $inventoryService;
     }
     public function generateDONumber(): string
     {

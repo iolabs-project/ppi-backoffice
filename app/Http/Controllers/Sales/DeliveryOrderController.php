@@ -4,20 +4,24 @@ namespace App\Http\Controllers\Sales;
 
 use App\Enums\DeliveryOrderStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Sales\DeliveryOrderFormRequest;
 use App\Services\Master\AccountService;
 use App\Services\Sales\DeliveryOrderService;
 use App\Services\Sales\SalesOrderService;
 use Illuminate\Http\Request;
+use App\Services\InventoryService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class DeliveryOrderController extends Controller
 {
     private AccountService $accountService;
+    private InventoryService $inventoryService;
 
-    public function __construct(AccountService $accountService)
+    public function __construct(AccountService $accountService, InventoryService $inventoryService)
     {
         $this->accountService = $accountService;
+        $this->inventoryService = $inventoryService;
     }
 
     public function index()
@@ -38,19 +42,9 @@ class DeliveryOrderController extends Controller
         return response()->json($data);
     }
 
-    public function store(Request $request, DeliveryOrderService $deliveryOrderService)
+    public function store(DeliveryOrderFormRequest $request, DeliveryOrderService $deliveryOrderService)
     {
         try {
-            $request->validate(
-                [
-                    'sales_order_id' => 'required|exists:sales_orders,id',
-                ],
-                [
-                    'sales_order_id.required' => 'ID Sales Order harus diisi.',
-                    'sales_order_id.exists' => 'Sales Order tidak ditemukan.',
-                ]
-            );
-
             $data = $deliveryOrderService->storeDeliveryOrder($request);
 
             return response()->json(['redirect' => route('sales.delivery_orders.edit', $data->id), 'message' => 'Delivery order berhasil dibuat.']);
@@ -79,10 +73,22 @@ class DeliveryOrderController extends Controller
         }
 
         $remainingSOItems = $salesOrderService->fetchSOItemsForDeliveryOrder($deliveryOrder->sales_order_id);
-        $availableBatches = $deliveryOrderService->fetchAvailableBatches(
+        // $availableBatches = $deliveryOrderService->fetchAvailableBatches(
+        //     $deliveryOrder->warehouse_id,
+        //     $remainingSOItems->pluck('product_id')->unique()->values()->all()
+        // );
+        $availableBatches = $this->inventoryService->fetchInventoryBatches(
             $deliveryOrder->warehouse_id,
             $remainingSOItems->pluck('product_id')->unique()->values()->all()
-        );
+        )->map(function ($batch) {
+            return [
+                'id' => $batch->id,
+                'product_id' => $batch->product_id,
+                'batch_number' => $batch->batch_number,
+                'available_quantity' => $batch->available_quantity,
+                'unit_cost' => $batch->unit_cost,
+            ];
+        })->values();
 
         $data = [
             'currentPage' => 'penjualan.pengiriman',
@@ -116,43 +122,8 @@ class DeliveryOrderController extends Controller
         return view('sales.delivery-order.show', $data);
     }
 
-    public function update(Request $request, DeliveryOrderService $deliveryOrderService, int $id)
+    public function update(DeliveryOrderFormRequest $request, DeliveryOrderService $deliveryOrderService, int $id)
     {
-        if ($request->input('status') !== DeliveryOrderStatus::DRAFT->value) {
-            $request->validate(
-                [
-                    'reference_number' => 'nullable|string|max:50',
-                    'delivery_date' => 'required|date',
-                    'status' => 'required|in:draft,finished',
-                    'note' => 'nullable|string|max:1000',
-                    'details' => 'required|array|min:1',
-                    'details.*.sales_order_item_id' => 'required|exists:sales_order_items,id',
-                    'details.*.product_id' => 'required|exists:products,id',
-                    'details.*.quantity' => 'required|numeric|min:0.0001',
-                    'details.*.batches' => 'required|array|min:1',
-                    'details.*.batches.*.product_batch_id' => 'required|exists:product_batches,id',
-                    'details.*.batches.*.quantity' => 'required|numeric|min:0.0001',
-                    'costs' => 'nullable|array',
-                    'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
-                    'costs.*.description' => 'nullable|string|max:1000',
-                    'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
-                ],
-                [
-                    'delivery_date.required' => 'Tanggal pengiriman harus diisi.',
-                    'status.required' => 'Status pengiriman harus diisi.',
-                    'details.required' => 'Daftar produk pengiriman harus diisi.',
-                    'details.*.sales_order_item_id.required' => 'Terdapat produk yang belum dipilih. Silakan pilih produk dari daftar item SO.',
-                    'details.*.product_id.required' => 'Terdapat produk yang belum dipilih. Silakan pilih produk dari daftar item SO.',
-                    'details.*.quantity.required' => 'Terdapat produk yang belum diisi jumlah yang akan dikirim.',
-                    'details.*.batches.required' => 'Terdapat produk yang belum memilih batch. Silakan pilih batch untuk setiap produk.',
-                    'details.*.batches.*.product_batch_id.required' => 'Terdapat batch yang belum dipilih.',
-                    'details.*.batches.*.quantity.required' => 'Terdapat batch yang belum diisi jumlahnya.',
-                    'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
-                    'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
-                ]
-            );
-        }
-
         try {
             $deliveryOrderService->updateDeliveryOrder($request, $id);
             return response()->json(['redirect' => route('sales.delivery_orders.index'), 'message' => 'Pengiriman Barang berhasil diperbarui.']);

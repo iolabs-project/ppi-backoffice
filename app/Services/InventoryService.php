@@ -48,7 +48,7 @@ class InventoryService
         return $data;
     }
 
-    public function fetchInventoryBatches(int $companyID): Collection
+    public function fetchInventoryBatches(int $companyID, array $productIDs = []): Collection
     {
         return ProductBatch::with([
             'product:id,code,name,unit_id',
@@ -56,6 +56,7 @@ class InventoryService
             'warehouse:id,name',
         ])
             ->select(
+                'id',
                 'company_id',
                 'warehouse_id',
                 'product_id',
@@ -66,6 +67,9 @@ class InventoryService
             )
             ->where('company_id', $companyID)
             ->whereRaw('quantity - reserved_quantity > 0')
+            ->when(!empty($productIDs), function ($query) use ($productIDs) {
+                $query->whereIn('product_id', $productIDs);
+            })
             ->get();
     }
 
