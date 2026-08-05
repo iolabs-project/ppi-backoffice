@@ -26,7 +26,7 @@ class AccountPayableService
     }
     public function generateAPNumber()
     {
-        $prefix = 'PP';
+        $prefix = 'AP';
         $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
         $datePart = date('Y');
 

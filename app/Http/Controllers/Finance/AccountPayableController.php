@@ -18,15 +18,11 @@ use App\Services\Master\AccountService;
 class AccountPayableController extends Controller
 {
     private AccountPayableService $accountPayableService;
-    private PurchaseInvoiceService $purchaseInvoiceService;
-    private ExpenseService $expenseService;
     private AccountService $accountService;
 
-    public function __construct(AccountPayableService $accountPayableService, PurchaseInvoiceService $purchaseInvoiceService, ExpenseService $expenseService, AccountService $accountService)
+    public function __construct(AccountPayableService $accountPayableService, AccountService $accountService)
     {
         $this->accountPayableService = $accountPayableService;
-        $this->purchaseInvoiceService = $purchaseInvoiceService;
-        $this->expenseService = $expenseService;
         $this->accountService = $accountService;
     }
 

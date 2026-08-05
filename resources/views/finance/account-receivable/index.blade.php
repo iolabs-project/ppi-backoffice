@@ -1,16 +1,20 @@
 @extends('layouts.app')
 @section('content')
-    <div x-data="arDatatable()" x-init="fetchData()" class="order-page">
+    @php
+        use App\Enums\AccountReceivableStatusEnum;
+        $draft = AccountReceivableStatusEnum::DRAFT->value;
+        $open = AccountReceivableStatusEnum::OPEN->value;
+        $partial = AccountReceivableStatusEnum::PARTIAL->value;
+        $paid = AccountReceivableStatusEnum::PAID->value;
+        $cancelled = AccountReceivableStatusEnum::CANCELLED->value;
+    @endphp
+    <div x-data="apDatatable()" x-init="fetchData()" class="order-page">
         <div class="order-hd">
             <div>
-                <h1 class="order-title display">Account Receivable</h1>
-                <div class="order-sub"><span x-text="tableData ? tableData.total : 0"></span> invoice dengan outstanding</div>
+                <h1 class="order-title display">Piutang</h1>
+                {{-- <div class="order-sub"><span x-text="tableData ? tableData.total : 0"></span> invoice dengan outstanding</div> --}}
             </div>
-            <div class="order-actions">
-                <button class="btn btn-primary" @click="openPicker()">
-                    <x-misc.icon name="plus" :size="15" />New Payment
-                </button>
-            </div>
+
         </div>
 
         <div class="filter-pills">
@@ -21,7 +25,7 @@
                 </button>
             @endforeach
             <div style="flex:1;"></div>
-            <input class="input" style="height:32px; width:200px;" placeholder="Cari nomor invoice / customer..."
+            <input class="input" style="height:32px; width:200px;" placeholder="Cari nomor invoice / supplier..."
                 x-model="search" x-on:input.debounce.400ms="page = 1; fetchData()" />
             <button class="btn btn-ghost btn-sm" @click="showFilters = !showFilters">
                 <x-misc.icon name="filter" :size="13" />Filters
@@ -48,7 +52,7 @@
                 <thead>
                     <tr>
                         <th style="width:48px;">No</th>
-                        <th>Invoice No.</th>
+                        <th>No. Invoice</th>
                         <th>Customer</th>
                         <th>Invoice Date</th>
                         <th>Due Date</th>
@@ -76,11 +80,14 @@
                     <template x-if="!loading">
                         <template x-for="(row, i) in tableData.data" :key="row.id">
                             <tr class="row-tap"
-                                @click="window.location = route('finances.account_receivables.show', row.id)">
+                                @click="window.location = route('finances.account_receivables.show', {
+                                id: row.id,
+                                reference_type: row.type
+                            })">
                                 <td class="mono" style="color:var(--ink-4);"
                                     x-text="(tableData.current_page - 1) * tableData.per_page + i + 1"></td>
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
-                                <td style="font-weight:500;" x-text="row.customer?.name ?? '-'"></td>
+                                <td style="font-weight:500;" x-text="row.contact_name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.invoice_date ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
                                 <td class="num" style="text-align:right;"
@@ -88,16 +95,72 @@
                                 <td class="num" style="text-align:right; font-weight:600;"
                                     x-text="NumberUtils.formatNumericIntoMask(row.remaining_amount)"></td>
                                 <td>
-                                    <span :class="statusChip(row.display_status).chip">
-                                        <span :class="statusChip(row.display_status).dot"></span>
-                                        <span x-text="statusChip(row.display_status).label"></span>
+                                    <span :class="statusChip(row.status).chip">
+                                        <span :class="statusChip(row.status).dot"></span>
+                                        <span x-text="statusChip(row.status).label"></span>
                                     </span>
                                 </td>
-                                <td x-on:click.stop>
+                                {{-- <td x-on:click.stop>
                                     <a :href="route('finances.account_receivables.show', row.id)"
                                         class="btn btn-ghost btn-icon btn-sm" style="border:none;">
                                         <x-misc.icon name="eye" :size="15" stroke="var(--ink-3)" />
                                     </a>
+                                </td> --}}
+                                <td class="table-action-col">
+                                    <div x-data="{ open: false }" class="action-menu">
+                                        <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
+                                            x-on:click.stop="
+                                            let wasOpen = open;
+                                            $dispatch('close-menus');
+                                            if (!wasOpen) {
+                                                let r = $el.getBoundingClientRect();
+                                                $refs.panel.style.top = (r.bottom + 6) + 'px';
+                                                $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
+                                                open = true;
+                                            }
+                                        ">
+                                            <x-misc.icon name="more" :size="15" />
+                                        </button>
+                                        <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
+                                            x-on:click.away="open = false" class="action-menu__panel">
+                                            <a :href="route('finances.account_receivables.show', { id: row.id, reference_type: row.type })" @click.stop
+                                                class="action-menu__item">
+                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                                Detail
+                                            </a>
+                                            {{-- <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)"
+                                                @click.stop class="action-menu__item">
+                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                                PO
+                                            </a> --}}
+                                            {{-- <button class="action-menu__item" @click.stop>
+                                                <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
+                                                Tagihan
+                                            </button> --}}
+                                            {{-- <template x-if="row.status !== '{{ $paid }}' && row.status !== '{{ $cancelled }}'">
+                                                <div>
+                                                    <a :href="route('finances.account_receivables.edit', row.id)"
+                                                        @click.stop class="action-menu__item">
+                                                        <x-misc.icon name="edit" :size="14"
+                                                            stroke="var(--ink-3)" />Edit
+                                                        Hutang
+                                                    </a>
+                                                </div>
+                                            </template> --}}
+                                            {{-- <template
+                                                x-if="row.status === '{{ $draft }}' || row.status === '{{ $open }}'">
+                                                <div>
+                                                    <div class="action-menu__divider"></div>
+                                                    <button class="action-menu__item action-menu__item--danger"
+                                                        @click.stop="handleCancel(row.id)">
+                                                        <x-misc.icon name="x" :size="14"
+                                                            stroke="currentColor" />Hapus
+                                                        Tagihan
+                                                    </button>
+                                                </div>
+                                            </template> --}}
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         </template>
@@ -137,45 +200,13 @@
             </div>
         </div>
 
-        {{-- New Payment: pick invoice --}}
-        <x-misc.modal title="Pilih Invoice" show="pickerOpen" close-handler="pickerOpen = false" :width="480">
-            <div class="form-body">
-                <x-misc.field label="Invoice">
-                    <x-misc.select display="pickerSelectedLabel" hasValue="!!pickerSelected"
-                        placeholder="Cari nomor invoice / customer..." min-width="420px" height="40px">
-                        <template
-                            x-for="inv in pickerInvoices.filter(i => !q || i.number.toLowerCase().includes(q.toLowerCase()) || (i.customer?.name || '').toLowerCase().includes(q.toLowerCase()))"
-                            :key="inv.id">
-                            <div class="dropdown-item" @click="pickerSelected = inv; open = false; q = ''">
-                                <div style="flex:1; min-width:0;">
-                                    <div style="font-size:13px; font-weight:600;" x-text="inv.number"></div>
-                                    <div style="font-size:11.5px; color:var(--ink-4);"
-                                        x-text="(inv.customer?.name ?? '-') + ' · Outstanding ' + NumberUtils.formatNumericIntoMask(inv.remaining_amount)">
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                        <template x-if="pickerInvoices.length === 0">
-                            <div class="dropdown-empty">Memuat...</div>
-                        </template>
-                    </x-misc.select>
-                </x-misc.field>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" @click="pickerOpen = false">
-                    <x-misc.icon name="x" :size="14" />Batal
-                </button>
-                <button class="btn btn-primary" :disabled="!pickerSelected" @click="goToPicked()">
-                    Lanjutkan<x-misc.icon name="chev-right" :size="14" />
-                </button>
-            </x-slot:footer>
-        </x-misc.modal>
+
     </div>
 @endsection
 
 @push('scripts')
     <script>
-        function arDatatable() {
+        function apDatatable() {
             return {
                 tableData: {
                     current_page: 1,
@@ -195,15 +226,6 @@
                 showFilters: false,
                 dateFrom: '',
                 dateTo: '',
-                pickerOpen: false,
-                pickerInvoices: [],
-                pickerSelected: null,
-
-                get pickerSelectedLabel() {
-                    return this.pickerSelected ? (this.pickerSelected.number + ' - ' + (this.pickerSelected.customer
-                        ?.name ?? '-')) : 'Pilih invoice';
-                },
-
                 statusChip(status) {
                     const map = {
                         draft: {
@@ -223,7 +245,7 @@
                         },
                         paid: {
                             chip: 'chip',
-                            dot: 'chip-dot dot-ok',
+                            dot: 'chip-dot dot-neutral',
                             label: 'Paid'
                         },
                         cancelled: {
@@ -283,31 +305,7 @@
                     }
                 },
 
-                async openPicker() {
-                    this.pickerOpen = true;
-                    this.pickerSelected = null;
-                    if (this.pickerInvoices.length === 0) {
-                        try {
-                            const res = await axios.get(route('finances.account_receivables.datatable'), {
-                                params: {
-                                    per_page: 100,
-                                    status: 'all'
-                                },
-                            });
-                            this.pickerInvoices = res.data.data;
-                        } catch (error) {
-                            Toast.fire({
-                                icon: 'error',
-                                title: 'Gagal memuat daftar invoice.'
-                            });
-                        }
-                    }
-                },
 
-                goToPicked() {
-                    if (!this.pickerSelected) return;
-                    window.location = route('finances.account_receivables.show', this.pickerSelected.id) + '?pay=1';
-                },
             };
         }
     </script>

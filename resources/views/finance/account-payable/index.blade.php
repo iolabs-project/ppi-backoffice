@@ -14,11 +14,7 @@
                 <h1 class="order-title display">Hutang</h1>
                 {{-- <div class="order-sub"><span x-text="tableData ? tableData.total : 0"></span> invoice dengan outstanding</div> --}}
             </div>
-            <div class="order-actions">
-                <button class="btn btn-primary" @click="openPicker()">
-                    <x-misc.icon name="plus" :size="15" />Tambah Pembayaran
-                </button>
-            </div>
+
         </div>
 
         <div class="filter-pills">
@@ -204,39 +200,7 @@
             </div>
         </div>
 
-        {{-- New Payment: pick invoice --}}
-        <x-misc.modal title="Pilih Invoice" show="pickerOpen" close-handler="pickerOpen = false" :width="480">
-            <div class="form-body">
-                <x-misc.field label="Invoice">
-                    <x-misc.select display="pickerSelectedLabel" hasValue="!!pickerSelected"
-                        placeholder="Cari nomor invoice / supplier..." min-width="420px" height="40px">
-                        <template
-                            x-for="inv in pickerInvoices.filter(i => !q || i.number.toLowerCase().includes(q.toLowerCase()) || (i.supplier?.name || '').toLowerCase().includes(q.toLowerCase()))"
-                            :key="inv.id">
-                            <div class="dropdown-item" @click="pickerSelected = inv; open = false; q = ''">
-                                <div style="flex:1; min-width:0;">
-                                    <div style="font-size:13px; font-weight:600;" x-text="inv.number"></div>
-                                    <div style="font-size:11.5px; color:var(--ink-4);"
-                                        x-text="(inv.supplier?.name ?? '-') + ' · Outstanding ' + NumberUtils.formatNumericIntoMask(inv.remaining_amount)">
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                        <template x-if="pickerInvoices.length === 0">
-                            <div class="dropdown-empty">Memuat...</div>
-                        </template>
-                    </x-misc.select>
-                </x-misc.field>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" @click="pickerOpen = false">
-                    <x-misc.icon name="x" :size="14" />Batal
-                </button>
-                <button class="btn btn-primary" :disabled="!pickerSelected" @click="goToPicked()">
-                    Lanjutkan<x-misc.icon name="chev-right" :size="14" />
-                </button>
-            </x-slot:footer>
-        </x-misc.modal>
+
     </div>
 @endsection
 
@@ -262,15 +226,6 @@
                 showFilters: false,
                 dateFrom: '',
                 dateTo: '',
-                pickerOpen: false,
-                pickerInvoices: [],
-                pickerSelected: null,
-
-                get pickerSelectedLabel() {
-                    return this.pickerSelected ? (this.pickerSelected.number + ' - ' + (this.pickerSelected.supplier
-                        ?.name ?? '-')) : 'Pilih invoice';
-                },
-
                 statusChip(status) {
                     const map = {
                         draft: {
@@ -350,31 +305,7 @@
                     }
                 },
 
-                async openPicker() {
-                    this.pickerOpen = true;
-                    this.pickerSelected = null;
-                    if (this.pickerInvoices.length === 0) {
-                        try {
-                            const res = await axios.get(route('finances.account_payables.datatable'), {
-                                params: {
-                                    per_page: 100,
-                                    status: 'all'
-                                },
-                            });
-                            this.pickerInvoices = res.data.data;
-                        } catch (error) {
-                            Toast.fire({
-                                icon: 'error',
-                                title: 'Gagal memuat daftar invoice.'
-                            });
-                        }
-                    }
-                },
 
-                goToPicked() {
-                    if (!this.pickerSelected) return;
-                    window.location = route('finances.account_payables.show', this.pickerSelected.id) + '?pay=1';
-                },
             };
         }
     </script>
