@@ -13,8 +13,9 @@ use App\Models\ExpenseItem;
 use App\Models\ExpenseCost;
 use App\Models\GoodsReceipt;
 use App\Models\JournalEntry;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class ExpenseService
@@ -122,7 +123,7 @@ class ExpenseService
                 'total_amount' => 0,
                 'remaining_amount' => 0,
                 'note' => $request->input('note'),
-                'created_by' => auth()->id(),
+                'created_by' => Auth::id(),
             ]);
             $subtotal = 0;
             foreach ($request->input('items', []) as $itemData) {
@@ -191,7 +192,7 @@ class ExpenseService
                     'tax_amount' => 0,
                     'total_amount' => $cost->amount,
                     'remaining_amount' => $cost->amount,
-                    'created_by' => auth()->id(),
+                    'created_by' => Auth::id(),,
                 ]);
 
                 ExpenseItem::create([
@@ -227,7 +228,7 @@ class ExpenseService
                     'tax_amount' => 0,
                     'total_amount' => $cost->amount,
                     'remaining_amount' => $cost->amount,
-                    'created_by' => auth()->id(),
+                    'created_by' => Auth::id(),
                 ]);
 
                 ExpenseItem::create([

@@ -19,6 +19,7 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -106,7 +107,7 @@ class GoodsReceiptService
             'status' => GoodsReceiptStatus::DRAFT->value,
             'subtotal' => 0,
             'total_amount' => 0,
-            'created_by' => auth()->user()->id,
+            'created_by' => Auth::id(),
         ]);
 
         return $goodsReceipt;

@@ -7,12 +7,8 @@ use Illuminate\Validation\ValidationException;
 use App\Models\Company;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryItem;
-use App\Models\Product;
-use App\Models\ProductBatch;
-use App\Models\Warehouse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Psy\Clipboard\NullClipboardMethod;
 
 class JournalService
 {
@@ -27,7 +23,7 @@ class JournalService
                 'reference_id' => $referenceID,
                 'description' => $description,
                 'status' => 'posted',
-                'created_by' => auth()->id(),
+                'created_by' => Auth::id(),
             ]);
 
             foreach ($items as $item) {
@@ -74,7 +70,7 @@ class JournalService
                 'reference_id' => $originalEntry->id,
                 'description' => $description ?? "Reversal of Journal Entry #{$originalEntry->number}",
                 'status' => 'posted',
-                'created_by' => auth()->id(),
+                'created_by' => Auth::id(),
             ]);
 
             foreach ($originalEntry->items as $item) {

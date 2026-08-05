@@ -2,20 +2,14 @@
 
 namespace App\Services;
 
-use App\Enums\AccountSettingEnum;
 use App\Enums\InventoryTransactionTypeEnum;
-use App\Models\AccountSetting;
 use App\Models\GoodsReceipt;
-use App\Models\Product;
 use App\Models\ProductBatch;
 use App\Models\ProductStock;
-use App\Models\Warehouse;
-use Illuminate\Http\Request;
 use App\Models\InventoryTransaction;
 use App\Models\GoodsReceiptItem;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceItem;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
 class InventoryService

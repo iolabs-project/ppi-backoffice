@@ -12,8 +12,8 @@ use App\Models\Company;
 use App\Models\Expense;
 use App\Models\PayablePayment;
 use App\Models\PurchaseInvoice;
-use App\Models\PurchasePayment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -202,7 +202,7 @@ class AccountPayableService
                     'reference_number' => $request->reference_number,
                     'amount' => $request->amount,
                     'note' => $request->note,
-                    'created_by' => auth()->id(),
+                    'created_by' => Auth::id(),
                 ]);
 
                 $invoice->remaining_amount -= $request->amount;

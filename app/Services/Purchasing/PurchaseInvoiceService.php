@@ -20,6 +20,7 @@ use App\Services\Purchasing\GoodsReceiptService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class PurchaseInvoiceService
 {
@@ -112,7 +113,7 @@ class PurchaseInvoiceService
             'tax_percentage' => $purchaseOrder->tax_percentage,
             'tax_amount' => 0,
             'total_amount' => 0,
-            'created_by' => auth()->user()->id,
+            'created_by' => Auth::id(),
         ]);
 
         return $invoice;

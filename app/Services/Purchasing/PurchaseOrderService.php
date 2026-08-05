@@ -15,6 +15,7 @@ use App\Models\PurchaseOrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class PurchaseOrderService
 {
@@ -164,7 +165,7 @@ class PurchaseOrderService
                     'note' => $request->note,
                     'payment_terms' => $request->payment_terms,
                     'status' => $request->status,
-                    'created_by' => auth()->user()->id,
+                    'created_by' => Auth::id(),
                 ]
             );
 

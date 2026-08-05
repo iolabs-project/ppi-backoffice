@@ -16,7 +16,7 @@ use App\Services\JournalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class SalesOrderService
 {
@@ -174,7 +174,7 @@ class SalesOrderService
                     'note' => $request->note,
                     'payment_terms' => $request->payment_terms,
                     'status' => $request->status,
-                    'created_by' => auth()->user()->id,
+                    'created_by' => Auth::id(),
                 ]
             );
 

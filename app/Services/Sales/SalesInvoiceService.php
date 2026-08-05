@@ -17,6 +17,7 @@ use App\Models\SalesOrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class SalesInvoiceService
 {
@@ -108,7 +109,7 @@ class SalesInvoiceService
                 'tax_percentage' => $salesOrder->tax_percentage,
                 'tax_amount' => 0,
                 'total_amount' => 0,
-                'created_by' => auth()->user()->id,
+                'created_by' => Auth::id(),
             ]);
 
             foreach ($salesOrder->charges as $charge) {

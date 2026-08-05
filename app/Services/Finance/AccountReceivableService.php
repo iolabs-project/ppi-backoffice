@@ -10,10 +10,10 @@ use App\Enums\SalesInvoiceStatus;
 use App\Models\AccountSetting;
 use App\Models\ReceivablePayment;
 use App\Models\SalesInvoice;
-use App\Models\SalesPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class AccountReceivableService
 {
@@ -154,7 +154,7 @@ class AccountReceivableService
                     'reference_number' => $request->reference_number,
                     'amount' => $request->amount,
                     'note' => $request->note,
-                    'created_by' => auth()->id(),
+                    'created_by' => Auth::id(),
                 ]);
 
                 $invoice->remaining_amount -= $request->amount;
