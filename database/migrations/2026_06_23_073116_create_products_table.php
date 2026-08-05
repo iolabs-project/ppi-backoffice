@@ -17,12 +17,12 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('product_categories')->onDelete('restrict');
             $table->foreignId('unit_id')->constrained('units')->onDelete('restrict');
             $table->string('name', 255);
-            $table->string('code', 50)->nullable();
+            $table->string('code', 50);
             $table->text('description')->nullable();
             $table->decimal('minimum_stock', 18, 4)->default(0);
-            $table->foreignId('inventory_account_id')->constrained('chart_of_accounts')->onDelete('restrict');
-            $table->foreignId('sales_account_id')->constrained('chart_of_accounts')->onDelete('restrict');
-            $table->foreignId('cogs_account_id')->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->foreignId('inventory_account_id')->nullable()->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->foreignId('sales_account_id')->nullable()->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->foreignId('cogs_account_id')->nullable()->constrained('chart_of_accounts')->onDelete('restrict');
             $table->softDeletes();
             $table->timestamps();
 

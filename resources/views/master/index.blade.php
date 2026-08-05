@@ -27,7 +27,11 @@
                     let h = 0;
                     for (const c of (name || '')) h = ((h * 31) + c.charCodeAt(0)) & 0xFFFFFFFF;
                     const hue = ((h % 360) + 360) % 360;
-                    return { initials, bg: 'oklch(0.92 0.04 ' + hue + ')', fg: 'oklch(0.45 0.10 ' + hue + ')' };
+                    return {
+                        initials,
+                        bg: 'oklch(0.92 0.04 ' + hue + ')',
+                        fg: 'oklch(0.45 0.10 ' + hue + ')'
+                    };
                 },
 
                 // shared data for modals
@@ -42,144 +46,357 @@
                 contactOptions: @json($contactOptions),
                 userRoles: @json($userRoles),
                 rolesAll: @json($roles),
-                permitModules: [
-                    { key:'dashboard', label:'Dashboard' }, { key:'penjualan', label:'Penjualan' },
-                    { key:'pembelian', label:'Pembelian' }, { key:'kas', label:'Kas & Bank' },
-                    { key:'biaya', label:'Biaya' }, { key:'master', label:'Master Data' },
-                    { key:'laporan', label:'Laporan' },
+                permitModules: [{
+                        key: 'dashboard',
+                        label: 'Dashboard'
+                    }, {
+                        key: 'penjualan',
+                        label: 'Penjualan'
+                    },
+                    {
+                        key: 'pembelian',
+                        label: 'Pembelian'
+                    }, {
+                        key: 'kas',
+                        label: 'Kas & Bank'
+                    },
+                    {
+                        key: 'biaya',
+                        label: 'Biaya'
+                    }, {
+                        key: 'master',
+                        label: 'Master Data'
+                    },
+                    {
+                        key: 'laporan',
+                        label: 'Laporan'
+                    },
                 ],
 
-                // produk
-                produkForm: { code:'', name:'', description:'', category_id:'', unit_id:'', minimum_stock:0, inventory_account_id:'', sales_account_id:'', cogs_account_id:'' },
-                editProdukData: { id:'', code:'', name:'', description:'', category_id:'', unit_id:'', minimum_stock:0, inventory_account_id:'', sales_account_id:'', cogs_account_id:'' },
-                openEditProduk(p) {
-                    this.editProdukData = { id:p.id, code:p.code, name:p.name, description:p.description||'', category_id:p.category_id||'', unit_id:p.unit_id||'', minimum_stock:p.minimum_stock||0, inventory_account_id:p.inventory_account_id||'', sales_account_id:p.sales_account_id||'', cogs_account_id:p.cogs_account_id||'' };
-                    this.modal = 'edit_produk';
-                },
-                async submitAddProduk() {
-                    try {
-                        const r = await axios.post(route('master.products.store'), this.produkForm);
-                        Toast.fire({ icon:'success', title:r.data.message });
-                        this.modal = null;
-                        this.produkForm = { code:'', name:'', description:'', category_id:'', unit_id:'', minimum_stock:0, inventory_account_id:'', sales_account_id:'', cogs_account_id:'' };
-                        this.$dispatch('produk-refresh');
-                    } catch (e) { Toast.fire({ icon:'error', title:this.extractError(e,'Gagal menyimpan produk.') }); }
-                },
-                async submitEditProduk() {
-                    try {
-                        const r = await axios.put(route('master.products.update', this.editProdukData.id), this.editProdukData);
-                        Toast.fire({ icon:'success', title:r.data.message });
-                        this.modal = null;
-                        this.$dispatch('produk-refresh');
-                    } catch (e) { Toast.fire({ icon:'error', title:this.extractError(e,'Gagal memperbarui produk.') }); }
-                },
 
                 // kontak
-                kontakForm: { code:'', name:'', email:'', phone:'', address:'', city:'', state:'', postal_code:'', note:'', is_customer:true, is_supplier:false, is_employee:false, receivable_account_id:'', payable_account_id:'' },
-                editKontakData: { id:'', code:'', name:'', email:'', phone:'', address:'', city:'', state:'', postal_code:'', note:'', is_customer:true, is_supplier:false, is_employee:false, receivable_account_id:'', payable_account_id:'' },
+                kontakForm: {
+                    code: '',
+                    name: '',
+                    email: '',
+                    phone: '',
+                    address: '',
+                    city: '',
+                    state: '',
+                    postal_code: '',
+                    note: '',
+                    is_customer: true,
+                    is_supplier: false,
+                    is_employee: false,
+                    receivable_account_id: '',
+                    payable_account_id: ''
+                },
+                editKontakData: {
+                    id: '',
+                    code: '',
+                    name: '',
+                    email: '',
+                    phone: '',
+                    address: '',
+                    city: '',
+                    state: '',
+                    postal_code: '',
+                    note: '',
+                    is_customer: true,
+                    is_supplier: false,
+                    is_employee: false,
+                    receivable_account_id: '',
+                    payable_account_id: ''
+                },
                 openEditKontak(k) {
-                    this.editKontakData = { id:k.id, code:k.code, name:k.name, email:k.email||'', phone:k.phone||'', address:k.address||'', city:k.city||'', state:k.state||'', postal_code:k.postal_code||'', note:k.note||'', is_customer:!!k.is_customer, is_supplier:!!k.is_supplier, is_employee:!!k.is_employee, receivable_account_id:k.receivable_account_id||'', payable_account_id:k.payable_account_id||'' };
+                    this.editKontakData = {
+                        id: k.id,
+                        code: k.code,
+                        name: k.name,
+                        email: k.email || '',
+                        phone: k.phone || '',
+                        address: k.address || '',
+                        city: k.city || '',
+                        state: k.state || '',
+                        postal_code: k.postal_code || '',
+                        note: k.note || '',
+                        is_customer: !!k.is_customer,
+                        is_supplier: !!k.is_supplier,
+                        is_employee: !!k.is_employee,
+                        receivable_account_id: k.receivable_account_id || '',
+                        payable_account_id: k.payable_account_id || ''
+                    };
                     this.modal = 'edit_kontak';
                 },
                 async submitAddKontak() {
                     try {
                         const r = await axios.post(route('master.contacts.store'), this.kontakForm);
-                        Toast.fire({ icon:'success', title:r.data.message });
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         this.modal = null;
-                        this.kontakForm = { code:'', name:'', email:'', phone:'', address:'', city:'', state:'', postal_code:'', note:'', is_customer:true, is_supplier:false, is_employee:false, receivable_account_id:'', payable_account_id:'' };
+                        this.kontakForm = {
+                            code: '',
+                            name: '',
+                            email: '',
+                            phone: '',
+                            address: '',
+                            city: '',
+                            state: '',
+                            postal_code: '',
+                            note: '',
+                            is_customer: true,
+                            is_supplier: false,
+                            is_employee: false,
+                            receivable_account_id: '',
+                            payable_account_id: ''
+                        };
                         this.$dispatch('kontak-refresh');
-                    } catch (e) { Toast.fire({ icon:'error', title:this.extractError(e,'Gagal menyimpan kontak.') }); }
+                    } catch (e) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: this.extractError(e, 'Gagal menyimpan kontak.')
+                        });
+                    }
                 },
                 async submitEditKontak() {
                     try {
-                        const r = await axios.put(route('master.contacts.update', this.editKontakData.id), this.editKontakData);
-                        Toast.fire({ icon:'success', title:r.data.message });
+                        const r = await axios.put(route('master.contacts.update', this.editKontakData.id), this
+                            .editKontakData);
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         this.modal = null;
                         this.$dispatch('kontak-refresh');
-                    } catch (e) { Toast.fire({ icon:'error', title:this.extractError(e,'Gagal memperbarui kontak.') }); }
+                    } catch (e) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: this.extractError(e, 'Gagal memperbarui kontak.')
+                        });
+                    }
                 },
 
                 // akun
-                akunForm: { code:'', name:'', category_id:'', note:'' },
-                editAkunData: { id:'', code:'', name:'', category_id:'', note:'' },
+                akunForm: {
+                    code: '',
+                    name: '',
+                    category_id: '',
+                    note: ''
+                },
+                editAkunData: {
+                    id: '',
+                    code: '',
+                    name: '',
+                    category_id: '',
+                    note: ''
+                },
                 openEditAkun(a) {
-                    this.editAkunData = { id:a.id, code:a.code, name:a.name, category_id:a.category_id||'', note:a.note||'' };
+                    this.editAkunData = {
+                        id: a.id,
+                        code: a.code,
+                        name: a.name,
+                        category_id: a.category_id || '',
+                        note: a.note || ''
+                    };
                     this.modal = 'edit_akun';
                 },
                 async submitAddAkun() {
                     try {
                         const r = await axios.post(route('master.accounts.store'), this.akunForm);
-                        Toast.fire({ icon:'success', title:r.data.message });
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         this.modal = null;
-                        this.akunForm = { code:'', name:'', category_id:'', note:'' };
+                        this.akunForm = {
+                            code: '',
+                            name: '',
+                            category_id: '',
+                            note: ''
+                        };
                         this.$dispatch('akun-refresh');
-                    } catch (e) { Toast.fire({ icon:'error', title:this.extractError(e,'Gagal menyimpan akun.') }); }
+                    } catch (e) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: this.extractError(e, 'Gagal menyimpan akun.')
+                        });
+                    }
                 },
                 async submitEditAkun() {
                     try {
-                        const r = await axios.put(route('master.accounts.update', this.editAkunData.id), this.editAkunData);
-                        Toast.fire({ icon:'success', title:r.data.message });
+                        const r = await axios.put(route('master.accounts.update', this.editAkunData.id), this
+                            .editAkunData);
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         this.modal = null;
                         this.$dispatch('akun-refresh');
-                    } catch (e) { Toast.fire({ icon:'error', title:this.extractError(e,'Gagal memperbarui akun.') }); }
+                    } catch (e) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: this.extractError(e, 'Gagal memperbarui akun.')
+                        });
+                    }
                 },
 
                 // gudang
-                gudangForm: { code:'', name:'', address:'', note:'' },
-                editGudangData: { id:'', code:'', name:'', address:'', note:'' },
+                gudangForm: {
+                    code: '',
+                    name: '',
+                    address: '',
+                    note: ''
+                },
+                editGudangData: {
+                    id: '',
+                    code: '',
+                    name: '',
+                    address: '',
+                    note: ''
+                },
                 openEditGudang(g) {
-                    this.editGudangData = { id:g.id, code:g.code, name:g.name, address:g.address||'', note:g.note||'' };
+                    this.editGudangData = {
+                        id: g.id,
+                        code: g.code,
+                        name: g.name,
+                        address: g.address || '',
+                        note: g.note || ''
+                    };
                     this.modal = 'edit_gudang';
                 },
                 async submitAddGudang() {
                     try {
                         const r = await axios.post(route('master.warehouses.store'), this.gudangForm);
-                        Toast.fire({ icon:'success', title:r.data.message });
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         this.modal = null;
-                        this.gudangForm = { code:'', name:'', address:'', note:'' };
+                        this.gudangForm = {
+                            code: '',
+                            name: '',
+                            address: '',
+                            note: ''
+                        };
                         this.$dispatch('gudang-refresh');
-                    } catch (e) { Toast.fire({ icon:'error', title:this.extractError(e,'Gagal menyimpan gudang.') }); }
+                    } catch (e) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: this.extractError(e, 'Gagal menyimpan gudang.')
+                        });
+                    }
                 },
                 async submitEditGudang() {
                     try {
-                        const r = await axios.put(route('master.warehouses.update', this.editGudangData.id), this.editGudangData);
-                        Toast.fire({ icon:'success', title:r.data.message });
+                        const r = await axios.put(route('master.warehouses.update', this.editGudangData.id), this
+                            .editGudangData);
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         this.modal = null;
                         this.$dispatch('gudang-refresh');
-                    } catch (e) { Toast.fire({ icon:'error', title:this.extractError(e,'Gagal memperbarui gudang.') }); }
+                    } catch (e) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: this.extractError(e, 'Gagal memperbarui gudang.')
+                        });
+                    }
                 },
 
                 // user
-                addUserForm: { username:'', password:'', confirm_password:'', contact_id:'', role_id:'' },
-                editUserData: { id:'', username:'', password:'', confirm_password:'', contact_id:'', role_id:'', deleted_at:null, nama:'' },
-                userName(u) { return u?.contact ? u.contact.name : (u?.username || ''); },
+                addUserForm: {
+                    username: '',
+                    password: '',
+                    confirm_password: '',
+                    contact_id: '',
+                    role_id: ''
+                },
+                editUserData: {
+                    id: '',
+                    username: '',
+                    password: '',
+                    confirm_password: '',
+                    contact_id: '',
+                    role_id: '',
+                    deleted_at: null,
+                    nama: ''
+                },
+                userName(u) {
+                    return u?.contact ? u.contact.name : (u?.username || '');
+                },
                 openEditUser(u) {
-                    this.editUserData = { id:u.id, username:u.username, password:'', confirm_password:'', contact_id:u.contact_id||'', role_id:u.roles?.length ? u.roles[0].id : '', deleted_at:u.deleted_at, nama:this.userName(u) };
+                    this.editUserData = {
+                        id: u.id,
+                        username: u.username,
+                        password: '',
+                        confirm_password: '',
+                        contact_id: u.contact_id || '',
+                        role_id: u.roles?.length ? u.roles[0].id : '',
+                        deleted_at: u.deleted_at,
+                        nama: this.userName(u)
+                    };
                     this.modal = 'edit_user';
                 },
                 async submitAddUser() {
                     try {
                         const r = await axios.post(route('master.users.store'), this.addUserForm);
-                        Toast.fire({ icon:'success', title:r.data.message });
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         this.modal = null;
-                        this.addUserForm = { username:'', password:'', confirm_password:'', contact_id:'', role_id:'' };
+                        this.addUserForm = {
+                            username: '',
+                            password: '',
+                            confirm_password: '',
+                            contact_id: '',
+                            role_id: ''
+                        };
                         this.$dispatch('user-refresh');
-                    } catch (e) { Toast.fire({ icon:'error', title:this.extractError(e,'Gagal menyimpan user.') }); }
+                    } catch (e) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: this.extractError(e, 'Gagal menyimpan user.')
+                        });
+                    }
                 },
                 async submitEditUser() {
                     try {
-                        const r = await axios.put(route('master.users.update', this.editUserData.id), this.editUserData);
-                        Toast.fire({ icon:'success', title:r.data.message });
+                        const r = await axios.put(route('master.users.update', this.editUserData.id), this
+                            .editUserData);
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         this.modal = null;
                         this.$dispatch('user-refresh');
-                    } catch (e) { Toast.fire({ icon:'error', title:this.extractError(e,'Gagal memperbarui user.') }); }
+                    } catch (e) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: this.extractError(e, 'Gagal memperbarui user.')
+                        });
+                    }
                 },
 
                 // role
-                addRoleForm: { nama:'', deskripsi:'' },
-                editRoleData: { id:'', nama:'', deskripsi:'' },
+                addRoleForm: {
+                    nama: '',
+                    deskripsi: ''
+                },
+                editRoleData: {
+                    id: '',
+                    nama: '',
+                    deskripsi: ''
+                },
                 openEditRole(r) {
-                    this.editRoleData = { id:r.id, nama:r.nama, deskripsi:r.deskripsi };
+                    this.editRoleData = {
+                        id: r.id,
+                        nama: r.nama,
+                        deskripsi: r.deskripsi
+                    };
                     this.modal = 'edit_role';
                 },
             };
@@ -188,37 +405,242 @@
         function productModule() {
             return {
                 search: '',
-                tableData: { current_page:1, last_page:1, per_page:10, total:0, data:[] },
+                tableData: {
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: 0,
+                    data: []
+                },
                 loading: false,
                 page: 1,
                 perPage: 10,
+                form: {
+                    id: null,
+                    code: null,
+                    name: null,
+                    description: null,
+                    category_id: null,
+                    unit_id: null,
+                },
 
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const r = await axios.get(route('master.products.datatable'), { params:{ page:this.page, per_page:this.perPage, search:this.search } });
+                        const r = await axios.get(route('master.products.datatable'), {
+                            params: {
+                                page: this.page,
+                                per_page: this.perPage,
+                                search: this.search
+                            }
+                        });
                         this.tableData = r.data;
-                    } catch { Toast.fire({ icon:'error', title:'Terjadi kesalahan saat memuat data.' }); }
-                    finally { this.loading = false; }
+                    } catch {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan saat memuat data.'
+                        });
+                    } finally {
+                        this.loading = false;
+                    }
                 },
-                next() { if (this.page < this.tableData.last_page) { this.page++; this.fetchData(); } },
-                prev() { if (this.page > 1) { this.page--; this.fetchData(); } },
-                handleSearch(q) { this.search = q; this.page = 1; this.fetchData(); },
+                next() {
+                    if (this.page < this.tableData.last_page) {
+                        this.page++;
+                        this.fetchData();
+                    }
+                },
+                prev() {
+                    if (this.page > 1) {
+                        this.page--;
+                        this.fetchData();
+                    }
+                },
+                handleSearch(q) {
+                    this.search = q;
+                    this.page = 1;
+                    this.fetchData();
+                },
                 async handleStatus(id) {
-                    Swal.fire({ title:'Memproses...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
                     try {
                         const r = await axios.post(route('master.products.status', id));
-                        Swal.close(); Toast.fire({ icon:'success', title:r.data.message });
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         await this.fetchData();
-                    } catch (e) { Swal.close(); Toast.fire({ icon:'error', title:e.response?.data?.message||'Gagal mengubah status.' }); }
+                    } catch (e) {
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'error',
+                            title: e.response?.data?.message || 'Gagal mengubah status.'
+                        });
+                    }
                 },
+
+                openCreateModal() {
+                    this.form = {
+                        id: null,
+                        code: null,
+                        name: null,
+                        description: null,
+                        category_id: null,
+                        unit_id: null,
+                    };
+                    this.modal = 'add_produk';
+                },
+
+                openEditModal(product) {
+                    this.form = {
+                        id: product.id,
+                        code: product.code,
+                        name: product.name,
+                        description: product.description,
+                        category_id: product.category_id,
+                        unit_id: product.unit_id,
+                    };
+                    this.modal = 'edit_produk';
+                },
+
+                async handleCreate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Pembuatan Produk',
+                        text: 'Apakah anda yakin ingin membuat produk baru dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat produk',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.form,
+                            };
+
+                            Swal.fire({
+                                title: 'Memproses penyimpanan Produk...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.post(
+                                    route('master.products.store'), body
+                                );
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+
+                            }
+                        }
+                    });
+                },
+
+                async handleUpdate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Perubahan Produk',
+                        text: 'Apakah anda yakin ingin memperbarui produk dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, perbarui produk',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.form,
+                            };
+
+                            Swal.fire({
+                                title: 'Memproses perubahan Produk...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.put(
+                                    route('master.products.update', this.form.id), body
+                                );
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+
+                            }
+                        }
+                    });
+                }
             };
+
         }
 
         function contactModule() {
             return {
                 search: '',
-                tableData: { current_page:1, last_page:1, per_page:10, total:0, data:[] },
+                tableData: {
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: 0,
+                    data: []
+                },
                 loading: false,
                 page: 1,
                 perPage: 10,
@@ -226,21 +648,61 @@
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const r = await axios.get(route('master.contacts.datatable'), { params:{ page:this.page, per_page:this.perPage, search:this.search } });
+                        const r = await axios.get(route('master.contacts.datatable'), {
+                            params: {
+                                page: this.page,
+                                per_page: this.perPage,
+                                search: this.search
+                            }
+                        });
                         this.tableData = r.data;
-                    } catch { Toast.fire({ icon:'error', title:'Terjadi kesalahan saat memuat data.' }); }
-                    finally { this.loading = false; }
+                    } catch {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan saat memuat data.'
+                        });
+                    } finally {
+                        this.loading = false;
+                    }
                 },
-                next() { if (this.page < this.tableData.last_page) { this.page++; this.fetchData(); } },
-                prev() { if (this.page > 1) { this.page--; this.fetchData(); } },
-                handleSearch(q) { this.search = q; this.page = 1; this.fetchData(); },
+                next() {
+                    if (this.page < this.tableData.last_page) {
+                        this.page++;
+                        this.fetchData();
+                    }
+                },
+                prev() {
+                    if (this.page > 1) {
+                        this.page--;
+                        this.fetchData();
+                    }
+                },
+                handleSearch(q) {
+                    this.search = q;
+                    this.page = 1;
+                    this.fetchData();
+                },
                 async handleStatus(id) {
-                    Swal.fire({ title:'Memproses...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
                     try {
                         const r = await axios.post(route('master.contacts.status', id));
-                        Swal.close(); Toast.fire({ icon:'success', title:r.data.message });
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         await this.fetchData();
-                    } catch (e) { Swal.close(); Toast.fire({ icon:'error', title:e.response?.data?.message||'Gagal mengubah status.' }); }
+                    } catch (e) {
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'error',
+                            title: e.response?.data?.message || 'Gagal mengubah status.'
+                        });
+                    }
                 },
             };
         }
@@ -248,25 +710,54 @@
         function accountModule() {
             return {
                 search: '',
-                tableData: { data:{} },
+                tableData: {
+                    data: {}
+                },
                 loading: false,
 
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const r = await axios.get(route('master.accounts.datatable'), { params:{ search:this.search } });
+                        const r = await axios.get(route('master.accounts.datatable'), {
+                            params: {
+                                search: this.search
+                            }
+                        });
                         this.tableData.data = r.data;
-                    } catch { Toast.fire({ icon:'error', title:'Terjadi kesalahan saat memuat data.' }); }
-                    finally { this.loading = false; }
+                    } catch {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan saat memuat data.'
+                        });
+                    } finally {
+                        this.loading = false;
+                    }
                 },
-                handleSearch(q) { this.search = q; this.fetchData(); },
+                handleSearch(q) {
+                    this.search = q;
+                    this.fetchData();
+                },
                 async handleStatus(id) {
-                    Swal.fire({ title:'Memproses...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
                     try {
                         const r = await axios.post(route('master.accounts.status', id));
-                        Swal.close(); Toast.fire({ icon:'success', title:r.data.message });
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         await this.fetchData();
-                    } catch (e) { Swal.close(); Toast.fire({ icon:'error', title:e.response?.data?.message||'Gagal mengubah status.' }); }
+                    } catch (e) {
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'error',
+                            title: e.response?.data?.message || 'Gagal mengubah status.'
+                        });
+                    }
                 },
             };
         }
@@ -274,7 +765,13 @@
         function gudangModule() {
             return {
                 search: '',
-                tableData: { current_page:1, last_page:1, per_page:20, total:0, data:[] },
+                tableData: {
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 20,
+                    total: 0,
+                    data: []
+                },
                 loading: false,
                 page: 1,
                 perPage: 20,
@@ -282,22 +779,59 @@
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const r = await axios.get(route('master.warehouses.datatable'), { params:{ page:this.page, per_page:this.perPage, search:this.search } });
+                        const r = await axios.get(route('master.warehouses.datatable'), {
+                            params: {
+                                page: this.page,
+                                per_page: this.perPage,
+                                search: this.search
+                            }
+                        });
                         this.tableData = r.data;
-                    } catch { Toast.fire({ icon:'error', title:'Terjadi kesalahan saat memuat data gudang.' }); }
-                    finally { this.loading = false; }
+                    } catch {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan saat memuat data gudang.'
+                        });
+                    } finally {
+                        this.loading = false;
+                    }
                 },
-                next() { if (this.page < this.tableData.last_page) { this.page++; this.fetchData(); } },
-                prev() { if (this.page > 1) { this.page--; this.fetchData(); } },
+                next() {
+                    if (this.page < this.tableData.last_page) {
+                        this.page++;
+                        this.fetchData();
+                    }
+                },
+                prev() {
+                    if (this.page > 1) {
+                        this.page--;
+                        this.fetchData();
+                    }
+                },
                 async handleStatus(g) {
-                    Swal.fire({ title: g.deleted_at ? 'Aktifkan kembali gudang ini?' : 'Nonaktifkan gudang ini?', icon:'warning', showCancelButton:true, confirmButtonText:'Ya', cancelButtonText:'Batal', reverseButtons:true })
+                    Swal.fire({
+                            title: g.deleted_at ? 'Aktifkan kembali gudang ini?' : 'Nonaktifkan gudang ini?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya',
+                            cancelButtonText: 'Batal',
+                            reverseButtons: true
+                        })
                         .then(async result => {
                             if (!result.isConfirmed) return;
                             try {
                                 const r = await axios.post(route('master.warehouses.status', g.id));
-                                Toast.fire({ icon:'success', title:r.data.message });
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: r.data.message
+                                });
                                 await this.fetchData();
-                            } catch (e) { Toast.fire({ icon:'error', title:e.response?.data?.message||'Gagal mengubah status.' }); }
+                            } catch (e) {
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: e.response?.data?.message || 'Gagal mengubah status.'
+                                });
+                            }
                         });
                 },
             };
@@ -306,32 +840,77 @@
         function userModule() {
             return {
                 search: '',
-                tableData: { current_page:1, last_page:1, per_page:10, total:0, data:[] },
+                tableData: {
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: 0,
+                    data: []
+                },
                 loading: false,
                 page: 1,
                 perPage: 10,
 
-                userName(u) { return u?.contact ? u.contact.name : (u?.username || ''); },
+                userName(u) {
+                    return u?.contact ? u.contact.name : (u?.username || '');
+                },
 
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const r = await axios.get(route('master.users.datatable'), { params:{ page:this.page, per_page:this.perPage, search:this.search } });
+                        const r = await axios.get(route('master.users.datatable'), {
+                            params: {
+                                page: this.page,
+                                per_page: this.perPage,
+                                search: this.search
+                            }
+                        });
                         this.tableData = r.data;
-                    } catch { Toast.fire({ icon:'error', title:'Terjadi kesalahan saat memuat data user.' }); }
-                    finally { this.loading = false; }
+                    } catch {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan saat memuat data user.'
+                        });
+                    } finally {
+                        this.loading = false;
+                    }
                 },
-                next() { if (this.page < this.tableData.last_page) { this.page++; this.fetchData(); } },
-                prev() { if (this.page > 1) { this.page--; this.fetchData(); } },
+                next() {
+                    if (this.page < this.tableData.last_page) {
+                        this.page++;
+                        this.fetchData();
+                    }
+                },
+                prev() {
+                    if (this.page > 1) {
+                        this.page--;
+                        this.fetchData();
+                    }
+                },
                 async handleStatus(u) {
-                    Swal.fire({ title: u.deleted_at ? 'Aktifkan kembali user ini?' : 'Nonaktifkan user ini?', icon:'warning', showCancelButton:true, confirmButtonText:'Ya', cancelButtonText:'Batal', reverseButtons:true })
+                    Swal.fire({
+                            title: u.deleted_at ? 'Aktifkan kembali user ini?' : 'Nonaktifkan user ini?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya',
+                            cancelButtonText: 'Batal',
+                            reverseButtons: true
+                        })
                         .then(async result => {
                             if (!result.isConfirmed) return;
                             try {
                                 const r = await axios.post(route('master.users.status', u.id));
-                                Toast.fire({ icon:'success', title:r.data.message });
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: r.data.message
+                                });
                                 await this.fetchData();
-                            } catch (e) { Toast.fire({ icon:'error', title:e.response?.data?.message||'Gagal mengubah status.' }); }
+                            } catch (e) {
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: e.response?.data?.message || 'Gagal mengubah status.'
+                                });
+                            }
                         });
                 },
             };
@@ -340,11 +919,31 @@
         function permitModule() {
             return {
                 roles: @json($roles),
-                modules: [
-                    { key:'dashboard', label:'Dashboard' }, { key:'penjualan', label:'Penjualan' },
-                    { key:'pembelian', label:'Pembelian' }, { key:'kas', label:'Kas & Bank' },
-                    { key:'biaya', label:'Biaya' }, { key:'master', label:'Master Data' },
-                    { key:'laporan', label:'Laporan' },
+                modules: [{
+                        key: 'dashboard',
+                        label: 'Dashboard'
+                    }, {
+                        key: 'penjualan',
+                        label: 'Penjualan'
+                    },
+                    {
+                        key: 'pembelian',
+                        label: 'Pembelian'
+                    }, {
+                        key: 'kas',
+                        label: 'Kas & Bank'
+                    },
+                    {
+                        key: 'biaya',
+                        label: 'Biaya'
+                    }, {
+                        key: 'master',
+                        label: 'Master Data'
+                    },
+                    {
+                        key: 'laporan',
+                        label: 'Laporan'
+                    },
                 ],
                 hasPermit(roleId, modKey) {
                     const role = this.roles.find(r => r.id === roleId);
@@ -360,10 +959,8 @@
             };
         }
     </script>
-    <div x-data="masterPageData()" x-init="init()"
-        x-on:open-edit-gudang.window="openEditGudang($event.detail)"
-        x-on:open-edit-user.window="openEditUser($event.detail)"
-        x-on:open-edit-role.window="openEditRole($event.detail)"
+    <div x-data="masterPageData()" x-init="init()" x-on:open-edit-gudang.window="openEditGudang($event.detail)"
+        x-on:open-edit-user.window="openEditUser($event.detail)" x-on:open-edit-role.window="openEditRole($event.detail)"
         class="master-page">
 
         <div class="master-hd">
@@ -374,7 +971,8 @@
             <div>
                 <button class="btn btn-primary" x-on:click="modal = 'add_' + tab">
                     <x-misc.icon name="plus" :size="14" />
-                    <span x-text="{ produk:'Tambah Produk', kontak:'Tambah Kontak', akun:'Tambah Akun', gudang:'Tambah Gudang', user:'Tambah User', permit:'Tambah Role' }[tab]"></span>
+                    <span
+                        x-text="{ produk:'Tambah Produk', kontak:'Tambah Kontak', akun:'Tambah Akun', gudang:'Tambah Gudang', user:'Tambah User', permit:'Tambah Role' }[tab]"></span>
                 </button>
             </div>
         </div>
@@ -394,155 +992,6 @@
         @include('master.partials.tabs.warehouse')
         @include('master.partials.tabs.user')
         @include('master.partials.tabs.permit')
-        <x-misc.modal title="Tambah Produk Baru" show="modal === 'add_produk'" close-handler="modal = null">
-            <div class="form-body">
-                <div class="form-grid-2">
-                    <x-misc.field label="Kode Produk" :required="true">
-                        <input class="input mono" x-model="produkForm.code" placeholder="cth. TPG-003" />
-                    </x-misc.field>
-                    <x-misc.field label="Kategori" :required="true">
-                        <select class="input" x-model="produkForm.category_id">
-                            <option value="">— Pilih Kategori —</option>
-                            <template x-for="c in categoriesAll" :key="c.id">
-                                <option :value="c.id" x-text="c.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                </div>
-                <x-misc.field label="Nama Produk" :required="true">
-                    <input class="input" x-model="produkForm.name" placeholder="Nama lengkap produk" />
-                </x-misc.field>
-                <x-misc.field label="Deskripsi">
-                    <textarea class="input" rows="2" x-model="produkForm.description" placeholder="Deskripsi singkat..."></textarea>
-                </x-misc.field>
-                <div class="form-grid-2">
-                    <x-misc.field label="Satuan" :required="true">
-                        <select class="input" x-model="produkForm.unit_id">
-                            <option value="">— Pilih Satuan —</option>
-                            <template x-for="u in unitsAll" :key="u.id">
-                                <option :value="u.id" x-text="u.name + ' (' + u.symbol + ')'"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Stok Minimum">
-                        <input class="input num" type="number" style="text-align:right;"
-                            x-model="produkForm.minimum_stock" placeholder="0" />
-                    </x-misc.field>
-                </div>
-                <div class="form-grid-3">
-                    <x-misc.field label="Akun Persediaan" :required="true">
-                        <select class="input" x-model="produkForm.inventory_account_id">
-                            <option value="">— Pilih Akun —</option>
-                            <template x-for="a in inventoryAccounts" :key="a.id">
-                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Akun Penjualan" :required="true">
-                        <select class="input" x-model="produkForm.sales_account_id">
-                            <option value="">— Pilih Akun —</option>
-                            <template x-for="a in salesAccounts" :key="a.id">
-                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Akun HPP" :required="true">
-                        <select class="input" x-model="produkForm.cogs_account_id">
-                            <option value="">— Pilih Akun —</option>
-                            <template x-for="a in cogsAccounts" :key="a.id">
-                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                </div>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary" x-on:click="submitAddProduk()"><x-misc.icon name="check"
-                        :size="14" />Simpan Produk</button>
-            </x-slot:footer>
-        </x-misc.modal>
-
-        {{-- Modal: Edit Produk --}}
-        <x-misc.modal title="Edit Produk" show="modal === 'edit_produk'" close-handler="modal = null">
-            <div class="form-body">
-                <div style="display:flex; align-items:center; gap:12px; padding-bottom:4px;">
-                    <div
-                        style="width:44px; height:44px; border-radius:10px; background:var(--bg-2); display:grid; place-items:center;">
-                        <x-misc.icon name="box" :size="20" stroke="var(--ink-3)" />
-                    </div>
-                    <div>
-                        <div style="font-weight:700; font-size:14px;" x-text="editProdukData.name"></div>
-                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editProdukData.code">
-                        </div>
-                    </div>
-                </div>
-                <div class="form-grid-2">
-                    <x-misc.field label="Kode Produk" :required="true">
-                        <input class="input mono" x-model="editProdukData.code" />
-                    </x-misc.field>
-                    <x-misc.field label="Kategori" :required="true">
-                        <select class="input" x-model="editProdukData.category_id">
-                            <option value="">— Pilih Kategori —</option>
-                            <template x-for="c in categoriesAll" :key="c.id">
-                                <option :value="c.id" x-text="c.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                </div>
-                <x-misc.field label="Nama Produk" :required="true">
-                    <input class="input" x-model="editProdukData.name" />
-                </x-misc.field>
-                <x-misc.field label="Deskripsi">
-                    <textarea class="input" rows="2" x-model="editProdukData.description"></textarea>
-                </x-misc.field>
-                <div class="form-grid-2">
-                    <x-misc.field label="Satuan" :required="true">
-                        <select class="input" x-model="editProdukData.unit_id">
-                            <option value="">— Pilih Satuan —</option>
-                            <template x-for="u in unitsAll" :key="u.id">
-                                <option :value="u.id" x-text="u.name + ' (' + u.symbol + ')'"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Stok Minimum">
-                        <input class="input num" type="number" style="text-align:right;"
-                            x-model="editProdukData.minimum_stock" />
-                    </x-misc.field>
-                </div>
-                <div class="form-grid-3">
-                    <x-misc.field label="Akun Persediaan" :required="true">
-                        <select class="input" x-model="editProdukData.inventory_account_id">
-                            <option value="">— Pilih Akun —</option>
-                            <template x-for="a in inventoryAccounts" :key="a.id">
-                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Akun Penjualan" :required="true">
-                        <select class="input" x-model="editProdukData.sales_account_id">
-                            <option value="">— Pilih Akun —</option>
-                            <template x-for="a in salesAccounts" :key="a.id">
-                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Akun HPP" :required="true">
-                        <select class="input" x-model="editProdukData.cogs_account_id">
-                            <option value="">— Pilih Akun —</option>
-                            <template x-for="a in cogsAccounts" :key="a.id">
-                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                </div>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary" x-on:click="submitEditProduk()"><x-misc.icon name="check"
-                        :size="14" />Simpan Perubahan</button>
-            </x-slot:footer>
-        </x-misc.modal>
 
         {{-- Modal: Tambah Kontak --}}
         <x-misc.modal title="Tambah Kontak Baru" show="modal === 'add_kontak'" close-handler="modal = null">

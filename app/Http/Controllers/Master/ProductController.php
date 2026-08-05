@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Master\ProductFormRequest;
 use App\Services\Master\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -32,19 +33,8 @@ class ProductController extends Controller
             ], 500);
         }
     }
-    public function store(Request $request, ProductService $productService)
+    public function store(ProductFormRequest $request, ProductService $productService)
     {
-        $request->validate([
-            'code' => 'required|string|max:255|unique:products,code,NULL,id,company_id,' . config('context.selected_company_id'),
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
-            'unit_id' => 'required|exists:units,id',
-            'category_id' => 'required|exists:product_categories,id',
-            'minimum_stock' => 'nullable|numeric|min:0',
-            'inventory_account_id' => 'required|exists:chart_of_accounts,id',
-            'sales_account_id' => 'required|exists:chart_of_accounts,id',
-            'cogs_account_id' => 'required|exists:chart_of_accounts,id',
-        ]);
         try {
             $productService->storeProduct($request);
 
@@ -62,19 +52,8 @@ class ProductController extends Controller
             ], 500);
         }
     }
-    public function update(Request $request, ProductService $productService, int $id)
+    public function update(ProductFormRequest $request, ProductService $productService, int $id)
     {
-        $request->validate([
-            'code' => 'required|string|max:255|unique:products,code,' . $id . ',id,company_id,' . config('context.selected_company_id'),
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
-            'unit_id' => 'required|exists:units,id',
-            'category_id' => 'required|exists:product_categories,id',
-            'minimum_stock' => 'nullable|numeric|min:0',
-            'inventory_account_id' => 'required|exists:chart_of_accounts,id',
-            'sales_account_id' => 'required|exists:chart_of_accounts,id',
-            'cogs_account_id' => 'required|exists:chart_of_accounts,id',
-        ]);
         try {
             $productService->updateProduct($request, $id);
 

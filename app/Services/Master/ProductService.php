@@ -101,10 +101,7 @@ class ProductService
                 'name',
                 'category_id',
                 'unit_id',
-                'minimum_stock',
-                'inventory_account_id',
-                'sales_account_id',
-                'cogs_account_id',
+                'description',
                 'deleted_at'
             )
             ->where('company_id', config('context.selected_company_id'));
@@ -178,10 +175,6 @@ class ProductService
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
-            'minimum_stock' => $request->minimum_stock,
-            'inventory_account_id' => $request->inventory_account_id,
-            'sales_account_id' => $request->sales_account_id,
-            'cogs_account_id' => $request->cogs_account_id,
         ]);
     }
 
@@ -206,10 +199,6 @@ class ProductService
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
-            'minimum_stock' => $request->minimum_stock,
-            'inventory_account_id' => $request->inventory_account_id,
-            'sales_account_id' => $request->sales_account_id,
-            'cogs_account_id' => $request->cogs_account_id,
         ]);
     }
 

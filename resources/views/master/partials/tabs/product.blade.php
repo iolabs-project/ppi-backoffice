@@ -1,11 +1,15 @@
 <div x-data="productModule()" x-init="fetchData()" x-show="tab === 'produk'" x-cloak>
     <div class="card" style="overflow:hidden;">
-        <div class="master-toolbar">
+        <div class="master-toolbar" style="justify-content: space-between">
             <div class="master-search">
                 <span class="master-search__icon"><x-misc.icon name="search" :size="14"
                         stroke="var(--ink-4)" /></span>
-                <input class="input master-search__input" placeholder="Cari produk..." x-model="search" x-on:input.debounce.400ms="handleSearch(search)" />
+                <input class="input master-search__input" placeholder="Cari produk..." x-model="search"
+                    x-on:input.debounce.400ms="handleSearch(search)" />
             </div>
+            <button class="btn btn-primary btn-sm" x-on:click="modal = 'add_produk'">
+                <x-misc.icon name="plus" :size="14" /> Tambah Produk
+            </button>
         </div>
         <table class="tbl">
             <thead>
@@ -60,11 +64,12 @@
                                     </button>
                                     <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
                                         style="position:absolute; right:0; top:100%; margin-top:4px;">
-                                        <button class="action-menu__item" x-on:click="openEditProduk(p)">
+                                        <button class="action-menu__item" x-on:click="openEditModal(row)">
                                             <x-misc.icon name="edit" :size="14" /> Edit Produk
                                         </button>
                                         <template x-if="!row.deleted_at">
-                                            <button class="action-menu__item action-menu__item--danger" x-on:click="handleStatus(row.id)">
+                                            <button class="action-menu__item action-menu__item--danger"
+                                                x-on:click="handleStatus(row.id)">
                                                 <x-misc.icon name="trash" :size="14" /> Nonaktifkan
                                             </button>
                                         </template>
@@ -112,4 +117,7 @@
             </div>
         </div>
     </div>
+
+    @include('master.partials.modals.product-create-modal')
+    @include('master.partials.modals.product-edit-modal')
 </div>
