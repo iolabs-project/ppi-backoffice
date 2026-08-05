@@ -192,7 +192,7 @@ class ExpenseService
                     'tax_amount' => 0,
                     'total_amount' => $cost->amount,
                     'remaining_amount' => $cost->amount,
-                    'created_by' => Auth::id(),,
+                    'created_by' => Auth::id(),
                 ]);
 
                 ExpenseItem::create([

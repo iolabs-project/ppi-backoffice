@@ -104,7 +104,8 @@ class ProductService
                 'minimum_stock',
                 'inventory_account_id',
                 'sales_account_id',
-                'cogs_account_id'
+                'cogs_account_id',
+                'deleted_at'
             )
             ->where('company_id', config('context.selected_company_id'));
 

@@ -8,13 +8,14 @@ use App\Http\Controllers\Erp\PenjualanController;
 use App\Http\Controllers\Erp\PembelianController;
 use App\Http\Controllers\Erp\KasBankController;
 use App\Http\Controllers\Erp\LaporanController;
-use App\Http\Controllers\Erp\MasterController;
+// use App\Http\Controllers\Erp\MasterController;
 use App\Http\Controllers\Erp\BiayaController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\Finance\AccountPayableController;
 use App\Http\Controllers\Finance\AccountReceivableController;
 use App\Http\Controllers\Master\AccountController;
 use App\Http\Controllers\Master\ContactController;
+use App\Http\Controllers\Master\MasterController;
 use App\Http\Controllers\Master\ProductCategoryController;
 use App\Http\Controllers\Master\ProductController;
 use App\Http\Controllers\Master\UserController;
@@ -208,11 +209,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
 
     // Master Data
-    Route::get('/master',                         [MasterController::class, 'index'])->name('master.index');
-    Route::get('/master/produk/{kode}',           [MasterController::class, 'showProduk'])->name('master.produk.show');
-    Route::get('/master/kontak/{id}',             [MasterController::class, 'showKontak'])->name('master.kontak.show');
-    Route::get('/master/gudang/{kode}',           [MasterController::class, 'showGudang'])->name('master.gudang.show');
-    Route::get('/master/gudang/{kode}/transfer',  [MasterController::class, 'transferGudang'])->name('master.gudang.transfer');
+    // Route::get('/master',                         [MasterController::class, 'index'])->name('master.index');
+    // Route::get('/master/produk/{kode}',           [MasterController::class, 'showProduk'])->name('master.produk.show');
+    // Route::get('/master/kontak/{id}',             [MasterController::class, 'showKontak'])->name('master.kontak.show');
+    // Route::get('/master/gudang/{kode}',           [MasterController::class, 'showGudang'])->name('master.gudang.show');
+    // Route::get('/master/gudang/{kode}/transfer',  [MasterController::class, 'transferGudang'])->name('master.gudang.transfer');
 
     // Biaya
     Route::get('/biaya',        [BiayaController::class, 'index'])->name('biaya.index');
@@ -239,6 +240,8 @@ Route::middleware('auth')->group(function () {
     })->name('bantuan.index');
 
     Route::prefix('master')->name('master.')->group(function () {
+        Route::get('/', [MasterController::class, 'index'])->name('index');
+
         Route::prefix('contacts')->name('contacts.')->controller(ContactController::class)->group(function () {
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::post('/', 'store')->name('store');

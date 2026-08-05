@@ -23,6 +23,8 @@
     'unpaid'          => ['chip chip-bad',  'chip-dot dot-bad',   'Unpaid'],
     'partial'         => ['chip chip-warn', 'chip-dot dot-warn',  'Partial'],
     'paid'            => ['chip',           'chip-dot dot-neutral', 'Paid'],
+    'active'          => ['chip chip-ok',   'chip-dot dot-ok', 'Active'],
+    'inactive'       => ['chip chip-bad',  'chip-dot dot-bad', 'Inactive'],
   ];
   [$chipClass, $dotClass, $label] = $map[$status] ?? $map['pending'];
 @endphp

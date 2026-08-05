@@ -139,6 +139,10 @@
             <path d="M4 7h16M9 7V4h6v3M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" />
         @break
 
+        @case('refresh')
+            <path d="M4 12a8 8 0 0 1 14-5.3L20 9H15M20 12a8 8 0 0 1-14 5.3L4 15h5" />
+        @break
+
         @case('bank')
             <path d="M3 10 12 4l9 6" />
             <path d="M5 10v8M9 10v8M15 10v8M19 10v8" />

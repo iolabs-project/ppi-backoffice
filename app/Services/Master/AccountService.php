@@ -62,7 +62,11 @@ class AccountService
             });
         }
 
-        $data = $data->orderBy('code', 'asc')->paginate($request->input('per_page', 10));
+        $data = $data->orderBy('code', 'asc')->get();
+
+        $data = $data->groupBy(function ($item) {
+            return $item->category->name ?? 'Tidak Diketahui';
+        });
         return $data;
     }
 
