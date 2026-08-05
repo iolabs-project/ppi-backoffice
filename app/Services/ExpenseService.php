@@ -212,9 +212,7 @@ class ExpenseService
     public function storeExpenseFromDeliveryOrder(int $id)
     {
         $deliveryOrder = DeliveryOrder::with([
-            'costs' => function ($query) {
-                $query->where('billed_by', 'third_party');
-            }
+            'costs'
         ])->findOrFail($id);
 
         DB::transaction(function () use ($deliveryOrder) {

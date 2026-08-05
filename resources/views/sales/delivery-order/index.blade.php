@@ -66,7 +66,7 @@
                                 <td class="mono" style="font-weight:600;" x-text="row.sales_order.number"></td>
                                 <td style="font-weight:500;" x-text="row.customer.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
-                                <td class="num" style="text-align:right;" x-text="row.total_shipped_quantity"></td>
+                                <td class="num" style="text-align:right;" x-text="m(row.total_shipped_quantity)"></td>
                                 <td>
                                     <span :class="statusChip(row.status).chip">
                                         <span :class="statusChip(row.status).dot"></span>
@@ -119,15 +119,6 @@
                                                             stroke="currentColor" />Hapus
                                                         Catatan
                                                     </button>
-                                                </div>
-                                            </template>
-                                            <template x-if="row.status === '{{ $finished }}'">
-                                                <div>
-                                                    <a :href="route('sales.sales_orders.show', row.sales_order_id)"
-                                                        @click.stop class="action-menu__item">
-                                                        <x-misc.icon name="receipt" :size="14"
-                                                            stroke="var(--ink-3)" />Buat Tagihan
-                                                    </a>
                                                 </div>
                                             </template>
                                         </div>
@@ -263,6 +254,10 @@
                         this.page--;
                         await this.fetchData();
                     }
+                },
+
+                m(v) {
+                    return NumberUtils.formatNumericIntoMask(v);
                 },
 
                 async handleCancel(id) {

@@ -415,6 +415,7 @@
                 loading: false,
                 page: 1,
                 perPage: 10,
+                perPageOptions: [10, 25, 50],
                 form: {
                     id: null,
                     code: null,
@@ -644,6 +645,7 @@
                 loading: false,
                 page: 1,
                 perPage: 10,
+                perPageOptions: [10, 25, 50],
 
                 async fetchData() {
                     this.loading = true;
@@ -850,6 +852,7 @@
                 loading: false,
                 page: 1,
                 perPage: 10,
+                perPageOptions: [10, 25, 50],
 
                 userName(u) {
                     return u?.contact ? u.contact.name : (u?.username || '');

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\InventoryTransactionTypeEnum;
+use App\Models\DeliveryOrder;
 use App\Models\GoodsReceipt;
 use App\Models\ProductBatch;
 use App\Models\ProductStock;
@@ -11,6 +12,7 @@ use App\Models\GoodsReceiptItem;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceItem;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 class InventoryService
 {
@@ -84,6 +86,64 @@ class InventoryService
 
         return $productBatch;
     }
+    public function issueInventoryFromDO(DeliveryOrder $deliveryOrder, int $productID, int $productBatchID, float $quantity, ?string $batchNumberHint = null): ProductBatch
+    {
+        $productBatch = ProductBatch::where('id', $productBatchID)
+            ->where('warehouse_id', $deliveryOrder->warehouse_id)
+            ->where('product_id', $productID)
+            ->lockForUpdate()
+            ->first();
+
+        if (!$productBatch) {
+            throw ValidationException::withMessages([
+                'details' => "Batch '{$batchNumberHint}' tidak ditemukan atau bukan milik produk/gudang ini.",
+            ]);
+        }
+
+        if ($productBatch->available_quantity < $quantity) {
+            throw ValidationException::withMessages([
+                'details' => "Stok batch '{$productBatch->batch_number}' tidak mencukupi untuk mengirim {$quantity} unit.",
+            ]);
+        }
+
+        $productBatch->decrement('quantity', $quantity);
+
+        $this->insertOutboundInventoryTransaction(deliveryOrder: $deliveryOrder, batch: $productBatch, productID: $productID, quantity: $quantity);
+        // $this->recalculateMovingAverageCost(companyID: $deliveryOrder->company_id, productID: $productID, warehouseID: $deliveryOrder->warehouse_id);
+
+        return $productBatch;
+    }
+
+    private function insertOutboundInventoryTransaction(DeliveryOrder $deliveryOrder, ProductBatch $batch, int $productID, float $quantity): void
+    {
+        $latestTransaction = InventoryTransaction::where('company_id', $deliveryOrder->company_id)
+            ->where('product_id', $productID)
+            ->where('warehouse_id', $deliveryOrder->warehouse_id)
+            ->orderByDesc('transaction_date')
+            ->orderByDesc('id')
+            ->first();
+
+        $stockBefore = $latestTransaction ? $latestTransaction->stock_after : 0;
+
+        InventoryTransaction::create([
+            'company_id' => $deliveryOrder->company_id,
+            'warehouse_id' => $deliveryOrder->warehouse_id,
+            'product_id' => $productID,
+            'product_batch_id' => $batch->id,
+            'type' => InventoryTransactionTypeEnum::SALE,
+            'direction' => -1,
+            'quantity' => $quantity,
+            'unit_cost' => $batch->unit_cost,
+            'total_cost' => $quantity * $batch->unit_cost,
+            'stock_before' => $stockBefore,
+            'stock_after' => $stockBefore - $quantity,
+            'reference_type' => DeliveryOrder::class,
+            'reference_id' => $deliveryOrder->id,
+            'transaction_date' => now(),
+            'note' => 'Pengiriman Barang dari DO #' . $deliveryOrder->number,
+        ]);
+    }
+
     public function updateUnitCostFromPI(PurchaseInvoice $pi, Collection $piItems, float $newInventoryValue, float $totalQty): void
     {
         $grItemIDs = $piItems->pluck('goods_receipt_item_id')->toArray();
@@ -91,7 +151,7 @@ class InventoryService
             ->where('warehouse_id', $pi->warehouse_id)
             ->whereIn('goods_receipt_item_id', $grItemIDs)
             ->get();
-        
+
         $oldInventoryValue = 0;
         foreach ($oldBatches as $batch) {
             $oldInventoryValue += $batch->quantity * $batch->unit_cost;
@@ -130,17 +190,6 @@ class InventoryService
 
             $this->recalculateMovingAverageCost(companyID: $batch->company_id, productID: $batch->product_id, warehouseID: $batch->warehouse_id);
         }
-    }
-
-    /**
-     * Decrease stock quantity on a sale. WAC does not change on outgoing stock.
-     */
-    public function deductStockOnSale(int $companyId, int $productId, int $warehouseId, float $quantity): void
-    {
-        ProductStock::where('company_id', $companyId)
-            ->where('product_id', $productId)
-            ->where('warehouse_id', $warehouseId)
-            ->decrement('quantity', $quantity);
     }
 
     private function insertInventoryTransaction(GoodsReceipt $goodsReceipt, GoodsReceiptItem $goodsReceiptItem, ProductBatch $batch): void

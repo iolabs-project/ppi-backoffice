@@ -61,6 +61,9 @@
                     this.formData.costs.splice(index, 1);
                 },
                 handleCostInput() {},
+                totalAdditionalCosts() {
+                    return this.formData.costs.reduce((sum, c) => sum + this.n(c.amount), 0);
+                },
 
                 init() {
                     Object.assign(this, window.deliveryOrderTable);
@@ -118,13 +121,6 @@
                             Toast.fire({
                                 icon: 'error',
                                 title: `Belum ada batch dipilih untuk ${item.name}.`
-                            });
-                            return false;
-                        }
-                        if (batchTotal > this.n(item.remaining_quantity) + 0.0001) {
-                            Toast.fire({
-                                icon: 'error',
-                                title: `Total batch untuk ${item.name} (${batchTotal}) melebihi sisa yang perlu dikirim (${item.remaining_quantity}).`
                             });
                             return false;
                         }
@@ -265,17 +261,37 @@
                 </button>
             </div>
             @include('sales.delivery-order.partials.edit.item-table')
-            <div class="order-items-split2">
+        </div>
+
+        @include('sales.partials.additional-cost-table', ['accounts' => $accounts])
+
+        <div class="card" style="overflow:visible;">
+            <div class="order-items-split">
                 <div class="order-extras">
                     <x-misc.field label="Catatan Penerimaan">
                         <textarea class="input" rows="2"
                             placeholder="Catat kondisi barang, kekurangan, atau informasi penting lainnya..." x-model="formData.note"></textarea>
                     </x-misc.field>
                 </div>
+                <div class="order-summary">
+                    <div class="display order-summary__title">Ringkasan Biaya</div>
+                    <div class="order-summary__grid">
+                        <div class="order-summary__group">
+                            <div class="order-summary__row">
+                                <span class="order-summary__label">Biaya Tambahan (Internal)</span>
+                                <span class="num order-summary__val"
+                                    x-text="NumberUtils.formatNumericIntoMask(totalAdditionalCosts())"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="order-summary__total">
+                        <span class="order-summary__total-label">Total Biaya</span>
+                        <span class="num order-summary__total-value"
+                            x-text="NumberUtils.formatNumericIntoMask(totalAdditionalCosts())"></span>
+                    </div>
+                </div>
             </div>
         </div>
-
-        @include('sales.partials.additional-cost-table', ['accounts' => $accounts])
 
         <div class="order-form-footer">
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>

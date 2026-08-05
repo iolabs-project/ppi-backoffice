@@ -12,7 +12,6 @@ use App\Models\DeliveryOrder;
 use App\Models\DeliveryOrderCost;
 use App\Models\DeliveryOrderItem;
 use App\Models\DeliveryOrderItemBatch;
-use App\Models\InventoryTransaction;
 use App\Models\JournalEntry;
 use App\Models\ProductBatch;
 use App\Models\SalesOrderItem;
@@ -195,14 +194,14 @@ class DeliveryOrderService
             DeliveryOrderItem::where('delivery_order_id', $header->id)->delete();
             DeliveryOrderCost::where('delivery_order_id', $header->id)->delete();
             if ($requestCollection->get('status') === DeliveryOrderStatus::DRAFT->value) {
-                $this->saveDraftDeliveryOrder($header, $detailsCollection, $costsCollection);
+                $this->draftDeliveryOrder($header, $detailsCollection, $costsCollection);
             } elseif ($requestCollection->get('status') === DeliveryOrderStatus::FINISHED->value) {
                 $this->finalizeDeliveryOrder($header, $detailsCollection, $costsCollection);
             }
         });
     }
 
-    private function saveDraftDeliveryOrder(DeliveryOrder $deliveryOrder, Collection $detailsCollection, Collection $costsCollection): void
+    private function draftDeliveryOrder(DeliveryOrder $deliveryOrder, Collection $detailsCollection, Collection $costsCollection): void
     {
         foreach ($detailsCollection as $detail) {
             $item = DeliveryOrderItem::create([
@@ -260,13 +259,6 @@ class DeliveryOrderService
                 ]);
             }
 
-            $remainingOnSO = $salesOrderItem->quantity - $salesOrderItem->shipped_quantity;
-            if ($quantity > $remainingOnSO + 0.0001) {
-                throw ValidationException::withMessages([
-                    'details' => "Quantity pengiriman ({$quantity}) melebihi sisa yang belum dikirim pada Sales Order ({$remainingOnSO}). Sudah dikirim oleh Delivery Order lain.",
-                ]);
-            }
-
             $item = DeliveryOrderItem::create([
                 'delivery_order_id' => $deliveryOrder->id,
                 'sales_order_item_id' => $detail['sales_order_item_id'],
@@ -280,59 +272,19 @@ class DeliveryOrderService
                     continue;
                 }
 
-                $productBatch = ProductBatch::where('id', $batchDetail['product_batch_id'])
-                    ->where('warehouse_id', $deliveryOrder->warehouse_id)
-                    ->where('product_id', $detail['product_id'])
-                    ->lockForUpdate()
-                    ->first();
-
-                if (!$productBatch) {
-                    $batchNumber = $batchDetail['batch_number'] ?? '';
-                    throw ValidationException::withMessages([
-                        'details' => "Batch '{$batchNumber}' tidak ditemukan atau bukan milik produk/gudang ini.",
-                    ]);
-                }
-
-                if ($productBatch->available_quantity < $batchQty) {
-                    throw ValidationException::withMessages([
-                        'details' => "Stok batch '{$productBatch->batch_number}' tidak mencukupi untuk mengirim {$batchQty} unit.",
-                    ]);
-                }
+                $productBatch = $this->inventoryService->issueInventoryFromDO(
+                    deliveryOrder: $deliveryOrder,
+                    productID: $detail['product_id'],
+                    productBatchID: $batchDetail['product_batch_id'],
+                    quantity: $batchQty,
+                    batchNumberHint: $batchDetail['batch_number'] ?? null,
+                );
 
                 DeliveryOrderItemBatch::create([
                     'delivery_order_item_id' => $item->id,
                     'product_batch_id' => $productBatch->id,
                     'quantity' => $batchQty,
                     'unit_cost' => $productBatch->unit_cost,
-                ]);
-
-                $productBatch->decrement('quantity', $batchQty);
-
-                $latestTransaction = InventoryTransaction::where('company_id', $deliveryOrder->company_id)
-                    ->where('product_id', $detail['product_id'])
-                    ->where('warehouse_id', $deliveryOrder->warehouse_id)
-                    ->orderByDesc('transaction_date')
-                    ->orderByDesc('id')
-                    ->first();
-
-                $stockBefore = $latestTransaction ? $latestTransaction->stock_after : 0;
-
-                InventoryTransaction::create([
-                    'company_id' => $deliveryOrder->company_id,
-                    'warehouse_id' => $deliveryOrder->warehouse_id,
-                    'product_id' => $detail['product_id'],
-                    'product_batch_id' => $productBatch->id,
-                    'type' => 'sale',
-                    'direction' => -1,
-                    'quantity' => $batchQty,
-                    'unit_cost' => $productBatch->unit_cost,
-                    'total_cost' => $batchQty * $productBatch->unit_cost,
-                    'stock_before' => $stockBefore,
-                    'stock_after' => $stockBefore - $batchQty,
-                    'reference_type' => DeliveryOrder::class,
-                    'reference_id' => $deliveryOrder->id,
-                    'transaction_date' => now(),
-                    'note' => 'Pengiriman Barang dari DO #' . $deliveryOrder->number,
                 ]);
             }
             

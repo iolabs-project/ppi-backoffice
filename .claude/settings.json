@@ -20,7 +20,9 @@
       "Bash(command -v chromium-cli)",
       "Bash(chromium-cli --help)",
       "PowerShell($php = \"C:\\\\laragon\\\\bin\\\\php\\\\php-8.4.23-nts-Win32-vs17-x64\\\\php.exe\"; cd \"c:\\\\Users\\\\albertirgi\\\\Documents\\\\.WORK\\\\ppi-backoffice\"; & $php artisan view:cache 2>&1; & $php artisan view:clear)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(php -l app/Services/Sales/DeliveryOrderService.php)",
+      "Bash(php -l app/Services/InventoryService.php)"
     ]
   }
 }

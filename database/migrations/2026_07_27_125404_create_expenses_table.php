@@ -50,21 +50,6 @@ return new class extends Migration
             $table->decimal('amount', 18, 4)->default(0);
             $table->timestamps();
         });
-
-        Schema::create('expense_payments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('company_id')->constrained('companies')->onDelete('restrict');
-            $table->foreignId('expense_id')->constrained('expenses')->onDelete('cascade');
-            $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
-            $table->string('number', 50)->unique();
-            $table->decimal('amount', 18, 4)->default(0);
-            $table->dateTime('payment_date');
-            $table->enum('payment_method', ['cash', 'bank_transfer', 'credit_card'])->default('cash');
-            $table->string('reference_number', 50)->nullable();
-            $table->text('note')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('restrict');
-            $table->timestamps();
-        });
     }
 
     /**
@@ -72,7 +57,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('expense_payments');
         Schema::dropIfExists('expense_costs');
         Schema::dropIfExists('expense_items');
         Schema::dropIfExists('expenses');

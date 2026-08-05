@@ -2,7 +2,7 @@
     window.deliveryOrderTable = {
 
         availableSOItems(q) {
-            let list = remainingSOItems.filter(s => s.remaining_quantity > 0);
+            let list = remainingSOItems;
 
             if (q) {
                 const s = q.toLowerCase();
@@ -109,10 +109,6 @@
                 Toast.fire({ icon: 'error', title: `Quantity melebihi stok tersedia pada batch tersebut (${batch.remaining_available}).` });
                 return;
             }
-            if (qty > this.remainingToShip(item)) {
-                Toast.fire({ icon: 'error', title: `Quantity melebihi sisa yang perlu dikirim untuk produk ini (${this.remainingToShip(item)}).` });
-                return;
-            }
 
             const existing = item.batches.find(b => b.product_batch_id === batch.id);
             if (existing) {
@@ -188,8 +184,6 @@
                 </td>
                 <td style="text-align:right;">
                     <span class="mono" style="font-weight:600;" x-text="batchTotal(item)"></span>
-                    <div style="font-size:11px; color:var(--ink-4);" x-show="item.product_id"
-                        x-text="'maks ' + item.remaining_quantity"></div>
                 </td>
                 <td>
                     <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
@@ -207,7 +201,7 @@
                         <div class="batch-panel__hd">
                             <span>Batch Terpilih</span>
                             <span class="mono" :class="batchTotal(item) > n(item.remaining_quantity) ? 'batch-panel__total--warn' : 'batch-panel__total--ok'"
-                                x-text="'Qty Dikirim: ' + batchTotal(item) + ' / maks ' + item.remaining_quantity + ' ' + (item.unit || '')"></span>
+                                x-text="'Qty Dikirim: ' + batchTotal(item) + ' / sisa pesanan ' + item.remaining_quantity + ' ' + (item.unit || '')"></span>
                         </div>
                         <template x-if="item.batches.length === 0">
                             <div class="batch-panel__empty">Belum ada batch dipilih.</div>
@@ -216,12 +210,9 @@
                             <thead>
                                 <tr>
                                     <th style="width:36px;">#</th>
-                                    <th style="width:200px;">Batch No.</th>
+                                    <th>Batch No.</th>
                                     <th style="width:110px; text-align:right;">Qty Dikirim</th>
-                                    <th style="width:120px; text-align:right;">Unit Cost</th>
-                                    <th style="width:130px; text-align:right;">Amount</th>
-                                    <th style="width:36px;"></th>
-                                    <th></th>
+                                    <th style="width:40px;"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -230,15 +221,12 @@
                                         <td class="mono" style="color:var(--ink-4);" x-text="String(bIndex + 1).padStart(2, '0')"></td>
                                         <td class="mono" x-text="b.batch_number"></td>
                                         <td class="num" style="text-align:right;" x-text="n(b.quantity)"></td>
-                                        <td class="num" style="text-align:right;" x-text="NumberUtils.formatNumericIntoMask(n(b.unit_cost))"></td>
-                                        <td class="num" style="text-align:right;" x-text="NumberUtils.formatNumericIntoMask(n(b.quantity) * n(b.unit_cost))"></td>
                                         <td>
                                             <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
                                                 @click="removeBatch(item, bIndex)">
                                                 <x-misc.icon name="trash" :size="13" stroke="var(--ink-4)" />
                                             </button>
                                         </td>
-                                        <td></td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -268,21 +256,19 @@
                         <th style="width:32px;"></th>
                         <th style="width:auto;">Batch No.</th>
                         <th style="width:110px; text-align:right;">Tersedia</th>
-                        <th style="width:130px; text-align:right;">Unit Cost</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-for="b in availableBatchesForItem(activeItem())" :key="b.id">
-                        <tr class="row-tap" @click="batchForm.product_batch_id = b.id; batchForm.quantity = Math.min(b.remaining_available, remainingToShip(activeItem()))">
+                        <tr class="row-tap" @click="batchForm.product_batch_id = b.id; batchForm.quantity = remainingToShip(activeItem()) > 0 ? Math.min(b.remaining_available, remainingToShip(activeItem())) : b.remaining_available">
                             <td><input type="radio" :checked="batchForm.product_batch_id === b.id" /></td>
                             <td class="mono" x-text="b.batch_number"></td>
                             <td class="num" style="text-align:right;" x-text="b.remaining_available"></td>
-                            <td class="num" style="text-align:right;" x-text="NumberUtils.formatNumericIntoMask(b.unit_cost)"></td>
                         </tr>
                     </template>
                     <template x-if="availableBatchesForItem(activeItem()).length === 0">
                         <tr>
-                            <td colspan="4" style="text-align:center; color:var(--ink-4); padding:16px;">
+                            <td colspan="3" style="text-align:center; color:var(--ink-4); padding:16px;">
                                 Tidak ada batch tersedia untuk produk ini di gudang tersebut.
                             </td>
                         </tr>
