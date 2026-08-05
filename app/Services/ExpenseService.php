@@ -49,6 +49,7 @@ class ExpenseService
             'creator'
         ])
             ->select(
+                'id',
                 'company_id',
                 'contact_id',
                 'number',
@@ -114,7 +115,7 @@ class ExpenseService
                 'expense_date' => $request->input('expense_date'),
                 'due_date' => $request->filled('payment_terms') ? now()->addDays(PaymentTerm::day($request->input('payment_terms'))) : null,
                 'payment_terms' => $request->input('payment_terms'),
-                'status' => ExpenseStatus::DRAFT->value,
+                'status' => $request->input('status', ExpenseStatus::DRAFT->value),
                 'subtotal' => 0,
                 'discount_percentage' => 0,
                 'discount_amount' => 0,
@@ -148,13 +149,12 @@ class ExpenseService
                     'account_id' => $chargeData['account_id'],
                     'description' => $chargeData['description'] ?? null,
                     'amount' => $chargeData['amount'] ?? 0,
-                    'is_taxable' => $chargeData['is_taxable'] ?? false,
                 ]);
 
                 $chargeAmount += $chargeData['amount'] ?? 0;
             }
 
-            $totalAmount = $subtotal - $discountAmount + $taxAmount - $chargeAmount;
+            $totalAmount = $subtotal - $discountAmount + $taxAmount + $chargeAmount;
             $expense->update([
                 'subtotal' => $subtotal,
                 'discount_percentage' => $discountPercentage,
@@ -164,6 +164,10 @@ class ExpenseService
                 'total_amount' => $totalAmount,
                 'remaining_amount' => $totalAmount,
             ]);
+
+            if ($expense->status === ExpenseStatus::OPEN->value) {
+                $this->postExpenseJournal($expense);
+            }
         });
     }
 
@@ -284,13 +288,12 @@ class ExpenseService
                     'account_id' => $chargeData['account_id'],
                     'description' => $chargeData['description'] ?? null,
                     'amount' => $chargeData['amount'] ?? 0,
-                    'is_taxable' => $chargeData['is_taxable'] ?? false,
                 ]);
 
                 $chargeAmount += $chargeData['amount'] ?? 0;
             }
 
-            $totalAmount = $subtotal - $discountAmount + $taxAmount - $chargeAmount;
+            $totalAmount = $subtotal - $discountAmount + $taxAmount + $chargeAmount;
             $expense->update([
                 'subtotal' => $subtotal,
                 'discount_percentage' => $discountPercentage,
@@ -372,11 +375,11 @@ class ExpenseService
         foreach ($expense->costs as $cost) {
             $journalItems[] = [
                 'account_id' => $cost->account_id,
-                'credit' => $cost->amount,
+                'debit' => $cost->amount,
                 'description' => $cost->description,
             ];
 
-            $payableAmount -= $cost->amount;
+            $payableAmount += $cost->amount;
         }
 
         $journalItems[] = [

@@ -78,7 +78,7 @@
                     </template>
 
                     <template x-if="!loading">
-                        <template x-for="(row, i) in tableData.data" :key="row.id">
+                        <template x-for="(row, i) in tableData.data" :key="row.id + '-' + row.type">
                             <tr class="row-tap"
                                 @click="window.location = route('finances.account_payables.show', {
                                 id: row.id,

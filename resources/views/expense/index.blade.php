@@ -103,7 +103,7 @@
 
                 async handleCancel(id) {
                     Swal.fire({
-                        title: 'Apakah Anda yakin ingin membatalkan Tagihan Penjualan ini?',
+                        title: 'Apakah Anda yakin ingin membatalkan Biaya ini?',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Ya, batalkan',
@@ -120,7 +120,7 @@
                             });
                             try {
                                 const response = await axios.post(route(
-                                    'sales.sales_invoices.cancel', id));
+                                    'expenses.cancel', id));
                                 Swal.close();
                                 Toast.fire({
                                     icon: 'success',
@@ -169,7 +169,7 @@
                 <div class="order-sub">Pencatatan dan persetujuan biaya operasional</div>
             </div>
             <div class="order-actions">
-                <a href="{{ route('biaya.create') }}" class="btn btn-primary">
+                <a href="{{ route('expenses.create') }}" class="btn btn-primary">
                     <x-misc.icon name="plus" :size="14" />Tambah Biaya
                 </a>
             </div>
@@ -254,13 +254,13 @@
                     <template x-if="!loading">
                         <template x-for="row in tableData.data" :key="row.id">
                             <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
-                                @click="row.status === '{{ $draft }}' ? window.location = route('sales.sales_invoices.edit', row.id) : null">
+                                @click="row.status === '{{ $draft }}' ? window.location = route('expenses.edit', row.id) : null">
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
                                 <td style="color:var(--ink-3);" x-text="row.expense_date ?? '-'"></td>
                                 <td class="mono" style="font-weight:600;" x-text="row.reference_number"></td>
                                 <td style="font-weight:500;" x-text="row.contact?.name ?? '-'"></td>
                                 <td class="num" style="text-align:right;"
-                                    x-text="NumberUtils.formatNumericIntoMask(row.remainig_amount)"></td>
+                                    x-text="NumberUtils.formatNumericIntoMask(row.remaining_amount)"></td>
                                 <td class="num" style="text-align:right;"
                                     x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
                                 {{-- <td><span class="mono" x-text="row.status"></span></td> --}}
@@ -293,7 +293,7 @@
                                             </button>
                                             <template x-if="row.status === '{{ $draft }}'">
                                                 <div>
-                                                    <a :href="route('sales.sales_invoices.edit', row.id)" @click.stop
+                                                    <a :href="route('expenses.edit', row.id)" @click.stop
                                                         class="action-menu__item">
                                                         <x-misc.icon name="edit" :size="14"
                                                             stroke="var(--ink-3)" />Edit

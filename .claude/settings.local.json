@@ -10,7 +10,8 @@
       "Bash(awk '{print $NF}')",
       "Bash(npm run *)",
       "PowerShell(npm run dev 2>&1)",
-      "Bash(xargs grep -n \"view\\('pages\")"
+      "Bash(xargs grep -n \"view\\('pages\")",
+      "Bash(php artisan tinker '--execute= *)"
     ]
   }
 }
