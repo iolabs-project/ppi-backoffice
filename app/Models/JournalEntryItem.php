@@ -14,6 +14,11 @@ class JournalEntryItem extends Model
         'description',
     ];
 
+    protected $casts = [
+        'debit' => 'double',
+        'credit' => 'double',
+    ];
+
     public function journalEntry()
     {
         return $this->belongsTo(JournalEntry::class);

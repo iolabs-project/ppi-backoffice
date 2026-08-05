@@ -55,6 +55,21 @@ class AccountPayableController extends Controller
         }
     }
 
+    public function paymentDatatable(Request $request)
+    {
+        try {
+            $data = $this->accountPayableService->fetchPaymentTableData($request);
+            return response()->json($data);
+         } catch (\Exception $e) {
+            Log::error('Error AccountPayableController@paymentDatatable: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba mengambil data pembayaran Hutang. Silakan coba lagi.'], 500);
+        }
+    }
+
     public function show(Request $request, int $id)
     {
         $data = [

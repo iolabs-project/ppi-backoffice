@@ -2,9 +2,12 @@
 
 namespace App\Services\Finance;
 
+use App\Enums\AccountSettingEnum;
+use App\Services\JournalService;
 use App\Enums\ExpenseStatus;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Enums\PayablePaymentReferenceTypeEnum;
+use App\Models\AccountSetting;
 use App\Models\Company;
 use App\Models\Expense;
 use App\Models\PayablePayment;
@@ -16,6 +19,11 @@ use Illuminate\Validation\ValidationException;
 
 class AccountPayableService
 {
+    private JournalService $journalService;
+    public function __construct(JournalService $journalService)
+    {
+        $this->journalService = $journalService;
+    }
     public function generateAPNumber()
     {
         $prefix = 'PP';
@@ -138,14 +146,14 @@ class AccountPayableService
         return $query;
     }
 
-    public function fetchPaymentTableData(Request $request, int $id)
+    public function fetchPaymentTableData(Request $request)
     {
         $query = PayablePayment::with([
             'account:id,name,code',
-            'creator:id,name',
+            'creator:id,username',
         ])
-            ->where('reference_type', $request->input('reference_type'))
-            ->where('reference_id', $id)
+            ->where('reference_type', PayablePaymentReferenceTypeEnum::from($request->reference_type)->value)
+            ->where('reference_id', $request->reference_id)
             ->select(
                 'id',
                 'number',
@@ -174,20 +182,6 @@ class AccountPayableService
 
     public function storePayment(Request $request, int $id)
     {
-        // $invoice = PurchaseInvoice::findOrFail($id);
-
-        // if ($invoice->remaining_amount <= 0 || $invoice->status === PurchaseInvoiceStatus::PAID->value) {
-        //     throw ValidationException::withMessages(['error' => 'Invoice ini sudah lunas. Tidak dapat menambahkan pembayaran lagi.']);
-        // }
-
-        // if ($invoice->status === PurchaseInvoiceStatus::CANCELLED->value) {
-        //     throw ValidationException::withMessages(['error' => 'Invoice ini dibatalkan. Tidak dapat menambahkan pembayaran.']);
-        // }
-
-        // if ($request->amount > $invoice->remaining_amount) {
-        //     throw ValidationException::withMessages(['amount' => 'Jumlah pembayaran tidak boleh melebihi sisa outstanding (' . fmt_rp($invoice->remaining_amount) . ').']);
-        // }
-
         if ($request->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value) {
             $invoice = PurchaseInvoice::findOrFail($id);
         } elseif ($request->reference_type === PayablePaymentReferenceTypeEnum::EXPENSE->value) {
@@ -197,7 +191,7 @@ class AccountPayableService
         }
 
             DB::transaction(function () use ($request, $invoice) {
-                PayablePayment::create([
+                $payment = PayablePayment::create([
                     'company_id' => $invoice->company_id,
                     'reference_id' => $invoice->id,
                     'reference_type' => PayablePaymentReferenceTypeEnum::from($request->reference_type)->value,
@@ -223,8 +217,35 @@ class AccountPayableService
                 }
                 $invoice->save();
 
-                // TODO: Insert Journal Entry for the payment
-
+                $this->postPaymentJournal($payment);
             });
+    }
+
+    private function postPaymentJournal(PayablePayment $payment) {
+        $payableID = AccountSetting::where('company_id', config('context.selected_company_id'))
+            ->where('setting_key', AccountSettingEnum::ACCOUNT_PAYABLE->value)
+            ->value('account_id');
+
+        $cashBankID = $payment->account_id;
+        $amount = $payment->amount;
+
+        $journalItems = [
+            [
+                'account_id' => $payableID,
+                'debit' => $amount,
+            ],
+            [
+                'account_id' => $cashBankID,
+                'credit' => $amount,
+            ],
+        ];
+
+        $this->journalService->post(
+            date: null,
+            referenceType: PayablePayment::class,
+            referenceID: $payment->id,
+            description: 'Pembayaran Hutang #' . $payment->number,
+            items: $journalItems
+        );
     }
 }

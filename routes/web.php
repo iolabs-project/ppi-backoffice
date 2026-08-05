@@ -151,6 +151,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('account-payables')->name('account_payables.')->controller(AccountPayableController::class)->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/datatable', 'datatable')->name('datatable');
+            Route::get('/payment-datatable', 'paymentDatatable')->name('payment_datatable');
             Route::get('/{id}', 'show')->name('show');
             Route::post('/{id}', 'store')->name('store');
             Route::get('/{id}/edit', 'edit')->name('edit');
