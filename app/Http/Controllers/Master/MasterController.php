@@ -6,6 +6,7 @@ use App\Enums\AccountCategory;
 use App\Http\Controllers\Controller;
 use App\Models\Unit;
 use App\Services\Master\AccountService;
+use App\Services\Master\AccountSettingService;
 use App\Services\Master\ContactService;
 use App\Services\ErpDataService;
 use App\Services\Master\ProductService;
@@ -13,22 +14,25 @@ use App\Services\Master\RoleService;
 
 class MasterController extends Controller
 {
-    public function index(ProductService $productService, ContactService $contactService, AccountService $accountService, RoleService $roleService)
+    public function index(ProductService $productService, ContactService $contactService, AccountService $accountService, RoleService $roleService, AccountSettingService $accountSettingService)
     {
         return view('master.index', [
-            'currentPage'        => 'master',
-            'breadcrumb'         => [['label' => 'Master Data']],
-            'accountCategories'  => $accountService->fetchAccountCategoryData(),
-            'userRoles'          => $roleService->fetchRoleData(),
-            'roles'              => ErpDataService::roles(),
-            'units'              => Unit::whereNull('deleted_at')->select('id', 'name', 'symbol')->get(),
-            'productCategories'  => $productService->fetchProductCategoryData(),
-            'contactOptions'     => $contactService->fetchContactData('employee'),
-            'inventoryAccounts'  => $accountService->fetchAccountData(AccountCategory::INVENTORY->value),
-            'salesAccounts'      => $accountService->fetchAccountData(AccountCategory::REVENUE->value),
-            'cogsAccounts'       => $accountService->fetchAccountData(AccountCategory::COST_OF_GOODS_SOLD->value),
-            'receivableAccounts' => $accountService->fetchAccountData(AccountCategory::ACCOUNT_RECEIVABLE->value),
-            'payableAccounts'    => $accountService->fetchAccountData(AccountCategory::ACCOUNT_PAYABLE->value),
+            'currentPage'          => 'master',
+            'breadcrumb'           => [['label' => 'Master Data']],
+            'accountCategories'    => $accountService->fetchAccountCategoryData(),
+            'userRoles'            => $roleService->fetchRoleData(),
+            'roles'                => ErpDataService::roles(),
+            'units'                => Unit::whereNull('deleted_at')->select('id', 'name', 'symbol')->get(),
+            'productCategories'    => $productService->fetchProductCategoryData(),
+            'contactOptions'       => $contactService->fetchContactData('employee'),
+            'inventoryAccounts'    => $accountService->fetchAccountData(AccountCategory::INVENTORY->value),
+            'salesAccounts'        => $accountService->fetchAccountData(AccountCategory::REVENUE->value),
+            'cogsAccounts'         => $accountService->fetchAccountData(AccountCategory::COST_OF_GOODS_SOLD->value),
+            'receivableAccounts'   => $accountService->fetchAccountData(AccountCategory::ACCOUNT_RECEIVABLE->value),
+            'payableAccounts'      => $accountService->fetchAccountData(AccountCategory::ACCOUNT_PAYABLE->value),
+            'allAccounts'          => $accountService->fetchAccountData(null),
+            'accountSettingGroups' => $accountSettingService->fetchAccountSettingGroups(),
+            'accountSettingValues' => $accountSettingService->fetchAccountSettingValues(),
         ]);
     }
 

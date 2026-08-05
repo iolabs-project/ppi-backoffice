@@ -14,6 +14,7 @@ use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\Finance\AccountPayableController;
 use App\Http\Controllers\Finance\AccountReceivableController;
 use App\Http\Controllers\Master\AccountController;
+use App\Http\Controllers\Master\AccountSettingController;
 use App\Http\Controllers\Master\ContactController;
 use App\Http\Controllers\Master\MasterController;
 use App\Http\Controllers\Master\ProductCategoryController;
@@ -284,6 +285,10 @@ Route::middleware('auth')->group(function () {
             Route::post('/', 'store')->name('store');
             Route::put('/{id}', 'update')->name('update');
             Route::post('/{id}/status', 'status')->name('status');
+        });
+
+        Route::prefix('account-settings')->name('account_settings.')->controller(AccountSettingController::class)->group(function () {
+            Route::put('/', 'update')->name('update');
         });
     });
 });

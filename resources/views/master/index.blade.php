@@ -919,6 +919,46 @@
             };
         }
 
+        function accountSettingModule() {
+            return {
+                groups: @json($accountSettingGroups),
+                allAccounts: @json($allAccounts),
+                settings: {},
+                saving: false,
+
+                init() {
+                    const raw = @json($accountSettingValues);
+                    this.settings = Object.fromEntries(
+                        Object.entries(raw).map(([key, value]) => [key, value ?? ''])
+                    );
+                },
+
+                async submitSettings() {
+                    this.saving = true;
+                    try {
+                        const payload = {
+                            settings: Object.entries(this.settings).map(([setting_key, account_id]) => ({
+                                setting_key,
+                                account_id: account_id === '' ? null : account_id,
+                            })),
+                        };
+                        const r = await axios.put(route('master.account_settings.update'), payload);
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
+                    } catch (e) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: e.response?.data?.message || 'Gagal menyimpan pengaturan akun.'
+                        });
+                    } finally {
+                        this.saving = false;
+                    }
+                },
+            };
+        }
+
         function permitModule() {
             return {
                 roles: @json($roles),
@@ -971,7 +1011,7 @@
                 <h1 class="order-title display">Master Data</h1>
                 <div class="order-sub">Kelola data referensi untuk seluruh modul ERP</div>
             </div>
-            <div>
+            <div x-show="tab !== 'account_setting'">
                 <button class="btn btn-primary" x-on:click="modal = 'add_' + tab">
                     <x-misc.icon name="plus" :size="14" />
                     <span
@@ -982,7 +1022,7 @@
 
         {{-- Tab bar --}}
         <div class="utab">
-            @foreach ([['produk', 'Produk'], ['kontak', 'Kontak'], ['akun', 'Chart of Accounts'], ['gudang', 'Gudang'], ['user', 'User'], ['permit', 'Hak Akses']] as [$id, $lbl])
+            @foreach ([['produk', 'Produk'], ['kontak', 'Kontak'], ['akun', 'Chart of Accounts'], ['gudang', 'Gudang'], ['user', 'User'], ['permit', 'Hak Akses'], ['account_setting', 'Pengaturan Akun']] as [$id, $lbl])
                 <button class="utab-item"
                     x-on:click="tab = '{{ $id }}'; sessionStorage.setItem('master_tab', '{{ $id }}')"
                     :class="tab === '{{ $id }}' ? 'utab-active' : ''">{{ $lbl }}</button>
@@ -995,6 +1035,7 @@
         @include('master.partials.tabs.warehouse')
         @include('master.partials.tabs.user')
         @include('master.partials.tabs.permit')
+        @include('master.partials.tabs.account-setting')
 
         {{-- Modal: Tambah Kontak --}}
         <x-misc.modal title="Tambah Kontak Baru" show="modal === 'add_kontak'" close-handler="modal = null">
