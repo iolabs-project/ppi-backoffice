@@ -94,7 +94,7 @@ function produkShowData() {
       <div class="order-sub">{{ $produk['satuan'] }} · Diperbarui hari ini</div>
     </div>
     <div class="order-actions">
-      <button class="btn btn-ghost" x-on:click="modal = 'edit_produk'"><x-misc.icon name="edit" :size="14" /> Edit Produk</button>
+      <button class="btn btn-ghost" x-on:click="modal = 'edit_product'"><x-misc.icon name="edit" :size="14" /> Edit Produk</button>
       <button class="btn btn-primary" x-on:click="modal = 'penyesuaian'"><x-misc.icon name="plus" :size="14" /> Penyesuaian Stok</button>
     </div>
   </div>
@@ -326,7 +326,7 @@ function produkShowData() {
   </div>
 
   {{-- Modal: Edit Produk --}}
-  <x-misc.modal title="Edit Produk" show="modal === 'edit_produk'" close-handler="modal = null">
+  <x-misc.modal title="Edit Produk" show="modal === 'edit_product'" close-handler="modal = null">
     <div class="form-body">
       <div class="form-grid-2">
         <x-misc.field label="Kode Produk" :required="true">

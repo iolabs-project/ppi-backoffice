@@ -1,4 +1,4 @@
-<x-misc.modal title="Edit Produk" show="modal === 'edit_produk'" close-handler="modal = null">
+<x-misc.modal title="Form Produk" show="modal === 'add_product' || modal === 'edit_product'" close-handler="modal = null">
     <div class="form-body">
         <div class="form-grid-2">
             <x-misc.field label="Kode Produk" :required="true">
@@ -32,7 +32,7 @@
     </div>
     <x-slot:footer>
         <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-        <button class="btn btn-primary" x-on:click="handleUpdate()"><x-misc.icon name="check"
+        <button class="btn btn-primary" x-on:click="modal === 'add_product' ? handleCreate() : handleUpdate()"><x-misc.icon name="check"
                 :size="14" />Simpan Produk</button>
     </x-slot:footer>
 </x-misc.modal>

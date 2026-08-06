@@ -95,7 +95,7 @@
                         sales_account_id: p.sales_account_id || '',
                         cogs_account_id: p.cogs_account_id || '',
                     };
-                    this.modal = 'edit_produk';
+                    this.modal = 'edit_product';
                 },
                 async submitAddProduk() {
                     try {
@@ -1045,7 +1045,7 @@
         </div>
 
         {{-- Modal: Tambah Produk --}}
-        <x-misc.modal title="Tambah Produk Baru" show="modal === 'add_produk'" close-handler="modal = null">
+        <x-misc.modal title="Tambah Produk Baru" show="modal === 'add_product'" close-handler="modal = null">
             <div class="form-body">
                 <div class="form-grid-2">
                     <x-misc.field label="Kode Produk" :required="true">
@@ -1113,7 +1113,7 @@
         </x-misc.modal>
 
         {{-- Modal: Edit Produk --}}
-        <x-misc.modal title="Edit Produk" show="modal === 'edit_produk'" close-handler="modal = null">
+        <x-misc.modal title="Edit Produk" show="modal === 'edit_product'" close-handler="modal = null">
             <div class="form-body">
                 <div style="display:flex; align-items:center; gap:12px; padding-bottom:4px;">
                     <div style="width:44px; height:44px; border-radius:10px; background:var(--bg-2); display:grid; place-items:center;">

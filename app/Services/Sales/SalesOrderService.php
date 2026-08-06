@@ -392,4 +392,21 @@ class SalesOrderService
             })
             ->update(['status' => SalesOrderStatus::CLOSED->value]);
     }
+
+    public function updateInvoicedQuantity(int $salesOrderItemID, float $invoicedQuantity): void
+    {
+        $salesOrderItem = SalesOrderItem::findOrFail($salesOrderItemID);
+        $salesOrderItem->invoiced_quantity += $invoicedQuantity;
+        $salesOrderItem->save();
+    }
+
+    public function decrementDownPaymentRemainingAmount(int $salesOrderID, float $amount): void
+    {
+        $salesOrder = SalesOrder::findOrFail($salesOrderID);
+        $salesOrder->down_payment_remaining_amount -= $amount;
+        if ($salesOrder->down_payment_remaining_amount < 0) {
+            $salesOrder->down_payment_remaining_amount = 0;
+        }
+        $salesOrder->save();
+    }
 }

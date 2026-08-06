@@ -88,6 +88,7 @@ class ContactService
             'is_customer',
             'is_supplier',
             'is_employee',
+            'deleted_at',
         )
         ->where('company_id', config('context.selected_company_id'));
 

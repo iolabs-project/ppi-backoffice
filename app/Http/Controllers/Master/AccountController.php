@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Master\AccountFormRequest;
 use App\Services\Master\AccountService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,21 +29,8 @@ class AccountController extends Controller
         }
     }
 
-    public function store(Request $request, AccountService $accountService)
+    public function store(AccountFormRequest $request, AccountService $accountService)
     {
-        $request->validate([
-            'code' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('chart_of_accounts', 'code')->where(function ($query) {
-                    return $query->where('company_id', config('context.selected_company_id'));
-                }),
-            ],
-            'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:account_categories,id',
-            'note' => 'nullable|string|max:255',
-        ]);
         try {
             $accountService->storeAccount($request);
 
@@ -61,21 +49,8 @@ class AccountController extends Controller
         }
     }
 
-    public function update(Request $request, AccountService $accountService, int $id)
+    public function update(AccountFormRequest $request, AccountService $accountService, int $id)
     {
-        $request->validate([
-            'code' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('chart_of_accounts', 'code')->ignore($id)->where(function ($query) {
-                    return $query->where('company_id', config('context.selected_company_id'));
-                }),
-            ],
-            'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:account_categories,id',
-            'note' => 'nullable|string|max:255',
-        ]);
         try {
             $accountService->updateAccount($request, $id);
 

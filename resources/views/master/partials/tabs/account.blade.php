@@ -1,12 +1,15 @@
 <div x-data="accountModule()" x-init="fetchData()" x-show="tab === 'akun'" x-cloak>
     <div class="card" style="overflow:hidden;">
-        <div class="master-toolbar">
+        <div class="master-toolbar" style="justify-content: space-between">
             <div class="master-search">
                 <span class="master-search__icon"><x-misc.icon name="search" :size="14"
                         stroke="var(--ink-4)" /></span>
-                <input class="input master-search__input" placeholder="Cari akun..." x-model="search"
+                <input class="input master-search__input" placeholder="Cari kontak..." x-model="search"
                     x-on:input.debounce.400ms="handleSearch(search)" />
             </div>
+            <button class="btn btn-primary btn-sm" x-on:click="modal = 'add_account'">
+                <x-misc.icon name="plus" :size="14" /> Tambah Akun
+            </button>
         </div>
         <table class="tbl">
             <thead>
@@ -62,7 +65,7 @@
                                             <div class="action-menu__panel" x-show="open" x-cloak
                                                 x-on:click="open = false"
                                                 style="position:absolute; right:0; top:100%; margin-top:4px;">
-                                                <button class="action-menu__item" x-on:click="openEditAkun(item)">
+                                                <button class="action-menu__item" x-on:click="openEditModal(item)">
                                                     <x-misc.icon name="edit" :size="14" /> Edit Akun
                                                 </button>
                                                 <template x-if="!item.deleted_at">
@@ -88,4 +91,6 @@
             </tbody>
         </table>
     </div>
+
+    @include('master.partials.modals.account-modal')
 </div>

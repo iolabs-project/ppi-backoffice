@@ -27,6 +27,8 @@ class RoleSeeder extends Seeder
             'name' => RoleEnum::ACCOUNTING->value,
         ]);
 
+        $superAdminRole->syncPermissions(Permission::all());
+
         // Admin: full access except everything under master.*
         $adminRole->syncPermissions(
             Permission::where('name', 'not like', 'master.%')->get()

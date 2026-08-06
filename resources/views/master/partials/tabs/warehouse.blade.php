@@ -1,12 +1,15 @@
-<div x-data="gudangModule()" x-init="fetchData()" x-show="tab === 'gudang'" x-cloak>
-    <div class="master-toolbar" style="padding-left:0; padding-right:0;">
-        <div class="master-search">
-            <span class="master-search__icon"><x-misc.icon name="search" :size="14"
-                    stroke="var(--ink-4)" /></span>
-            <input class="input master-search__input" placeholder="Cari gudang..." x-model="search"
-                x-on:input.debounce.400ms="page = 1; fetchData()" />
+<div x-data="warehouseModule()" x-init="fetchData()" x-show="tab === 'gudang'" x-cloak>
+    <div class="master-toolbar" style="justify-content: space-between;padding-left:0; padding-right:0;">
+            <div class="master-search">
+                <span class="master-search__icon"><x-misc.icon name="search" :size="14"
+                        stroke="var(--ink-4)" /></span>
+                <input class="input master-search__input" placeholder="Cari gudang..." x-model="search"
+                    x-on:input.debounce.400ms="handleSearch(search)" />
+            </div>
+            <button class="btn btn-primary btn-sm" x-on:click="modal = 'add_warehouse'">
+                <x-misc.icon name="plus" :size="14" /> Tambah Gudang
+            </button>
         </div>
-    </div>
     <template x-if="loading">
         <div style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...</div>
     </template>
@@ -80,4 +83,6 @@
             </button>
         </div>
     </div>
+
+    @include('master.partials.modals.warehouse-modal')
 </div>

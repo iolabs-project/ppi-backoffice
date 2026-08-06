@@ -59,6 +59,34 @@ class PermissionSeeder extends Seeder
                     'delete',
                 ],
             ],
+
+            'finances' => [
+                'payables' => [
+                    'view',
+                    'create',
+                    'edit',
+                    'delete',
+                ],
+                'receivables' => [
+                    'view',
+                    'create',
+                    'edit',
+                    'delete',
+                ],
+                'cash-bank' => [
+                    'view',
+                    'create',
+                    'edit',
+                    'delete',
+                ],
+                'expenses' => [
+                    'view',
+                    'create',
+                    'edit',
+                    'delete',
+                ],
+            ],
+
             'master' => [
                 'products' => [
                     'view',

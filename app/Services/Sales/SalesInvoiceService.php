@@ -181,8 +181,10 @@ class SalesInvoiceService
             ]);
 
             if ($request->status === SalesInvoiceStatus::OPEN->value) {
-                SalesOrderItem::where('id', $detail['sales_order_item_id'])
-                    ->increment('invoiced_quantity', $detail['quantity']);
+                $this->salesOrderService->updateInvoicedQuantity(
+                    salesOrderItemID: $detail['sales_order_item_id'],
+                    invoicedQuantity: $detail['quantity']
+                );
             }
         }
 
@@ -196,8 +198,10 @@ class SalesInvoiceService
         }
 
         if ($request->status === SalesInvoiceStatus::OPEN->value) {
-            SalesOrder::where('id', $salesInvoice->sales_order_id)
-                ->decrement('down_payment_remaining_amount', $request->down_payment_amount);
+            $this->salesOrderService->decrementDownPaymentRemainingAmount(
+                salesOrderID: $salesInvoice->sales_order_id,
+                amount: $request->down_payment_amount
+            );
             $this->postSIJournal($salesInvoice->fresh()->load('charges'));
         }
     }

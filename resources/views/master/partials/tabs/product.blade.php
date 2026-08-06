@@ -7,7 +7,7 @@
                 <input class="input master-search__input" placeholder="Cari produk..." x-model="search"
                     x-on:input.debounce.400ms="handleSearch(search)" />
             </div>
-            <button class="btn btn-primary btn-sm" x-on:click="modal = 'add_produk'">
+            <button class="btn btn-primary btn-sm" x-on:click="modal = 'add_product'">
                 <x-misc.icon name="plus" :size="14" /> Tambah Produk
             </button>
         </div>
@@ -118,6 +118,5 @@
         </div>
     </div>
 
-    @include('master.partials.modals.product-create-modal')
-    @include('master.partials.modals.product-edit-modal')
+    @include('master.partials.modals.product-modal')
 </div>

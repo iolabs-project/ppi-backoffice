@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Master\ContactFormRequest;
 use App\Services\Master\ContactService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -27,18 +28,8 @@ class ContactController extends Controller
         }
     }
 
-    public function store(Request $request, ContactService $contactService)
+    public function store(ContactFormRequest $request, ContactService $contactService)
     {
-        $request->validate([
-            'code' => 'required|string|max:255|unique:contacts,code,NULL,id,company_id,' . config('context.selected_company_id'),
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'is_customer' => 'required|boolean',
-            'is_supplier' => 'required|boolean',
-            'is_employee' => 'required|boolean',
-        ]);
         try {
             $contactService->storeContact($request);
 
@@ -57,18 +48,8 @@ class ContactController extends Controller
         }
     }
 
-    public function update(Request $request, ContactService $contactService, int $id)
+    public function update(ContactFormRequest $request, ContactService $contactService, int $id)
     {
-        $request->validate([
-            'code' => 'required|string|max:255|unique:contacts,code,' . $id . ',id,company_id,' . config('context.selected_company_id'),
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'is_customer' => 'required|boolean',
-            'is_supplier' => 'required|boolean',
-            'is_employee' => 'required|boolean',
-        ]);
         try {
             $contactService->updateContact($request, $id);
 

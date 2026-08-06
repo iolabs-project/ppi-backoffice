@@ -19,6 +19,7 @@ use App\Http\Controllers\Master\ContactController;
 use App\Http\Controllers\Master\MasterController;
 use App\Http\Controllers\Master\ProductCategoryController;
 use App\Http\Controllers\Master\ProductController;
+use App\Http\Controllers\Master\RoleController;
 use App\Http\Controllers\Master\UserController;
 use App\Http\Controllers\Master\WarehouseController;
 use App\Http\Controllers\Purchasing\GoodsReceiptController;
@@ -289,6 +290,13 @@ Route::middleware('auth')->group(function () {
 
         Route::prefix('account-settings')->name('account_settings.')->controller(AccountSettingController::class)->group(function () {
             Route::put('/', 'update')->name('update');
+        });
+
+        Route::prefix('roles')->name('roles.')->controller(RoleController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{id}', 'update')->name('update');
+            Route::put('/{id}/permissions', 'updatePermissions')->name('updatePermissions');
         });
     });
 });

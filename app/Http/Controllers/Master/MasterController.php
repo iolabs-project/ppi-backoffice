@@ -11,17 +11,33 @@ use App\Services\Master\ContactService;
 use App\Services\ErpDataService;
 use App\Services\Master\ProductService;
 use App\Services\Master\RoleService;
+use Spatie\Permission\Models\Permission;
 
 class MasterController extends Controller
 {
     public function index(ProductService $productService, ContactService $contactService, AccountService $accountService, RoleService $roleService, AccountSettingService $accountSettingService)
     {
+        $roleList = $roleService->fetchRoleData()->map(fn($r) => [
+            'id'          => $r->id,
+            'name'        => $r->name,
+            'permissions' => $r->permissions->pluck('name')->values(),
+        ]);
+
+        // Build permission tree: module -> resource -> [actions]
+        $permissionTree = [];
+        foreach (Permission::orderBy('name')->get(['name']) as $p) {
+            [$module, $resource, $action] = array_pad(explode('.', $p->name, 3), 3, '');
+            $permissionTree[$module][$resource][] = $action;
+        }
+
         return view('master.index', [
             'currentPage'          => 'master',
             'breadcrumb'           => [['label' => 'Master Data']],
             'accountCategories'    => $accountService->fetchAccountCategoryData(),
             'userRoles'            => $roleService->fetchRoleData(),
             'roles'                => ErpDataService::roles(),
+            'roleList'             => $roleList,
+            'permissionTree'       => $permissionTree,
             'units'                => Unit::whereNull('deleted_at')->select('id', 'name', 'symbol')->get(),
             'productCategories'    => $productService->fetchProductCategoryData(),
             'contactOptions'       => $contactService->fetchContactData('employee'),

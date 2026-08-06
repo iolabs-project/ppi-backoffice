@@ -215,9 +215,7 @@ class PurchaseInvoiceService
                     purchaseOrderID: $purchaseInvoice->purchase_order_id,
                     amount: $downpaymentAmount
                 );
-            }
 
-            if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
                 $this->postPIJournal($purchaseInvoice);
             }
         });

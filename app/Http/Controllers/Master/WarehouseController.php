@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Master\WarehouseFormRequest;
 use App\Services\Master\WarehouseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -27,14 +28,8 @@ class WarehouseController extends Controller
         }
     }
 
-    public function store(Request $request, WarehouseService $warehouseService)
+    public function store(WarehouseFormRequest $request, WarehouseService $warehouseService)
     {
-        $request->validate([
-            'code' => 'required|string|max:255|unique:warehouses,code,NULL,id,company_id,' . config('context.selected_company_id'),
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'note' => 'nullable|string|max:255',
-        ]);
         try {
             $warehouseService->storeWarehouse($request);
 
@@ -53,14 +48,8 @@ class WarehouseController extends Controller
         }
     }
 
-    public function update(Request $request, WarehouseService $warehouseService, int $id)
+    public function update(WarehouseFormRequest $request, WarehouseService $warehouseService, int $id)
     {
-        $request->validate([
-            'code' => 'required|string|max:255|unique:warehouses,code,' . $id . ',id,company_id,' . config('context.selected_company_id'),
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'note' => 'nullable|string|max:255',
-        ]);
         try {
             $warehouseService->updateWarehouse($request, $id);
 

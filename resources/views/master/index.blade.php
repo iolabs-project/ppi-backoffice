@@ -46,359 +46,6 @@
                 contactOptions: @json($contactOptions),
                 userRoles: @json($userRoles),
                 rolesAll: @json($roles),
-                permitModules: [{
-                        key: 'dashboard',
-                        label: 'Dashboard'
-                    }, {
-                        key: 'penjualan',
-                        label: 'Penjualan'
-                    },
-                    {
-                        key: 'pembelian',
-                        label: 'Pembelian'
-                    }, {
-                        key: 'kas',
-                        label: 'Kas & Bank'
-                    },
-                    {
-                        key: 'biaya',
-                        label: 'Biaya'
-                    }, {
-                        key: 'master',
-                        label: 'Master Data'
-                    },
-                    {
-                        key: 'laporan',
-                        label: 'Laporan'
-                    },
-                ],
-
-
-                // kontak
-                kontakForm: {
-                    code: '',
-                    name: '',
-                    email: '',
-                    phone: '',
-                    address: '',
-                    city: '',
-                    state: '',
-                    postal_code: '',
-                    note: '',
-                    is_customer: true,
-                    is_supplier: false,
-                    is_employee: false,
-                    receivable_account_id: '',
-                    payable_account_id: ''
-                },
-                editKontakData: {
-                    id: '',
-                    code: '',
-                    name: '',
-                    email: '',
-                    phone: '',
-                    address: '',
-                    city: '',
-                    state: '',
-                    postal_code: '',
-                    note: '',
-                    is_customer: true,
-                    is_supplier: false,
-                    is_employee: false,
-                    receivable_account_id: '',
-                    payable_account_id: ''
-                },
-                openEditKontak(k) {
-                    this.editKontakData = {
-                        id: k.id,
-                        code: k.code,
-                        name: k.name,
-                        email: k.email || '',
-                        phone: k.phone || '',
-                        address: k.address || '',
-                        city: k.city || '',
-                        state: k.state || '',
-                        postal_code: k.postal_code || '',
-                        note: k.note || '',
-                        is_customer: !!k.is_customer,
-                        is_supplier: !!k.is_supplier,
-                        is_employee: !!k.is_employee,
-                        receivable_account_id: k.receivable_account_id || '',
-                        payable_account_id: k.payable_account_id || ''
-                    };
-                    this.modal = 'edit_kontak';
-                },
-                async submitAddKontak() {
-                    try {
-                        const r = await axios.post(route('master.contacts.store'), this.kontakForm);
-                        Toast.fire({
-                            icon: 'success',
-                            title: r.data.message
-                        });
-                        this.modal = null;
-                        this.kontakForm = {
-                            code: '',
-                            name: '',
-                            email: '',
-                            phone: '',
-                            address: '',
-                            city: '',
-                            state: '',
-                            postal_code: '',
-                            note: '',
-                            is_customer: true,
-                            is_supplier: false,
-                            is_employee: false,
-                            receivable_account_id: '',
-                            payable_account_id: ''
-                        };
-                        this.$dispatch('kontak-refresh');
-                    } catch (e) {
-                        Toast.fire({
-                            icon: 'error',
-                            title: this.extractError(e, 'Gagal menyimpan kontak.')
-                        });
-                    }
-                },
-                async submitEditKontak() {
-                    try {
-                        const r = await axios.put(route('master.contacts.update', this.editKontakData.id), this
-                            .editKontakData);
-                        Toast.fire({
-                            icon: 'success',
-                            title: r.data.message
-                        });
-                        this.modal = null;
-                        this.$dispatch('kontak-refresh');
-                    } catch (e) {
-                        Toast.fire({
-                            icon: 'error',
-                            title: this.extractError(e, 'Gagal memperbarui kontak.')
-                        });
-                    }
-                },
-
-                // akun
-                akunForm: {
-                    code: '',
-                    name: '',
-                    category_id: '',
-                    note: ''
-                },
-                editAkunData: {
-                    id: '',
-                    code: '',
-                    name: '',
-                    category_id: '',
-                    note: ''
-                },
-                openEditAkun(a) {
-                    this.editAkunData = {
-                        id: a.id,
-                        code: a.code,
-                        name: a.name,
-                        category_id: a.category_id || '',
-                        note: a.note || ''
-                    };
-                    this.modal = 'edit_akun';
-                },
-                async submitAddAkun() {
-                    try {
-                        const r = await axios.post(route('master.accounts.store'), this.akunForm);
-                        Toast.fire({
-                            icon: 'success',
-                            title: r.data.message
-                        });
-                        this.modal = null;
-                        this.akunForm = {
-                            code: '',
-                            name: '',
-                            category_id: '',
-                            note: ''
-                        };
-                        this.$dispatch('akun-refresh');
-                    } catch (e) {
-                        Toast.fire({
-                            icon: 'error',
-                            title: this.extractError(e, 'Gagal menyimpan akun.')
-                        });
-                    }
-                },
-                async submitEditAkun() {
-                    try {
-                        const r = await axios.put(route('master.accounts.update', this.editAkunData.id), this
-                            .editAkunData);
-                        Toast.fire({
-                            icon: 'success',
-                            title: r.data.message
-                        });
-                        this.modal = null;
-                        this.$dispatch('akun-refresh');
-                    } catch (e) {
-                        Toast.fire({
-                            icon: 'error',
-                            title: this.extractError(e, 'Gagal memperbarui akun.')
-                        });
-                    }
-                },
-
-                // gudang
-                gudangForm: {
-                    code: '',
-                    name: '',
-                    address: '',
-                    note: ''
-                },
-                editGudangData: {
-                    id: '',
-                    code: '',
-                    name: '',
-                    address: '',
-                    note: ''
-                },
-                openEditGudang(g) {
-                    this.editGudangData = {
-                        id: g.id,
-                        code: g.code,
-                        name: g.name,
-                        address: g.address || '',
-                        note: g.note || ''
-                    };
-                    this.modal = 'edit_gudang';
-                },
-                async submitAddGudang() {
-                    try {
-                        const r = await axios.post(route('master.warehouses.store'), this.gudangForm);
-                        Toast.fire({
-                            icon: 'success',
-                            title: r.data.message
-                        });
-                        this.modal = null;
-                        this.gudangForm = {
-                            code: '',
-                            name: '',
-                            address: '',
-                            note: ''
-                        };
-                        this.$dispatch('gudang-refresh');
-                    } catch (e) {
-                        Toast.fire({
-                            icon: 'error',
-                            title: this.extractError(e, 'Gagal menyimpan gudang.')
-                        });
-                    }
-                },
-                async submitEditGudang() {
-                    try {
-                        const r = await axios.put(route('master.warehouses.update', this.editGudangData.id), this
-                            .editGudangData);
-                        Toast.fire({
-                            icon: 'success',
-                            title: r.data.message
-                        });
-                        this.modal = null;
-                        this.$dispatch('gudang-refresh');
-                    } catch (e) {
-                        Toast.fire({
-                            icon: 'error',
-                            title: this.extractError(e, 'Gagal memperbarui gudang.')
-                        });
-                    }
-                },
-
-                // user
-                addUserForm: {
-                    username: '',
-                    password: '',
-                    confirm_password: '',
-                    contact_id: '',
-                    role_id: ''
-                },
-                editUserData: {
-                    id: '',
-                    username: '',
-                    password: '',
-                    confirm_password: '',
-                    contact_id: '',
-                    role_id: '',
-                    deleted_at: null,
-                    nama: ''
-                },
-                userName(u) {
-                    return u?.contact ? u.contact.name : (u?.username || '');
-                },
-                openEditUser(u) {
-                    this.editUserData = {
-                        id: u.id,
-                        username: u.username,
-                        password: '',
-                        confirm_password: '',
-                        contact_id: u.contact_id || '',
-                        role_id: u.roles?.length ? u.roles[0].id : '',
-                        deleted_at: u.deleted_at,
-                        nama: this.userName(u)
-                    };
-                    this.modal = 'edit_user';
-                },
-                async submitAddUser() {
-                    try {
-                        const r = await axios.post(route('master.users.store'), this.addUserForm);
-                        Toast.fire({
-                            icon: 'success',
-                            title: r.data.message
-                        });
-                        this.modal = null;
-                        this.addUserForm = {
-                            username: '',
-                            password: '',
-                            confirm_password: '',
-                            contact_id: '',
-                            role_id: ''
-                        };
-                        this.$dispatch('user-refresh');
-                    } catch (e) {
-                        Toast.fire({
-                            icon: 'error',
-                            title: this.extractError(e, 'Gagal menyimpan user.')
-                        });
-                    }
-                },
-                async submitEditUser() {
-                    try {
-                        const r = await axios.put(route('master.users.update', this.editUserData.id), this
-                            .editUserData);
-                        Toast.fire({
-                            icon: 'success',
-                            title: r.data.message
-                        });
-                        this.modal = null;
-                        this.$dispatch('user-refresh');
-                    } catch (e) {
-                        Toast.fire({
-                            icon: 'error',
-                            title: this.extractError(e, 'Gagal memperbarui user.')
-                        });
-                    }
-                },
-
-                // role
-                addRoleForm: {
-                    nama: '',
-                    deskripsi: ''
-                },
-                editRoleData: {
-                    id: '',
-                    nama: '',
-                    deskripsi: ''
-                },
-                openEditRole(r) {
-                    this.editRoleData = {
-                        id: r.id,
-                        nama: r.nama,
-                        deskripsi: r.deskripsi
-                    };
-                    this.modal = 'edit_role';
-                },
             };
         }
 
@@ -494,7 +141,7 @@
                         category_id: null,
                         unit_id: null,
                     };
-                    this.modal = 'add_produk';
+                    this.modal = 'add_product';
                 },
 
                 openEditModal(product) {
@@ -506,7 +153,7 @@
                         category_id: product.category_id,
                         unit_id: product.unit_id,
                     };
-                    this.modal = 'edit_produk';
+                    this.modal = 'edit_product';
                 },
 
                 async handleCreate() {
@@ -647,6 +294,22 @@
                 perPage: 10,
                 perPageOptions: [10, 25, 50],
 
+                form: {
+                    id: null,
+                    code: '',
+                    name: '',
+                    email: '',
+                    phone: '',
+                    address: '',
+                    city: '',
+                    state: '',
+                    postal_code: '',
+                    note: '',
+                    is_customer: true,
+                    is_supplier: false,
+                    is_employee: false,
+                },
+
                 async fetchData() {
                     this.loading = true;
                     try {
@@ -706,6 +369,164 @@
                         });
                     }
                 },
+
+                openCreateModal() {
+                    this.form = {
+                        id: null,
+                        code: null,
+                        name: null,
+                        email: null,
+                        phone: null,
+                        address: null,
+                        city: null,
+                        state: null,
+                        postal_code: null,
+                        note: null,
+                        is_customer: true,
+                        is_supplier: false,
+                        is_employee: false,
+                    };
+                    this.modal = 'add_contact';
+                },
+
+                openEditModal(contact) {
+                    this.form = {
+                        id: contact.id,
+                        code: contact.code,
+                        name: contact.name,
+                        email: contact.email,
+                        phone: contact.phone,
+                        address: contact.address,
+                        city: contact.city,
+                        state: contact.state,
+                        postal_code: contact.postal_code,
+                        note: contact.note,
+                        is_customer: !!contact.is_customer,
+                        is_supplier: !!contact.is_supplier,
+                        is_employee: !!contact.is_employee,
+                    };
+                    this.modal = 'edit_contact';
+                },
+
+                async handleCreate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Pembuatan Kontak',
+                        text: 'Apakah anda yakin ingin membuat kontak baru dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat kontak',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.form,
+                            };
+
+                            Swal.fire({
+                                title: 'Memproses penyimpanan Kontak...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.post(
+                                    route('master.contacts.store'), body
+                                );
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+
+                            }
+                        }
+                    });
+                },
+
+                async handleUpdate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Perubahan Kontak',
+                        text: 'Apakah anda yakin ingin memperbarui kontak dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, perbarui kontak',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.form,
+                            };
+
+                            Swal.fire({
+                                title: 'Memproses perubahan Kontak...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.put(
+                                    route('master.contacts.update', this.form.id), body
+                                );
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+
+                            }
+                        }
+                    });
+                }
             };
         }
 
@@ -716,6 +537,14 @@
                     data: {}
                 },
                 loading: false,
+
+                form: {
+                    id: null,
+                    code: null,
+                    name: null,
+                    category_id: null,
+                    note: null
+                },
 
                 async fetchData() {
                     this.loading = true;
@@ -761,10 +590,152 @@
                         });
                     }
                 },
+
+                openCreateModal() {
+                    this.form = {
+                        id: null,
+                        code: null,
+                        name: null,
+                        category_id: null,
+                        note: null
+                    };
+                    this.modal = 'add_account';
+                },
+
+                openEditModal(account) {
+                    this.form = {
+                        id: account.id,
+                        code: account.code,
+                        name: account.name,
+                        category_id: account.category_id,
+                        note: account.note
+                    };
+                    this.modal = 'edit_account';
+                },
+
+                async handleCreate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Pembuatan Akun',
+                        text: 'Apakah anda yakin ingin membuat akun baru dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat akun',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.form,
+                            };
+
+                            Swal.fire({
+                                title: 'Memproses penyimpanan Akun...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.post(
+                                    route('master.accounts.store'), body
+                                );
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+
+                            }
+                        }
+                    });
+                },
+
+                async handleUpdate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Perubahan Akun',
+                        text: 'Apakah anda yakin ingin memperbarui akun dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, perbarui akun',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.form,
+                            };
+
+                            Swal.fire({
+                                title: 'Memproses perubahan Akun...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.put(
+                                    route('master.accounts.update', this.form.id), body
+                                );
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+
+                            }
+                        }
+                    });
+                }
             };
         }
 
-        function gudangModule() {
+        function warehouseModule() {
             return {
                 search: '',
                 tableData: {
@@ -777,6 +748,13 @@
                 loading: false,
                 page: 1,
                 perPage: 20,
+
+                form: {
+                    code: null,
+                    name: null,
+                    address: null,
+                    note: null
+                },
 
                 async fetchData() {
                     this.loading = true;
@@ -836,6 +814,147 @@
                             }
                         });
                 },
+                openCreateModal() {
+                    this.form = {
+                        id: null,
+                        code: null,
+                        name: null,
+                        address: null,
+                        note: null
+                    };
+                    this.modal = 'add_warehouse';
+                },
+
+                openEditModal(warehouse) {
+                    this.form = {
+                        id: warehouse.id,
+                        code: warehouse.code,
+                        name: warehouse.name,
+                        address: warehouse.address,
+                        note: warehouse.note
+                    };
+                    this.modal = 'edit_warehouse';
+                },
+
+                async handleCreate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Pembuatan Gudang',
+                        text: 'Apakah anda yakin ingin membuat gudang baru dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat gudang',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.form,
+                            };
+
+                            Swal.fire({
+                                title: 'Memproses penyimpanan Gudang...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.post(
+                                    route('master.warehouses.store'), body
+                                );
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+
+                            }
+                        }
+                    });
+                },
+
+                async handleUpdate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Perubahan Gudang',
+                        text: 'Apakah anda yakin ingin memperbarui gudang dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, perbarui gudang',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.form,
+                            };
+
+                            Swal.fire({
+                                title: 'Memproses perubahan Gudang...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.put(
+                                    route('master.warehouses.update', this.form.id), body
+                                );
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+
+                            }
+                        }
+                    });
+                }
             };
         }
 
@@ -853,9 +972,21 @@
                 page: 1,
                 perPage: 10,
                 perPageOptions: [10, 25, 50],
+                modal: null,
 
-                userName(u) {
-                    return u?.contact ? u.contact.name : (u?.username || '');
+                form: {
+                    id: null,
+                    username: null,
+                    password: null,
+                    password_confirmation: null,
+                    contact_id: null,
+                    role_id: null
+                },
+
+                changePasswordForm: {
+                    current_password: null,
+                    new_password: null,
+                    new_password_confirmation: null
                 },
 
                 async fetchData() {
@@ -892,29 +1023,359 @@
                 },
                 async handleStatus(u) {
                     Swal.fire({
-                            title: u.deleted_at ? 'Aktifkan kembali user ini?' : 'Nonaktifkan user ini?',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonText: 'Ya',
-                            cancelButtonText: 'Batal',
-                            reverseButtons: true
-                        })
-                        .then(async result => {
-                            if (!result.isConfirmed) return;
+                        title: u.deleted_at ? 'Aktifkan kembali user ini?' : 'Nonaktifkan user ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true
+                    }).then(async result => {
+                        if (!result.isConfirmed) return;
+                        try {
+                            const r = await axios.post(route('master.users.status', u.id));
+                            Toast.fire({
+                                icon: 'success',
+                                title: r.data.message
+                            });
+                            await this.fetchData();
+                        } catch (e) {
+                            Toast.fire({
+                                icon: 'error',
+                                title: e.response?.data?.message || 'Gagal mengubah status.'
+                            });
+                        }
+                    });
+                },
+                openCreateModal() {
+                    this.form = {
+                        id: null,
+                        username: null,
+                        password: null,
+                        password_confirmation: null,
+                        contact_id: null,
+                        role_id: null
+                    };
+                    this.modal = 'add_user';
+                },
+                openEditModal(user) {
+                    this.form = {
+                        id: user.id,
+                        username: user.username,
+                        contact_id: user.contact_id,
+                        role_id: user.role_id
+                    };
+                    this.modal = 'edit_user';
+                },
+                openChangePasswordModal(user) {
+                    this.form = {
+                        id: user.id,
+                        username: user.username,
+                        contact_id: user.contact_id,
+                        role_id: user.role_id
+                    };
+                    this.changePasswordForm = {
+                        current_password: null,
+                        new_password: null,
+                        new_password_confirmation: null
+                    };
+                    this.modal = 'change_password';
+                },
+                async handleCreate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Pembuatan User',
+                        text: 'Apakah anda yakin ingin membuat user baru dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat user',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Memproses penyimpanan User...',
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading()
+                            });
                             try {
-                                const r = await axios.post(route('master.users.status', u.id));
+                                const response = await axios.post(route('master.users.store'), {
+                                    ...this.form
+                                });
+                                this.modal = null;
+                                Swal.close();
                                 Toast.fire({
                                     icon: 'success',
-                                    title: r.data.message
+                                    title: response.data.message
                                 });
                                 await this.fetchData();
-                            } catch (e) {
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.',
+                                    html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors).flat().map(msg =>
+                                            `<li>${msg}</li>`).join('') + '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
                                 Toast.fire({
                                     icon: 'error',
-                                    title: e.response?.data?.message || 'Gagal mengubah status.'
+                                    title,
+                                    html
                                 });
                             }
+                        }
+                    });
+                },
+                async handleUpdate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Perubahan User',
+                        text: 'Apakah anda yakin ingin memperbarui user dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, perbarui user',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Memproses perubahan User...',
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading()
+                            });
+                            try {
+                                const response = await axios.put(route('master.users.update', this.form
+                                    .id), {
+                                    username: this.form.username,
+                                    contact_id: this.form.contact_id,
+                                    role_id: this.form.role_id
+                                });
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.',
+                                    html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors).flat().map(msg =>
+                                            `<li>${msg}</li>`).join('') + '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title,
+                                    html
+                                });
+                            }
+                        }
+                    });
+                },
+                async handlePasswordChange() {
+                    Swal.fire({
+                        title: 'Konfirmasi Perubahan Password',
+                        text: 'Apakah anda yakin ingin memperbarui password user dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, perbarui password',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Memproses perubahan Password...',
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading()
+                            });
+                            try {
+                                const response = await axios.put(route('master.users.password', this.form
+                                    .id), {
+                                    ...this.changePasswordForm
+                                });
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.',
+                                    html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors).flat().map(msg =>
+                                            `<li>${msg}</li>`).join('') + '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title,
+                                    html
+                                });
+                            }
+                        }
+                    });
+                }
+            };
+        }
+
+
+        function permitModule() {
+            return {
+                roles: @json($roleList),
+                permissionTree: @json($permissionTree),
+                selectedRole: null,
+                activePermissions: [],   // permission names for the selected role
+                expandedModules: {},
+                modal: null,
+                saving: false,
+                form: { id: null, name: '' },
+
+                init() {
+                    // expand all modules by default
+                    for (const mKey of Object.keys(this.permissionTree)) {
+                        this.expandedModules[mKey] = true;
+                    }
+                },
+
+                // ── Labels ─────────────────────────────────────────────
+                moduleLabel(key) {
+                    const map = { purchasing: 'Pembelian', sales: 'Penjualan', master: 'Master Data' };
+                    return map[key] || key.replace(/-/g, ' ');
+                },
+                resourceLabel(key) {
+                    return key.replace(/-/g, ' ');
+                },
+                actionLabel(key) {
+                    const map = { view: 'Lihat', create: 'Tambah', edit: 'Edit', delete: 'Hapus' };
+                    return map[key] || key;
+                },
+
+                // ── Role selection ──────────────────────────────────────
+                selectRole(role) {
+                    this.selectedRole = role;
+                    this.activePermissions = [...role.permissions];
+                },
+
+                // ── Permission helpers ──────────────────────────────────
+                permKey(mKey, rKey, action) {
+                    return `${mKey}.${rKey}.${action}`;
+                },
+                hasPermission(mKey, rKey, action) {
+                    return this.activePermissions.includes(this.permKey(mKey, rKey, action));
+                },
+                togglePermission(mKey, rKey, action) {
+                    const key = this.permKey(mKey, rKey, action);
+                    const idx = this.activePermissions.indexOf(key);
+                    if (idx === -1) this.activePermissions.push(key);
+                    else this.activePermissions.splice(idx, 1);
+                },
+
+                // module-level check / indeterminate
+                isModuleChecked(mKey) {
+                    const all = this._modulePermKeys(mKey);
+                    return all.length > 0 && all.every(k => this.activePermissions.includes(k));
+                },
+                isModuleIndeterminate(mKey) {
+                    const all = this._modulePermKeys(mKey);
+                    const checked = all.filter(k => this.activePermissions.includes(k));
+                    return checked.length > 0 && checked.length < all.length;
+                },
+                toggleModuleAll(mKey, checked) {
+                    const all = this._modulePermKeys(mKey);
+                    if (checked) {
+                        all.forEach(k => { if (!this.activePermissions.includes(k)) this.activePermissions.push(k); });
+                    } else {
+                        this.activePermissions = this.activePermissions.filter(k => !all.includes(k));
+                    }
+                },
+                _modulePermKeys(mKey) {
+                    const module = this.permissionTree[mKey] || {};
+                    return Object.entries(module).flatMap(([rKey, actions]) =>
+                        actions.map(action => this.permKey(mKey, rKey, action))
+                    );
+                },
+
+                toggleModule(mKey) {
+                    this.expandedModules[mKey] = !this.expandedModules[mKey];
+                },
+
+                // ── Save permissions ────────────────────────────────────
+                async savePermissions() {
+                    this.saving = true;
+                    try {
+                        await axios.put(route('master.roles.updatePermissions', this.selectedRole.id), {
+                            permissions: this.activePermissions,
                         });
+                        // update local role entry
+                        const role = this.roles.find(r => r.id === this.selectedRole.id);
+                        if (role) role.permissions = [...this.activePermissions];
+                        Toast.fire({ icon: 'success', title: 'Hak akses berhasil disimpan' });
+                    } catch (e) {
+                        Toast.fire({ icon: 'error', title: e.response?.data?.message || 'Gagal menyimpan hak akses' });
+                    } finally {
+                        this.saving = false;
+                    }
+                },
+
+                // ── Modal handlers ──────────────────────────────────────
+                openCreateModal() {
+                    this.form = { id: null, name: '' };
+                    this.modal = 'add_role';
+                },
+                openEditModal(role) {
+                    this.form = { id: role.id, name: role.name };
+                    this.modal = 'edit_role';
+                },
+
+                async handleCreate() {
+                    try {
+                        const r = await axios.post(route('master.roles.store'), { name: this.form.name });
+                        this.modal = null;
+                        Toast.fire({ icon: 'success', title: r.data.message });
+                        this.roles = (await axios.get(route('master.roles.index'))).data;
+                    } catch (e) {
+                        this._showError(e);
+                    }
+                },
+
+                async handleUpdate() {
+                    try {
+                        const r = await axios.put(route('master.roles.update', this.form.id), { name: this.form.name });
+                        this.modal = null;
+                        Toast.fire({ icon: 'success', title: r.data.message });
+                        const role = this.roles.find(r => r.id === this.form.id);
+                        if (role) role.name = this.form.name;
+                        if (this.selectedRole && this.selectedRole.id === this.form.id) {
+                            this.selectedRole.name = this.form.name;
+                        }
+                    } catch (e) {
+                        this._showError(e);
+                    }
+                },
+
+                _showError(error) {
+                    let title = 'Terjadi kesalahan yang tidak terduga.', html = null;
+                    if (error.response?.status === 422) {
+                        title = 'Validasi gagal. Periksa kembali input Anda.';
+                        html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                            Object.values(error.response.data.errors).flat().map(m => `<li>${m}</li>`).join('') + '</ul>';
+                    } else if (error.response?.data?.message) {
+                        title = error.response.data.message;
+                    }
+                    Toast.fire({ icon: 'error', title, html });
                 },
             };
         }
@@ -958,52 +1419,8 @@
                 },
             };
         }
-
-        function permitModule() {
-            return {
-                roles: @json($roles),
-                modules: [{
-                        key: 'dashboard',
-                        label: 'Dashboard'
-                    }, {
-                        key: 'penjualan',
-                        label: 'Penjualan'
-                    },
-                    {
-                        key: 'pembelian',
-                        label: 'Pembelian'
-                    }, {
-                        key: 'kas',
-                        label: 'Kas & Bank'
-                    },
-                    {
-                        key: 'biaya',
-                        label: 'Biaya'
-                    }, {
-                        key: 'master',
-                        label: 'Master Data'
-                    },
-                    {
-                        key: 'laporan',
-                        label: 'Laporan'
-                    },
-                ],
-                hasPermit(roleId, modKey) {
-                    const role = this.roles.find(r => r.id === roleId);
-                    return role ? role.akses.includes(modKey) : false;
-                },
-                togglePermit(roleId, modKey) {
-                    const role = this.roles.find(r => r.id === roleId);
-                    if (!role) return;
-                    const idx = role.akses.indexOf(modKey);
-                    if (idx === -1) role.akses.push(modKey);
-                    else role.akses.splice(idx, 1);
-                },
-            };
-        }
     </script>
     <div x-data="masterPageData()" x-init="init()" x-on:open-edit-gudang.window="openEditGudang($event.detail)"
-        x-on:open-edit-user.window="openEditUser($event.detail)" x-on:open-edit-role.window="openEditRole($event.detail)"
         class="master-page">
 
         <div class="master-hd">
@@ -1011,13 +1428,13 @@
                 <h1 class="order-title display">Master Data</h1>
                 <div class="order-sub">Kelola data referensi untuk seluruh modul ERP</div>
             </div>
-            <div x-show="tab !== 'account_setting'">
+            {{-- <div x-show="tab !== 'account_setting'">
                 <button class="btn btn-primary" x-on:click="modal = 'add_' + tab">
                     <x-misc.icon name="plus" :size="14" />
                     <span
                         x-text="{ produk:'Tambah Produk', kontak:'Tambah Kontak', akun:'Tambah Akun', gudang:'Tambah Gudang', user:'Tambah User', permit:'Tambah Role' }[tab]"></span>
                 </button>
-            </div>
+            </div> --}}
         </div>
 
         {{-- Tab bar --}}
@@ -1036,433 +1453,6 @@
         @include('master.partials.tabs.user')
         @include('master.partials.tabs.permit')
         @include('master.partials.tabs.account-setting')
-
-        {{-- Modal: Tambah Kontak --}}
-        <x-misc.modal title="Tambah Kontak Baru" show="modal === 'add_kontak'" close-handler="modal = null">
-            <div class="form-body">
-                <div class="form-grid-2">
-                    <x-misc.field label="Kode Kontak" :required="true">
-                        <input class="input mono" x-model="kontakForm.code" placeholder="cth. C-001" />
-                    </x-misc.field>
-                    <x-misc.field label="Nama" :required="true">
-                        <input class="input" x-model="kontakForm.name" placeholder="Nama perusahaan / individu" />
-                    </x-misc.field>
-                </div>
-                <div style="display:flex; gap:16px;">
-                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
-                        <input type="checkbox" x-model="kontakForm.is_customer" style="accent-color:var(--accent);" />
-                        Customer
-                    </label>
-                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
-                        <input type="checkbox" x-model="kontakForm.is_supplier" style="accent-color:var(--accent);" />
-                        Vendor
-                    </label>
-                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
-                        <input type="checkbox" x-model="kontakForm.is_employee" style="accent-color:var(--accent);" />
-                        Karyawan
-                    </label>
-                </div>
-                <div class="form-grid-2">
-                    <x-misc.field label="Email">
-                        <input class="input" type="email" x-model="kontakForm.email"
-                            placeholder="kontak@perusahaan.com" />
-                    </x-misc.field>
-                    <x-misc.field label="Telepon">
-                        <input class="input" x-model="kontakForm.phone" placeholder="08xx-xxxx-xxxx" />
-                    </x-misc.field>
-                </div>
-                <x-misc.field label="Alamat">
-                    <textarea class="input" rows="2" x-model="kontakForm.address" placeholder="Alamat lengkap..."></textarea>
-                </x-misc.field>
-                <div class="form-grid-3">
-                    <x-misc.field label="Kota">
-                        <input class="input" x-model="kontakForm.city" placeholder="Jakarta, Surabaya..." />
-                    </x-misc.field>
-                    <x-misc.field label="Provinsi">
-                        <input class="input" x-model="kontakForm.state" />
-                    </x-misc.field>
-                    <x-misc.field label="Kode Pos">
-                        <input class="input" x-model="kontakForm.postal_code" />
-                    </x-misc.field>
-                </div>
-                <div class="form-grid-2">
-                    <x-misc.field label="Akun Piutang">
-                        <select class="input" x-model="kontakForm.receivable_account_id">
-                            <option value="">— Tidak ada —</option>
-                            <template x-for="a in receivableAccounts" :key="a.id">
-                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Akun Hutang">
-                        <select class="input" x-model="kontakForm.payable_account_id">
-                            <option value="">— Tidak ada —</option>
-                            <template x-for="a in payableAccounts" :key="a.id">
-                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                </div>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary" x-on:click="submitAddKontak()"><x-misc.icon name="check"
-                        :size="14" />Simpan Kontak</button>
-            </x-slot:footer>
-        </x-misc.modal>
-
-        {{-- Modal: Edit Kontak --}}
-        <x-misc.modal title="Edit Kontak" show="modal === 'edit_kontak'" close-handler="modal = null">
-            <div class="form-body">
-                <div style="display:flex; align-items:center; gap:12px; padding-bottom:4px;">
-                    <div class="avatar" style="width:44px; height:44px; font-size:14px;"
-                        :style="'background:' + avatarMeta(editKontakData.name).bg + '; color:' + avatarMeta(editKontakData
-                            .name).fg"
-                        x-text="avatarMeta(editKontakData.name).initials"></div>
-                    <div>
-                        <div style="font-weight:700; font-size:14px;" x-text="editKontakData.name"></div>
-                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editKontakData.code">
-                        </div>
-                    </div>
-                </div>
-                <div class="form-grid-2">
-                    <x-misc.field label="Kode Kontak" :required="true">
-                        <input class="input mono" x-model="editKontakData.code" />
-                    </x-misc.field>
-                    <x-misc.field label="Nama" :required="true">
-                        <input class="input" x-model="editKontakData.name" placeholder="Nama perusahaan / individu" />
-                    </x-misc.field>
-                </div>
-                <div style="display:flex; gap:16px;">
-                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
-                        <input type="checkbox" x-model="editKontakData.is_customer"
-                            style="accent-color:var(--accent);" /> Customer
-                    </label>
-                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
-                        <input type="checkbox" x-model="editKontakData.is_supplier"
-                            style="accent-color:var(--accent);" /> Vendor
-                    </label>
-                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
-                        <input type="checkbox" x-model="editKontakData.is_employee"
-                            style="accent-color:var(--accent);" /> Karyawan
-                    </label>
-                </div>
-                <div class="form-grid-2">
-                    <x-misc.field label="Email">
-                        <input class="input" type="email" x-model="editKontakData.email"
-                            placeholder="kontak@perusahaan.com" />
-                    </x-misc.field>
-                    <x-misc.field label="Telepon">
-                        <input class="input" x-model="editKontakData.phone" placeholder="08xx-xxxx-xxxx" />
-                    </x-misc.field>
-                </div>
-                <x-misc.field label="Alamat">
-                    <textarea class="input" rows="2" x-model="editKontakData.address" placeholder="Alamat lengkap..."></textarea>
-                </x-misc.field>
-                <div class="form-grid-3">
-                    <x-misc.field label="Kota">
-                        <input class="input" x-model="editKontakData.city" placeholder="Jakarta, Surabaya..." />
-                    </x-misc.field>
-                    <x-misc.field label="Provinsi">
-                        <input class="input" x-model="editKontakData.state" />
-                    </x-misc.field>
-                    <x-misc.field label="Kode Pos">
-                        <input class="input" x-model="editKontakData.postal_code" />
-                    </x-misc.field>
-                </div>
-                <div class="form-grid-2">
-                    <x-misc.field label="Akun Piutang">
-                        <select class="input" x-model="editKontakData.receivable_account_id">
-                            <option value="">— Tidak ada —</option>
-                            <template x-for="a in receivableAccounts" :key="a.id">
-                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Akun Hutang">
-                        <select class="input" x-model="editKontakData.payable_account_id">
-                            <option value="">— Tidak ada —</option>
-                            <template x-for="a in payableAccounts" :key="a.id">
-                                <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
-                            </template>
-                        </select>
-                    </x-misc.field>
-                </div>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary" x-on:click="submitEditKontak()"><x-misc.icon name="check"
-                        :size="14" />Simpan Perubahan</button>
-            </x-slot:footer>
-        </x-misc.modal>
-
-        {{-- Modal: Tambah Akun --}}
-        <x-misc.modal title="Tambah Akun Baru" show="modal === 'add_akun'" close-handler="modal = null">
-            <div class="form-body">
-                <div class="form-grid-1-2">
-                    <x-misc.field label="Kode Akun" :required="true">
-                        <input class="input mono" x-model="akunForm.code" placeholder="1-xxx" />
-                    </x-misc.field>
-                    <x-misc.field label="Nama Akun" :required="true">
-                        <input class="input" x-model="akunForm.name" placeholder="Nama akun" />
-                    </x-misc.field>
-                </div>
-                <x-misc.field label="Kategori" :required="true">
-                    <select class="input" x-model="akunForm.category_id">
-                        <option value="">— Pilih Kategori —</option>
-                        <template x-for="c in accountCategoriesAll" :key="c.id">
-                            <option :value="c.id" x-text="c.name"></option>
-                        </template>
-                    </select>
-                </x-misc.field>
-                <x-misc.field label="Catatan">
-                    <textarea class="input" rows="2" x-model="akunForm.note" placeholder="Catatan (opsional)"></textarea>
-                </x-misc.field>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary" x-on:click="submitAddAkun()"><x-misc.icon name="check"
-                        :size="14" />Simpan Akun</button>
-            </x-slot:footer>
-        </x-misc.modal>
-
-        {{-- Modal: Edit Akun --}}
-        <x-misc.modal title="Edit Akun" show="modal === 'edit_akun'" close-handler="modal = null">
-            <div class="form-body">
-                <div style="display:flex; align-items:center; gap:12px; padding-bottom:4px;">
-                    <div
-                        style="width:44px; height:44px; border-radius:10px; background:var(--bg-2); display:grid; place-items:center;">
-                        <x-misc.icon name="book" :size="20" stroke="var(--ink-3)" />
-                    </div>
-                    <div>
-                        <div style="font-weight:700; font-size:14px;" x-text="editAkunData.name"></div>
-                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editAkunData.code"></div>
-                    </div>
-                </div>
-                <div class="form-grid-1-2">
-                    <x-misc.field label="Kode Akun" :required="true">
-                        <input class="input mono" x-model="editAkunData.code" />
-                    </x-misc.field>
-                    <x-misc.field label="Nama Akun" :required="true">
-                        <input class="input" x-model="editAkunData.name" />
-                    </x-misc.field>
-                </div>
-                <x-misc.field label="Kategori" :required="true">
-                    <select class="input" x-model="editAkunData.category_id">
-                        <option value="">— Pilih Kategori —</option>
-                        <template x-for="c in accountCategoriesAll" :key="c.id">
-                            <option :value="c.id" x-text="c.name"></option>
-                        </template>
-                    </select>
-                </x-misc.field>
-                <x-misc.field label="Catatan">
-                    <textarea class="input" rows="2" x-model="editAkunData.note" placeholder="Catatan (opsional)"></textarea>
-                </x-misc.field>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary" x-on:click="submitEditAkun()"><x-misc.icon name="check"
-                        :size="14" />Simpan Perubahan</button>
-            </x-slot:footer>
-        </x-misc.modal>
-
-        {{-- Modal: Tambah Gudang --}}
-        <x-misc.modal title="Tambah Gudang Baru" show="modal === 'add_gudang'" close-handler="modal = null">
-            <div class="form-body">
-                <x-misc.field label="Nama Gudang" :required="true">
-                    <input class="input" x-model="gudangForm.name" placeholder="Gudang Bekasi, dll." />
-                </x-misc.field>
-                <x-misc.field label="Kode Gudang" :required="true">
-                    <input class="input mono" x-model="gudangForm.code" placeholder="GDG-xxx" />
-                </x-misc.field>
-                <x-misc.field label="Alamat">
-                    <textarea class="input" rows="2" x-model="gudangForm.address" placeholder="Alamat gudang..."></textarea>
-                </x-misc.field>
-                <x-misc.field label="Catatan">
-                    <textarea class="input" rows="2" x-model="gudangForm.note" placeholder="Keterangan gudang..."></textarea>
-                </x-misc.field>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary" x-on:click="submitAddGudang()"><x-misc.icon name="check"
-                        :size="14" />Simpan Gudang</button>
-            </x-slot:footer>
-        </x-misc.modal>
-
-        {{-- Modal: Edit Gudang --}}
-        <x-misc.modal title="Edit Gudang" show="modal === 'edit_gudang'" close-handler="modal = null">
-            <div class="form-body">
-                <div style="display:flex; align-items:center; gap:12px; padding-bottom:4px;">
-                    <div
-                        style="width:44px; height:44px; border-radius:10px; background:var(--bg-2); display:grid; place-items:center;">
-                        <x-misc.icon name="building" :size="20" stroke="var(--ink-3)" />
-                    </div>
-                    <div>
-                        <div style="font-weight:700; font-size:14px;" x-text="editGudangData.name"></div>
-                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editGudangData.code">
-                        </div>
-                    </div>
-                </div>
-                <x-misc.field label="Nama Gudang" :required="true">
-                    <input class="input" x-model="editGudangData.name" />
-                </x-misc.field>
-                <x-misc.field label="Kode Gudang" :required="true">
-                    <input class="input mono" x-model="editGudangData.code" />
-                </x-misc.field>
-                <x-misc.field label="Alamat">
-                    <textarea class="input" rows="2" x-model="editGudangData.address"></textarea>
-                </x-misc.field>
-                <x-misc.field label="Catatan">
-                    <textarea class="input" rows="2" x-model="editGudangData.note"></textarea>
-                </x-misc.field>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary" x-on:click="submitEditGudang()"><x-misc.icon name="check"
-                        :size="14" />Simpan Perubahan</button>
-            </x-slot:footer>
-        </x-misc.modal>
-
-        {{-- Modal: Tambah User --}}
-        <x-misc.modal title="Tambah User Baru" show="modal === 'add_user'" close-handler="modal = null">
-            <div class="form-body">
-                <div class="form-grid-2">
-                    <x-misc.field label="Username" :required="true">
-                        <input class="input mono" x-model="addUserForm.username" placeholder="budi.santoso" />
-                    </x-misc.field>
-                    <x-misc.field label="Password" :required="true">
-                        <input class="input" type="password" x-model="addUserForm.password" placeholder="••••••••" />
-                    </x-misc.field>
-                </div>
-                <x-misc.field label="Konfirmasi Password" :required="true">
-                    <input class="input" type="password" x-model="addUserForm.confirm_password"
-                        placeholder="••••••••" />
-                </x-misc.field>
-                <x-misc.field label="Kontak / Karyawan">
-                    <select class="input" x-model="addUserForm.contact_id">
-                        <option value="">— Tidak dihubungkan —</option>
-                        <template x-for="k in contactOptions" :key="k.id">
-                            <option :value="k.id" x-text="k.name"></option>
-                        </template>
-                    </select>
-                </x-misc.field>
-                <x-misc.field label="Role" :required="true">
-                    <select class="input" x-model="addUserForm.role_id">
-                        <option value="">— Pilih Role —</option>
-                        <template x-for="r in userRoles" :key="r.id">
-                            <option :value="r.id" x-text="r.name"></option>
-                        </template>
-                    </select>
-                </x-misc.field>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary" x-on:click="submitAddUser()"><x-misc.icon name="check"
-                        :size="14" />Simpan User</button>
-            </x-slot:footer>
-        </x-misc.modal>
-
-        {{-- Modal: Edit User --}}
-        <x-misc.modal title="Edit User" show="modal === 'edit_user'" close-handler="modal = null">
-            <div class="form-body">
-                <div style="display:flex; align-items:center; gap:12px; padding-bottom:4px;">
-                    <div class="avatar" style="width:44px; height:44px; font-size:14px;"
-                        :style="'background:' + avatarMeta(editUserData.nama).bg + '; color:' + avatarMeta(editUserData.nama).fg"
-                        x-text="avatarMeta(editUserData.nama).initials"></div>
-                    <div>
-                        <div style="font-weight:700; font-size:14px;" x-text="editUserData.nama"></div>
-                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editUserData.id"></div>
-                    </div>
-                </div>
-                <div class="form-grid-2">
-                    <x-misc.field label="Username" :required="true">
-                        <input class="input mono" x-model="editUserData.username" />
-                    </x-misc.field>
-                    <x-misc.field label="Password Baru">
-                        <input class="input" type="password" x-model="editUserData.password"
-                            placeholder="Kosongkan jika tidak diubah" />
-                    </x-misc.field>
-                </div>
-                <x-misc.field label="Konfirmasi Password Baru">
-                    <input class="input" type="password" x-model="editUserData.confirm_password"
-                        placeholder="Kosongkan jika tidak diubah" />
-                </x-misc.field>
-                <x-misc.field label="Kontak / Karyawan">
-                    <select class="input" x-model="editUserData.contact_id">
-                        <option value="">— Tidak dihubungkan —</option>
-                        <template x-for="k in contactOptions" :key="k.id">
-                            <option :value="k.id" x-text="k.name"></option>
-                        </template>
-                    </select>
-                </x-misc.field>
-                <x-misc.field label="Role" :required="true">
-                    <select class="input" x-model="editUserData.role_id">
-                        <template x-for="r in userRoles" :key="r.id">
-                            <option :value="r.id" x-text="r.name"></option>
-                        </template>
-                    </select>
-                </x-misc.field>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary" x-on:click="submitEditUser()"><x-misc.icon name="check"
-                        :size="14" />Simpan Perubahan</button>
-            </x-slot:footer>
-        </x-misc.modal>
-
-        {{-- Modal: Tambah Role --}}
-        <x-misc.modal title="Tambah Role Baru" show="modal === 'add_permit'" close-handler="modal = null">
-            <div class="form-body">
-                <x-misc.field label="Nama Role" :required="true">
-                    <input class="input" x-model="addRoleForm.nama" placeholder="Kasir, Operator, dll." />
-                </x-misc.field>
-                <x-misc.field label="Deskripsi">
-                    <input class="input" x-model="addRoleForm.deskripsi"
-                        placeholder="Deskripsi singkat akses role ini" />
-                </x-misc.field>
-                <div>
-                    <div style="font-size:12px; font-weight:600; color:var(--ink-3); margin-bottom:8px;">Akses Modul</div>
-                    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px;">
-                        <template x-for="m in permitModules" :key="m.key">
-                            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
-                                <input type="checkbox" style="accent-color:var(--accent);" />
-                                <span x-text="m.label"></span>
-                            </label>
-                        </template>
-                    </div>
-                </div>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Role</button>
-            </x-slot:footer>
-        </x-misc.modal>
-
-        {{-- Modal: Edit Role --}}
-        <x-misc.modal title="Edit Role" show="modal === 'edit_role'" close-handler="modal = null">
-            <div class="form-body">
-                <div style="display:flex; align-items:center; gap:12px; padding-bottom:4px;">
-                    <div
-                        style="width:44px; height:44px; border-radius:10px; background:var(--bg-2); display:grid; place-items:center;">
-                        <x-misc.icon name="users" :size="20" stroke="var(--ink-3)" />
-                    </div>
-                    <div>
-                        <div style="font-weight:700; font-size:14px;" x-text="editRoleData.nama"></div>
-                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="editRoleData.id"></div>
-                    </div>
-                </div>
-                <x-misc.field label="Nama Role" :required="true">
-                    <input class="input" x-model="editRoleData.nama" />
-                </x-misc.field>
-                <x-misc.field label="Deskripsi">
-                    <input class="input" x-model="editRoleData.deskripsi" />
-                </x-misc.field>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
-                <button class="btn btn-primary"><x-misc.icon name="check" :size="14" />Simpan Perubahan</button>
-            </x-slot:footer>
-        </x-misc.modal>
 
     </div>
 @endsection

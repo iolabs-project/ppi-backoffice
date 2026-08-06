@@ -5,7 +5,7 @@ namespace App\Services\Master;
 use App\Enums\AccountSettingEnum;
 use App\Models\AccountSetting;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\DB;
 class AccountSettingService
 {
     public function fetchAccountSettingGroups(): array
@@ -30,25 +30,27 @@ class AccountSettingService
     {
         $companyID = config('context.selected_company_id');
 
-        foreach ($request->input('settings', []) as $setting) {
-            $accountID = $setting['account_id'] ?? null;
+        DB::transaction(function () use ($request, $companyID) {
+            foreach ($request->input('settings', []) as $setting) {
+                $accountID = $setting['account_id'] ?? null;
 
-            if (!$accountID) {
-                AccountSetting::where('company_id', $companyID)
-                    ->where('setting_key', $setting['setting_key'])
-                    ->delete();
-                continue;
+                if (!$accountID) {
+                    AccountSetting::where('company_id', $companyID)
+                        ->where('setting_key', $setting['setting_key'])
+                        ->delete();
+                    continue;
+                }
+
+                AccountSetting::updateOrCreate(
+                    [
+                        'company_id' => $companyID,
+                        'setting_key' => $setting['setting_key'],
+                    ],
+                    [
+                        'account_id' => $accountID,
+                    ]
+                );
             }
-
-            AccountSetting::updateOrCreate(
-                [
-                    'company_id' => $companyID,
-                    'setting_key' => $setting['setting_key'],
-                ],
-                [
-                    'account_id' => $accountID,
-                ]
-            );
-        }
+        });
     }
 }
