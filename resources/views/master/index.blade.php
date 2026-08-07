@@ -1237,11 +1237,14 @@
                 roles: @json($roleList),
                 permissionTree: @json($permissionTree),
                 selectedRole: null,
-                activePermissions: [],   // permission names for the selected role
+                activePermissions: [], // permission names for the selected role
                 expandedModules: {},
                 modal: null,
                 saving: false,
-                form: { id: null, name: '' },
+                form: {
+                    id: null,
+                    name: ''
+                },
 
                 init() {
                     // expand all modules by default
@@ -1252,14 +1255,23 @@
 
                 // ── Labels ─────────────────────────────────────────────
                 moduleLabel(key) {
-                    const map = { purchasing: 'Pembelian', sales: 'Penjualan', master: 'Master Data' };
+                    const map = {
+                        purchasing: 'Pembelian',
+                        sales: 'Penjualan',
+                        master: 'Master Data'
+                    };
                     return map[key] || key.replace(/-/g, ' ');
                 },
                 resourceLabel(key) {
                     return key.replace(/-/g, ' ');
                 },
                 actionLabel(key) {
-                    const map = { view: 'Lihat', create: 'Tambah', edit: 'Edit', delete: 'Hapus' };
+                    const map = {
+                        view: 'Lihat',
+                        create: 'Tambah',
+                        edit: 'Edit',
+                        delete: 'Hapus'
+                    };
                     return map[key] || key;
                 },
 
@@ -1296,7 +1308,9 @@
                 toggleModuleAll(mKey, checked) {
                     const all = this._modulePermKeys(mKey);
                     if (checked) {
-                        all.forEach(k => { if (!this.activePermissions.includes(k)) this.activePermissions.push(k); });
+                        all.forEach(k => {
+                            if (!this.activePermissions.includes(k)) this.activePermissions.push(k);
+                        });
                     } else {
                         this.activePermissions = this.activePermissions.filter(k => !all.includes(k));
                     }
@@ -1322,9 +1336,15 @@
                         // update local role entry
                         const role = this.roles.find(r => r.id === this.selectedRole.id);
                         if (role) role.permissions = [...this.activePermissions];
-                        Toast.fire({ icon: 'success', title: 'Hak akses berhasil disimpan' });
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Hak akses berhasil disimpan'
+                        });
                     } catch (e) {
-                        Toast.fire({ icon: 'error', title: e.response?.data?.message || 'Gagal menyimpan hak akses' });
+                        Toast.fire({
+                            icon: 'error',
+                            title: e.response?.data?.message || 'Gagal menyimpan hak akses'
+                        });
                     } finally {
                         this.saving = false;
                     }
@@ -1332,19 +1352,30 @@
 
                 // ── Modal handlers ──────────────────────────────────────
                 openCreateModal() {
-                    this.form = { id: null, name: '' };
+                    this.form = {
+                        id: null,
+                        name: ''
+                    };
                     this.modal = 'add_role';
                 },
                 openEditModal(role) {
-                    this.form = { id: role.id, name: role.name };
+                    this.form = {
+                        id: role.id,
+                        name: role.name
+                    };
                     this.modal = 'edit_role';
                 },
 
                 async handleCreate() {
                     try {
-                        const r = await axios.post(route('master.roles.store'), { name: this.form.name });
+                        const r = await axios.post(route('master.roles.store'), {
+                            name: this.form.name
+                        });
                         this.modal = null;
-                        Toast.fire({ icon: 'success', title: r.data.message });
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         this.roles = (await axios.get(route('master.roles.index'))).data;
                     } catch (e) {
                         this._showError(e);
@@ -1353,9 +1384,14 @@
 
                 async handleUpdate() {
                     try {
-                        const r = await axios.put(route('master.roles.update', this.form.id), { name: this.form.name });
+                        const r = await axios.put(route('master.roles.update', this.form.id), {
+                            name: this.form.name
+                        });
                         this.modal = null;
-                        Toast.fire({ icon: 'success', title: r.data.message });
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
                         const role = this.roles.find(r => r.id === this.form.id);
                         if (role) role.name = this.form.name;
                         if (this.selectedRole && this.selectedRole.id === this.form.id) {
@@ -1367,7 +1403,8 @@
                 },
 
                 _showError(error) {
-                    let title = 'Terjadi kesalahan yang tidak terduga.', html = null;
+                    let title = 'Terjadi kesalahan yang tidak terduga.',
+                        html = null;
                     if (error.response?.status === 422) {
                         title = 'Validasi gagal. Periksa kembali input Anda.';
                         html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
@@ -1375,7 +1412,11 @@
                     } else if (error.response?.data?.message) {
                         title = error.response.data.message;
                     }
-                    Toast.fire({ icon: 'error', title, html });
+                    Toast.fire({
+                        icon: 'error',
+                        title,
+                        html
+                    });
                 },
             };
         }
@@ -1385,7 +1426,6 @@
                 groups: @json($accountSettingGroups),
                 allAccounts: @json($allAccounts),
                 settings: {},
-                saving: false,
 
                 init() {
                     const raw = @json($accountSettingValues);
@@ -1395,7 +1435,11 @@
                 },
 
                 async submitSettings() {
-                    this.saving = true;
+                    Swal.fire({
+                        title: 'Memproses perubahan pengaturan akun...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
                     try {
                         const payload = {
                             settings: Object.entries(this.settings).map(([setting_key, account_id]) => ({
@@ -1404,17 +1448,28 @@
                             })),
                         };
                         const r = await axios.put(route('master.account_settings.update'), payload);
+                        Swal.close();
                         Toast.fire({
                             icon: 'success',
                             title: r.data.message
                         });
-                    } catch (e) {
+                    } catch (error) {
+                        Swal.close();
+                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.',
+                            html = null;
+                        if (error.response?.status === 422) {
+                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                Object.values(error.response.data.errors).flat().map(msg =>
+                                    `<li>${msg}</li>`).join('') + '</ul>';
+                        } else if (error.response?.data?.message) {
+                            title = error.response.data.message;
+                        }
                         Toast.fire({
                             icon: 'error',
-                            title: e.response?.data?.message || 'Gagal menyimpan pengaturan akun.'
+                            title,
+                            html
                         });
-                    } finally {
-                        this.saving = false;
                     }
                 },
             };
@@ -1439,7 +1494,7 @@
 
         {{-- Tab bar --}}
         <div class="utab">
-            @foreach ([['produk', 'Produk'], ['kontak', 'Kontak'], ['akun', 'Chart of Accounts'], ['gudang', 'Gudang'], ['user', 'User'], ['permit', 'Hak Akses'], ['account_setting', 'Pengaturan Akun']] as [$id, $lbl])
+            @foreach ([['produk', 'Produk'], ['kontak', 'Kontak'], ['akun', 'Chart of Accounts'], ['account_setting', 'Pengaturan Akun'], ['gudang', 'Gudang'], ['user', 'User'], ['permit', 'Hak Akses']] as [$id, $lbl])
                 <button class="utab-item"
                     x-on:click="tab = '{{ $id }}'; sessionStorage.setItem('master_tab', '{{ $id }}')"
                     :class="tab === '{{ $id }}' ? 'utab-active' : ''">{{ $lbl }}</button>
@@ -1449,10 +1504,10 @@
         @include('master.partials.tabs.product')
         @include('master.partials.tabs.contact')
         @include('master.partials.tabs.account')
+        @include('master.partials.tabs.account-setting')
         @include('master.partials.tabs.warehouse')
         @include('master.partials.tabs.user')
         @include('master.partials.tabs.permit')
-        @include('master.partials.tabs.account-setting')
 
     </div>
 @endsection

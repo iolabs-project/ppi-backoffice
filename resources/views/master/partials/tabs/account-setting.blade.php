@@ -7,9 +7,9 @@
                     Akun yang digunakan sistem secara otomatis saat membentuk jurnal untuk setiap jenis transaksi.
                 </div>
             </div>
-            <button class="btn btn-primary btn-sm" x-on:click="submitSettings()" :disabled="saving">
+            <button class="btn btn-primary btn-sm" x-on:click="submitSettings()">
                 <x-misc.icon name="check" :size="13" />
-                <span x-text="saving ? 'Menyimpan...' : 'Simpan Perubahan'"></span>
+                <span x-text="'Simpan Perubahan'"></span>
             </button>
         </div>
         <table class="tbl">
@@ -28,12 +28,21 @@
                         <tr>
                             <td style="font-weight:600; font-size:13px;" x-text="item.label"></td>
                             <td>
-                                <select class="input" style="max-width:360px;" x-model="settings[item.key]">
-                                    <option value="">— Tidak diatur —</option>
-                                    <template x-for="a in allAccounts" :key="a.id">
-                                        <option :value="a.id" x-text="a.code + ' – ' + a.name"></option>
+                                <x-misc.select display="settings[item.key] ? (allAccounts.find(a => a.id === settings[item.key])?.code + ' - ' + allAccounts.find(a => a.id === settings[item.key])?.name) : 'Pilih akun'"
+                                    hasValue="settings[item.key]" placeholder="Cari akun...">
+                                    <template x-for="a in allAccounts.filter(a => !q || a.name.toLowerCase().includes(q.toLowerCase()))"
+                                        :key="a.id">
+                                        <div class="dropdown-item"
+                                            @click="settings[item.key]=a.id; open=false; q=''">
+                                            <div style="font-size:13px;" x-text="a.name"></div>
+                                        <div class="mono" style="font-size:11px; color:var(--ink-4);" x-text="a.code"></div>
+                                        </div>
                                     </template>
-                                </select>
+                                    <template
+                                        x-if="!allAccounts.some(a => !q || a.name.toLowerCase().includes(q.toLowerCase()))">
+                                        <div class="dropdown-empty">Tidak ditemukan</div>
+                                    </template>
+                                </x-misc.select>
                             </td>
                         </tr>
                     </template>

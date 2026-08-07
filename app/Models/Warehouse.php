@@ -14,4 +14,5 @@ class Warehouse extends Model
         'note',
         'deleted_at',
     ];
+    
 }

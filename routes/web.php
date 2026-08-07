@@ -255,6 +255,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('warehouses')->name('warehouses.')->controller(WarehouseController::class)->group(function () {
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::post('/', 'store')->name('store');
+            Route::get('/{id}', 'show')->name('show');
             Route::put('/{id}', 'update')->name('update');
             Route::post('/{id}/status', 'status')->name('status');
             Route::get('/options', 'options')->name('options');
@@ -267,7 +268,9 @@ Route::middleware('auth')->group(function () {
             });
 
             Route::get('/datatable', 'datatable')->name('datatable');
+            Route::get('/transaction-datatable', 'transactionDatatable')->name('transaction_datatable');
             Route::post('/', 'store')->name('store');
+            Route::get('/{id}', 'show')->name('show');
             Route::put('/{id}', 'update')->name('update');
             Route::post('/{id}/status', 'status')->name('status');
             Route::get('/options', 'options')->name('options');

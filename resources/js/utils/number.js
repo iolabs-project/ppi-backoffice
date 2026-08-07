@@ -9,17 +9,25 @@ export function parseMaskIntoNumeric(value) {
     );
 }
 
-export function formatNumericIntoMask(value) {
-    if (value === null || value === undefined) return "0";
+export function formatNumericIntoMask(value, decimalPlaces = 2) {
+    if (value === null || value === undefined || value === '') {
+        return (0).toFixed(decimalPlaces);
+    }
 
     const num = Number(value);
-    if (isNaN(num)) return "0";
+    if (isNaN(num)) {
+        return (0).toFixed(decimalPlaces);
+    }
 
     const negative = num < 0;
-    const parts = Math.abs(num).toString().split(".");
-    const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    const decimalPart = parts[1] || "";
 
-    const result = decimalPart ? `${integerPart}.${decimalPart}` : integerPart;
-    return negative ? `-${result}` : result;
+    const [integerPart, decimalPart] = Math.abs(num)
+        .toFixed(decimalPlaces)
+        .split(".");
+
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+    return negative
+        ? `-${formattedInteger}${decimalPlaces > 0 ? `.${decimalPart}` : ""}`
+        : `${formattedInteger}${decimalPlaces > 0 ? `.${decimalPart}` : ""}`;
 }

@@ -64,6 +64,11 @@
                                     </button>
                                     <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
                                         style="position:absolute; right:0; top:100%; margin-top:4px;">
+                                        <a :href="route('master.products.show', row.id)" @click.stop
+                                            class="action-menu__item">
+                                            <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />
+                                            Detail Produk
+                                        </a>
                                         <button class="action-menu__item" x-on:click="openEditModal(row)">
                                             <x-misc.icon name="edit" :size="14" /> Edit Produk
                                         </button>

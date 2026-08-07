@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\WarehouseFormRequest;
+use App\Services\InventoryService;
 use App\Services\Master\WarehouseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -46,6 +47,19 @@ class WarehouseController extends Controller
                 'message' => 'Terjadi kesalahan saat membuat gudang',
             ], 500);
         }
+    }
+
+    public function show(WarehouseService $warehouseService, InventoryService $inventoryService, int $id)
+    {
+        $data = [
+            'currentPage'          => 'master',
+            'breadcrumb'           => [['label' => 'Master Gudang']],
+            'warehouse' => $warehouseService->fetchWarehouseById($id),
+            'products' => $inventoryService->fetchGlobalInventoryStock(companyID: config('context.selected_company_id'), warehouseID: $id),
+            'batches' => $inventoryService->fetchInventoryBatches(companyID: config('context.selected_company_id'), warehouseID: $id),
+        ];
+
+        return view('master.warehouse.show', $data);
     }
 
     public function update(WarehouseFormRequest $request, WarehouseService $warehouseService, int $id)

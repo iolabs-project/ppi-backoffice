@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\DeliveryOrderStatus;
+use App\Enums\GoodsReceiptStatus;
 use App\Enums\InventoryTransactionTypeEnum;
 use App\Models\DeliveryOrder;
+use App\Models\DeliveryOrderItem;
 use App\Models\GoodsReceipt;
 use App\Models\ProductBatch;
 use App\Models\ProductStock;
@@ -11,6 +14,7 @@ use App\Models\InventoryTransaction;
 use App\Models\GoodsReceiptItem;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceItem;
+use App\Models\SalesInvoiceItem;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -21,7 +25,7 @@ class InventoryService
     {
         $this->journalService = $journalService;
     }
-    public function fetchGlobalInventoryStock(int $companyID): Collection
+    public function fetchGlobalInventoryStock(int $companyID, int | null $warehouseID = null, array $productIDs = []): Collection
     {
         $data = ProductStock::with([
             'product:id,code,name,unit_id',
@@ -38,13 +42,22 @@ class InventoryService
                 'average_unit_cost'
             )
             ->where('company_id', $companyID)
+            ->when($warehouseID, function ($query) use ($warehouseID) {
+                $query->where('warehouse_id', $warehouseID);
+            })
             ->whereRaw('quantity - reserved_quantity > 0')
+            ->whereHas('product', function ($query) {
+                $query->whereNull('deleted_at');
+            })
+            ->when(!empty($productIDs), function ($query) use ($productIDs) {
+                $query->whereIn('product_id', $productIDs);
+            })
             ->get();
 
         return $data;
     }
 
-    public function fetchInventoryBatches(int $companyID, array $productIDs = []): Collection
+    public function fetchInventoryBatches(int $companyID, int | null $warehouseID = null, array $productIDs = []): Collection
     {
         return ProductBatch::with([
             'product:id,code,name,unit_id',
@@ -62,6 +75,12 @@ class InventoryService
                 'unit_cost'
             )
             ->where('company_id', $companyID)
+            ->whereHas('product', function ($query) {
+                $query->whereNull('deleted_at');
+            })
+            ->when($warehouseID, function ($query) use ($warehouseID) {
+                $query->where('warehouse_id', $warehouseID);
+            })
             ->whereRaw('quantity - reserved_quantity > 0')
             ->when(!empty($productIDs), function ($query) use ($productIDs) {
                 $query->whereIn('product_id', $productIDs);
@@ -251,5 +270,29 @@ class InventoryService
         );
 
         return $avgUnitCost;
+    }
+
+    public function fetchQuantitySoldByProductThisMonth(int $companyID, int $productID): float
+    {
+        return DeliveryOrderItem::whereHas('deliveryOrder', function ($query) use ($companyID) {
+                $query->where('company_id', $companyID)
+                      ->whereMonth('delivery_date', now()->month)
+                      ->whereYear('delivery_date', now()->year)
+                      ->where('status', DeliveryOrderStatus::FINISHED);
+            })
+            ->where('product_id', $productID)
+            ->sum('quantity');
+    }
+
+    public function fetchQuantityReceivedByProductThisMonth(int $companyID, int $productID): float
+    {
+        return GoodsReceiptItem::whereHas('goodsReceipt', function ($query) use ($companyID) {
+                $query->where('company_id', $companyID)
+                      ->whereMonth('receipt_date', now()->month)
+                      ->whereYear('receipt_date', now()->year)
+                      ->where('status', GoodsReceiptStatus::FINISHED);
+            })
+            ->where('product_id', $productID)
+            ->sum('received_quantity');
     }
 }

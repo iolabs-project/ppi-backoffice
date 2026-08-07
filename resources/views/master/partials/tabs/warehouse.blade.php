@@ -1,15 +1,14 @@
 <div x-data="warehouseModule()" x-init="fetchData()" x-show="tab === 'gudang'" x-cloak>
     <div class="master-toolbar" style="justify-content: space-between;padding-left:0; padding-right:0;">
-            <div class="master-search">
-                <span class="master-search__icon"><x-misc.icon name="search" :size="14"
-                        stroke="var(--ink-4)" /></span>
-                <input class="input master-search__input" placeholder="Cari gudang..." x-model="search"
-                    x-on:input.debounce.400ms="handleSearch(search)" />
-            </div>
-            <button class="btn btn-primary btn-sm" x-on:click="modal = 'add_warehouse'">
-                <x-misc.icon name="plus" :size="14" /> Tambah Gudang
-            </button>
+        <div class="master-search">
+            <span class="master-search__icon"><x-misc.icon name="search" :size="14" stroke="var(--ink-4)" /></span>
+            <input class="input master-search__input" placeholder="Cari gudang..." x-model="search"
+                x-on:input.debounce.400ms="handleSearch(search)" />
         </div>
+        <button class="btn btn-primary btn-sm" x-on:click="modal = 'add_warehouse'">
+            <x-misc.icon name="plus" :size="14" /> Tambah Gudang
+        </button>
+    </div>
     <template x-if="loading">
         <div style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...</div>
     </template>
@@ -27,19 +26,31 @@
                         </div>
                     </div>
                     <div class="action-menu" x-data="{ open: false }" x-on:click.stop>
-                        <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
-                            x-on:click="open = !open" x-on:click.outside="open = false">
+                        <button class="btn btn-ghost btn-icon btn-sm" style="border:none;" x-on:click="open = !open"
+                            x-on:click.outside="open = false">
                             <x-misc.icon name="more" :size="15" />
                         </button>
                         <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
                             style="position:absolute; right:0; top:100%; margin-top:4px;">
-                            <button class="action-menu__item" x-on:click="$dispatch('open-edit-gudang', g)">
+                            <a :href="route('master.warehouses.show', g.id)" @click.stop
+                                class="action-menu__item">
+                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />
+                                Detail Gudang
+                            </a>
+                            <button class="action-menu__item" x-on:click="openEditModal(g)">
                                 <x-misc.icon name="edit" :size="14" /> Edit Gudang
                             </button>
-                            <button class="action-menu__item" x-on:click="handleStatus(g)">
-                                <x-misc.icon name="x" :size="14" />
-                                <span x-text="g.deleted_at ? 'Aktifkan' : 'Nonaktifkan'"></span>
-                            </button>
+                            <template x-if="!g.deleted_at">
+                                <button class="action-menu__item action-menu__item--danger"
+                                    x-on:click="handleStatus(g.id)">
+                                    <x-misc.icon name="trash" :size="14" /> Nonaktifkan
+                                </button>
+                            </template>
+                            <template x-if="g.deleted_at">
+                                <button class="action-menu__item" x-on:click="handleStatus(g.id)">
+                                    <x-misc.icon name="refresh" :size="14" /> Aktifkan
+                                </button>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -54,7 +65,8 @@
                     </div>
                     <div class="gudang-card__meta-row">
                         <span class="chip"
-                            :style="!g.deleted_at ? 'background:oklch(0.92 0.06 145);color:oklch(0.40 0.12 145)' : 'background:oklch(0.92 0.04 15);color:oklch(0.45 0.14 15)'"
+                            :style="!g.deleted_at ? 'background:oklch(0.92 0.06 145);color:oklch(0.40 0.12 145)' :
+                                'background:oklch(0.92 0.04 15);color:oklch(0.45 0.14 15)'"
                             x-text="!g.deleted_at ? 'Aktif' : 'Nonaktif'"></span>
                     </div>
                 </div>
