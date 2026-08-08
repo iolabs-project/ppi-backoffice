@@ -77,6 +77,6 @@ class PurchaseInvoice extends Model
 
     public function payments()
     {
-        return $this->hasMany(PurchasePayment::class);
+        return $this->hasMany(PayablePayment::class, 'reference_id')->where('reference_type', PurchaseInvoice::class);
     }
 }

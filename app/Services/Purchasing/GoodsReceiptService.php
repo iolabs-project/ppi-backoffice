@@ -120,7 +120,7 @@ class GoodsReceiptService
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
             'items.purchaseOrderItem:id,quantity,received_quantity,discount_percentage,discount_amount,unit_price,total_amount',
-            'costs:id,goods_receipt_id,account_id,description,amount,billed_by,is_inventory_cost',
+            'costs:id,goods_receipt_id,account_id,description,amount,is_inventory_cost',
             'costs.account:id,code,name,category_id',
             'purchaseOrder:id,number',
             'supplier:id,name,code',
@@ -211,7 +211,6 @@ class GoodsReceiptService
                 'goods_receipt_id' => $goodsReceipt->id,
                 'account_id' => $cost['account_id'],
                 'description' => $cost['description'] ?? null,
-                'billed_by' => $cost['billed_by'] ?? 'supplier',
                 'is_inventory_cost' => $cost['is_inventory_cost'] ?? false,
                 'amount' => $cost['amount'],
             ]);
@@ -237,7 +236,6 @@ class GoodsReceiptService
                 'goods_receipt_id' => $goodsReceipt->id,
                 'account_id' => $cost['account_id'],
                 'description' => $cost['description'] ?? null,
-                'billed_by' => $cost['billed_by'] ?? 'supplier',
                 'is_inventory_cost' => $cost['is_inventory_cost'] ?? false,
                 'amount' => $cost['amount'],
             ]);

@@ -98,7 +98,6 @@ class GoodsReceiptController extends Controller
             'goodsReceipt'  => $goodsReceipt,
             'remainingPOItems' => $purchaseOrderService->fetchPOItemsForGoodsReceipt($goodsReceipt->purchase_order_id),
             'accounts' => $this->accountService->fetchAccountData(null),
-            'billedByOptions' => BilledBy::dropdownOptions(),
         ];
 
         return view('purchasing.goods-receipt.edit', $data);
@@ -126,7 +125,6 @@ class GoodsReceiptController extends Controller
                     'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
                     'costs.*.description' => 'nullable|string|max:1000',
                     'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
-                    'costs.*.billed_by' => 'required_with:costs.*.amount|in:supplier,third_party,internal',
                     'costs.*.is_inventory_cost' => 'nullable|boolean',
                 ],
                 [
@@ -142,7 +140,6 @@ class GoodsReceiptController extends Controller
                     'details.*.discount_percentage.required' => 'Terdapat produk yang belum diisi persentase diskon. Silakan isi persentase diskon untuk setiap produk.',
                     'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
                     'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
-                    'costs.*.billed_by.required_with' => 'Pihak yang menagih harus dipilih jika jumlah biaya diisi.',
                 ]
             );
         }

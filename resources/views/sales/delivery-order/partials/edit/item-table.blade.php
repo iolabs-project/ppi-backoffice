@@ -54,6 +54,9 @@
         },
 
         batchTotal(item) {
+            if (!item) {
+                return 0;
+            }
             return item.batches.reduce((sum, b) => sum + this.n(b.quantity), 0);
         },
 
@@ -89,6 +92,9 @@
         },
 
         remainingToShip(item) {
+            if (!item) {
+                return 0;
+            }
             return Math.max(0, this.n(item.remaining_quantity) - this.batchTotal(item));
         },
 
@@ -244,12 +250,6 @@
 <x-misc.modal title="Pilih Batch" show="modal === 'add_batch'" close-handler="closeBatchModal()" :width="560">
     <template x-if="activeItem()">
         <div>
-            <div style="font-size:13px; color:var(--ink-3); margin-bottom:12px;">
-                Produk: <strong style="color:var(--ink);" x-text="activeItem().name"></strong> ·
-                Sudah Dipilih: <span class="mono" x-text="batchTotal(activeItem()) + ' ' + (activeItem().unit || '')"></span> ·
-                Sisa yang Perlu Dikirim: <span class="mono" x-text="remainingToShip(activeItem()) + ' ' + (activeItem().unit || '')"></span>
-            </div>
-
             <table class="tbl tbl-tight" style="table-layout:fixed;">
                 <thead>
                     <tr>

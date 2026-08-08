@@ -8,17 +8,19 @@
        - $billedByOptions: array of {id, name}, or null/omitted to hide the
          Billed By + Inventory Cost columns (used for Purchase Invoice, where
          every cost is inherently supplier-billed).
+       - $title: card title, defaults to "Biaya Tambahan (Landed Cost)".
 --}}
 @php
     $showBilledBy = !empty($billedByOptions);
     $showInventoryCost = $showInventoryCost ?? $showBilledBy;
+    $title = $title ?? 'Biaya Tambahan';
 @endphp
 <script>
     var accounts = @json($accounts);
 </script>
 <div class="card" style="overflow:visible;">
     <div class="card-hd">
-        <div class="display card-hd-title">Biaya Tambahan (Landed Cost)</div>
+        <div class="display card-hd-title">{{ $title }}</div>
         <button type="button" class="btn btn-ghost btn-sm" @click="addCost()">
             <x-misc.icon name="plus" :size="13" />Tambah Biaya
         </button>

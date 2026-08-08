@@ -142,7 +142,7 @@ class ProductService
             'po.id as transaction_id',
             'po.number as transaction_number',
             'po.reference_number as transaction_reference_number',
-            'po.order_date as transaction_date',
+            DB::raw("DATE_FORMAT(po.order_date, '%Y-%m-%d') as transaction_date"),
             'c.name as contact_name',
             'i.quantity as quantity',
             'i.unit_price as unit_price',
@@ -160,7 +160,7 @@ class ProductService
             'gr.id as transaction_id',
             'gr.number as transaction_number',
             'gr.reference_number as transaction_reference_number',
-            'gr.receipt_date as transaction_date',
+            DB::raw("DATE_FORMAT(gr.receipt_date, '%Y-%m-%d') as transaction_date"),
             'c.name as contact_name',
             'i.received_quantity as quantity',
             'i.unit_price as unit_price',
@@ -178,7 +178,7 @@ class ProductService
             'pi.id as transaction_id',
             'pi.number as transaction_number',
             'pi.reference_number as transaction_reference_number',
-            'pi.invoice_date as transaction_date',
+            DB::raw("DATE_FORMAT(pi.invoice_date, '%Y-%m-%d') as transaction_date"),
             'c.name as contact_name',
             'i.quantity as quantity',
             'i.unit_price as unit_price',
@@ -208,10 +208,7 @@ class ProductService
                 'name',
                 'category_id',
                 'unit_id',
-                'minimum_stock',
-                'inventory_account_id',
-                'sales_account_id',
-                'cogs_account_id'
+                'description',
             )
             ->where('company_id', config('context.selected_company_id'))
             ->where('id', $id);
@@ -306,5 +303,19 @@ class ProductService
             'name' => $request->name,
             'note' => $request->note,
         ]);
+    }
+
+    public function fetchProductUnitData()
+    {
+        $data = DB::table('units')
+            ->select(
+                'id',
+                'name',
+                'symbol'
+            )
+            ->where('deleted_at', null)
+            ->get();
+
+        return $data;
     }
 }

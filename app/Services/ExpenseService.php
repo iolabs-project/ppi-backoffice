@@ -175,9 +175,7 @@ class ExpenseService
     {
         // $costs = GoodsReceiptCost::where('goods_receipt_id', $id)->get();
         $goodsReceipt = GoodsReceipt::with([
-            'costs' => function ($query) {
-                $query->where('billed_by', 'third_party');
-            }
+            'costs'
         ])->findOrFail($id);
         $now = now();
 

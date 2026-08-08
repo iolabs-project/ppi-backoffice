@@ -585,7 +585,7 @@
 
         @include('purchasing.partials.additional-cost-table', [
             'accounts' => $accounts,
-            'billedByOptions' => $billedByOptions,
+            'showInventoryCost' => true,
         ])
 
         <div class="card" style="overflow:visible;">

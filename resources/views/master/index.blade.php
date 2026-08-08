@@ -35,8 +35,8 @@
                 },
 
                 // shared data for modals
-                unitsAll: @json($units),
-                categoriesAll: @json($productCategories),
+                productUnits: @json($units),
+                productCategories: @json($productCategories),
                 inventoryAccounts: @json($inventoryAccounts),
                 salesAccounts: @json($salesAccounts),
                 cogsAccounts: @json($cogsAccounts),

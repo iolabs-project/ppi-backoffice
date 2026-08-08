@@ -7,7 +7,7 @@
             <x-misc.field label="Kategori" :required="true">
                 <select class="input" x-model="form.category_id">
                     <option value="">— Pilih Kategori —</option>
-                    <template x-for="c in categoriesAll" :key="c.id">
+                    <template x-for="c in productCategories" :key="c.id">
                         <option :value="c.id" x-text="c.name"></option>
                     </template>
                 </select>
@@ -23,7 +23,7 @@
             <x-misc.field label="Satuan" :required="true">
                 <select class="input" x-model="form.unit_id">
                     <option value="">— Pilih Satuan —</option>
-                    <template x-for="u in unitsAll" :key="u.id">
+                    <template x-for="u in productUnits" :key="u.id">
                         <option :value="u.id" x-text="u.name + ' (' + u.symbol + ')'"></option>
                     </template>
                 </select>

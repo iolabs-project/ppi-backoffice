@@ -247,18 +247,18 @@ Route::middleware('auth')->group(function () {
         Route::prefix('contacts')->name('contacts.')->controller(ContactController::class)->group(function () {
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::post('/', 'store')->name('store');
+            Route::get('/options', 'options')->name('options');
             Route::put('/{id}', 'update')->name('update');
             Route::post('/{id}/status', 'status')->name('status');
-            Route::get('/options', 'options')->name('options');
         });
 
         Route::prefix('warehouses')->name('warehouses.')->controller(WarehouseController::class)->group(function () {
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::post('/', 'store')->name('store');
+            Route::get('/options', 'options')->name('options');
             Route::get('/{id}', 'show')->name('show');
             Route::put('/{id}', 'update')->name('update');
             Route::post('/{id}/status', 'status')->name('status');
-            Route::get('/options', 'options')->name('options');
         });
 
         Route::prefix('products')->name('products.')->controller(ProductController::class)->group(function () {
@@ -270,18 +270,18 @@ Route::middleware('auth')->group(function () {
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::get('/transaction-datatable', 'transactionDatatable')->name('transaction_datatable');
             Route::post('/', 'store')->name('store');
+            Route::get('/options', 'options')->name('options');
             Route::get('/{id}', 'show')->name('show');
             Route::put('/{id}', 'update')->name('update');
             Route::post('/{id}/status', 'status')->name('status');
-            Route::get('/options', 'options')->name('options');
         });
 
         Route::prefix('users')->name('users.')->controller(UserController::class)->group(function () {
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::post('/', 'store')->name('store');
+            Route::get('/options', 'options')->name('options');
             Route::put('/{id}', 'update')->name('update');
             Route::post('/{id}/status', 'status')->name('status');
-            Route::get('/options', 'options')->name('options');
         });
 
         Route::prefix('accounts')->name('accounts.')->controller(AccountController::class)->group(function () {

@@ -78,7 +78,7 @@ class DeliveryOrderController extends Controller
         //     $remainingSOItems->pluck('product_id')->unique()->values()->all()
         // );
         $availableBatches = $this->inventoryService->fetchInventoryBatches(
-            companyID: $deliveryOrder->companyID,
+            companyID: $deliveryOrder->company_id,
             productIDs: $remainingSOItems->pluck('product_id')->unique()->values()->all()
         )->map(function ($batch) {
             return [

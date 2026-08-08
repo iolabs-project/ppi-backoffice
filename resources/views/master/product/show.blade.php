@@ -1,122 +1,96 @@
 @extends('layouts.app')
 @section('content')
-    @php
-        $stok = $produk['stok'] ?? 0;
-        $totalJual = array_sum(
-            array_map(fn($t) => abs($t['qty']), array_filter($transaksiTerkini, fn($t) => $t['qty'] < 0)),
-        );
-        $totalBeli = array_sum(
-            array_map(fn($t) => $t['qty'], array_filter($transaksiTerkini, fn($t) => $t['qty'] > 0)),
-        );
-        $stokTotal = array_sum(array_column($stokPerGudang, 'stok'));
-        $gudangColors = ['oklch(0.72 0.14 155)', 'oklch(0.72 0.14 220)', 'oklch(0.72 0.14 45)'];
-
-        $runningStok = $stok;
-        $pergerakanStokData = [];
-        foreach (array_reverse($transaksiTerkini) as $t) {
-            $pergerakanStokData[] = [
-                'tanggal' => $t['tanggal'],
-                'deskripsi' => $t['deskripsi'],
-                'harga' => $t['harga'],
-                'hargaFmt' => fmt_rp($t['harga']),
-                'hppFmt' => fmt_rp($produk['hargaBeli']),
-                'qty' => $t['qty'],
-                'qtyFmt' => ($t['qty'] > 0 ? '+' : '') . fmt_num($t['qty']),
-                'stokFmt' => fmt_num($runningStok) . ' ' . $produk['satuan'],
-            ];
-            $runningStok -= $t['qty'];
-        }
-
-        $terkiniForJs = array_map(
-            fn($t) => [
-                'tanggal' => $t['tanggal'],
-                'deskripsi' => $t['deskripsi'],
-                'ref' => $t['ref'],
-                'qty' => $t['qty'],
-                'qtyFmt' => ($t['qty'] > 0 ? '+' : '') . fmt_num($t['qty']),
-                'hargaFmt' => fmt_rp($t['harga']),
-                'totalFmt' => fmt_rp($t['total']),
-            ],
-            $transaksiTerkini,
-        );
-
-        $transferForJs = array_map(
-            fn($t) => [
-                'tanggal' => $t['tanggal'],
-                'nomor' => $t['nomor'],
-                'dari' => $t['dari'],
-                'ke' => $t['ke'],
-                'qtyFmt' => fmt_num($t['qty']),
-            ],
-            $transferGudang,
-        );
-    @endphp
     <script>
         function productDetailModule() {
             return {
-                transactions: [],
-                search: {
-                    transaction: '',
-                },
-
-
                 m(v) {
                     return NumberUtils.formatNumericIntoMask(v);
                 },
                 modal: null,
-                editProduk: {
-                    kode: '{{ $produk['kode'] }}',
-                    nama: '{{ addslashes($produk['nama']) }}',
-                    kategori: '{{ addslashes($produk['kategori'] ?? '') }}',
-                    satuan: '{{ addslashes($produk['satuan']) }}',
-                    hargaBeli: {{ $produk['hargaBeli'] }},
-                    hargaJual: {{ $produk['hargaJual'] }},
-                },
-                transaksiTab: 'terkini',
-
-                penyesuaian: {
-                    tipe: 'perhitungan',
-                    gudang: '',
-                    tanggal: '',
-                    akun: '8-80100 Penyesuaian Persediaan',
-                    nomor: 'SA/00007',
-                    qtyAktual: 0,
-                    selisih: 0,
-                    hargaRataRata: 0,
+                product: @json($product),
+                productCategories: @json($categories),
+                productUnits: @json($units),
+                form: {
+                    id: null,
+                    code: null,
+                    name: null,
+                    description: null,
+                    category_id: null,
+                    unit_id: null,
                 },
 
-                terkiniAll: @json($terkiniForJs),
-                terkiniPage: 1,
-                terkiniPerPage: 10,
-                get terkiniPaged() {
-                    return this.terkiniAll.slice((this.terkiniPage - 1) * this.terkiniPerPage, this.terkiniPage * this
-                        .terkiniPerPage);
-                },
-                get terkiniTotal() {
-                    return Math.ceil(this.terkiniAll.length / this.terkiniPerPage);
-                },
-
-                stokAll: @json($pergerakanStokData),
-                stokPage: 1,
-                stokPerPage: 10,
-                get stokPaged() {
-                    return this.stokAll.slice((this.stokPage - 1) * this.stokPerPage, this.stokPage * this.stokPerPage);
-                },
-                get stokTotal() {
-                    return Math.ceil(this.stokAll.length / this.stokPerPage);
+                openEditModal() {
+                    this.form = {
+                        id: this.product.id,
+                        code: this.product.code,
+                        name: this.product.name,
+                        description: this.product.description,
+                        category_id: this.product.category_id,
+                        unit_id: this.product.unit_id,
+                    };
+                    this.modal = 'edit_product';
                 },
 
-                transferAll: @json($transferForJs),
-                transferPage: 1,
-                transferPerPage: 10,
-                get transferPaged() {
-                    return this.transferAll.slice((this.transferPage - 1) * this.transferPerPage, this.transferPage *
-                        this.transferPerPage);
-                },
-                get transferTotal() {
-                    return Math.ceil(this.transferAll.length / this.transferPerPage);
-                },
-            };
+                async handleUpdate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Perubahan Produk',
+                        text: 'Apakah anda yakin ingin memperbarui produk dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, perbarui produk',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.form,
+                            };
+
+                            Swal.fire({
+                                title: 'Memproses perubahan Produk...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.put(
+                                    route('master.products.update', this.form.id), body
+                                );
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                window.location.reload();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+
+                            }
+                        }
+                    });
+                }
+            }
         }
 
         function productTransactionModule() {
@@ -188,12 +162,15 @@
                     <span class="chip">{{ $product->category->name }}</span>
                     <span class="chip mono" style="font-size:11px;">{{ $product->code }}</span>
                 </div>
+                <div class="order-sub">
+                    {{ $product->description }}
+                </div>
             </div>
             <div class="order-actions">
-                <button class="btn btn-ghost" x-on:click="modal = 'edit_product'"><x-misc.icon name="edit"
+                <button class="btn btn-ghost" x-on:click="openEditModal()"><x-misc.icon name="edit"
                         :size="14" /> Edit Produk</button>
-                <button class="btn btn-primary" x-on:click="modal = 'penyesuaian'"><x-misc.icon name="plus"
-                        :size="14" /> Penyesuaian Stok</button>
+                {{-- <button class="btn btn-primary" x-on:click="modal = 'penyesuaian'"><x-misc.icon name="plus"
+                        :size="14" /> Penyesuaian Stok</button> --}}
             </div>
         </div>
 
@@ -209,19 +186,21 @@
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 220); color:oklch(0.45 0.14 220);">
                     {{ number_format($soldQty, 2, '.', ',') }}</div>
                 <div class="produk-stat__label">Terjual</div>
-                <div class="produk-stat__unit">unit · bulan ini</div>
+                <div class="produk-stat__unit">Unit · Bulan Ini</div>
             </div>
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 45); color:oklch(0.45 0.14 45);">
                     {{ number_format($receivedQty, 2, '.', ',') }}</div>
                 <div class="produk-stat__label">Diterima</div>
-                <div class="produk-stat__unit">unit · bulan ini</div>
+                <div class="produk-stat__unit">Unit · Bulan Ini</div>
             </div>
-            {{-- <div class="card produk-stat">
-      <div class="produk-stat__badge" style="background:var(--bg-2); color:var(--ink-2);">{{ number_format($product->average_unit_cost,2,'.',',') }}</div>
-      <div class="produk-stat__label">Harga Pokok</div>
-      <div class="produk-stat__unit">/ {{ $product->unit->symbol }}</div>
-    </div> --}}
+            <div class="card produk-stat">
+                <div class="produk-stat__badge" style="background:var(--bg-2); color:var(--ink-2);">
+                    {{ number_format($stocks->sum(function ($stock) {return $stock->quantity * $stock->average_unit_cost;}),2,'.',',') }}
+                </div>
+                <div class="produk-stat__label">Nilai</div>
+                <div class="produk-stat__unit">Berdasarkan HPP Rata Rata</div>
+            </div>
         </div>
 
         {{-- Body: transaksi + sidebar --}}
@@ -284,16 +263,17 @@
                                         </a>
                                     </template>
                                 </td>
-                                <td style="font-size:13px; color:var(--ink-4);" x-text="t.transaction_reference_number"></td>
+                                <td style="font-size:13px; color:var(--ink-4);" x-text="t.transaction_reference_number">
+                                </td>
                                 <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.quantity)"></td>
                                 <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.unit_price)"></td>
-                                <td class="num" style="text-align:right; font-size:13px;"
-                                    x-text="m(t.total_price)"></td>
+                                <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.total_price)"></td>
                             </tr>
                         </template>
                     </tbody>
                 </table>
             </div>
+            
 
             {{-- Right: info sidebar --}}
             <div class="card produk-sidebar">
@@ -333,154 +313,6 @@
             </div>
         </div>
 
-        {{-- Modal: Edit Produk --}}
-        <x-misc.modal title="Edit Produk" show="modal === 'edit_product'" close-handler="modal = null">
-            <div class="form-body">
-                <div class="form-grid-2">
-                    <x-misc.field label="Kode Produk" :required="true">
-                        <input class="input mono" x-model="editProduk.kode" />
-                    </x-misc.field>
-                    <x-misc.field label="Kategori">
-                        <input class="input" x-model="editProduk.kategori" placeholder="Tepung, Gula, Minyak..." />
-                    </x-misc.field>
-                </div>
-                <x-misc.field label="Nama Produk" :required="true">
-                    <input class="input" x-model="editProduk.nama" />
-                </x-misc.field>
-                <div class="form-grid-3">
-                    <x-misc.field label="Satuan">
-                        <input class="input" x-model="editProduk.satuan" placeholder="Sak, Kg, Liter..." />
-                    </x-misc.field>
-                    <x-misc.field label="Harga Beli">
-                        <input class="input num" type="number" style="text-align:right;"
-                            x-model="editProduk.hargaBeli" />
-                    </x-misc.field>
-                    <x-misc.field label="Harga Jual">
-                        <input class="input num" type="number" style="text-align:right;"
-                            x-model="editProduk.hargaJual" />
-                    </x-misc.field>
-                </div>
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">
-                    <x-misc.icon name="x" :size="14" /> Batal
-                </button>
-                <button class="btn btn-primary">
-                    <x-misc.icon name="check" :size="14" /> Simpan Perubahan
-                </button>
-            </x-slot:footer>
-        </x-misc.modal>
-
-        {{-- Modal: Penyesuaian Stok --}}
-        <x-misc.modal title="Penyesuaian Stok" show="modal === 'penyesuaian'" close-handler="modal = null"
-            :width="620">
-            <div class="form-body">
-
-                {{-- Tipe --}}
-                <x-misc.field label="Tipe penyesuaian stok" :required="true">
-                    <div class="ps-tipe-group">
-                        <label class="ps-tipe-btn"
-                            :class="penyesuaian.tipe === 'perhitungan' ? 'ps-tipe-btn--active' : ''">
-                            <input type="radio" x-model="penyesuaian.tipe" value="perhitungan"
-                                style="display:none;" />
-                            <x-misc.icon name="box" :size="14" />
-                            Perhitungan Stok
-                        </label>
-                        <label class="ps-tipe-btn"
-                            :class="penyesuaian.tipe === 'masuk_keluar' ? 'ps-tipe-btn--active' : ''">
-                            <input type="radio" x-model="penyesuaian.tipe" value="masuk_keluar"
-                                style="display:none;" />
-                            <x-misc.icon name="swap" :size="14" />
-                            Stok Masuk / Keluar
-                        </label>
-                    </div>
-                </x-misc.field>
-
-                {{-- Gudang & Tanggal --}}
-                <div class="form-grid-2">
-                    <x-misc.field label="Gudang" :required="true">
-                        <select class="input" x-model="penyesuaian.gudang">
-                            <option value="" disabled>Pilih gudang</option>
-                            @foreach ($stokPerGudang as $g)
-                                <option value="{{ $g['nama'] }}">{{ $g['nama'] }}</option>
-                            @endforeach
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Tanggal" :required="true">
-                        <input class="input" type="date" x-model="penyesuaian.tanggal"
-                            value="{{ date('Y-m-d') }}" />
-                    </x-misc.field>
-                </div>
-
-                {{-- Akun & Nomor --}}
-                <div class="form-grid-2">
-                    <x-misc.field label="Akun" :required="true">
-                        <select class="input" x-model="penyesuaian.akun">
-                            <option value="8-80100 Penyesuaian Persediaan">8-80100 Penyesuaian Persediaan</option>
-                            <option value="1-1300 Persediaan Barang">1-1300 Persediaan Barang</option>
-                        </select>
-                    </x-misc.field>
-                    <x-misc.field label="Nomor">
-                        <input class="input mono" x-model="penyesuaian.nomor" placeholder="SA/00001" />
-                    </x-misc.field>
-                </div>
-
-                {{-- Qty adjustment --}}
-                <div class="ps-qty-section">
-                    <div class="ps-qty-header">
-                        <div>Qty Tercatat</div>
-                        <div>Satuan</div>
-                        <div>Qty Aktual</div>
-                        <div>Selisih</div>
-                        <div>Harga Rata-rata</div>
-                    </div>
-                    <div class="ps-qty-row">
-                        {{-- Qty Tercatat: always read-only --}}
-                        <div class="ps-qty-cell ps-qty-cell--readonly">{{ fmt_num($stok) }}</div>
-
-                        {{-- Satuan --}}
-                        <div class="ps-qty-cell">
-                            <select class="input" style="padding:6px 10px; height:36px;">
-                                <option>{{ $produk['satuan'] }}</option>
-                            </select>
-                        </div>
-
-                        {{-- Qty Aktual: editable (perhitungan) / read-only computed (masuk_keluar) --}}
-                        <div class="ps-qty-cell">
-                            <input class="input num" type="number" style="text-align:right;"
-                                x-model="penyesuaian.qtyAktual" x-show="penyesuaian.tipe === 'perhitungan'"
-                                placeholder="0" />
-                            <div class="ps-qty-cell--readonly" x-show="penyesuaian.tipe === 'masuk_keluar'" x-cloak
-                                x-text="{{ $stok }} + Number(penyesuaian.selisih)"></div>
-                        </div>
-
-                        {{-- Selisih: read-only computed (perhitungan) / editable (masuk_keluar) --}}
-                        <div class="ps-qty-cell">
-                            <div class="ps-qty-cell--readonly" x-show="penyesuaian.tipe === 'perhitungan'"
-                                x-text="Number(penyesuaian.qtyAktual) - {{ $stok }}"></div>
-                            <input class="input num" type="number" style="text-align:right;"
-                                x-model="penyesuaian.selisih" x-show="penyesuaian.tipe === 'masuk_keluar'" x-cloak
-                                placeholder="0" />
-                        </div>
-
-                        {{-- Harga Rata-rata: always editable --}}
-                        <div class="ps-qty-cell">
-                            <input class="input num" type="number" style="text-align:right;"
-                                x-model="penyesuaian.hargaRataRata" placeholder="0" />
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            <x-slot:footer>
-                <button class="btn btn-ghost" x-on:click="modal = null">
-                    <x-misc.icon name="x" :size="14" /> Batal
-                </button>
-                <button class="btn btn-primary">
-                    <x-misc.icon name="check" :size="14" /> Simpan
-                </button>
-            </x-slot:footer>
-        </x-misc.modal>
-
+        @include('master.partials.modals.product-modal')
     </div>
 @endsection

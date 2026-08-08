@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
     <script>
-        function warehouseModule() {
+        function warehouseDetailModule() {
             return {
                 search: {
                     product: '',
@@ -123,7 +123,7 @@
             };
         }
     </script>
-    <div class="order-page" x-data="warehouseModule()">
+    <div class="order-page" x-data="warehouseDetailModule()">
 
         {{-- Header --}}
         <div class="order-hd order-hd--start">

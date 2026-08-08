@@ -80,7 +80,7 @@
                     this.recalculate();
                 },
                 selectProduct(item, product) {
-                    if (this.formData.details.some(d => d.batch_number === product.batch_number)) {
+                    if (this.formData.details.some(d => d.batch_number === product.batch_number && d.product_id === product.product_id )) {
                         Toast.fire({
                             icon: 'error',
                             title: 'Produk dengan batch number ' + product.batch_number +
