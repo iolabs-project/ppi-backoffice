@@ -165,45 +165,45 @@ class SalesInvoiceService
 
             SalesInvoiceItem::where('sales_invoice_id', $salesInvoice->id)->delete();
             SalesInvoiceCharge::where('sales_invoice_id', $salesInvoice->id)->delete();
-        });
 
-        foreach ($request->details as $detail) {
-            SalesInvoiceItem::create([
-                'sales_invoice_id' => $salesInvoice->id,
-                'delivery_order_item_id' => $detail['delivery_order_item_id'],
-                'sales_order_item_id' => $detail['sales_order_item_id'],
-                'product_id' => $detail['product_id'],
-                'quantity' => $detail['quantity'],
-                'unit_price' => $detail['unit_price'],
-                'discount_percentage' => $detail['discount_percentage'] ?? 0,
-                'discount_amount' => $detail['quantity'] * $detail['unit_price'] * (($detail['discount_percentage'] ?? 0) / 100),
-                'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
-            ]);
+            foreach ($request->details as $detail) {
+                SalesInvoiceItem::create([
+                    'sales_invoice_id' => $salesInvoice->id,
+                    'delivery_order_item_id' => $detail['delivery_order_item_id'],
+                    'sales_order_item_id' => $detail['sales_order_item_id'],
+                    'product_id' => $detail['product_id'],
+                    'quantity' => $detail['quantity'],
+                    'unit_price' => $detail['unit_price'],
+                    'discount_percentage' => $detail['discount_percentage'] ?? 0,
+                    'discount_amount' => $detail['quantity'] * $detail['unit_price'] * (($detail['discount_percentage'] ?? 0) / 100),
+                    'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
+                ]);
+
+                if ($request->status === SalesInvoiceStatus::OPEN->value) {
+                    $this->salesOrderService->updateInvoicedQuantity(
+                        salesOrderItemID: $detail['sales_order_item_id'],
+                        invoicedQuantity: $detail['quantity']
+                    );
+                }
+            }
+
+            foreach ($request->input('charges', []) as $charge) {
+                SalesInvoiceCharge::create([
+                    'sales_invoice_id' => $salesInvoice->id,
+                    'account_id' => $charge['account_id'],
+                    'description' => $charge['description'] ?? null,
+                    'amount' => $charge['amount'],
+                ]);
+            }
 
             if ($request->status === SalesInvoiceStatus::OPEN->value) {
-                $this->salesOrderService->updateInvoicedQuantity(
-                    salesOrderItemID: $detail['sales_order_item_id'],
-                    invoicedQuantity: $detail['quantity']
+                $this->salesOrderService->decrementDownPaymentRemainingAmount(
+                    salesOrderID: $salesInvoice->sales_order_id,
+                    amount: $request->down_payment_amount
                 );
+                $this->postSIJournal($salesInvoice->fresh()->load('charges'));
             }
-        }
-
-        foreach ($request->input('charges', []) as $charge) {
-            SalesInvoiceCharge::create([
-                'sales_invoice_id' => $salesInvoice->id,
-                'account_id' => $charge['account_id'],
-                'description' => $charge['description'] ?? null,
-                'amount' => $charge['amount'],
-            ]);
-        }
-
-        if ($request->status === SalesInvoiceStatus::OPEN->value) {
-            $this->salesOrderService->decrementDownPaymentRemainingAmount(
-                salesOrderID: $salesInvoice->sales_order_id,
-                amount: $request->down_payment_amount
-            );
-            $this->postSIJournal($salesInvoice->fresh()->load('charges'));
-        }
+        });
     }
 
     public function fetchSalesInvoiceByID(int $id): ?SalesInvoice
