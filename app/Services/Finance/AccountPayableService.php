@@ -20,9 +20,11 @@ use Illuminate\Validation\ValidationException;
 class AccountPayableService
 {
     private JournalService $journalService;
-    public function __construct(JournalService $journalService)
+    private CashService $cashService;
+    public function __construct(JournalService $journalService, CashService $cashService)
     {
         $this->journalService = $journalService;
+        $this->cashService = $cashService;
     }
     public function generateAPNumber()
     {
@@ -218,6 +220,7 @@ class AccountPayableService
                 $invoice->save();
 
                 $this->postPaymentJournal($payment);
+                $this->postCashTransaction($payment);
             });
     }
 
@@ -247,5 +250,19 @@ class AccountPayableService
             description: 'Pembayaran Hutang #' . $payment->number,
             items: $journalItems
         );
+    }
+
+    private function postCashTransaction(PayablePayment $payment) {
+        $request = new Request([
+            'from_account_id' => $payment->account_id,
+            'transaction_date' => $payment->payment_date,
+            'description' => 'Pembayaran Hutang #' . $payment->number,
+            'type' => 'send',
+            'subtotal' => $payment->amount,
+            'reference_type' => $payment->reference_type,
+            'reference_id' => $payment->reference_id,
+        ]);
+
+        $this->cashService->storeTransaction($request, $payment->company_id);
     }
 }
