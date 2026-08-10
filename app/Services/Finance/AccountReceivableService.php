@@ -3,9 +3,12 @@
 namespace App\Services\Finance;
 
 use App\Enums\AccountSettingEnum;
+use App\Enums\CashTransactionStatusEnum;
+use App\Enums\CashTransactionTypeEnum;
 use App\Enums\ReceivablePaymentReferenceTypeEnum;
 use App\Models\Company;
 use App\Services\JournalService;
+use App\Services\Finance\CashService;
 use App\Enums\SalesInvoiceStatus;
 use App\Models\AccountSetting;
 use App\Models\ReceivablePayment;
@@ -18,9 +21,11 @@ use Illuminate\Support\Facades\Auth;
 class AccountReceivableService
 {
     private JournalService $journalService;
-    public function __construct(JournalService $journalService)
+    private CashService $cashService;
+    public function __construct(JournalService $journalService, CashService $cashService)
     {
         $this->journalService = $journalService;
+        $this->cashService = $cashService;
     }
     public function generateARNumber() {
         $prefix = 'AR';
@@ -169,6 +174,7 @@ class AccountReceivableService
                 }
                 $invoice->save();
 
+                $this->postCashTransaction($payment);
                 $this->postPaymentJournal($payment);
             });
     }
@@ -199,5 +205,23 @@ class AccountReceivableService
             description: 'Pembayaran Piutang #' . $payment->number,
             items: $journalItems
         );
+    }
+
+     private function postCashTransaction(ReceivablePayment $payment) {
+        $request = new Request([
+            'to_account_id' => $payment->account_id,
+            'contact_id' => SalesInvoice::find($payment->reference_id)->customer_id,
+            'transaction_date' => $payment->payment_date,
+            'description' => 'Pembayaran Piutang #' . $payment->number,
+            'type' => CashTransactionTypeEnum::RECEIVE->value,
+            'status' => CashTransactionStatusEnum::POSTED->value,
+            'subtotal' => $payment->amount,
+            'reference_type' => $payment->reference_type === ReceivablePaymentReferenceTypeEnum::SALES_INVOICE->value
+                ? SalesInvoice::class
+                : null,
+            'reference_id' => $payment->reference_id,
+        ]);
+
+        $this->cashService->storeTransaction($request, $payment->company_id);
     }
 }

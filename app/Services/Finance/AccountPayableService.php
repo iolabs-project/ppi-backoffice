@@ -3,6 +3,8 @@
 namespace App\Services\Finance;
 
 use App\Enums\AccountSettingEnum;
+use App\Enums\CashTransactionStatusEnum;
+use App\Enums\CashTransactionTypeEnum;
 use App\Services\JournalService;
 use App\Enums\ExpenseStatus;
 use App\Enums\PurchaseInvoiceStatus;
@@ -219,8 +221,8 @@ class AccountPayableService
                 }
                 $invoice->save();
 
-                $this->postPaymentJournal($payment);
                 $this->postCashTransaction($payment);
+                $this->postPaymentJournal($payment);
             });
     }
 
@@ -255,11 +257,17 @@ class AccountPayableService
     private function postCashTransaction(PayablePayment $payment) {
         $request = new Request([
             'from_account_id' => $payment->account_id,
+            'contact_id' => $payment->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value
+                ? PurchaseInvoice::find($payment->reference_id)->supplier_id
+                : Expense::find($payment->reference_id)->contact_id,
             'transaction_date' => $payment->payment_date,
             'description' => 'Pembayaran Hutang #' . $payment->number,
-            'type' => 'send',
+            'type' => CashTransactionTypeEnum::SEND->value,
+            'status' => CashTransactionStatusEnum::POSTED->value,
             'subtotal' => $payment->amount,
-            'reference_type' => $payment->reference_type,
+            'reference_type' => $payment->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value
+                ? PurchaseInvoice::class
+                : Expense::class,
             'reference_id' => $payment->reference_id,
         ]);
 

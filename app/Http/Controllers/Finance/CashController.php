@@ -43,15 +43,24 @@ class CashController extends Controller
         }
     }
 
-    public function create(Request $request)
+    public function create(Request $request, int $id)
     {
+        $account = $this->cashService->fetchActiveAccountDataByID(config('context.selected_company_id'), $id);
+        $data = [
+            'currentPage'    => 'finance.cash',
+            'breadcrumb'     => [['label' => 'Kas & Bank', 'url' => route('finances.cash.index')]],
+            'account' => $account,
+        ];
         switch ($request->input('type')) {
             case CashTransactionTypeEnum::SEND:
-                return view('finance.cash.send.create');
+                $data['breadcrumb'][] = ['label' => 'Kirim Dana'];
+                return view('finance.cash.send.create', $data);
             case CashTransactionTypeEnum::RECEIVE:
-                return view('finance.cash.receive.create');
+                $data['breadcrumb'][] = ['label' => 'Terima Dana'];
+                return view('finance.cash.receive.create', $data);
             case CashTransactionTypeEnum::TRANSFER:
-                return view('finance.cash.transfer.create');
+                $data['breadcrumb'][] = ['label' => 'Transfer Dana'];
+                return view('finance.cash.transfer.create', $data);
             default:
                 abort(404);
         }
@@ -74,9 +83,15 @@ class CashController extends Controller
         }
     }
 
-    public function show($id)
+    public function show(int $id)
     {
-        // Implement the logic to show a specific cash transaction
+        $account = $this->cashService->fetchActiveAccountDataByID(config('context.selected_company_id'), $id);
+        $data = [
+            'currentPage'    => 'finance.cash',
+            'breadcrumb'     => [['label' => 'Kas & Bank', 'url' => route('finances.cash.index')], ['label' => 'Detail']],
+            'account' => $account,
+        ];
+        return view('finance.cash.show', $data);
     }
 
     public function edit(int $id)

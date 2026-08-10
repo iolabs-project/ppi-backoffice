@@ -65,6 +65,30 @@ class CashService
         });
     }
 
+    public function fetchActiveAccountDataByID(int $companyID, int $accountID)
+    {
+        $accountQuery = ChartOfAccount::select('id', 'code', 'name')
+            ->where('company_id', $companyID)
+            ->where('category_id', AccountCategoryEnum::CASH_BANK->value)
+            ->where('id', $accountID)
+            ->whereNull('deleted_at')
+            ->first();
+
+        $balanceQuery = DB::table('journal_entry_items', 'jei')
+            ->join('journal_entries as je', 'je.id', '=', 'jei.journal_entry_id')
+            ->select('jei.account_id', DB::raw('SUM(jei.debit) - SUM(jei.credit) as balance'))
+            ->where('je.company_id', $companyID)
+            ->where('jei.account_id', $accountID)
+            ->where('je.status', JournalEntryStatusEnum::POSTED->value)
+            ->groupBy('jei.account_id')
+            ->get();
+
+
+        $balance = $balanceQuery->firstWhere('account_id', $accountQuery->id);
+        $accountQuery->balance = $balance->balance ?? 0;
+        return $accountQuery;
+    }
+
     public function fetchTransactionByID(int $id)
     {
         return CashTransaction::with(['items.account', 'costs.account', 'toAccount', 'fromAccount', 'contact', 'creator'])->findOrFail($id);
@@ -72,8 +96,8 @@ class CashService
 
     public function fetchTransactionTableData(Request $request)
     {
-        $query = CashTransaction::with(['toAccount', 'fromAccount', 'contact', 'creator'])
-            ->select('id', 'number', 'transaction_date', 'type', 'status', 'total_amount', 'created_by');
+        $query = CashTransaction::with(['toAccount', 'fromAccount', 'contact', 'reference', 'creator'])
+            ->select('id', 'from_account_id', 'to_account_id', 'contact_id', 'reference_id', 'reference_type', 'number', 'transaction_date', 'type', 'status', 'total_amount', 'created_by');
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -95,8 +119,9 @@ class CashService
             $query->where('status', $request->input('status'));
         }
 
-        if ($request->filled('type') && $request->input('type') !== 'all') {
-            $query->where('type', $request->input('type'));
+        if ($request->filled('account_id')) {
+            $query->where('from_account_id', $request->input('account_id'))
+                  ->orWhere('to_account_id', $request->input('account_id'));
         }
 
         $query = $query->orderBy('transaction_date', 'desc')->paginate($request->input('per_page', 10));
@@ -108,7 +133,8 @@ class CashService
         $itemsCollection = collect($request->input('items', []));
         $costCollection = collect($request->input('costs', []));
         DB::transaction(function () use ($request, $itemsCollection, $costCollection, $companyID) {
-            $subtotal = $itemsCollection->sum('amount');
+            // $subtotal = $itemsCollection->sum('amount');
+            $subtotal = $itemsCollection->count() == 0 && $request->filled('subtotal') ? $request->input('subtotal') : $itemsCollection->sum('amount');
             $costTotalAmount = $costCollection->sum('amount');
             $taxAmount = $subtotal * ($request->input('tax_percentage', 0) / 100);
             $transaction = CashTransaction::create([

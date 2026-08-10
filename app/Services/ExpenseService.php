@@ -2,7 +2,6 @@
 
 namespace App\Services;
 use App\Models\AccountSetting;
-use App\Services\CashService;
 use App\Enums\AccountSettingEnum;
 use App\Enums\ExpenseStatus;
 use App\Enums\PaymentTerm;
@@ -21,11 +20,9 @@ use Illuminate\Validation\ValidationException;
 class ExpenseService
 {
     private JournalService $journalService;
-    private CashService $cashService;
-    public function __construct(JournalService $journalService, CashService $cashService)
+    public function __construct(JournalService $journalService)
     {
         $this->journalService = $journalService;
-        $this->cashService = $cashService;
     }
     public function generateNumber(): string
     {
