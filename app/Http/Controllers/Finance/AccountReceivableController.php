@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
-use App\Enums\AccountCategory;
+use App\Enums\AccountCategoryEnum;
 use App\Enums\AccountReceivableStatusEnum;
 use App\Http\Requests\Finance\AccountReceivableFormRequest;
 use Illuminate\Http\Request;
@@ -73,7 +73,7 @@ class AccountReceivableController extends Controller
             'breadcrumb'     => [['label' => 'Piutang', 'url' => route('finances.account_receivables.index')], ['label' => $invoice->number ?? 'Detail']],
             'invoice' => $this->accountReceivableService->fetchInvoiceByID($id, $request->reference_type),
             'type' => $request->reference_type,
-            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategoryEnum::CASH_BANK->value),
         ];
         return view('finance.account-receivable.show', $data);
     }

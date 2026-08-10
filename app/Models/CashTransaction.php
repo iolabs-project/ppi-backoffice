@@ -8,8 +8,8 @@ class CashTransaction extends Model
 {
     protected $fillable = [
         'company_id',
-        'from_account_id',
         'to_account_id',
+        'from_account_id',
         'contact_id',
         'reference_type',
         'reference_id',
@@ -18,17 +18,17 @@ class CashTransaction extends Model
         'transaction_date',
         'type',
         'status',
-        'amount',
+        'subtotal',
         'tax_percentage',
         'tax_amount',
         'total_amount',
-        'description',
+        'note',
         'created_by',
     ];
 
     protected $casts = [
         'transaction_date' => 'date:Y-m-d',
-        'amount' => 'double',
+        'subtotal' => 'double',
         'tax_percentage' => 'double',
         'tax_amount' => 'double',
         'total_amount' => 'double',
@@ -39,14 +39,14 @@ class CashTransaction extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function fromAccount()
-    {
-        return $this->belongsTo(ChartOfAccount::class, 'from_account_id');
-    }
-
     public function toAccount()
     {
         return $this->belongsTo(ChartOfAccount::class, 'to_account_id');
+    }
+
+    public function fromAccount()
+    {
+        return $this->belongsTo(ChartOfAccount::class, 'from_account_id');
     }
 
     public function contact()

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Sales;
 
-use App\Enums\AccountCategory;
+use App\Enums\AccountCategoryEnum;
 use App\Enums\PaymentTerm;
 use App\Enums\SalesOrderStatus;
 use App\Http\Controllers\Controller;
@@ -63,7 +63,7 @@ class SalesOrderController extends Controller
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
             'customers' => $this->contactService->fetchContactData('customer'),
             'salesPersons' => $this->contactService->fetchContactData('employee'),
-            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategoryEnum::CASH_BANK->value),
             'accounts' => $this->accountService->fetchAccountData(null),
         ];
         return view('sales.sales-order.create', $data);
@@ -121,7 +121,7 @@ class SalesOrderController extends Controller
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
             'customers' => $this->contactService->fetchContactData('customer'),
             'salesPersons' => $this->contactService->fetchContactData('employee'),
-            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategoryEnum::CASH_BANK->value),
             'accounts' => $this->accountService->fetchAccountData(null),
         ];
         return view('sales.sales-order.edit', $data);

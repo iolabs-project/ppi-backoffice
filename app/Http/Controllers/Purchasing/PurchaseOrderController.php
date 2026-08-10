@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Purchasing;
 
-use App\Enums\AccountCategory;
+use App\Enums\AccountCategoryEnum;
 use App\Enums\BilledBy;
 use App\Enums\PaymentTerm;
 use App\Enums\PurchaseOrderStatus;
@@ -61,7 +61,7 @@ class PurchaseOrderController extends Controller
             'products' => $this->productService->fetchProductData(),
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
             'suppliers' => $this->contactService->fetchContactData('supplier'),
-            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategoryEnum::CASH_BANK->value),
             'accounts' => $this->accountService->fetchAccountData(null),
             'billedByOptions' => BilledBy::dropdownOptions(),
         ];
@@ -196,7 +196,7 @@ class PurchaseOrderController extends Controller
             'products' => $this->productService->fetchProductData(),
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
             'suppliers' => $this->contactService->fetchContactData('supplier'),
-            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategoryEnum::CASH_BANK->value),
             'accounts' => $this->accountService->fetchAccountData(null),
             'billedByOptions' => BilledBy::dropdownOptions(),
         ];

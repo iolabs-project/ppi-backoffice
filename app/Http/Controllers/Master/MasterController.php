@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Master;
 
-use App\Enums\AccountCategory;
+use App\Enums\AccountCategoryEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Unit;
 use App\Services\Master\AccountService;
@@ -41,11 +41,11 @@ class MasterController extends Controller
             'units'                => Unit::whereNull('deleted_at')->select('id', 'name', 'symbol')->get(),
             'productCategories'    => $productService->fetchProductCategoryData(),
             'contactOptions'       => $contactService->fetchContactData('employee'),
-            'inventoryAccounts'    => $accountService->fetchAccountData(AccountCategory::INVENTORY->value),
-            'salesAccounts'        => $accountService->fetchAccountData(AccountCategory::REVENUE->value),
-            'cogsAccounts'         => $accountService->fetchAccountData(AccountCategory::COST_OF_GOODS_SOLD->value),
-            'receivableAccounts'   => $accountService->fetchAccountData(AccountCategory::ACCOUNT_RECEIVABLE->value),
-            'payableAccounts'      => $accountService->fetchAccountData(AccountCategory::ACCOUNT_PAYABLE->value),
+            'inventoryAccounts'    => $accountService->fetchAccountData(AccountCategoryEnum::INVENTORY->value),
+            'salesAccounts'        => $accountService->fetchAccountData(AccountCategoryEnum::REVENUE->value),
+            'cogsAccounts'         => $accountService->fetchAccountData(AccountCategoryEnum::COST_OF_GOODS_SOLD->value),
+            'receivableAccounts'   => $accountService->fetchAccountData(AccountCategoryEnum::ACCOUNT_RECEIVABLE->value),
+            'payableAccounts'      => $accountService->fetchAccountData(AccountCategoryEnum::ACCOUNT_PAYABLE->value),
             'allAccounts'          => $accountService->fetchAccountData(null),
             'accountSettingGroups' => $accountSettingService->fetchAccountSettingGroups(),
             'accountSettingValues' => $accountSettingService->fetchAccountSettingValues(),

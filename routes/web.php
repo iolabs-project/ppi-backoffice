@@ -13,6 +13,7 @@ use App\Http\Controllers\Erp\BiayaController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\Finance\AccountPayableController;
 use App\Http\Controllers\Finance\AccountReceivableController;
+use App\Http\Controllers\Finance\CashController;
 use App\Http\Controllers\Master\AccountController;
 use App\Http\Controllers\Master\AccountSettingController;
 use App\Http\Controllers\Master\ContactController;
@@ -166,6 +167,19 @@ Route::middleware('auth')->group(function () {
             Route::get('/{id}', 'show')->name('show');
             Route::post('/{id}', 'store')->name('store');
             Route::get('/{id}/edit', 'edit')->name('edit');
+        });
+        Route::prefix('cash')->name('cash.')->controller(CashController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/datatable', 'datatable')->name('datatable');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+
+            Route::prefix('/{id}')->group(function () {
+                Route::get('/', 'show')->name('show');
+                Route::get('/edit', 'edit')->name('edit');
+                Route::put('/', 'update')->name('update');
+                Route::post('/cancel', 'cancel')->name('cancel');
+            });
         });
     });
 

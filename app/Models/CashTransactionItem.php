@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class CashTransactionCost extends Model
+class CashTransactionItem extends Model
 {
     protected $fillable = [
         'cash_transaction_id',
         'account_id',
-        'note',
+        'description',
         'amount',
     ];
 

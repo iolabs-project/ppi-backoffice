@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
-use App\Enums\AccountCategory;
+use App\Enums\AccountCategoryEnum;
 use App\Enums\AccountPayableStatusEnum;
 use App\Enums\PayablePaymentReferenceTypeEnum;
 use App\Http\Requests\Finance\AccountPayableFormRequest;
@@ -73,7 +73,7 @@ class AccountPayableController extends Controller
             'breadcrumb'     => [['label' => 'Hutang', 'url' => route('finances.account_payables.index')], ['label' => $invoice->number ?? 'Detail']],
             'invoice' => $this->accountPayableService->fetchInvoiceByID($id, $request->reference_type),
             'type' => $request->reference_type,
-            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategory::CASH_BANK->value),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategoryEnum::CASH_BANK->value),
         ];
         return view('finance.account-payable.show', $data);
     }

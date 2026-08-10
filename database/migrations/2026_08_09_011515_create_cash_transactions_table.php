@@ -24,12 +24,21 @@ return new class extends Migration
             $table->dateTime('transaction_date');
             $table->enum('type', ['send', 'receive', 'transfer'])->default('send');
             $table->enum('status', ['draft', 'posted', 'cancelled'])->default('draft');
-            $table->decimal('amount', 18, 4)->default(0);
+            $table->decimal('subtotal', 18, 4)->default(0);
             $table->decimal('tax_percentage', 5, 2)->default(0);
             $table->decimal('tax_amount', 18, 4)->default(0);
             $table->decimal('total_amount', 18, 4)->default(0);
-            $table->text('description')->nullable();
+            $table->text('note')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('restrict');
+            $table->timestamps();
+        });
+
+        Schema::create('cash_transaction_items', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('cash_transaction_id')->constrained('cash_transactions')->onDelete('cascade');
+            $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->text('note')->nullable();
+            $table->decimal('amount', 18, 4)->default(0);
             $table->timestamps();
         });
 
@@ -37,7 +46,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('cash_transaction_id')->constrained('cash_transactions')->onDelete('cascade');
             $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
-            $table->text('description')->nullable();
+            $table->text('note')->nullable();
             $table->decimal('amount', 18, 4)->default(0);
             $table->timestamps();
         });
@@ -49,6 +58,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('cash_transaction_costs');
+        Schema::dropIfExists('cash_transaction_items');
         Schema::dropIfExists('cash_transactions');
     }
 };

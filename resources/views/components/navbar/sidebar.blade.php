@@ -6,7 +6,7 @@
     $financeSubmenus = [
         ['id' => 'finance.account_payable',    'label' => 'Hutang',    'desc' => 'Kelola hutang & pembayaran ke supplier', 'url' => route('finances.account_payables.index'),    'icon' => 'wallet', 'bg' => '#FEF2F2', 'fg' => '#DC2626'],
         ['id' => 'finance.account_receivable', 'label' => 'Piutang', 'desc' => 'Kelola piutang & pembayaran dari customer', 'url' => route('finances.account_receivables.index'), 'icon' => 'coins',  'bg' => '#F0FDF4', 'fg' => '#16A34A'],
-        ['id' => 'finance.kasbank',            'label' => 'Kas & Bank',          'desc' => 'Kelola akun kas & bank',                 'url' => route('kasbank.index'),                       'icon' => 'piggy-bank', 'bg' => '#EFF6FF', 'fg' => '#2563EB'],
+        ['id' => 'finance.cash',            'label' => 'Kas & Bank',          'desc' => 'Kelola akun kas & bank',                 'url' => route('finances.cash.index'),                       'icon' => 'piggy-bank', 'bg' => '#EFF6FF', 'fg' => '#2563EB'],
     ];
     $penjualanSubmenus = [
         ['id' => 'penjualan',            'label' => 'Sales Order', 'desc' => 'Kelola pesanan penjualan',    'url' => route('sales.sales_orders.index'),           'icon' => 'receipt',  'bg' => '#EEF2FF', 'fg' => '#6366F1'],

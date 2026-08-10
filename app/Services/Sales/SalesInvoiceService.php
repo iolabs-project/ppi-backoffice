@@ -344,7 +344,7 @@ class SalesInvoiceService
         }
 
         $this->journalService->post(
-            date: $salesInvoice->invoice_date,
+            date: null,
             referenceType: SalesInvoice::class,
             referenceID: $salesInvoice->id,
             description: 'Invoice Penjualan #' . $salesInvoice->number,
