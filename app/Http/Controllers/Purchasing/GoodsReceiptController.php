@@ -89,6 +89,7 @@ class GoodsReceiptController extends Controller
     public function edit(GoodsReceiptService $goodsReceiptService, PurchaseOrderService $purchaseOrderService, int $id)
     {
         $goodsReceipt = $goodsReceiptService->fetchGoodsReceiptByID($id);
+        $companyID = config('context.selected_company_id');
         $data = [
             'currentPage'   => 'pembelian.penerimaan',
             'breadcrumb'    => [
@@ -97,7 +98,7 @@ class GoodsReceiptController extends Controller
             ],
             'goodsReceipt'  => $goodsReceipt,
             'remainingPOItems' => $purchaseOrderService->fetchPOItemsForGoodsReceipt($goodsReceipt->purchase_order_id),
-            'accounts' => $this->accountService->fetchAccountData(null),
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
         ];
 
         return view('purchasing.goods-receipt.edit', $data);

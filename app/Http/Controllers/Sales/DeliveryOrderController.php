@@ -72,6 +72,8 @@ class DeliveryOrderController extends Controller
             abort(404, 'Delivery order tidak ditemukan.');
         }
 
+        $companyID = config('context.selected_company_id');
+
         $remainingSOItems = $salesOrderService->fetchSOItemsForDeliveryOrder($deliveryOrder->sales_order_id);
         // $availableBatches = $deliveryOrderService->fetchAvailableBatches(
         //     $deliveryOrder->warehouse_id,
@@ -99,7 +101,7 @@ class DeliveryOrderController extends Controller
             'deliveryOrder' => $deliveryOrder,
             'remainingSOItems' => $remainingSOItems,
             'availableBatches' => $availableBatches,
-            'accounts' => $this->accountService->fetchAccountData(null),
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
         ];
         return view('sales.delivery-order.edit', $data);
     }

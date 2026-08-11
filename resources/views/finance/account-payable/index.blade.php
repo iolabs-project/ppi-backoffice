@@ -244,8 +244,8 @@
                             label: 'Partial'
                         },
                         paid: {
-                            chip: 'chip',
-                            dot: 'chip-dot dot-neutral',
+                            chip: 'chip chip-ok',
+                            dot: 'chip-dot dot-ok',
                             label: 'Paid'
                         },
                         cancelled: {

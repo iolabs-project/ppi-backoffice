@@ -9,7 +9,7 @@ class CashTransactionCost extends Model
     protected $fillable = [
         'cash_transaction_id',
         'account_id',
-        'note',
+        'description',
         'amount',
     ];
 

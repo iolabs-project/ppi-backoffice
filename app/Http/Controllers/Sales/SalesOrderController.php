@@ -51,6 +51,7 @@ class SalesOrderController extends Controller
 
     public function create()
     {
+        $companyID = config('context.selected_company_id');
         $data = [
             'currentPage' => 'penjualan',
             'breadcrumb'  => [
@@ -63,8 +64,8 @@ class SalesOrderController extends Controller
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
             'customers' => $this->contactService->fetchContactData('customer'),
             'salesPersons' => $this->contactService->fetchContactData('employee'),
-            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategoryEnum::CASH_BANK->value),
-            'accounts' => $this->accountService->fetchAccountData(null),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::CASH_BANK->value),
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
         ];
         return view('sales.sales-order.create', $data);
     }
@@ -109,6 +110,8 @@ class SalesOrderController extends Controller
             abort(404, 'Sales Order tidak ditemukan.');
         }
 
+        $companyID = config('context.selected_company_id');
+
         $data = [
             'currentPage' => 'penjualan',
             'breadcrumb'  => [
@@ -121,8 +124,8 @@ class SalesOrderController extends Controller
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
             'customers' => $this->contactService->fetchContactData('customer'),
             'salesPersons' => $this->contactService->fetchContactData('employee'),
-            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategoryEnum::CASH_BANK->value),
-            'accounts' => $this->accountService->fetchAccountData(null),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::CASH_BANK->value),
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
         ];
         return view('sales.sales-order.edit', $data);
     }

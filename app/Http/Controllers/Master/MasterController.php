@@ -30,6 +30,8 @@ class MasterController extends Controller
             $permissionTree[$module][$resource][] = $action;
         }
 
+        $companyID = config('context.selected_company_id');
+
         return view('master.index', [
             'currentPage'          => 'master',
             'breadcrumb'           => [['label' => 'Master Data']],
@@ -41,12 +43,12 @@ class MasterController extends Controller
             'units'                => Unit::whereNull('deleted_at')->select('id', 'name', 'symbol')->get(),
             'productCategories'    => $productService->fetchProductCategoryData(),
             'contactOptions'       => $contactService->fetchContactData('employee'),
-            'inventoryAccounts'    => $accountService->fetchAccountData(AccountCategoryEnum::INVENTORY->value),
-            'salesAccounts'        => $accountService->fetchAccountData(AccountCategoryEnum::REVENUE->value),
-            'cogsAccounts'         => $accountService->fetchAccountData(AccountCategoryEnum::COST_OF_GOODS_SOLD->value),
-            'receivableAccounts'   => $accountService->fetchAccountData(AccountCategoryEnum::ACCOUNT_RECEIVABLE->value),
-            'payableAccounts'      => $accountService->fetchAccountData(AccountCategoryEnum::ACCOUNT_PAYABLE->value),
-            'allAccounts'          => $accountService->fetchAccountData(null),
+            'inventoryAccounts'    => $accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::INVENTORY->value),
+            'salesAccounts'        => $accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::REVENUE->value),
+            'cogsAccounts'         => $accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::COST_OF_GOODS_SOLD->value),
+            'receivableAccounts'   => $accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::ACCOUNT_RECEIVABLE->value),
+            'payableAccounts'      => $accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::ACCOUNT_PAYABLE->value),
+            'allAccounts'          => $accountService->fetchAccountData(companyID: $companyID),
             'accountSettingGroups' => $accountSettingService->fetchAccountSettingGroups(),
             'accountSettingValues' => $accountSettingService->fetchAccountSettingValues(),
         ]);

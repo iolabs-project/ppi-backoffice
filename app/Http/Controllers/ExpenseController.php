@@ -40,13 +40,14 @@ class ExpenseController extends Controller
 
     public function create()
     {
+        $companyID = config('context.selected_company_id');
         $data = [
             'currentPage'    => 'biaya',
             'breadcrumb'     => [['label' => 'Biaya', 'url' => route('expenses.index')], ['label' => 'Buat']],
             'number' => $this->expenseService->generateNumber(),
             'paymentTerms' => PaymentTerm::dropdownOptions(),
-            'contacts' => $this->contactService->fetchContactData(null),
-            'accounts' => $this->accountService->fetchAccountData(null),
+            'contacts' => $this->contactService->fetchContactData(),
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
         ];
         return view('expense.create', $data);
     }
@@ -73,13 +74,14 @@ class ExpenseController extends Controller
 
     public function edit(int $id)
     {
+        $companyID = config('context.selected_company_id');
         $data = [
             'currentPage'    => 'biaya',
             'breadcrumb'     => [['label' => 'Biaya', 'url' => route('expenses.index')], ['label' => 'Edit']],
             'expense' => $this->expenseService->fetchExpenseByID($id),
             'paymentTerms' => PaymentTerm::dropdownOptions(),
-            'contacts' => $this->contactService->fetchContactData(null),
-            'accounts' => $this->accountService->fetchAccountData(null),
+            'contacts' => $this->contactService->fetchContactData(),
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
         ];
         return view('expense.edit', $data);
     }

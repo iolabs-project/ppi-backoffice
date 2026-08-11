@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 class AccountService
 {
 
-    public function fetchAccountData(int|null $categoryID)
+    public function fetchAccountData(int $companyID, int|null $categoryID = null, int|null $excludeCategoryID = null)
     {
         $data = ChartOfAccount::select(
             'id',
@@ -19,11 +19,15 @@ class AccountService
             'code',
             'name',
         )
-        ->where('company_id', config('context.selected_company_id'))
+        ->where('company_id', $companyID)
         ->whereNull('deleted_at');
 
         if ($categoryID) {
             $data->where('category_id', $categoryID);
+        }
+
+        if ($excludeCategoryID) {
+            $data->where('category_id', '!=', $excludeCategoryID);
         }
 
         $data = $data->get();

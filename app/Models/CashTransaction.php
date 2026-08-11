@@ -22,7 +22,7 @@ class CashTransaction extends Model
         'tax_percentage',
         'tax_amount',
         'total_amount',
-        'note',
+        'description',
         'created_by',
     ];
 
@@ -57,6 +57,16 @@ class CashTransaction extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(CashTransactionItem::class);
+    }
+
+    public function costs()
+    {
+        return $this->hasMany(CashTransactionCost::class);
     }
 
     public function reference()

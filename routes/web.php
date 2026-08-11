@@ -176,9 +176,39 @@ Route::middleware('auth')->group(function () {
 
             Route::prefix('/{id}')->group(function () {
                 Route::get('/', 'show')->name('show');
-                Route::get('/edit', 'edit')->name('edit');
-                Route::put('/', 'update')->name('update');
-                Route::post('/cancel', 'cancel')->name('cancel');
+
+                Route::prefix('/transfer')->name('transfer.')->group(function () {
+                    Route::get('/create', 'createTransfer')->name('create');
+                    Route::post('/', 'storeTransfer')->name('store');
+                    Route::prefix('/{transfer}')->group(function () {
+                        Route::get('/', 'showTransfer')->name('show');
+                        Route::get('/edit', 'editTransfer')->name('edit');
+                        Route::put('/', 'updateTransfer')->name('update');
+                        Route::post('/cancel', 'cancelTransfer')->name('cancel');
+                    });
+                });
+
+                Route::prefix('/send')->name('send.')->group(function () {
+                    Route::get('/create', 'createSend')->name('create');
+                    Route::post('/', 'storeSend')->name('store');
+                    Route::prefix('/{send}')->group(function () {
+                        Route::get('/', 'showSend')->name('show');
+                        Route::get('/edit', 'editSend')->name('edit');
+                        Route::put('/', 'updateSend')->name('update');
+                        Route::post('/cancel', 'cancelSend')->name('cancel');
+                    });
+                });
+
+                Route::prefix('/receive')->name('receive.')->group(function () {
+                    Route::get('/create', 'createReceive')->name('create');
+                    Route::post('/', 'storeReceive')->name('store');
+                    Route::prefix('/{receive}')->group(function () {
+                        Route::get('/', 'showReceive')->name('show');
+                        Route::get('/edit', 'editReceive')->name('edit');
+                        Route::put('/', 'updateReceive')->name('update');
+                        Route::post('/cancel', 'cancelReceive')->name('cancel');
+                    });
+                });
             });
         });
     });

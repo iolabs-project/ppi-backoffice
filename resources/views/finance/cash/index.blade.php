@@ -19,6 +19,31 @@
                 filter: 'all',
                 modal: null,
 
+                statusChip(status) {
+                    const map = {
+                        draft: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-muted',
+                            label: 'Draft'
+                        },
+                        posted: {
+                            chip: 'chip chip-ok',
+                            dot: 'chip-dot dot-ok',
+                            label: 'Posted'
+                        },
+                        cancelled: {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Cancelled'
+                        },
+                    };
+                    return map[status] ?? {
+                        chip: 'chip',
+                        dot: 'chip-dot dot-neutral',
+                        label: status
+                    };
+                },
+
                 async fetchData() {
                     this.loading = true;
                     try {
@@ -63,11 +88,20 @@
             }
         }
     </script>
-    <div x-data="cashModule()" x-init="fetchData()" class="kasbank-page">
-        @php
-            $totalAmount = $activeAccounts->sum('balance');
-        @endphp
+    @php
+        use App\Enums\CashTransactionTypeEnum;
+        $transfer = CashTransactionTypeEnum::TRANSFER->value;
+        $send = CashTransactionTypeEnum::SEND->value;
+        $receive = CashTransactionTypeEnum::RECEIVE->value;
 
+        use App\Enums\CashTransactionStatusEnum;
+        $draft = CashTransactionStatusEnum::DRAFT->value;
+        $posted = CashTransactionStatusEnum::POSTED->value;
+        $cancelled = CashTransactionStatusEnum::CANCELLED->value;
+
+        $totalAmount = $activeAccounts->sum('balance');
+    @endphp
+    <div x-data="cashModule()" x-init="fetchData()" class="kasbank-page">
         <div class="order-hd">
             <div>
                 <h1 class="order-title display">Kas &amp; Bank</h1>
@@ -111,7 +145,8 @@
                         <span class="account-card__pct">{{ $percentage }}%</span>
                     </div>
                     <div>
-                        <div class="account-card__value display num">{{ number_format($account->balance, 2, '.', ',') }}</div>
+                        <div class="account-card__value display num">{{ number_format($account->balance, 2, '.', ',') }}
+                        </div>
                         <div class="account-card__bar">
                             <div class="account-card__bar-fill" style="width:{{ $percentage }}%;"></div>
                         </div>
@@ -138,7 +173,7 @@
                         <th>Akun</th>
                         <th>Ref</th>
                         <th style="text-align:right;">Jumlah</th>
-                        <th></th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -157,16 +192,49 @@
                             </td>
                         </tr>
                     </template>
-                    <template x-if="!loading && tableData.data.length > 0" x-for="tx in tableData.data" :key="tx.id">
-                        <tr>
-                            <td style="color:var(--ink-3); white-space:nowrap;" x-text="tx.transaction_date"></td>
-                            <td style="font-weight:500;" x-text="tx.note"></td>
-                            <td style="font-size:12px; color:var(--ink-4);"></td>
-                            <td class="mono" style="font-size:11.5px; color:var(--ink-4);"></td>
-                            <td class="num" style="text-align:right; color:var(--ink-5); font-weight:400;"
-                                x-text="m(tx.total_amount)"></td>
-                            <td></td>
-                        </tr>
+                    <template x-if="!loading && tableData.data.length > 0">
+                        <template x-for="tx in tableData.data" :key="tx.id">
+                            <tr>
+                                <td style="color:var(--ink-3); white-space:nowrap;" x-text="tx.transaction_date"></td>
+                                <td style="font-weight:500;" x-text="tx.description"></td>
+                                <td>
+                                    <template x-if="tx.type === '{{ $transfer }}'">
+                                        <div style="display:flex; align-items:center; gap:4px;">
+                                            <span class="chip chip-info">
+                                                <span x-text="tx.from_account.name"></span>
+                                            </span>
+                                            <template x-if="tx.to_account">
+                                                <div style="display:flex; align-items:center; gap:4px;">
+                                                    <x-misc.icon name="arrow" :size="12" />
+                                                    <span class="chip chip-info">
+                                                        <span x-text="tx.to_account.name"></span>
+                                                    </span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template x-if="tx.type === '{{ $send }}'">
+                                        <span class="chip chip-info">
+                                            <span x-text="tx.from_account.name"></span>
+                                        </span>
+                                    </template>
+                                    <template x-if="tx.type === '{{ $receive }}'">
+                                        <span class="chip chip-info">
+                                            <span x-text="tx.to_account.name"></span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="mono" style="font-size:11.5px; color:var(--ink-4);"></td>
+                                <td class="num" style="text-align:right; color:var(--ink-5); font-weight:400;"
+                                    x-text="m(tx.total_amount)"></td>
+                                <td>
+                                    <span :class="statusChip(tx.status).chip">
+                                        <span :class="statusChip(tx.status).dot"></span>
+                                        <span x-text="statusChip(tx.status).label"></span>
+                                    </span>
+                                </td>
+                            </tr>
+                        </template>
                     </template>
                 </tbody>
             </table>

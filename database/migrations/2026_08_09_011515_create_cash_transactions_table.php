@@ -28,7 +28,7 @@ return new class extends Migration
             $table->decimal('tax_percentage', 5, 2)->default(0);
             $table->decimal('tax_amount', 18, 4)->default(0);
             $table->decimal('total_amount', 18, 4)->default(0);
-            $table->text('note')->nullable();
+            $table->text('description')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('restrict');
             $table->timestamps();
         });
@@ -36,8 +36,8 @@ return new class extends Migration
         Schema::create('cash_transaction_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cash_transaction_id')->constrained('cash_transactions')->onDelete('cascade');
-            $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
-            $table->text('note')->nullable();
+            $table->foreignId('account_id')->nullable()->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->text('description')->nullable();
             $table->decimal('amount', 18, 4)->default(0);
             $table->timestamps();
         });
@@ -45,8 +45,8 @@ return new class extends Migration
         Schema::create('cash_transaction_costs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cash_transaction_id')->constrained('cash_transactions')->onDelete('cascade');
-            $table->foreignId('account_id')->constrained('chart_of_accounts')->onDelete('restrict');
-            $table->text('note')->nullable();
+            $table->foreignId('account_id')->nullable()->constrained('chart_of_accounts')->onDelete('restrict');
+            $table->text('description')->nullable();
             $table->decimal('amount', 18, 4)->default(0);
             $table->timestamps();
         });

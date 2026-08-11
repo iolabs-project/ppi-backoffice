@@ -46,7 +46,7 @@ class ContactService
         return $data->get();
     }
 
-    public function fetchContactData(string|null $type)
+    public function fetchContactData(string|null $type = null)
     {
         $data = Contact::select(
             'id',

@@ -68,12 +68,13 @@ class AccountReceivableController extends Controller
 
     public function show(Request $request, int $id)
     {
+        $companyID = config('context.selected_company_id');
         $data = [
             'currentPage'    => 'finance.account_receivable',
             'breadcrumb'     => [['label' => 'Piutang', 'url' => route('finances.account_receivables.index')], ['label' => $invoice->number ?? 'Detail']],
             'invoice' => $this->accountReceivableService->fetchInvoiceByID($id, $request->reference_type),
             'type' => $request->reference_type,
-            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategoryEnum::CASH_BANK->value),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::CASH_BANK->value),
         ];
         return view('finance.account-receivable.show', $data);
     }

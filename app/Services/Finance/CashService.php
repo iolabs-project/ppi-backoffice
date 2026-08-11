@@ -18,6 +18,7 @@ use App\Models\JournalEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class CashService
 {
@@ -27,27 +28,34 @@ class CashService
         $this->journalService = $journalService;
     }
 
-    public function generateNumber()
+    public function generateNumber(int $companyID)
     {
         $prefix = 'CASH';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
+        $companyCode = Company::select('code')->where('id', $companyID)->first()->code ?? 'XXX';
         $datePart = date('Y');
 
         $counter = CashTransaction::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
+            ->where('company_id', $companyID)
             ->count() + 1;
         $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
 
         return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
     }
 
-    public function fetchActiveAccountData(int $companyID)
+    public function fetchActiveAccountData(int $companyID, bool $includeBalance = true, array $excludeAccountIDs = [])
     {
         $accountQuery = ChartOfAccount::select('id', 'code', 'name')
             ->where('company_id', $companyID)
             ->where('category_id', AccountCategoryEnum::CASH_BANK->value)
             ->whereNull('deleted_at')
+            ->when(!empty($excludeAccountIDs), function ($query) use ($excludeAccountIDs) {
+                $query->whereNotIn('id', $excludeAccountIDs);
+            })
             ->get();
+
+        if (!$includeBalance) {
+            return $accountQuery;
+        }
 
         $balanceQuery = DB::table('journal_entry_items', 'jei')
             ->join('journal_entries as je', 'je.id', '=', 'jei.journal_entry_id')
@@ -97,7 +105,7 @@ class CashService
     public function fetchTransactionTableData(Request $request)
     {
         $query = CashTransaction::with(['toAccount', 'fromAccount', 'contact', 'reference', 'creator'])
-            ->select('id', 'from_account_id', 'to_account_id', 'contact_id', 'reference_id', 'reference_type', 'number', 'transaction_date', 'type', 'status', 'total_amount', 'created_by');
+            ->select('id', 'from_account_id', 'to_account_id', 'contact_id', 'reference_id', 'reference_type', 'number', 'transaction_date', 'type', 'status', 'description', 'total_amount', 'created_by');
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -121,7 +129,7 @@ class CashService
 
         if ($request->filled('account_id')) {
             $query->where('from_account_id', $request->input('account_id'))
-                  ->orWhere('to_account_id', $request->input('account_id'));
+                ->orWhere('to_account_id', $request->input('account_id'));
         }
 
         $query = $query->orderBy('transaction_date', 'desc')->paginate($request->input('per_page', 10));
@@ -136,7 +144,8 @@ class CashService
             // $subtotal = $itemsCollection->sum('amount');
             $subtotal = $itemsCollection->count() == 0 && $request->filled('subtotal') ? $request->input('subtotal') : $itemsCollection->sum('amount');
             $costTotalAmount = $costCollection->sum('amount');
-            $taxAmount = $subtotal * ($request->input('tax_percentage', 0) / 100);
+            $taxPercentage = $request->input('tax_percentage') ?? 0;
+            $taxAmount = $subtotal * ($taxPercentage / 100);
             $transaction = CashTransaction::create([
                 'company_id' => $companyID,
                 'to_account_id' => $request->input('to_account_id'),
@@ -144,13 +153,13 @@ class CashService
                 'contact_id' => $request->input('contact_id'),
                 'reference_type' => $request->input('reference_type'),
                 'reference_id' => $request->input('reference_id'),
-                'number' => $this->generateNumber(),
+                'number' => $this->generateNumber($companyID),
                 'reference_number' => $request->input('reference_number'),
                 'transaction_date' => $request->input('transaction_date'),
                 'type' => $request->input('type'),
                 'status' => $request->input('status', 'draft'),
                 'subtotal' => $subtotal,
-                'tax_percentage' => $request->input('tax_percentage', 0),
+                'tax_percentage' => $taxPercentage,
                 'tax_amount' => $taxAmount,
                 'total_amount' => $subtotal + $taxAmount + $costTotalAmount,
                 'description' => $request->input('description'),
@@ -187,15 +196,16 @@ class CashService
         });
     }
 
-    public function updateTransaction(Request $request, int $id)
+    public function updateTransaction(Request $request, int $accountID, int $transactionID)
     {
         $itemsCollection = collect($request->input('items', []));
         $costCollection = collect($request->input('costs', []));
-        DB::transaction(function () use ($request, $itemsCollection, $costCollection, $id) {
-            $transaction = CashTransaction::findOrFail($id);
-            $subtotal = $itemsCollection->sum('amount');
+        DB::transaction(function () use ($request, $itemsCollection, $costCollection, $transactionID, $accountID) {
+            $transaction = CashTransaction::findOrFail($transactionID);
+            $subtotal = $itemsCollection->count() == 0 && $request->filled('subtotal') ? $request->input('subtotal') : $itemsCollection->sum('amount');
             $costTotalAmount = $costCollection->sum('amount');
-            $taxAmount = $subtotal * ($request->input('tax_percentage', 0) / 100);
+            $taxPercentage = $request->input('tax_percentage') ?? 0;
+            $taxAmount = $subtotal * ($taxPercentage / 100);
             $transaction->update([
                 'to_account_id' => $request->input('to_account_id'),
                 'from_account_id' => $request->input('from_account_id'),
@@ -207,7 +217,7 @@ class CashService
                 'type' => $request->input('type'),
                 'status' => $request->input('status', 'draft'),
                 'subtotal' => $subtotal,
-                'tax_percentage' => $request->input('tax_percentage', 0),
+                'tax_percentage' => $taxPercentage,
                 'tax_amount' => $taxAmount,
                 'total_amount' => $subtotal + $taxAmount + $costTotalAmount,
                 'description' => $request->input('description'),
@@ -241,12 +251,18 @@ class CashService
         });
     }
 
-    public function cancelTransaction(int $id)
+    public function cancelTransaction(int $id, int $companyID)
     {
-        DB::transaction(function () use ($id) {
-            $transaction = CashTransaction::findOrFail($id);
+        DB::transaction(function () use ($id, $companyID) {
+            $transaction = CashTransaction::where('id', $id)
+                ->where('company_id', $companyID)
+                ->firstOrFail();
+            if ($transaction->status === CashTransactionStatusEnum::CANCELLED->value) {
+                throw ValidationException::withMessages(['status' => 'Tidak dapat membatalkan transaksi kas yang sudah dibatalkan.']);
+            }
+
             if ($transaction->status === CashTransactionStatusEnum::POSTED->value) {
-                $this->reverseCashJournal($transaction);
+                throw ValidationException::withMessages(['status' => 'Tidak dapat membatalkan transaksi kas yang sudah diposting.']);
             }
             $transaction->update([
                 'status' => CashTransactionStatusEnum::CANCELLED->value,
@@ -261,11 +277,11 @@ class CashService
             $journalItems = [
                 [
                     'account_id' => $transaction->to_account_id,
-                    'debit' => $transaction->amount,
+                    'debit' => $transaction->total_amount,
                 ],
                 [
                     'account_id' => $transaction->from_account_id,
-                    'credit' => $transaction->amount,
+                    'credit' => $transaction->total_amount,
                 ]
             ];
 
@@ -282,7 +298,7 @@ class CashService
             $debitAmount = $transaction->subtotal + $transaction->tax_amount;
 
             $taxAccountID = AccountSetting::where('company_id', $transaction->company_id)
-                ->where('type', AccountSettingEnum::OUTPUT_TAX->value)
+                ->where('setting_key', AccountSettingEnum::OUTPUT_TAX->value)
                 ->value('account_id');
             $taxAmount = $transaction->tax_amount;
 
@@ -317,7 +333,7 @@ class CashService
             $creditAmount = $transaction->subtotal + $transaction->tax_amount + $transaction->costs->sum('amount');
 
             $taxAccountID = AccountSetting::where('company_id', $transaction->company_id)
-                ->where('type', AccountSettingEnum::INPUT_TAX->value)
+                ->where('setting_key', AccountSettingEnum::INPUT_TAX->value)
                 ->value('account_id');
             $taxAmount = $transaction->tax_amount;
 

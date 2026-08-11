@@ -50,6 +50,7 @@ class PurchaseOrderController extends Controller
 
     public function create()
     {
+        $companyID = config('context.selected_company_id');
         $data = [
             'currentPage' => 'pembelian',
             'breadcrumb'  => [
@@ -61,8 +62,8 @@ class PurchaseOrderController extends Controller
             'products' => $this->productService->fetchProductData(),
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
             'suppliers' => $this->contactService->fetchContactData('supplier'),
-            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategoryEnum::CASH_BANK->value),
-            'accounts' => $this->accountService->fetchAccountData(null),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::CASH_BANK->value),
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
             'billedByOptions' => BilledBy::dropdownOptions(),
         ];
         return view('purchasing.purchase-order.create', $data);
@@ -185,6 +186,8 @@ class PurchaseOrderController extends Controller
             abort(404, 'Purchase Order tidak ditemukan.');
         }
 
+        $companyID = config('context.selected_company_id');
+
         $data = [
             'currentPage' => 'pembelian',
             'breadcrumb'  => [
@@ -196,8 +199,8 @@ class PurchaseOrderController extends Controller
             'products' => $this->productService->fetchProductData(),
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
             'suppliers' => $this->contactService->fetchContactData('supplier'),
-            'cashBankAccounts' => $this->accountService->fetchAccountData(AccountCategoryEnum::CASH_BANK->value),
-            'accounts' => $this->accountService->fetchAccountData(null),
+            'cashBankAccounts' => $this->accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::CASH_BANK->value),
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
             'billedByOptions' => BilledBy::dropdownOptions(),
         ];
         return view('purchasing.purchase-order.edit', $data);

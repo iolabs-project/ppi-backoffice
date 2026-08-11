@@ -76,6 +76,7 @@ class SalesInvoiceController extends Controller
         if (!$salesInvoice) {
             abort(404, 'Tagihan penjualan tidak ditemukan.');
         }
+        $companyID = config('context.selected_company_id');
 
         $data = [
             'currentPage' => 'penjualan.tagihan',
@@ -86,7 +87,7 @@ class SalesInvoiceController extends Controller
             'salesInvoice' => $salesInvoice,
             'paymentTerms' => PaymentTerm::dropdownOptions(),
             'remainingDOItems' => $deliveryOrderService->fetchDOItemsForSalesInvoice($salesInvoice->sales_order_id),
-            'accounts' => $this->accountService->fetchAccountData(null),
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
         ];
         return view('sales.sales-invoice.edit', $data);
     }

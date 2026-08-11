@@ -2,20 +2,29 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Enums\AccountCategoryEnum;
 use App\Http\Controllers\Controller;
 use App\Services\Finance\CashService;
+use App\Services\Master\AccountService;
+use App\Services\Master\ContactService;
 use Illuminate\Http\Request;
 use App\Enums\CashTransactionTypeEnum;
 use Illuminate\Validation\ValidationException;
 use App\Http\Requests\Finance\CashFormRequest;
+use App\Http\Requests\Finance\CashReceiveFormRequest;
+use App\Http\Requests\Finance\CashTransferFormRequest;
 use Illuminate\Support\Facades\Log;
 
 class CashController extends Controller
 {
     private CashService $cashService;
-    public function __construct(CashService $cashService)
+    private AccountService $accountService;
+    private ContactService $contactService;
+    public function __construct(CashService $cashService, AccountService $accountService, ContactService $contactService)
     {
         $this->cashService = $cashService;
+        $this->accountService = $accountService;
+        $this->contactService = $contactService;
     }
 
     public function index()
@@ -43,46 +52,6 @@ class CashController extends Controller
         }
     }
 
-    public function create(Request $request, int $id)
-    {
-        $account = $this->cashService->fetchActiveAccountDataByID(config('context.selected_company_id'), $id);
-        $data = [
-            'currentPage'    => 'finance.cash',
-            'breadcrumb'     => [['label' => 'Kas & Bank', 'url' => route('finances.cash.index')]],
-            'account' => $account,
-        ];
-        switch ($request->input('type')) {
-            case CashTransactionTypeEnum::SEND:
-                $data['breadcrumb'][] = ['label' => 'Kirim Dana'];
-                return view('finance.cash.send.create', $data);
-            case CashTransactionTypeEnum::RECEIVE:
-                $data['breadcrumb'][] = ['label' => 'Terima Dana'];
-                return view('finance.cash.receive.create', $data);
-            case CashTransactionTypeEnum::TRANSFER:
-                $data['breadcrumb'][] = ['label' => 'Transfer Dana'];
-                return view('finance.cash.transfer.create', $data);
-            default:
-                abort(404);
-        }
-    }
-
-    public function store(CashFormRequest $request)
-    {
-        try {
-            $this->cashService->storeTransaction(request: $request, companyID: config('context.selected_company_id'));
-            return response()->json(['redirect' => route('finances.cash.index'), 'message' => 'Transaksi kas berhasil ditambahkan.']);
-        } catch (ValidationException $e) {
-            return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
-        } catch (\Exception $e) {
-            Log::error('Error Finance/CashController@store: ' . $e->getMessage(), [
-                'exception' => $e,
-                'request' => $request->all(),
-                'stack_trace' => $e->getTraceAsString(),
-            ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba menambahkan transaksi kas. Silakan coba lagi.'], 500);
-        }
-    }
-
     public function show(int $id)
     {
         $account = $this->cashService->fetchActiveAccountDataByID(config('context.selected_company_id'), $id);
@@ -94,51 +63,161 @@ class CashController extends Controller
         return view('finance.cash.show', $data);
     }
 
-    public function edit(int $id)
+    public function createTransfer(int $id)
     {
-        $transaction = $this->cashService->fetchTransactionByID($id);
+        $account = $this->cashService->fetchActiveAccountDataByID(config('context.selected_company_id'), $id);
+        $companyID = config('context.selected_company_id');
         $data = [
             'currentPage'    => 'finance.cash',
-            'breadcrumb'     => [['label' => 'Kas', 'url' => route('finances.cash.index')], ['label' => $transaction->number ?? 'Detail']],
-            'transaction' => $transaction,
+            'breadcrumb'     => [['label' => 'Kas & Bank', 'url' => route('finances.cash.index')], ['label' => 'Transfer Dana']],
+            'account' => $account,
+            'accounts' => $this->cashService->fetchActiveAccountData(companyID: $companyID, includeBalance: false, excludeAccountIDs: [$id]),
+            'number' => $this->cashService->generateNumber(companyID: $companyID),
         ];
-        switch ($transaction->type) {
-            case CashTransactionTypeEnum::SEND:
-                return view('finance.cash.send.edit', $data);
-            case CashTransactionTypeEnum::RECEIVE:
-                return view('finance.cash.receive.edit', $data);
-            case CashTransactionTypeEnum::TRANSFER:
-                return view('finance.cash.transfer.edit', $data);
-            default:
-                abort(404);
-        }
+
+        return view('finance.cash.transfer.create', $data);
     }
 
-    public function update(CashFormRequest $request, int $id)
+    public function storeTransfer(CashTransferFormRequest $request)
     {
         try {
-            $this->cashService->updateTransaction(request: $request, id: $id);
-            return response()->json(['redirect' => route('finances.cash.index'), 'message' => 'Transaksi kas berhasil diperbarui.']);
+            $this->cashService->storeTransaction(request: $request, companyID: config('context.selected_company_id'));
+            return response()->json(['redirect' => route('finances.cash.show', $request->input('from_account_id')), 'message' => 'Transaksi kas berhasil ditambahkan.']);
         } catch (ValidationException $e) {
             return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            Log::error('Error Finance/CashController@update: ' . $e->getMessage(), [
+            Log::error('Error Finance/CashController@storeTransfer: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba menambahkan transaksi kas. Silakan coba lagi.'], 500);
+        }
+    }
+
+    public function editTransfer(int $id, int $transfer)
+    {
+        $account = $this->cashService->fetchActiveAccountDataByID(config('context.selected_company_id'), $id);
+        $transaction = $this->cashService->fetchTransactionByID($transfer);
+        $companyID = config('context.selected_company_id');
+        $data = [
+            'currentPage'    => 'finance.cash',
+            'breadcrumb'     => [['label' => 'Kas & Bank', 'url' => route('finances.cash.index')], ['label' => 'Transfer Dana']],
+            'account' => $account,
+            'accounts' => $this->cashService->fetchActiveAccountData(companyID: $companyID, includeBalance: false, excludeAccountIDs: [$id]),
+            'transaction' => $transaction,
+        ];
+
+        return view('finance.cash.transfer.edit', $data);
+    }
+
+    public function updateTransfer(CashTransferFormRequest $request, int $id, int $transfer)
+    {
+        try {
+            $this->cashService->updateTransaction(request: $request, accountID: $id, transactionID: $transfer);
+            return response()->json(['redirect' => route('finances.cash.show', $request->input('from_account_id')), 'message' => 'Transaksi kas berhasil diperbarui.']);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error Finance/CashController@updateTransfer: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui transaksi kas. Silakan coba lagi.'], 500);
-        }       
+        }
     }
 
-    public function cancel(int $id)
+    public function cancelTransfer(int $id, int $transfer)
     {
         try {
-            $this->cashService->cancelTransaction(id: $id);
-            return response()->json(['redirect' => route('finances.cash.index'), 'message' => 'Transaksi kas berhasil dibatalkan.']);
+            $this->cashService->cancelTransaction(id: $transfer, companyID: config('context.selected_company_id'));
+            return response()->json(['redirect' => route('finances.cash.show', $id), 'message' => 'Transaksi kas berhasil dibatalkan.']);
         } catch (\Exception $e) {
-            Log::error('Error Finance/CashController@cancel: ' . $e->getMessage(), [
+            Log::error('Error Finance/CashController@cancelTransfer: ' . $e->getMessage(), [
                 'exception' => $e,
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan transaksi kas. Silakan coba lagi.'], 500);
+        }
+    }
+
+    public function createReceive(int $id)
+    {
+        $account = $this->cashService->fetchActiveAccountDataByID(config('context.selected_company_id'), $id);
+        $companyID = config('context.selected_company_id');
+        $data = [
+            'currentPage'    => 'finance.cash',
+            'breadcrumb'     => [['label' => 'Kas & Bank', 'url' => route('finances.cash.index')], ['label' => 'Terima Dana']],
+            'account' => $account,
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID, excludeCategoryID: AccountCategoryEnum::CASH_BANK->value),
+            'contacts' => $this->contactService->fetchContactData(),
+            'number' => $this->cashService->generateNumber(companyID: $companyID),
+        ];
+
+        return view('finance.cash.receive.create', $data);
+    }
+
+    public function storeReceive(CashReceiveFormRequest $request)
+    {
+        try {
+            $this->cashService->storeTransaction(request: $request, companyID: config('context.selected_company_id'));
+            return response()->json(['redirect' => route('finances.cash.show', $request->input('to_account_id')), 'message' => 'Transaksi kas berhasil ditambahkan.']);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error Finance/CashController@storeReceive: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba menambahkan transaksi kas. Silakan coba lagi.'], 500);
+        }
+    }
+
+    public function editReceive(int $id, int $receive)
+    {
+        $account = $this->cashService->fetchActiveAccountDataByID(config('context.selected_company_id'), $id);
+        $transaction = $this->cashService->fetchTransactionByID($receive);
+        $companyID = config('context.selected_company_id');
+        $data = [
+            'currentPage'    => 'finance.cash',
+            'breadcrumb'     => [['label' => 'Kas & Bank', 'url' => route('finances.cash.index')], ['label' => 'Terima Dana']],
+            'account' => $account,
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID, excludeCategoryID: AccountCategoryEnum::CASH_BANK->value),
+            'contacts' => $this->contactService->fetchContactData(),
+            'transaction' => $transaction,
+        ];
+
+        return view('finance.cash.receive.edit', $data);
+    }
+
+    public function updateReceive(CashReceiveFormRequest $request, int $id, int $receive)
+    {
+        try {
+            $this->cashService->updateTransaction(request: $request, accountID: $id, transactionID: $receive);
+            return response()->json(['redirect' => route('finances.cash.show', $request->input('to_account_id')), 'message' => 'Transaksi kas berhasil diperbarui.']);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error Finance/CashController@updateReceive: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui transaksi kas. Silakan coba lagi.'], 500);
+        }
+    }
+
+    public function cancelReceive(int $id, int $receive)
+    {
+        try {
+            $this->cashService->cancelTransaction(id: $receive, companyID: config('context.selected_company_id'));
+            return response()->json(['redirect' => route('finances.cash.show', $id), 'message' => 'Transaksi kas berhasil dibatalkan.']);
+        } catch (\Exception $e) {
+            Log::error('Error Finance/CashController@cancelReceive: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => ['id' => $id, 'receive' => $receive],
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan transaksi kas. Silakan coba lagi.'], 500);

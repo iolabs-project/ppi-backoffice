@@ -80,6 +80,7 @@ class PurchaseInvoiceController extends Controller
         if (!$purchaseInvoice) {
             abort(404, 'Tagihan pembelian tidak ditemukan.');
         }
+        $companyID = config('context.selected_company_id');
 
         $data = [
             'currentPage' => 'pembelian.tagihan',
@@ -90,7 +91,7 @@ class PurchaseInvoiceController extends Controller
             'purchaseInvoice' => $purchaseInvoice,
             'paymentTerms' => PaymentTerm::dropdownOptions(),
             'remainingGRItems' => $this->goodsReceiptService->fetchGRItemsForPurchaseInvoice($purchaseInvoice->purchase_order_id),
-            'accounts' => $this->accountService->fetchAccountData(null),
+            'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
         ];
         return view('purchasing.purchase-invoice.edit', $data);
     }
