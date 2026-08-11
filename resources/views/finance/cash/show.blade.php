@@ -187,7 +187,7 @@
                 <a href="{{ route('finances.cash.transfer.create', $account->id) }}" class="btn btn-ghost">
                     <x-misc.icon name="swap" :size="14" />Transfer Dana
                 </a>
-                <a href="#" class="btn btn-ghost">
+                <a href="{{ route('finances.cash.send.create', $account->id) }}" class="btn btn-ghost">
                     <x-misc.icon name="send" :size="14" />Kirim Dana
                 </a>
                 <a href="{{ route('finances.cash.receive.create', $account->id) }}" class="btn btn-ghost">
