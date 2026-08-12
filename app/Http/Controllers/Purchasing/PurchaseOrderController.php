@@ -7,6 +7,7 @@ use App\Enums\BilledBy;
 use App\Enums\PaymentTerm;
 use App\Enums\PurchaseOrderStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Purchasing\PurchaseOrderFormRequest;
 use App\Services\Master\AccountService;
 use App\Services\Master\ContactService;
 use App\Services\Master\ProductService;
@@ -69,85 +70,8 @@ class PurchaseOrderController extends Controller
         return view('purchasing.purchase-order.create', $data);
     }
 
-    public function store(Request $request)
+    public function store(PurchaseOrderFormRequest $request)
     {
-        if ($request->input('status') === PurchaseOrderStatus::OPEN->value) {
-            $request->validate(
-                [
-                    'supplier_id' => 'required|exists:contacts,id',
-                    'warehouse_id' => 'required|exists:warehouses,id',
-                    'number' => 'required|string|max:50|unique:purchase_orders,number',
-                    'reference_number' => 'nullable|string|max:50',
-                    'order_date' => 'required|date',
-                    'due_date' => 'nullable|date',
-                    'payment_terms' => 'required|in:net_7,net_14,net_30,net_45',
-                    'discount_percentage' => 'nullable|numeric|min:0',
-                    'discount_amount' => 'nullable|numeric|min:0',
-                    'tax_percentage' => 'nullable|numeric|min:0',
-                    'tax_amount' => 'nullable|numeric|min:0',
-                    'subtotal' => 'nullable|numeric|min:0',
-                    'down_payment_amount' => 'nullable|numeric|min:0',
-                    'down_payment_account_id' => 'nullable|exists:chart_of_accounts,id',
-                    'total_amount' => 'nullable|numeric|min:0',
-                    'note' => 'nullable|string|max:1000',
-                    'status' => 'required|in:draft,open',
-                    'details' => 'required|array|min:1',
-                    'details.*.product_id' => 'required|exists:products,id',
-                    'details.*.quantity' => 'required|numeric|min:1',
-                    'details.*.unit_price' => 'required|numeric|min:0',
-                    'details.*.discount_percentage' => 'nullable|numeric|min:0',
-                    'details.*.discount_amount' => 'nullable|numeric|min:0',
-                    'costs' => 'nullable|array',
-                    'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
-                    'costs.*.description' => 'nullable|string|max:1000',
-                    'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
-                    'costs.*.billed_by' => 'required_with:costs.*.amount|in:supplier,third_party,internal',
-                    'costs.*.is_inventory_cost' => 'nullable|boolean',
-                ],
-                [
-                    'supplier_id.required' => 'Supplier harus dipilih.',
-                    'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'number.required' => 'Nomor PO harus diisi.',
-                    'number.unique' => 'Nomor PO sudah digunakan. Silakan gunakan nomor lain.',
-                    'order_date.required' => 'Tanggal PO harus diisi.',
-                    'payment_terms.required' => 'Syarat pembayaran harus dipilih.',
-                    'details.required' => 'Daftar item tidak boleh kosong.',
-                    'details.*.product_id.required' => 'Produk harus dipilih untuk setiap item.',
-                    'details.*.quantity.required' => 'Kuantitas harus diisi untuk setiap item.',
-                    'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
-                    'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
-                    'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
-                    'costs.*.billed_by.required_with' => 'Pihak yang menagih harus dipilih jika jumlah biaya diisi.',
-                ]
-            );
-        } else if ($request->input('status') === PurchaseOrderStatus::DRAFT->value) {
-            $request->validate(
-                [
-                    'supplier_id' => 'required|exists:contacts,id',
-                    'warehouse_id' => 'required|exists:warehouses,id',
-                    'number' => 'required|string|max:50|unique:purchase_orders,number',
-                    'reference_number' => 'nullable|string|max:50',
-                    'order_date' => 'required|date',
-                    'due_date' => 'nullable|date',
-                    'discount_percentage' => 'nullable|numeric|min:0',
-                    'tax_percentage' => 'nullable|numeric|min:0',
-                    'subtotal' => 'nullable|numeric|min:0',
-                    'total_amount' => 'nullable|numeric|min:0',
-                    'note' => 'nullable|string|max:1000',
-                    'status' => 'required|in:draft,open',
-                ],
-                [
-                    'supplier_id.required' => 'Supplier harus dipilih.',
-                    'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'number.required' => 'Nomor PO harus diisi.',
-                    'number.unique' => 'Nomor PO sudah digunakan. Silakan gunakan nomor lain.',
-                    'order_date.required' => 'Tanggal PO harus diisi.',
-                ]
-            );
-        } else {
-            return response()->json(['message' => "Status tidak valid. Harus berupa draft atau open."], 400);
-        }
-
         try {
             $this->purchaseOrderService->storePurchaseOrder($request);
             return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Purchase Order berhasil dibuat.']);
@@ -206,79 +130,8 @@ class PurchaseOrderController extends Controller
         return view('purchasing.purchase-order.edit', $data);
     }
 
-    public function update(Request $request, int $id)
+    public function update(PurchaseOrderFormRequest $request, int $id)
     {
-        if ($request->input('status') === PurchaseOrderStatus::OPEN->value) {
-            $request->validate(
-                [
-                    'supplier_id' => 'required|exists:contacts,id',
-                    'warehouse_id' => 'required|exists:warehouses,id',
-                    'reference_number' => 'nullable|string|max:50',
-                    'order_date' => 'required|date',
-                    'due_date' => 'nullable|date',
-                    'payment_terms' => 'required|in:net_7,net_14,net_30,net_45',
-                    'discount_percentage' => 'nullable|numeric|min:0',
-                    'discount_amount' => 'nullable|numeric|min:0',
-                    'tax_percentage' => 'nullable|numeric|min:0',
-                    'tax_amount' => 'nullable|numeric|min:0',
-                    'subtotal' => 'nullable|numeric|min:0',
-                    'down_payment_amount' => 'nullable|numeric|min:0',
-                    'down_payment_account_id' => 'nullable|exists:chart_of_accounts,id',
-                    'total_amount' => 'nullable|numeric|min:0',
-                    'note' => 'nullable|string|max:1000',
-                    'status' => 'required|in:draft,open',
-                    'details' => 'required|array|min:1',
-                    'details.*.product_id' => 'required|exists:products,id',
-                    'details.*.quantity' => 'required|numeric|min:1',
-                    'details.*.unit_price' => 'required|numeric|min:0',
-                    'details.*.discount_percentage' => 'nullable|numeric|min:0',
-                    'details.*.discount_amount' => 'nullable|numeric|min:0',
-                    'costs' => 'nullable|array',
-                    'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
-                    'costs.*.description' => 'nullable|string|max:1000',
-                    'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
-                    'costs.*.billed_by' => 'required_with:costs.*.amount|in:supplier,third_party,internal',
-                    'costs.*.is_inventory_cost' => 'nullable|boolean',
-                ],
-                [
-                    'supplier_id.required' => 'Supplier harus dipilih.',
-                    'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'order_date.required' => 'Tanggal PO harus diisi.',
-                    'payment_terms.required' => 'Syarat pembayaran harus dipilih.',
-                    'details.required' => 'Daftar item tidak boleh kosong.',
-                    'details.*.product_id.required' => 'Produk harus dipilih untuk setiap item.',
-                    'details.*.quantity.required' => 'Kuantitas harus diisi untuk setiap item.',
-                    'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
-                    'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
-                    'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
-                    'costs.*.billed_by.required_with' => 'Pihak yang menagih harus dipilih jika jumlah biaya diisi.',
-                ]
-            );
-        } else if ($request->input('status') === PurchaseOrderStatus::DRAFT->value) {
-            $request->validate(
-                [
-                    'supplier_id' => 'required|exists:contacts,id',
-                    'warehouse_id' => 'required|exists:warehouses,id',
-                    'reference_number' => 'nullable|string|max:50',
-                    'order_date' => 'required|date',
-                    'due_date' => 'nullable|date',
-                    'discount_percentage' => 'nullable|numeric|min:0',
-                    'tax_percentage' => 'nullable|numeric|min:0',
-                    'subtotal' => 'nullable|numeric|min:0',
-                    'total_amount' => 'nullable|numeric|min:0',
-                    'note' => 'nullable|string|max:1000',
-                    'status' => 'required|in:draft,open',
-                ],
-                [
-                    'supplier_id.required' => 'Supplier harus dipilih.',
-                    'warehouse_id.required' => 'Gudang harus dipilih.',
-                    'order_date.required' => 'Tanggal PO harus diisi.',
-                ]
-            );
-        } else {
-            return response()->json(['message' => "Status tidak valid. Harus berupa draft atau open."], 400);
-        }
-
         try {
             $this->purchaseOrderService->updatePurchaseOrder($request, $id);
             return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Purchase Order berhasil diperbarui.']);

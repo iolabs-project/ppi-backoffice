@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Purchasing;
 use App\Enums\BilledBy;
 use App\Enums\GoodsReceiptStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Purchasing\GoodsReceiptFormRequest;
 use App\Services\Master\AccountService;
 use App\Services\Purchasing\GoodsReceiptService;
 use App\Services\Purchasing\PurchaseOrderService;
@@ -39,19 +40,9 @@ class GoodsReceiptController extends Controller
         return response()->json($data);
     }
 
-    public function store(Request $request, GoodsReceiptService $goodsReceiptService)
+    public function store(GoodsReceiptFormRequest $request, GoodsReceiptService $goodsReceiptService)
     {
         try {
-            $request->validate(
-                [
-                    'purchase_order_id' => 'required|exists:purchase_orders,id',
-                ],
-                [
-                    'purchase_order_id.required' => 'ID Purchase Order harus diisi.',
-                    'purchase_order_id.exists' => 'Purchase Order tidak ditemukan.',
-                ]
-            );
-
             $data = $goodsReceiptService->storeGoodsReceipt($request);
 
             return response()->json(['redirect' => route('purchasings.goods_receipts.edit', $data->id), 'message' => 'Goods receipt berhasil dibuat.']);
@@ -106,45 +97,6 @@ class GoodsReceiptController extends Controller
 
     public function update(Request $request, GoodsReceiptService $goodsReceiptService, int $id)
     {
-        if ($request->input('status') !== GoodsReceiptStatus::DRAFT->value) {
-            $request->validate(
-                [
-                    'reference_number' => 'nullable|string|max:50',
-                    'receipt_date' => 'required|date',
-                    'status' => 'required|in:draft,finished',
-                    'discount_amount' => 'nullable|numeric|min:0',
-                    'note' => 'nullable|string|max:1000',
-                    'details' => 'required|array|min:1',
-                    'details.*.purchase_order_item_id' => 'required|exists:purchase_order_items,id',
-                    'details.*.product_id' => 'required|exists:products,id',
-                    'details.*.batch_number' => 'required|string|max:50',
-                    'details.*.received_quantity' => 'required|numeric|min:0',
-                    'details.*.expected_quantity' => 'nullable|numeric|min:0',
-                    'details.*.unit_price' => 'required|numeric|min:0',
-                    'details.*.discount_percentage' => 'nullable|numeric|min:0|max:100',
-                    'costs' => 'nullable|array',
-                    'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
-                    'costs.*.description' => 'nullable|string|max:1000',
-                    'costs.*.amount' => 'required_with:costs.*.account_id|numeric|min:0',
-                    'costs.*.is_inventory_cost' => 'nullable|boolean',
-                ],
-                [
-                    'receipt_date.required' => 'Tanggal penerimaan harus diisi.',
-                    'status.required' => 'Status penerimaan harus diisi.',
-                    'details.required' => 'Daftar item penerimaan harus diisi.',
-                    'details.*.purchase_order_item_id.required' => 'Terdapat produk yang belum dipilih. Silakan pilih produk dari daftar item PO.',
-                    'details.*.product_id.required' => 'Terdapat produk yang belum dipilih. Silakan pilih produk dari daftar item PO.',
-                    'details.*.batch_number.required' => 'Terdapat produk yang belum diisi nomor batch. Silakan isi nomor batch untuk setiap produk.',
-                    'details.*.expected_quantity.required' => 'Terdapat produk yang belum diisi jumlah yang diharapkan. Silakan isi jumlah yang diharapkan untuk setiap produk.',
-                    'details.*.received_quantity.required' => 'Terdapat produk yang belum diisi jumlah penerimaannya. Silakan isi jumlah penerimaan untuk setiap produk.',
-                    'details.*.unit_price.required' => 'Terdapat produk yang belum diisi harga satuannya. Silakan isi harga satuan untuk setiap produk.',
-                    'details.*.discount_percentage.required' => 'Terdapat produk yang belum diisi persentase diskon. Silakan isi persentase diskon untuk setiap produk.',
-                    'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
-                    'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
-                ]
-            );
-        }
-
         try {
             $goodsReceiptService->updateGoodsReceipt($request, $id);
             return response()->json(['redirect' => route('purchasings.goods_receipts.index'), 'message' => 'Goods Receipt berhasil diperbarui.']);

@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained('companies')->onDelete('restrict');
-            $table->foreignId('supplier_id')->constrained('contacts')->onDelete('restrict');
-            $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('restrict');
+            $table->foreignId('supplier_id')->nullable()->constrained('contacts')->onDelete('restrict');
+            $table->foreignId('warehouse_id')->nullable()->constrained('warehouses')->onDelete('restrict');
             $table->string('number', 50)->unique();
             $table->string('reference_number', 50)->nullable();
             $table->dateTime('order_date');

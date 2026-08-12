@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sales;
 
+use App\Http\Requests\Sales\SalesInvoiceFormRequest;
 use App\Enums\PaymentTerm;
 use App\Enums\SalesInvoiceStatus;
 use App\Http\Controllers\Controller;
@@ -37,19 +38,9 @@ class SalesInvoiceController extends Controller
         return response()->json($data);
     }
 
-    public function store(Request $request, SalesInvoiceService $salesInvoiceService)
+    public function store(SalesInvoiceFormRequest $request, SalesInvoiceService $salesInvoiceService)
     {
         try {
-            $request->validate(
-                [
-                    'sales_order_id' => 'required|exists:sales_orders,id',
-                ],
-                [
-                    'sales_order_id.required' => 'ID Sales Order harus diisi.',
-                    'sales_order_id.exists' => 'Sales Order tidak ditemukan.',
-                ]
-            );
-
             $data = $salesInvoiceService->storeSalesInvoice($request);
 
             return response()->json(['redirect' => route('sales.sales_invoices.edit', $data->id), 'message' => 'Sales invoice berhasil dibuat.']);
@@ -92,51 +83,8 @@ class SalesInvoiceController extends Controller
         return view('sales.sales-invoice.edit', $data);
     }
 
-    public function update(Request $request, SalesInvoiceService $salesInvoiceService, int $id)
+    public function update(SalesInvoiceFormRequest $request, SalesInvoiceService $salesInvoiceService, int $id)
     {
-        if ($request->input('status') !== SalesInvoiceStatus::DRAFT->value) {
-            $request->validate(
-                [
-                    'reference_number' => 'nullable|string|max:50',
-                    'invoice_date' => 'required|date',
-                    'due_date' => 'required|date|after_or_equal:invoice_date',
-                    'status' => 'required|in:open',
-                    'payment_terms' => 'required|in:net_7,net_14,net_30,net_45',
-                    'discount_amount' => 'nullable|numeric|min:0',
-                    'down_payment_amount' => 'nullable|numeric|min:0',
-                    'subtotal' => 'nullable|numeric|min:0',
-                    'total_amount' => 'nullable|numeric|min:0',
-                    'note' => 'nullable|string|max:1000',
-                    'details' => 'required|array|min:1',
-                    'details.*.delivery_order_item_id' => 'required|exists:delivery_order_items,id',
-                    'details.*.sales_order_item_id' => 'required|exists:sales_order_items,id',
-                    'details.*.product_id' => 'required|exists:products,id',
-                    'details.*.quantity' => 'required|numeric|min:0',
-                    'details.*.unit_price' => 'required|numeric|min:0',
-                    'details.*.discount_percentage' => 'nullable|numeric|min:0|max:100',
-                    'charges' => 'nullable|array',
-                    'charges.*.account_id' => 'required_with:charges.*.amount|exists:chart_of_accounts,id',
-                    'charges.*.description' => 'nullable|string|max:1000',
-                    'charges.*.amount' => 'required_with:charges.*.account_id|numeric|min:0',
-                ],
-                [
-                    'invoice_date.required' => 'Tanggal invoice harus diisi.',
-                    'due_date.required' => 'Tanggal jatuh tempo harus diisi.',
-                    'due_date.after_or_equal' => 'Tanggal jatuh tempo harus sama atau setelah tanggal invoice.',
-                    'status.required' => 'Status invoice harus diisi.',
-                    'details.required' => 'Daftar item invoice harus diisi.',
-                    'details.*.delivery_order_item_id.required' => 'Terdapat produk yang belum dipilih. Silakan pilih produk dari daftar item DO.',
-                    'details.*.sales_order_item_id.required' => 'Terdapat produk yang belum dipilih. Silakan pilih produk dari daftar item SO.',
-                    'details.*.product_id.required' => 'Terdapat produk yang belum dipilih. Silakan pilih produk dari daftar item SO.',
-                    'details.*.quantity.required' => 'Terdapat produk yang belum diisi jumlah. Silakan isi jumlah yang diharapkan untuk setiap produk.',
-                    'details.*.unit_price.required' => 'Terdapat produk yang belum diisi harga satuannya. Silakan isi harga satuan untuk setiap produk.',
-                    'details.*.discount_percentage.required' => 'Terdapat produk yang belum diisi persentase diskon. Silakan isi persentase diskon untuk setiap produk.',
-                    'charges.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya tambahan diisi.',
-                    'charges.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
-                ]
-            );
-        }
-
         try {
             $salesInvoiceService->updateSalesInvoice($request, $id);
             return response()->json(['redirect' => route('sales.sales_invoices.index'), 'message' => 'Invoice Penjualan berhasil diperbarui.']);
