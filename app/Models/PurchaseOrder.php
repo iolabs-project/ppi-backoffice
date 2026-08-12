@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\PurchaseOrderStatus;
 
 class PurchaseOrder extends Model
 {
@@ -45,6 +46,27 @@ class PurchaseOrder extends Model
         'total_received_quantity' => 'double',
         'total_invoiced_quantity' => 'double',
     ];
+
+    protected $appends = [
+        'is_cancellable',
+        'is_receivable',
+        'is_invoicable',
+    ];
+
+    public function getIsCancellableAttribute()
+    {
+        return $this->status === PurchaseOrderStatus::DRAFT->value || ($this->status === PurchaseOrderStatus::OPEN->value && $this->goodsReceipts->isEmpty());
+    }
+
+    public function getIsReceivableAttribute()
+    {
+        return $this->status === PurchaseOrderStatus::OPEN->value && $this->total_received_quantity < $this->total_quantity;
+    }
+
+    public function getIsInvoicableAttribute()
+    {
+        return $this->status === PurchaseOrderStatus::OPEN->value && $this->total_invoiced_quantity < $this->total_received_quantity;
+    }
 
     public function items()
     {

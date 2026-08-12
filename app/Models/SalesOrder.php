@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\SalesOrderStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class SalesOrder extends Model
@@ -46,6 +47,27 @@ class SalesOrder extends Model
         'total_shipped_quantity' => 'double',
         'total_invoiced_quantity' => 'double',
     ];
+
+    protected $appends = [
+        'is_cancellable',
+        'is_deliverable',
+        'is_invoicable',
+    ];
+
+    public function getIsCancellableAttribute()
+    {
+        return $this->status === SalesOrderStatus::DRAFT->value || ($this->status === SalesOrderStatus::OPEN->value && $this->deliveryOrders->isEmpty());
+    }
+
+    public function getIsDeliverableAttribute()
+    {
+        return $this->status === SalesOrderStatus::OPEN->value;
+    }
+
+    public function getIsInvoicableAttribute()
+    {
+        return $this->status === SalesOrderStatus::OPEN->value && $this->total_invoiced_quantity < $this->total_shipped_quantity;
+    }
 
     public function items()
     {

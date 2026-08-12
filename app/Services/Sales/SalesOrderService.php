@@ -62,7 +62,6 @@ class SalesOrderService
                 'total_amount',
                 'status'
             )
-
             ->withSum('items as total_quantity', 'quantity')
             ->withSum('items as total_shipped_quantity', 'shipped_quantity')
             ->withSum('items as total_invoiced_quantity', 'invoiced_quantity');
@@ -131,6 +130,9 @@ class SalesOrderService
                 'created_at',
                 'updated_at',
             )
+            ->withSum('items as total_quantity', 'quantity')
+            ->withSum('items as total_shipped_quantity', 'shipped_quantity')
+            ->withSum('items as total_invoiced_quantity', 'invoiced_quantity')
             ->find($id);
     }
 

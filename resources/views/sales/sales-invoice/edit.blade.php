@@ -657,7 +657,6 @@
         </div>
 
         <div class="order-form-footer">
-            <a href="{{ route('sales.sales_invoices.index') }}" class="btn btn-ghost">Batal</a>
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
             <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Simpan
                 Tagihan</button>

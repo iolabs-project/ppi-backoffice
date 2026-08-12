@@ -162,7 +162,7 @@
                                                     </button>
                                                 </div>
                                             </template>
-                                            <template x-if="row.status === '{{ $open }}'">
+                                            <template x-if="row.is_deliverable">
                                                 <button class="action-menu__item"
                                                     @click.stop="handleCreateDeliveryOrder(row.id)">
                                                     <x-misc.icon name="box" :size="14"
@@ -171,7 +171,7 @@
                                                 </button>
                                             </template>
                                             <template
-                                                x-if="row.total_invoiced_quantity <= row.total_quantity && row.total_invoiced_quantity < row.total_shipped_quantity && row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
+                                                x-if="row.is_invoicable">
                                                 <button class="action-menu__item"
                                                     @click.stop="handleCreateSalesInvoice(row.id)">
                                                     <x-misc.icon name="wallet" :size="14"
@@ -179,9 +179,9 @@
                                                     Tagihan
                                                 </button>
                                             </template>
-
+                                            {{-- TODO: Add close button --}}
                                             <template
-                                                x-if="row.status === '{{ $draft }}' || (row.status === '{{ $open }}' && row.delivery_orders.length === 0)">
+                                                x-if="row.is_cancellable">
                                                 <div>
                                                     <div class="action-menu__divider"></div>
                                                     <button class="action-menu__item action-menu__item--danger"

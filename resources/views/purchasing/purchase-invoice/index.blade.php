@@ -122,7 +122,7 @@
                                                     <button class="action-menu__item action-menu__item--danger"
                                                         @click.stop="handleCancel(row.id)">
                                                         <x-misc.icon name="x" :size="14"
-                                                            stroke="currentColor" />Hapus
+                                                            stroke="currentColor" />Batal
                                                         Tagihan
                                                     </button>
                                                 </div>

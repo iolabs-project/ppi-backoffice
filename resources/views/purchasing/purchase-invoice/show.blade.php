@@ -1,41 +1,39 @@
 @extends('layouts.app')
 @section('content')
     @php
-        use App\Enums\GoodsReceiptStatus;
-        $draft = GoodsReceiptStatus::DRAFT->value;
-        $finished = GoodsReceiptStatus::FINISHED->value;
+        use App\Enums\PurchaseInvoiceStatus;
+        $draft = PurchaseInvoiceStatus::DRAFT->value;
+        $open = PurchaseInvoiceStatus::OPEN->value;
     @endphp
     <div x-data="detailPage()" class="order-page">
         <div class="order-hd order-hd--start">
             <div>
-                <a href="{{ route('purchasings.goods_receipts.index') }}" class="btn btn-ghost btn-sm"
+                <a href="{{ route('purchasings.purchase_invoices.index') }}" class="btn btn-ghost btn-sm"
                     style="margin-bottom:10px;">
                     <x-misc.icon name="chev-left" :size="13" />Kembali
                 </a>
                 <div class="order-title-row">
-                    <h1 class="order-title display">{{ $goodsReceipt->number }}</h1>
-                    <x-misc.status-badge :status="$goodsReceipt->status" />
+                    <h1 class="order-title display">{{ $purchaseInvoice->number }}</h1>
+                    <x-misc.status-badge :status="$purchaseInvoice->status" />
                 </div>
                 <div class="order-sub">
-                    Dibuat {{ $goodsReceipt->created_at->format('d M Y') }} oleh <span
-                        style="font-weight:600;">{{ $goodsReceipt->creator->username }}</span>
+                    Dibuat {{ $purchaseInvoice->created_at->format('d M Y') }} oleh <span
+                        style="font-weight:600;">{{ $purchaseInvoice->creator->username }}</span>
                 </div>
             </div>
             <div class="order-actions">
-
                 {{-- TODO: Add edit button --}}
                 
-                @if ($goodsReceipt->status == $draft)
-                    <button class="btn btn-ghost" @click="handleCancel({{ $goodsReceipt->id }})"><x-misc.icon name="x"
-                            :size="14" />Batal Penerimaan</button>
+                @if ($purchaseInvoice->status == $draft)
+                    <button class="btn btn-ghost" @click="handleCancel({{ $purchaseInvoice->id }})"><x-misc.icon
+                            name="x" :size="14" />Batal Tagihan</button>
                 @endif
                 {{-- TODO: Add print button --}}
-
             </div>
         </div>
 
         <div class="card order-meta">
-            @foreach ([['Vendor', $goodsReceipt->supplier->name, true], ['Nomor PO', $goodsReceipt->purchaseOrder->number, false], ['Tanggal Penerimaan', $goodsReceipt->receipt_date->format('d/m/Y'), false], ['Gudang Tujuan', $goodsReceipt->warehouse->name, false]] as [$lbl, $val, $av])
+            @foreach ([['Vendor', $purchaseInvoice->supplier->name, true], ['Tanggal PO', $purchaseInvoice->invoice_date->format('d/m/Y'), false], ['Jatuh Tempo', $purchaseInvoice->due_date->format('d/m/Y'), false], ['Gudang Tujuan', $purchaseInvoice->warehouse->name, false]] as [$lbl, $val, $av])
                 <div>
                     <div class="label order-meta__label">{{ $lbl }}</div>
                     <div class="order-meta__value">
@@ -51,25 +49,21 @@
         <div class="card" style="overflow:hidden;">
             <div class="card-hd">
                 <div class="display card-hd-title">Daftar Produk</div>
-                <div style="font-size:12px; color:var(--ink-4);">{{ count($goodsReceipt->items) }} item ·
-                    {{ $goodsReceipt->items->sum('received_quantity') }} unit diterima</div>
             </div>
             <table class="tbl">
                 <thead>
                     <tr>
                         <th style="width:48px;">#</th>
                         <th>Produk</th>
-                        <th style="text-align:right;">Quantity (Diharapkan)</th>
-                        <th style="text-align:right;">Quantity (Diterima)</th>
-                        <th style="text-align:right;">Quantity (Susut)</th>
+                        <th style="text-align:right;">Quantity</th>
                         <th>Satuan</th>
                         <th style="text-align:right;">Harga Beli</th>
-                        <th style="text-align:right;">Diskon (%)</th>
-                        <th style="text-align:right;">HPP</th>
+                        <th style="text-align:right;">Diskon</th>
+                        <th style="text-align:right;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($goodsReceipt->items as $i => $it)
+                    @foreach ($purchaseInvoice->items as $i => $it)
                         <tr>
                             <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
                             <td>
@@ -77,46 +71,53 @@
                                 <div class="mono" style="font-size:11px; color:var(--ink-4);">{{ $it->product->code }}
                                 </div>
                             </td>
-                            <td class="num" style="text-align:right;">
-                                {{ number_format($it->expected_quantity, 2, '.', ',') }}</td>
-                            <td class="num" style="text-align:right;">
-                                {{ number_format($it->received_quantity, 2, '.', ',') }}</td>
-                            <td class="num" style="text-align:right;">
-                                {{ number_format($it->shrinkage_quantity, 2, '.', ',') }}</td>
+                            <td class="num" style="text-align:right;">{{ number_format($it->quantity, 2, '.', ',') }}
+                            </td>
                             <td style="color:var(--ink-3);">{{ $it->product->unit->symbol }}</td>
-                            <td class="num" style="text-align:right;">{{ number_format($it->unit_price, 2, '.', ',') }}
+                            <td class="num" style="text-align:right;">
+                                {{ number_format($it->unit_price * $it->quantity, 2, '.', ',') }}
+                                ({{ fmt_rp($it->unit_price) }})
                             </td>
                             <td class="num" style="text-align:right;">
-                                {{ number_format($it->discount_percentage, 2, '.', ',') }}</td>
+                                {{ number_format($it->discount_amount, 2, '.', ',') }}
+                                ({{ number_format($it->discount_percentage, 2, '.', ',') }}%)
+                            </td>
                             <td class="num" style="text-align:right; font-weight:600;">
-                                {{ number_format($it->unit_cost, 2, '.', ',') }}</td>
+                                {{ number_format($it->total_amount, 2, '.', ',') }}
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
                 <tfoot>
                     <tr>
                         <td colspan="2" style="text-align:center; font-weight:600;">Total</td>
+
                         <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($goodsReceipt->items->sum('expected_quantity'), 2, '.', ',') }}</td>
-                        <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($goodsReceipt->items->sum('received_quantity'), 2, '.', ',') }}</td>
-                        <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($goodsReceipt->items->sum('shrinkage_quantity'), 2, '.', ',') }}</td>
+                            {{ number_format($purchaseInvoice->items->sum('quantity'), 2, '.', ',') }}</td>
                         <td>Unit</td>
-                        <td></td>
-                        <td></td>
                         <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($goodsReceipt->items->sum('unit_cost'), 2, '.', ',') }}</td>
+                            {{ number_format(
+                                $purchaseInvoice->items->sum(function ($item) {
+                                    return $item->unit_price * $item->quantity;
+                                }),
+                                2,
+                                '.',
+                                ',',
+                            ) }}
+                        </td>
+                        <td class="num" style="text-align:right; font-weight:600;">
+                            {{ number_format($purchaseInvoice->items->sum('discount_amount'), 2, '.', ',') }}</td>
+                        <td class="num" style="text-align:right; font-weight:600;">
+                            {{ number_format($purchaseInvoice->items->sum('total_amount'), 2, '.', ',') }}</td>
                     </tr>
-                </tfoot>
             </table>
         </div>
 
         @php
-            $inventoryCostTotal = $goodsReceipt->costs->where('is_inventory_cost', true)->sum('amount');
-            $nonInventoryCostTotal = $goodsReceipt->costs->where('is_inventory_cost', false)->sum('amount');
+            $inventoryCostTotal = $purchaseInvoice->costs->where('is_inventory_cost', true)->sum('amount');
+            $nonInventoryCostTotal = $purchaseInvoice->costs->where('is_inventory_cost', false)->sum('amount');
         @endphp
-        @if ($goodsReceipt->costs->isNotEmpty())
+        @if ($purchaseInvoice->costs->isNotEmpty())
             <div class="card" style="overflow:hidden;">
                 <div class="card-hd">
                     <div class="display card-hd-title">Biaya Tambahan (Landed Cost)</div>
@@ -132,7 +133,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($goodsReceipt->costs as $i => $cost)
+                        @foreach ($purchaseInvoice->costs as $i => $cost)
                             <tr>
                                 <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}
                                 </td>
@@ -144,13 +145,6 @@
                             </tr>
                         @endforeach
                     </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="4" style="text-align:center; font-weight:600;">Total Biaya Tambahan</td>
-                            <td class="num" style="text-align:right; font-weight:600;">
-                                {{ number_format($goodsReceipt->costs->sum('amount'), 2, '.', ',') }}</td>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
         @endif
@@ -158,11 +152,11 @@
         <div class="card" style="overflow:hidden;">
             <div class="order-items-split" style="grid-template-columns:1fr 500px;">
                 <div class="order-notes">
-                    <div class="label">Catatan Penerimaan</div>
-                    <div class="order-notes__text">{{ $goodsReceipt->note }}</div>
+                    <div class="label">Catatan Pembelian</div>
+                    <div class="order-notes__text">{{ $purchaseInvoice->note }}</div>
                 </div>
                 <div class="order-detail-summary">
-                    @foreach ([['Diskon', -$goodsReceipt->discount_amount, false], ['Biaya Tambahan (Inventory)', $inventoryCostTotal, false], ['Biaya Tambahan (Non-Inventory)', $nonInventoryCostTotal, false]] as [$lbl, $val, $bold])
+                    @foreach ([['Nilai Bruto', $purchaseInvoice->items->sum('subtotal'), false], ['Diskon Item', -$purchaseInvoice->items->sum('discount_amount'), false], ['Subtotal', $purchaseInvoice->subtotal, false], ['Diskon', -$purchaseInvoice->discount_amount, false], ['Pajak', $purchaseInvoice->tax_amount, false], ['Biaya Tambahan (Inventory)', $inventoryCostTotal, false], ['Biaya Tambahan (Non-Inventory)', $nonInventoryCostTotal, false], ['Total Tagihan', $purchaseInvoice->total_amount, true]] as [$lbl, $val, $bold])
                         <div
                             style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
                             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
@@ -170,7 +164,6 @@
                                 style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ $val < 0 ? '–' : '' }}{{ number_format(abs($val), 2, '.', ',') }}</span>
                         </div>
                     @endforeach
-                    {{-- TODO: Add profit margin calculation --}}
                 </div>
             </div>
         </div>
@@ -181,9 +174,13 @@
     <script>
         function detailPage() {
             return {
+                m(v) {
+                    return NumberUtils.formatNumericIntoMask(v);
+                },
+
                 async handleCancel(id) {
                     Swal.fire({
-                        title: 'Apakah Anda yakin ingin membatalkan Penerimaan Barang ini?',
+                        title: 'Apakah Anda yakin ingin membatalkan Tagihan Pembelian ini?',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Ya, batalkan',
@@ -200,7 +197,7 @@
                             });
                             try {
                                 const response = await axios.post(route(
-                                    'purchasings.goods_receipts.cancel', id));
+                                    'purchasings.purchase_invoices.cancel', id));
                                 Swal.close();
                                 Toast.fire({
                                     icon: 'success',
@@ -210,7 +207,7 @@
                             } catch (error) {
                                 Swal.close();
                                 let message =
-                                    'Terjadi kesalahan saat membatalkan Penerimaan Barang. Silakan coba lagi.';
+                                    'Terjadi kesalahan saat membatalkan Tagihan Pembelian. Silakan coba lagi.';
                                 if (error.response?.data?.message) {
                                     message = error.response.data.message;
                                 }

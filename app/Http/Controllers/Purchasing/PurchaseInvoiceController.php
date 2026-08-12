@@ -65,6 +65,20 @@ class PurchaseInvoiceController extends Controller
         }
     }
 
+    public function show(PurchaseInvoiceService $purchaseInvoiceService, int $id)
+    {
+        $data = [
+            'currentPage'   => 'pembelian.tagihan',
+            'breadcrumb'    => [
+                ['label' => 'Tagihan', 'url' => route('purchasings.purchase_invoices.index')],
+                ['label' => 'Detail'],
+            ],
+            'purchaseInvoice'  => $purchaseInvoiceService->fetchPurchaseInvoiceByID($id),
+        ];
+
+        return view('purchasing.purchase-invoice.show', $data);
+    }
+
     public function edit(int $id)
     {
         $purchaseInvoice = $this->purchaseInvoiceService->fetchPurchaseInvoiceByID($id);

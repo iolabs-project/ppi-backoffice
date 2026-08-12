@@ -162,7 +162,7 @@
                                                     </button>
                                                 </div>
                                             </template>
-                                            <template x-if="row.status === '{{ $open }}'">
+                                            <template x-if="row.is_receivable">
                                                 <button class="action-menu__item"
                                                     @click.stop="handleCreateGoodsReceipt(row.id)">
                                                     <x-misc.icon name="box" :size="14"
@@ -171,7 +171,7 @@
                                                 </button>
                                             </template>
                                             <template
-                                                x-if="row.total_invoiced_quantity < row.total_quantity && row.total_invoiced_quantity < row.total_received_quantity && row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
+                                                x-if="row.is_invoicable">
                                                 <button class="action-menu__item"
                                                     @click.stop="handleCreatePurchaseInvoice(row.id)">
                                                     <x-misc.icon name="wallet" :size="14"
@@ -181,7 +181,7 @@
                                             </template>
 
                                             <template
-                                                x-if="row.status === '{{ $draft }}' || (row.status === '{{ $open }}' && row.goods_receipts.length === 0)">
+                                                x-if="row.is_cancellable">
                                                 <div>
                                                     <div class="action-menu__divider"></div>
                                                     <button class="action-menu__item action-menu__item--danger"

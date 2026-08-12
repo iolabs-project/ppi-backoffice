@@ -141,6 +141,8 @@ class DeliveryOrderService
                 'status',
                 'subtotal',
                 'total_amount',
+                'created_by',
+                'created_at',
             )
             ->find($id);
     }

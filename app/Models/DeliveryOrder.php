@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\DeliveryOrderStatus;
 
 class DeliveryOrder extends Model
 {
@@ -29,6 +30,15 @@ class DeliveryOrder extends Model
         'total_shipped_quantity' => 'double',
     ];
 
+    protected $appends = [
+        'is_cancellable',
+    ];
+
+    public function getIsCancellableAttribute()
+    {
+        return $this->status === DeliveryOrderStatus::DRAFT->value;
+    }
+
     public function customer()
     {
         return $this->belongsTo(Contact::class, 'customer_id');
@@ -39,7 +49,10 @@ class DeliveryOrder extends Model
         return $this->belongsTo(SalesOrder::class, 'sales_order_id');
     }
 
-    
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     public function warehouse()
     {

@@ -60,7 +60,6 @@ class PurchaseOrderService
                 'total_amount',
                 'status'
             )
-
             ->withSum('items as total_quantity', 'quantity')
             ->withSum('items as total_received_quantity', 'received_quantity')
             ->withSum('items as total_invoiced_quantity', 'invoiced_quantity');
@@ -96,7 +95,11 @@ class PurchaseOrderService
             'costs.account:id,category_id,code,name',
             'supplier:id,name,code',
             'warehouse:id,name,code',
-            'creator:id,username'
+            'creator:id,username',
+            'goodsReceipts' => function ($query) {
+                $query->select('id', 'purchase_order_id', 'status')
+                    ->where('status', '<>', GoodsReceiptStatus::CANCELLED->value);
+            },
         ])
             ->select(
                 'id',
@@ -122,6 +125,9 @@ class PurchaseOrderService
                 'created_at',
                 'updated_at',
             )
+            ->withSum('items as total_quantity', 'quantity')
+            ->withSum('items as total_received_quantity', 'received_quantity')
+            ->withSum('items as total_invoiced_quantity', 'invoiced_quantity')
             ->find($id);
     }
 

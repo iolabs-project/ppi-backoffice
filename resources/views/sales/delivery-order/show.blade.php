@@ -8,8 +8,7 @@
     <div x-data="detailPage()" class="order-page">
         <div class="order-hd order-hd--start">
             <div>
-                <a href="{{ route('sales.delivery_orders.index') }}" class="btn btn-ghost btn-sm"
-                    style="margin-bottom:10px;">
+                <a href="{{ route('sales.delivery_orders.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
                     <x-misc.icon name="chev-left" :size="13" />Kembali
                 </a>
                 <div class="order-title-row">
@@ -17,21 +16,16 @@
                     <x-misc.status-badge :status="$deliveryOrder->status" />
                 </div>
                 <div class="order-sub">
-                    Pengiriman untuk SO <span style="font-weight:600;">{{ $deliveryOrder->salesOrder->number }}</span>
+                    Dibuat {{ $deliveryOrder->created_at->format('d M Y') }} oleh <span
+                        style="font-weight:600;">{{ $deliveryOrder->creator->username }}</span>
                 </div>
             </div>
             <div class="order-actions">
-                @if ($deliveryOrder->status == $draft)
+                @if ($deliveryOrder->status === $draft)
+                    <button class="btn btn-ghost" @click="handleCancel({{ $deliveryOrder->id }})"><x-misc.icon
+                            name="x" :size="14" />Batal Pengiriman</button>
                     <a href="{{ route('sales.delivery_orders.edit', $deliveryOrder->id) }}" class="btn btn-primary">
                         <x-misc.icon name="edit" :size="14" />Edit Pengiriman
-                    </a>
-                    <button class="btn btn-ghost" @click="handleCancel({{ $deliveryOrder->id }})"><x-misc.icon name="x"
-                            :size="14" />Batal Pengiriman</button>
-                @endif
-
-                @if ($deliveryOrder->status == $finished)
-                    <a href="{{ route('sales.sales_orders.show', $deliveryOrder->sales_order_id) }}" class="btn btn-primary">
-                        <x-misc.icon name="receipt" :size="14" />Buat Tagihan
                     </a>
                 @endif
             </div>
@@ -54,8 +48,6 @@
         <div class="card" style="overflow:hidden;">
             <div class="card-hd">
                 <div class="display card-hd-title">Daftar Produk</div>
-                <div style="font-size:12px; color:var(--ink-4);">{{ count($deliveryOrder->items) }} item ·
-                    {{ $deliveryOrder->items->sum('quantity') }} unit dikirim</div>
             </div>
             <table class="tbl">
                 <thead>
@@ -65,7 +57,6 @@
                         <th style="text-align:right;">Quantity Dikirim</th>
                         <th>Satuan</th>
                         <th>Batch</th>
-                        <th style="text-align:right;">HPP</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -77,25 +68,26 @@
                                 <div class="mono" style="font-size:11px; color:var(--ink-4);">{{ $it->product->code }}
                                 </div>
                             </td>
-                            <td class="num" style="text-align:right;">{{ $it->quantity }}</td>
+                            <td class="num" style="text-align:right;">{{ number_format($it->quantity, 2, '.', ',') }}</td>
                             <td style="color:var(--ink-3);">{{ $it->product->unit->symbol ?? '-' }}</td>
                             <td>
                                 @foreach ($it->batches as $b)
                                     <div class="mono" style="font-size:12px;">{{ $b->productBatch->batch_number }} ·
-                                        {{ $b->quantity }}</div>
+                                        {{ number_format($b->quantity, 2, '.', ',') }}</div>
                                 @endforeach
-                            </td>
-                            <td class="num" style="text-align:right; font-weight:600;">
-                                {{ fmt_rp($it->batches->sum(fn($b) => $b->quantity * $b->unit_cost)) }}
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2" style="text-align:right; font-weight:600;">Total</td>
+                        <td class="num" style="text-align:right; font-weight:600;">{{ number_format($deliveryOrder->items->sum('quantity'), 2, '.', ',') }}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
             </table>
-            <div class="order-notes">
-                <div class="label">Catatan Penerimaan</div>
-                <div class="order-notes__text">{{ $deliveryOrder->note ?? '-' }}</div>
-            </div>
         </div>
 
         @if ($deliveryOrder->costs->isNotEmpty())
@@ -118,13 +110,37 @@
                                 <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
                                 <td>{{ $cost->description ?: '—' }}</td>
                                 <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
-                                <td class="num" style="text-align:right; font-weight:600;">{{ fmt_rp($cost->amount) }}</td>
+                                <td class="num" style="text-align:right; font-weight:600;">{{ number_format($cost->amount, 2, '.', ',') }}</td>
                             </tr>
                         @endforeach
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" style="text-align:center; font-weight:600;">Total</td>
+                            <td class="num" style="text-align:right; font-weight:600;">{{ number_format($deliveryOrder->costs->sum('amount'), 2, '.', ',') }}</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         @endif
+
+        <div class="card" style="overflow:hidden;">
+            <div class="order-items-split" style="grid-template-columns:1fr 500px;">
+                <div class="order-notes">
+                    <div class="label">Catatan Pengiriman</div>
+                    <div class="order-notes__text">{{ $deliveryOrder->note ?? '-' }}</div>
+                </div>
+                <div class="order-detail-summary">
+                    @foreach ([['Total Biaya Tambahan', $deliveryOrder->costs->sum('amount'), false]] as [$lbl, $val, $bold])
+                        <div
+                            style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
+                            <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
+                            <span class="num" style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ number_format($val, 2, '.', ',') }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 

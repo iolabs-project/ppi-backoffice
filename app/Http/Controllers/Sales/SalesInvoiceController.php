@@ -16,10 +16,12 @@ use Illuminate\Validation\ValidationException;
 class SalesInvoiceController extends Controller
 {
     private AccountService $accountService;
+    private SalesInvoiceService $salesInvoiceService;
 
-    public function __construct(AccountService $accountService)
+    public function __construct(AccountService $accountService, SalesInvoiceService $salesInvoiceService)
     {
         $this->accountService = $accountService;
+        $this->salesInvoiceService = $salesInvoiceService;
     }
 
     public function index()
@@ -32,16 +34,16 @@ class SalesInvoiceController extends Controller
         return view('sales.sales-invoice.index', $data);
     }
 
-    public function datatable(Request $request, SalesInvoiceService $salesInvoiceService)
+    public function datatable(Request $request)
     {
-        $data = $salesInvoiceService->fetchSalesInvoiceTableData($request);
+        $data = $this->salesInvoiceService->fetchSalesInvoiceTableData($request);
         return response()->json($data);
     }
 
-    public function store(SalesInvoiceFormRequest $request, SalesInvoiceService $salesInvoiceService)
+    public function store(SalesInvoiceFormRequest $request)
     {
         try {
-            $data = $salesInvoiceService->storeSalesInvoice($request);
+            $data = $this->salesInvoiceService->storeSalesInvoice($request);
 
             return response()->json(['redirect' => route('sales.sales_invoices.edit', $data->id), 'message' => 'Sales invoice berhasil dibuat.']);
         } catch (ValidationException $e) {
@@ -61,9 +63,27 @@ class SalesInvoiceController extends Controller
         }
     }
 
-    public function edit(SalesInvoiceService $salesInvoiceService, DeliveryOrderService $deliveryOrderService, int $id)
+    public function show(int $id)
     {
-        $salesInvoice = $salesInvoiceService->fetchSalesInvoiceByID($id);
+        $salesInvoice = $this->salesInvoiceService->fetchSalesInvoiceByID($id);
+        if (!$salesInvoice) {
+            abort(404, 'Tagihan penjualan tidak ditemukan.');
+        }
+
+        $data = [
+            'currentPage' => 'penjualan.tagihan',
+            'breadcrumb'  => [
+                ['label' => 'Tagihan', 'url' => route('sales.sales_invoices.index')],
+                ['label' => 'Detail'],
+            ],
+            'salesInvoice' => $salesInvoice,
+        ];
+        return view('sales.sales-invoice.show', $data);
+    }
+
+    public function edit(DeliveryOrderService $deliveryOrderService, int $id)
+    {
+        $salesInvoice = $this->salesInvoiceService->fetchSalesInvoiceByID($id);
         if (!$salesInvoice) {
             abort(404, 'Tagihan penjualan tidak ditemukan.');
         }
@@ -83,10 +103,10 @@ class SalesInvoiceController extends Controller
         return view('sales.sales-invoice.edit', $data);
     }
 
-    public function update(SalesInvoiceFormRequest $request, SalesInvoiceService $salesInvoiceService, int $id)
+    public function update(SalesInvoiceFormRequest $request, int $id)
     {
         try {
-            $salesInvoiceService->updateSalesInvoice($request, $id);
+            $this->salesInvoiceService->updateSalesInvoice($request, $id);
             return response()->json(['redirect' => route('sales.sales_invoices.index'), 'message' => 'Invoice Penjualan berhasil diperbarui.']);
         } catch (ValidationException $e) {
             Log::error('Error SalesInvoiceController@update: ' . $e->getMessage(), [
@@ -105,10 +125,10 @@ class SalesInvoiceController extends Controller
         }
     }
 
-    public function cancel(SalesInvoiceService $salesInvoiceService, int $id)
+    public function cancel(int $id)
     {
         try {
-            $salesInvoiceService->cancelSalesInvoice($id);
+            $this->salesInvoiceService->cancelSalesInvoice($id);
             return response()->json(['message' => 'Invoice Penjualan berhasil dibatalkan.']);
         } catch (\Exception $e) {
             Log::error('Error SalesInvoiceController@cancel: ' . $e->getMessage(), [

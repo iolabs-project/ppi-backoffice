@@ -80,6 +80,6 @@ class SalesInvoice extends Model
 
     public function payments()
     {
-        return $this->hasMany(SalesPayment::class);
+        return $this->hasMany(ReceivablePayment::class, 'reference_id')->where('reference_type', SalesInvoice::class);
     }
 }

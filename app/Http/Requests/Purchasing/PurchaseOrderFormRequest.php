@@ -106,7 +106,9 @@ class PurchaseOrderFormRequest extends FormRequest
             'details.required' => 'Daftar item tidak boleh kosong.',
             'details.*.product_id.required' => 'Produk harus dipilih untuk setiap item.',
             'details.*.quantity.required' => 'Kuantitas harus diisi untuk setiap item.',
+            'details.*.quantity.min' => 'Kuantitas harus lebih besar dari 0 untuk setiap item.',
             'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
+            'details.*.unit_price.min' => 'Harga satuan harus lebih besar dari 0 untuk setiap item.',
             'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',
             'costs.*.amount.required_with' => 'Jumlah biaya harus diisi jika akun dipilih.',
             'costs.*.billed_by.required_with' => 'Pihak yang menagih harus dipilih jika jumlah biaya diisi.'
