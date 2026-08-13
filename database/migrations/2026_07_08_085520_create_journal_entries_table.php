@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('journal_entries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->onDelete('restrict');
-            $table->string('number', 50)->unique();
+            $table->string('number', 50);
             $table->datetime('journal_date');
             $table->string('reference_type', 100)->nullable();
             $table->unsignedBigInteger('reference_id')->nullable();
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->timestamps();
 
             // index
-            $table->index(['company_id', 'number']);
+            $table->unique(['company_id', 'number']);
             $table->index(['company_id', 'journal_date']);
             $table->index(['company_id', 'reference_type', 'reference_id']);
         });
