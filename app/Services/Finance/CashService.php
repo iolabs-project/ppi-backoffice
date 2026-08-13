@@ -302,16 +302,28 @@ class CashService
                 ->value('account_id');
             $taxAmount = $transaction->tax_amount;
 
-            $journalItems = [
-                [
-                    'account_id' => $debitAccountID,
-                    'debit' => $debitAmount,
-                ],
-                [
+            // $journalItems = [
+            //     [
+            //         'account_id' => $debitAccountID,
+            //         'debit' => $debitAmount,
+            //     ],
+            //     [
+            //         'account_id' => $taxAccountID,
+            //         'credit' => $taxAmount,
+            //     ],
+            // ];
+
+            $journalItems[] = [
+                'account_id' => $debitAccountID,
+                'debit' => $debitAmount,
+            ];
+
+            if ($taxAmount > 0) {
+                $journalItems[] = [
                     'account_id' => $taxAccountID,
                     'credit' => $taxAmount,
-                ],
-            ];
+                ];
+            }
 
             foreach ($transaction->items as $item) {
                 $journalItems[] = [

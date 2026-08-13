@@ -87,12 +87,12 @@ class AccountReceivableService
             });
         }
 
-        if ($request->filled('date_from')) {
-            $query->whereDate('sales_invoices.invoice_date', '>=', $request->input('date_from'));
+        if ($request->filled('start_date')) {
+            $query->whereDate('sales_invoices.invoice_date', '>=', $request->input('start_date'));
         }
 
-        if ($request->filled('date_to')) {
-            $query->whereDate('sales_invoices.invoice_date', '<=', $request->input('date_to'));
+        if ($request->filled('end_date')) {
+            $query->whereDate('sales_invoices.invoice_date', '<=', $request->input('end_date'));
         }
 
         if ($request->filled('status') && $request->input('status') !== 'all') {

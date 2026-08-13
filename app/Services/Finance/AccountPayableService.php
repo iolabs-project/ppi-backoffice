@@ -128,14 +128,14 @@ class AccountPayableService
             });
         }
 
-        if ($request->filled('date_from')) {
-            $query->whereDate('purchase_invoices.invoice_date', '>=', $request->input('date_from'));
-            $query2->whereDate('expenses.expense_date', '>=', $request->input('date_from'));
+        if ($request->filled('start_date')) {
+            $query->whereDate('purchase_invoices.invoice_date', '>=', $request->input('start_date'));
+            $query2->whereDate('expenses.expense_date', '>=', $request->input('start_date'));
         }
 
-        if ($request->filled('date_to')) {
-            $query->whereDate('purchase_invoices.invoice_date', '<=', $request->input('date_to'));
-            $query2->whereDate('expenses.expense_date', '<=', $request->input('date_to'));
+        if ($request->filled('end_date')) {
+            $query->whereDate('purchase_invoices.invoice_date', '<=', $request->input('end_date'));
+            $query2->whereDate('expenses.expense_date', '<=', $request->input('end_date'));
         }
 
         if ($request->filled('status') && $request->input('status') !== 'all') {
