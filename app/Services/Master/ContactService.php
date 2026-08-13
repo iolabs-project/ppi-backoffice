@@ -15,8 +15,8 @@ class ContactService
             'code',
             'name',
         )
-        ->where('company_id', config('context.selected_company_id'))
-        ->whereNull('deleted_at');
+            ->where('company_id', config('context.selected_company_id'))
+            ->whereNull('deleted_at');
 
         if ($request->filled('search')) {
             $data->where(function ($query) use ($request) {
@@ -53,8 +53,8 @@ class ContactService
             'code',
             'name',
         )
-        ->where('company_id', config('context.selected_company_id'))
-        ->whereNull('deleted_at');
+            ->where('company_id', config('context.selected_company_id'))
+            ->whereNull('deleted_at');
 
         if ($type) {
             switch ($type) {
@@ -89,8 +89,9 @@ class ContactService
             'is_supplier',
             'is_employee',
             'deleted_at',
+            'transportation_cost'
         )
-        ->where('company_id', config('context.selected_company_id'));
+            ->where('company_id', config('context.selected_company_id'));
 
         if ($request->filled('search')) {
             $data->where(function ($query) use ($request) {
@@ -166,6 +167,7 @@ class ContactService
             'is_customer' => $request->is_customer ?? false,
             'is_supplier' => $request->is_supplier ?? false,
             'is_employee' => $request->is_employee ?? false,
+            'transportation_cost' => $request->input('transportation_cost', 0),
         ]);
     }
 
@@ -208,6 +210,7 @@ class ContactService
             'is_customer' => $request->is_customer ?? false,
             'is_supplier' => $request->is_supplier ?? false,
             'is_employee' => $request->is_employee ?? false,
+            'transportation_cost' => $request->input('transportation_cost', 0),
         ]);
     }
 

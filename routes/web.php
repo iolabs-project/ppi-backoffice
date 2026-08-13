@@ -292,6 +292,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::post('/', 'store')->name('store');
             Route::get('/options', 'options')->name('options');
+            Route::get('/{id}', 'show')->name('show');
             Route::put('/{id}', 'update')->name('update');
             Route::post('/{id}/status', 'status')->name('status');
         });

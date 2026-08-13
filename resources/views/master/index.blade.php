@@ -6,34 +6,6 @@
                 tab: sessionStorage.getItem('master_tab') || 'produk',
                 modal: null,
 
-                init() {},
-
-                extractError(error, fallback) {
-                    const errors = error.response?.data?.errors;
-                    if (errors) {
-                        const first = Object.values(errors)[0];
-                        if (Array.isArray(first) && first.length) return first[0];
-                    }
-                    return error.response?.data?.message || fallback;
-                },
-
-                fmtRp(n) {
-                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n));
-                },
-
-                avatarMeta(name) {
-                    const words = (name || '').trim().split(/\s+/).filter(Boolean);
-                    const initials = words.slice(0, 2).map(w => w[0].toUpperCase()).join('');
-                    let h = 0;
-                    for (const c of (name || '')) h = ((h * 31) + c.charCodeAt(0)) & 0xFFFFFFFF;
-                    const hue = ((h % 360) + 360) % 360;
-                    return {
-                        initials,
-                        bg: 'oklch(0.92 0.04 ' + hue + ')',
-                        fg: 'oklch(0.45 0.10 ' + hue + ')'
-                    };
-                },
-
                 // shared data for modals
                 productUnits: @json($units),
                 productCategories: @json($productCategories),
@@ -308,6 +280,24 @@
                     is_customer: true,
                     is_supplier: false,
                     is_employee: false,
+                    transportation_cost: 0,
+                },
+
+                avatarMeta(name) {
+                    const words = (name || '').trim().split(/\s+/).filter(Boolean);
+                    const initials = words.slice(0, 2).map(w => w[0].toUpperCase()).join('');
+                    let h = 0;
+                    for (const c of (name || '')) h = ((h * 31) + c.charCodeAt(0)) & 0xFFFFFFFF;
+                    const hue = ((h % 360) + 360) % 360;
+                    return {
+                        initials,
+                        bg: 'oklch(0.92 0.04 ' + hue + ')',
+                        fg: 'oklch(0.45 0.10 ' + hue + ')'
+                    };
+                },
+
+                n(v) {
+                    return NumberUtils.parseMaskIntoNumeric(v);
                 },
 
                 async fetchData() {
@@ -385,6 +375,7 @@
                         is_customer: true,
                         is_supplier: false,
                         is_employee: false,
+                        transportation_cost: null,
                     };
                     this.modal = 'add_contact';
                 },
@@ -404,6 +395,7 @@
                         is_customer: !!contact.is_customer,
                         is_supplier: !!contact.is_supplier,
                         is_employee: !!contact.is_employee,
+                        transportation_cost: contact.transportation_cost,
                     };
                     this.modal = 'edit_contact';
                 },
@@ -422,7 +414,7 @@
                             let body = {
                                 ...this.form,
                             };
-
+                            body.transportation_cost = this.n(body.transportation_cost);
                             Swal.fire({
                                 title: 'Memproses penyimpanan Kontak...',
                                 allowOutsideClick: false,
@@ -482,7 +474,7 @@
                             let body = {
                                 ...this.form,
                             };
-
+                            body.transportation_cost = this.n(body.transportation_cost);
                             Swal.fire({
                                 title: 'Memproses perubahan Kontak...',
                                 allowOutsideClick: false,
@@ -989,6 +981,19 @@
                     new_password_confirmation: null
                 },
 
+                avatarMeta(name) {
+                    const words = (name || '').trim().split(/\s+/).filter(Boolean);
+                    const initials = words.slice(0, 2).map(w => w[0].toUpperCase()).join('');
+                    let h = 0;
+                    for (const c of (name || '')) h = ((h * 31) + c.charCodeAt(0)) & 0xFFFFFFFF;
+                    const hue = ((h % 360) + 360) % 360;
+                    return {
+                        initials,
+                        bg: 'oklch(0.92 0.04 ' + hue + ')',
+                        fg: 'oklch(0.45 0.10 ' + hue + ')'
+                    };
+                },
+
                 async fetchData() {
                     this.loading = true;
                     try {
@@ -1483,18 +1488,11 @@
                 <h1 class="order-title display">Master Data</h1>
                 <div class="order-sub">Kelola data referensi untuk seluruh modul ERP</div>
             </div>
-            {{-- <div x-show="tab !== 'account_setting'">
-                <button class="btn btn-primary" x-on:click="modal = 'add_' + tab">
-                    <x-misc.icon name="plus" :size="14" />
-                    <span
-                        x-text="{ produk:'Tambah Produk', kontak:'Tambah Kontak', akun:'Tambah Akun', gudang:'Tambah Gudang', user:'Tambah User', permit:'Tambah Role' }[tab]"></span>
-                </button>
-            </div> --}}
         </div>
 
         {{-- Tab bar --}}
         <div class="utab">
-            @foreach ([['produk', 'Produk'], ['kontak', 'Kontak'], ['akun', 'Chart of Accounts'], ['account_setting', 'Pengaturan Akun'], ['gudang', 'Gudang'], ['user', 'User'], ['permit', 'Hak Akses']] as [$id, $lbl])
+            @foreach ([['produk', 'Produk'], ['gudang', 'Gudang'], ['kontak', 'Kontak'], ['user', 'User'], ['permit', 'Hak Akses'], ['akun', 'Akun'], ['account_setting', 'Pengaturan Akun']] as [$id, $lbl])
                 <button class="utab-item"
                     x-on:click="tab = '{{ $id }}'; sessionStorage.setItem('master_tab', '{{ $id }}')"
                     :class="tab === '{{ $id }}' ? 'utab-active' : ''">{{ $lbl }}</button>
@@ -1502,12 +1500,12 @@
         </div>
 
         @include('master.partials.tabs.product')
-        @include('master.partials.tabs.contact')
-        @include('master.partials.tabs.account')
-        @include('master.partials.tabs.account-setting')
         @include('master.partials.tabs.warehouse')
+        @include('master.partials.tabs.contact')
         @include('master.partials.tabs.user')
         @include('master.partials.tabs.permit')
+        @include('master.partials.tabs.account')
+        @include('master.partials.tabs.account-setting')
 
     </div>
 @endsection

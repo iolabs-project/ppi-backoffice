@@ -10,10 +10,15 @@ use Illuminate\Support\Facades\Log;
 
 class ContactController extends Controller
 {
-    public function datatable(Request $request, ContactService $contactService)
+    private ContactService $contactService;
+    public function __construct(ContactService $contactService)
+    {
+        $this->contactService = $contactService;
+    }
+    public function datatable(Request $request)
     {
         try {
-            $data = $contactService->fetchContactTableData($request);
+            $data = $this->contactService->fetchContactTableData($request);
 
             return response()->json($data);
         } catch (\Exception $e) {
@@ -28,10 +33,10 @@ class ContactController extends Controller
         }
     }
 
-    public function store(ContactFormRequest $request, ContactService $contactService)
+    public function store(ContactFormRequest $request)
     {
         try {
-            $contactService->storeContact($request);
+            $this->contactService->storeContact($request);
 
             return response()->json([
                 'message' => 'Kontak berhasil dibuat',
@@ -47,11 +52,24 @@ class ContactController extends Controller
             ], 500);
         }
     }
+    public function show(int $id)
+    {
+        $contact = $this->contactService->fetchContactById($id);
+        $data = [
+            'currentPage'      => 'master',
+            'breadcrumb'       => [
+                ['label' => 'Master Data', 'url' => route('master.index')],
+                ['label' => $contact->name],
+            ],
+            'contact'          => $contact,
+        ];
 
-    public function update(ContactFormRequest $request, ContactService $contactService, int $id)
+        return view('master.contact.show', $data);
+    }
+    public function update(ContactFormRequest $request, int $id)
     {
         try {
-            $contactService->updateContact($request, $id);
+            $this->contactService->updateContact($request, $id);
 
             return response()->json([
                 'message' => 'Kontak berhasil diperbarui',
@@ -68,10 +86,10 @@ class ContactController extends Controller
         }
     }
 
-    public function status(Request $request, ContactService $contactService, int $id)
+    public function status(Request $request, int $id)
     {
         try {
-            $contactService->toggleContactStatus($id);
+            $this->contactService->toggleContactStatus($id);
 
             return response()->json([
                 'message' => 'Status kontak berhasil diperbarui',
@@ -87,7 +105,7 @@ class ContactController extends Controller
             ], 500);
         }
     }
-    public function options(Request $request, ContactService $contactService)
+    public function options(Request $request)
     {
         try {
             $data = $contactService->fetchOptionData($request);

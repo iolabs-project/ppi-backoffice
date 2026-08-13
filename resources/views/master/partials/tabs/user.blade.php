@@ -25,9 +25,13 @@
                 <template x-for="u in tableData.data" :key="u.id">
                     <tr class="row-tap" style="cursor:pointer;">
                         <td>
-                            <div style="font-weight:600; font-size:13px;" x-text="u.username"></div>
-
-                        </td>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div class="avatar"
+                                        :style="'background:' + avatarMeta(u.username).bg + '; color:' + avatarMeta(u.username).fg"
+                                        x-text="avatarMeta(u.username).initials"></div>
+                                    <span style="font-weight:600; font-size:13px;" x-text="u.username"></span>
+                                </div>
+                            </td>
                         <td><span class="chip" x-text="u.role_name || '—'"></span></td>
                         <td style="font-size:13px; color:var(--ink-3);" x-text="u.contact ? u.contact.name : '—'"></td>
                         <td>

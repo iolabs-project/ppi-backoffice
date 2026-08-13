@@ -39,8 +39,13 @@
                 <template x-if="!loading && tableData.data.length > 0">
                     <template x-for="(row, i) in tableData.data" :key="row.id">
                         <tr class="row-tap" style="cursor:pointer;">
-                            <td class="mono" style="font-weight:600; font-size:12px; color:var(--ink-4);"
-                                x-text="row.name">
+                            <td>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div class="avatar"
+                                        :style="'background:' + avatarMeta(row.name).bg + '; color:' + avatarMeta(row.name).fg"
+                                        x-text="avatarMeta(row.name).initials"></div>
+                                    <span style="font-weight:600; font-size:13px;" x-text="row.name"></span>
+                                </div>
                             </td>
                             <td>
                                 <span class="chip"
@@ -63,6 +68,11 @@
                                     </button>
                                     <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
                                         style="position:absolute; right:0; top:100%; margin-top:4px;">
+                                        <a :href="route('master.contacts.show', row.id)" @click.stop
+                                            class="action-menu__item">
+                                            <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />
+                                            Detail Kontak
+                                        </a>
                                         <button class="action-menu__item" x-on:click="openEditModal(row)">
                                             <x-misc.icon name="edit" :size="14" /> Edit Kontak
                                         </button>

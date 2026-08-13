@@ -64,6 +64,11 @@ class ContactFormRequest extends FormRequest
                 'required',
                 'boolean',
             ],
+            'transportation_cost' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
         ];
     }
 
@@ -96,6 +101,9 @@ class ContactFormRequest extends FormRequest
 
             'is_employee.required' => 'Status karyawan harus diisi.',
             'is_employee.boolean' => 'Status karyawan harus berupa boolean.',
+
+            'transportation_cost.numeric' => 'Biaya transportasi harus berupa angka.',
+            'transportation_cost.min' => 'Biaya transportasi tidak boleh kurang dari 0.',
         ];
     }
 }
