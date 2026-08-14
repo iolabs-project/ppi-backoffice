@@ -13,6 +13,8 @@
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
+                <button class="btn btn-primary" x-on:click="openSoPicker()"><x-misc.icon name="plus"
+                        :size="15" />Tambah</button>
             </div>
         </div>
         <div class="filter-pills">
@@ -160,6 +162,56 @@
                     <x-misc.icon name="chev-right" :size="13" /></button>
             </div>
         </div>
+
+        <x-misc.modal title="Pilih Sales Order" show="soPickerOpen" close-handler="closeSoPicker()" :width="640">
+            <div style="margin-bottom:12px;">
+                <input class="input" style="height:32px; width:100%;" placeholder="Cari nomor SO atau customer..."
+                    x-model="soPickerSearch" x-on:input.debounce.400ms="fetchSoPickerData()" />
+            </div>
+            <table class="tbl tbl-tight">
+                <thead>
+                    <tr>
+                        <th>Nomor SO</th>
+                        <th>Tanggal</th>
+                        <th>Customer</th>
+                        <th style="text-align:right;">Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="soPickerLoading">
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
+                                Memuat data...
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!soPickerLoading && soPickerData.length === 0">
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
+                                Tidak ada SO yang tersedia untuk dikirim.
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!soPickerLoading">
+                        <template x-for="so in soPickerData" :key="so.id">
+                            <tr class="row-tap" @click="handleCreateDeliveryOrder(so.id)">
+                                <td class="mono" style="font-weight:600;" x-text="so.number"></td>
+                                <td style="color:var(--ink-3);" x-text="so.order_date ?? '-'"></td>
+                                <td style="font-weight:500;" x-text="so.customer?.name ?? '-'"></td>
+                                <td class="num" style="text-align:right;" x-text="m(so.total_amount)"></td>
+                                <td>
+                                    <span :class="soStatusChip(so.status).chip">
+                                        <span :class="soStatusChip(so.status).dot"></span>
+                                        <span x-text="soStatusChip(so.status).label"></span>
+                                    </span>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </x-misc.modal>
     </div>
 @endsection
 
@@ -181,6 +233,11 @@
                 page: 1,
                 perPage: 10,
                 filter: 'all',
+
+                soPickerOpen: false,
+                soPickerLoading: false,
+                soPickerSearch: '',
+                soPickerData: [],
 
                 statusChip(status) {
                     const map = {
@@ -296,6 +353,123 @@
                                 Toast.fire({
                                     icon: 'error',
                                     title: message
+                                });
+                            }
+
+                        }
+                    })
+                },
+
+                soStatusChip(status) {
+                    const map = {
+                        draft: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-muted',
+                            label: 'Draft'
+                        },
+                        open: {
+                            chip: 'chip chip-info',
+                            dot: 'chip-dot dot-info',
+                            label: 'Open'
+                        },
+                        closed: {
+                            chip: 'chip chip-ok',
+                            dot: 'chip-dot dot-ok',
+                            label: 'Closed'
+                        },
+                        cancelled: {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Cancelled'
+                        },
+                    };
+                    return map[status] ?? {
+                        chip: 'chip',
+                        dot: 'chip-dot dot-neutral',
+                        label: status
+                    };
+                },
+
+                openSoPicker() {
+                    this.soPickerOpen = true;
+                    this.soPickerSearch = '';
+                    this.fetchSoPickerData();
+                },
+
+                closeSoPicker() {
+                    this.soPickerOpen = false;
+                },
+
+                async fetchSoPickerData() {
+                    this.soPickerLoading = true;
+                    try {
+                        const response = await axios.get(route('sales.sales_orders.datatable'), {
+                            params: {
+                                per_page: 100,
+                                status: 'open',
+                                search: this.soPickerSearch,
+                            },
+                        });
+                        this.soPickerData = (response.data.data ?? []).filter(so => so.is_deliverable);
+                    } catch (error) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan saat memuat data SO. Silakan coba lagi.'
+                        });
+                    } finally {
+                        this.soPickerLoading = false;
+                    }
+                },
+
+                async handleCreateDeliveryOrder(salesOrderId) {
+                    this.closeSoPicker();
+                    Swal.fire({
+                        title: 'Apakah Anda yakin ingin membuat Pengiriman Barang untuk SO ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Memproses...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            try {
+                                const response = await axios.post(route(
+                                    'sales.delivery_orders.store', {
+                                        sales_order_id: salesOrderId
+                                    }));
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+
+                                window.location.href = response.data.redirect;
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
                                 });
                             }
 

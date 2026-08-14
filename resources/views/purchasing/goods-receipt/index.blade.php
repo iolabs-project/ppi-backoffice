@@ -13,6 +13,8 @@
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
+                <button class="btn btn-primary" x-on:click="openPoPicker()"><x-misc.icon name="plus"
+                        :size="15" />Tambah</button>
             </div>
         </div>
         <div class="filter-pills">
@@ -171,6 +173,56 @@
                     <x-misc.icon name="chev-right" :size="13" /></button>
             </div>
         </div>
+
+        <x-misc.modal title="Pilih Purchase Order" show="poPickerOpen" close-handler="closePoPicker()" :width="640">
+            <div style="margin-bottom:12px;">
+                <input class="input" style="height:32px; width:100%;" placeholder="Cari nomor PO atau supplier..."
+                    x-model="poPickerSearch" x-on:input.debounce.400ms="fetchPoPickerData()" />
+            </div>
+            <table class="tbl tbl-tight">
+                <thead>
+                    <tr>
+                        <th>Nomor PO</th>
+                        <th>Tanggal</th>
+                        <th>Vendor</th>
+                        <th style="text-align:right;">Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="poPickerLoading">
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
+                                Memuat data...
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!poPickerLoading && poPickerData.length === 0">
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
+                                Tidak ada PO yang tersedia untuk diterima.
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!poPickerLoading">
+                        <template x-for="po in poPickerData" :key="po.id">
+                            <tr class="row-tap" @click="handleCreateGoodsReceipt(po.id)">
+                                <td class="mono" style="font-weight:600;" x-text="po.number"></td>
+                                <td style="color:var(--ink-3);" x-text="po.order_date ?? '-'"></td>
+                                <td style="font-weight:500;" x-text="po.supplier?.name ?? '-'"></td>
+                                <td class="num" style="text-align:right;" x-text="m(po.total_amount)"></td>
+                                <td>
+                                    <span :class="poStatusChip(po.status).chip">
+                                        <span :class="poStatusChip(po.status).dot"></span>
+                                        <span x-text="poStatusChip(po.status).label"></span>
+                                    </span>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </x-misc.modal>
     </div>
 @endsection
 
@@ -192,6 +244,11 @@
                 page: 1,
                 perPage: 10,
                 filter: 'all',
+
+                poPickerOpen: false,
+                poPickerLoading: false,
+                poPickerSearch: '',
+                poPickerData: [],
 
                 statusChip(status) {
                     const map = {
@@ -301,6 +358,114 @@
                                 Swal.close();
                                 let message =
                                     'Terjadi kesalahan saat membatalkan Penerimaan Barang. Silakan coba lagi.';
+                                if (error.response?.data?.message) {
+                                    message = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: message
+                                });
+                            }
+
+                        }
+                    })
+                },
+
+                poStatusChip(status) {
+                    const map = {
+                        draft: {
+                            chip: 'chip',
+                            dot: 'chip-dot dot-muted',
+                            label: 'Draft'
+                        },
+                        open: {
+                            chip: 'chip chip-info',
+                            dot: 'chip-dot dot-info',
+                            label: 'Open'
+                        },
+                        closed: {
+                            chip: 'chip chip-ok',
+                            dot: 'chip-dot dot-ok',
+                            label: 'Closed'
+                        },
+                        cancelled: {
+                            chip: 'chip chip-bad',
+                            dot: 'chip-dot dot-bad',
+                            label: 'Cancelled'
+                        },
+                    };
+                    return map[status] ?? {
+                        chip: 'chip',
+                        dot: 'chip-dot dot-neutral',
+                        label: status
+                    };
+                },
+
+                openPoPicker() {
+                    this.poPickerOpen = true;
+                    this.poPickerSearch = '';
+                    this.fetchPoPickerData();
+                },
+
+                closePoPicker() {
+                    this.poPickerOpen = false;
+                },
+
+                async fetchPoPickerData() {
+                    this.poPickerLoading = true;
+                    try {
+                        const response = await axios.get(route('purchasings.purchase_orders.datatable'), {
+                            params: {
+                                per_page: 100,
+                                status: 'open',
+                                search: this.poPickerSearch,
+                            },
+                        });
+                        this.poPickerData = (response.data.data ?? []).filter(po => po.is_receivable);
+                    } catch (error) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan saat memuat data PO. Silakan coba lagi.'
+                        });
+                    } finally {
+                        this.poPickerLoading = false;
+                    }
+                },
+
+                async handleCreateGoodsReceipt(purchaseOrderId) {
+                    this.closePoPicker();
+                    Swal.fire({
+                        title: 'Apakah Anda yakin ingin membuat Penerimaan Barang untuk PO ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Memproses...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            try {
+                                const response = await axios.post(route(
+                                    'purchasings.goods_receipts.store', {
+                                        purchase_order_id: purchaseOrderId
+                                    }));
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+
+                                window.location.href = response.data.redirect;
+                            } catch (error) {
+                                Swal.close();
+                                let message =
+                                    'Terjadi kesalahan saat membuat Penerimaan Barang. Silakan coba lagi.';
                                 if (error.response?.data?.message) {
                                     message = error.response.data.message;
                                 }

@@ -2,11 +2,12 @@
 @php
     $penjualanActive = str_starts_with($currentPage, 'penjualan');
     $pembelianActive = str_starts_with($currentPage, 'pembelian');
-    $financeActive = str_starts_with($currentPage, 'finance');
+    $financeActive = str_starts_with($currentPage, 'finance') || str_starts_with($currentPage, 'biaya');
     $financeSubmenus = [
         ['id' => 'finance.account_payable',    'label' => 'Hutang',    'desc' => 'Kelola hutang & pembayaran ke supplier', 'url' => route('finances.account_payables.index'),    'icon' => 'wallet', 'bg' => '#FEF2F2', 'fg' => '#DC2626'],
         ['id' => 'finance.account_receivable', 'label' => 'Piutang', 'desc' => 'Kelola piutang & pembayaran dari customer', 'url' => route('finances.account_receivables.index'), 'icon' => 'coins',  'bg' => '#F0FDF4', 'fg' => '#16A34A'],
         ['id' => 'finance.cash',            'label' => 'Kas & Bank',          'desc' => 'Kelola akun kas & bank',                 'url' => route('finances.cash.index'),                       'icon' => 'piggy-bank', 'bg' => '#EFF6FF', 'fg' => '#2563EB'],
+        ['id' => 'biaya',                   'label' => 'Biaya',              'desc' => 'Kelola biaya operasional',               'url' => route('expenses.index'),                            'icon' => 'receipt',    'bg' => '#FFF7ED', 'fg' => '#EA580C'],
     ];
     $penjualanSubmenus = [
         ['id' => 'penjualan',            'label' => 'Sales Order', 'desc' => 'Kelola pesanan penjualan',    'url' => route('sales.sales_orders.index'),           'icon' => 'receipt',  'bg' => '#EEF2FF', 'fg' => '#6366F1'],
@@ -19,7 +20,6 @@
         ['id' => 'pembelian.tagihan', 'label' => 'Tagihan',        'desc' => 'Kelola tagihan pembelian',  'url' => route('purchasings.purchase_invoices.index'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A'],
     ];
     $navItems = [
-        ['id' => 'biaya',   'icon' => 'receipt', 'label' => 'Biaya',       'url' => route('expenses.index')],
         ['id' => 'master',  'icon' => 'database', 'label' => 'Master Data', 'url' => route('master.index')],
         ['id' => 'laporan', 'icon' => 'clipboard', 'label' => 'Laporan',     'url' => route('laporan.index')],
     ];

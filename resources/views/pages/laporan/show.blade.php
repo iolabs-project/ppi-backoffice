@@ -17,22 +17,21 @@
       <h1 class="order-title display">Laporan Keuangan</h1>
       <div class="order-sub">Periode Januari – Mei 2026</div>
     </div>
+    <div class="order-actions">
+      <button class="btn btn-ghost"><x-misc.icon name="print" :size="14" />Cetak</button>
+      <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
+    </div>
   </div>
 
   {{-- Tab bar --}}
   <div class="utab">
     @foreach($tabs as $t)
-    <a href="{{ route('laporan.show', $t['id']) }}" class="utab-item">{!! $t['label'] !!}</a>
+    <a href="{{ route('laporan.show', $t['id']) }}"
+       class="utab-item {{ $activeTab === $t['id'] ? 'utab-active' : '' }}">{!! $t['label'] !!}</a>
     @endforeach
   </div>
 
-  <div class="card" style="padding:56px 24px; text-align:center;">
-    <x-misc.icon name="clipboard" :size="28" stroke="var(--ink-4)" />
-    <div class="display" style="font-size:15px; font-weight:700; margin-top:14px;">Pilih Laporan</div>
-    <div style="font-size:13px; color:var(--ink-3); margin-top:4px;">
-      Pilih salah satu jenis laporan di atas untuk menampilkan datanya.
-    </div>
-  </div>
+  @include('pages.laporan.partials.' . $activeTab)
 
 </div>
 @endsection

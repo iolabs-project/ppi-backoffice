@@ -1263,9 +1263,19 @@
                     const map = {
                         purchasing: 'Pembelian',
                         sales: 'Penjualan',
+                        finances: 'Keuangan',
                         master: 'Master Data'
                     };
                     return map[key] || key.replace(/-/g, ' ');
+                },
+                moduleIcon(key) {
+                    const map = {
+                        purchasing: 'cart',
+                        sales: 'trend',
+                        finances: 'wallet',
+                        master: 'database'
+                    };
+                    return map[key] || 'layers';
                 },
                 resourceLabel(key) {
                     return key.replace(/-/g, ' ');
@@ -1325,6 +1335,13 @@
                     return Object.entries(module).flatMap(([rKey, actions]) =>
                         actions.map(action => this.permKey(mKey, rKey, action))
                     );
+                },
+                moduleActiveCount(mKey) {
+                    const all = this._modulePermKeys(mKey);
+                    return all.filter(k => this.activePermissions.includes(k)).length;
+                },
+                moduleTotalCount(mKey) {
+                    return this._modulePermKeys(mKey).length;
                 },
 
                 toggleModule(mKey) {

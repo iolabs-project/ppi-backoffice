@@ -253,6 +253,7 @@ Route::middleware('auth')->group(function () {
 
     // Laporan Keuangan
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+    Route::get('/laporan/{report}', [LaporanController::class, 'show'])->name('laporan.show');
 
     // Master Data
     // Route::get('/master',                         [MasterController::class, 'index'])->name('master.index');

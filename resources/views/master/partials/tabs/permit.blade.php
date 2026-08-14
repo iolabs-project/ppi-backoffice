@@ -1,26 +1,29 @@
 <div x-data="permitModule()" x-show="tab === 'permit'" x-cloak>
-    <div style="display:grid; grid-template-columns:280px 1fr; gap:0; min-height:400px; align-items:start;">
+    <div class="permit-grid">
 
         {{-- ── Left panel: Roles list ──────────────────────────────── --}}
-        <div class="card" style="display:flex; flex-direction:column; border-right:1px solid var(--border); border-radius:var(--radius) 0 0 var(--radius);">
+        <div class="card permit-roles">
             <div class="master-toolbar" style="justify-content:space-between; flex-shrink:0;">
-                <div style="font-weight:600; font-size:13px;">Daftar Role</div>
+                <div>
+                    <div style="font-weight:700; font-size:14px;">Daftar Role</div>
+                    <div style="font-size:11.5px; color:var(--ink-4); margin-top:2px;"
+                        x-text="roles.length + ' role terdaftar'"></div>
+                </div>
                 <button class="btn btn-primary btn-sm" x-on:click="openCreateModal()">
                     <x-misc.icon name="plus" :size="14" /> Tambah
                 </button>
             </div>
-            <div>
+            <div class="permit-roles__list">
                 <template x-if="roles.length === 0">
-                    <div style="padding:24px; text-align:center; color:var(--ink-4); font-size:13px;">Belum ada role</div>
+                    <div class="permit-roles__empty">Belum ada role</div>
                 </template>
                 <template x-for="r in roles" :key="r.id">
-                    <div x-on:click="selectRole(r)"
-                        style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); transition:background .1s;"
-                        :style="selectedRole && selectedRole.id === r.id ? 'background:var(--bg-2);' : ''">
-                        <div>
-                            <div style="font-weight:600; font-size:13px;" x-text="r.name"></div>
-                            <div style="font-size:11px; color:var(--ink-4); margin-top:1px;"
-                                x-text="r.permissions.length + ' hak akses'"></div>
+                    <div class="role-item" x-on:click="selectRole(r)"
+                        :class="selectedRole && selectedRole.id === r.id ? 'role-item--active' : ''">
+                        <div class="role-item__avatar" x-text="r.name.charAt(0).toUpperCase()"></div>
+                        <div class="role-item__body">
+                            <div class="role-item__name" x-text="r.name"></div>
+                            <div class="role-item__count" x-text="r.permissions.length + ' hak akses'"></div>
                         </div>
                         <div x-on:click.stop>
                             <div class="action-menu" x-data="{ open: false }">
@@ -28,8 +31,8 @@
                                     x-on:click="open = !open" x-on:click.outside="open = false">
                                     <x-misc.icon name="more" :size="15" />
                                 </button>
-                                <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
-                                    style="position:absolute; right:0; top:100%; margin-top:4px; z-index:50;">
+                                <div class="action-menu__panel role-item__menu" x-show="open" x-cloak
+                                    x-on:click="open = false">
                                     <button class="action-menu__item" x-on:click="openEditModal(r)">
                                         <x-misc.icon name="edit" :size="14" /> Edit Nama Role
                                     </button>
@@ -42,11 +45,13 @@
         </div>
 
         {{-- ── Right panel: Permission tree ────────────────────────── --}}
-        <div class="card" style="display:flex; flex-direction:column; border-radius:0 var(--radius) var(--radius) 0;">
+        <div class="card permit-detail">
             <template x-if="!selectedRole">
-                <div style="padding:48px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--ink-4);">
-                    <x-misc.icon name="users" :size="32" stroke="var(--ink-4)" />
-                    <div style="font-size:13px;">Pilih role untuk mengatur hak akses</div>
+                <div class="permit-empty">
+                    <div class="permit-empty__icon">
+                        <x-misc.icon name="users" :size="26" stroke="var(--ink-4)" />
+                    </div>
+                    <div class="permit-empty__text">Pilih role untuk mengatur hak akses</div>
                 </div>
             </template>
             <template x-if="selectedRole">
@@ -64,38 +69,51 @@
                     </div>
 
                     {{-- Permission tree --}}
-                    <div style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+                    <div class="permit-tree">
                         <template x-for="[mKey, module] in Object.entries(permissionTree)" :key="mKey">
-                            <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                            <div class="perm-module">
                                 {{-- Module header --}}
-                                <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--bg-1); cursor:pointer; user-select:none;"
-                                    x-on:click="toggleModule(mKey)">
-                                    <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="perm-module__header" x-on:click="toggleModule(mKey)">
+                                    <div class="perm-module__title-group">
                                         <input type="checkbox"
                                             style="width:15px; height:15px; cursor:pointer; accent-color:var(--accent); flex-shrink:0;"
                                             :checked="isModuleChecked(mKey)"
                                             x-effect="$el.indeterminate = isModuleIndeterminate(mKey)"
                                             x-on:click.stop
                                             x-on:change="toggleModuleAll(mKey, $event.target.checked)" />
-                                        <span style="font-weight:700; font-size:13px; text-transform:capitalize;" x-text="moduleLabel(mKey)"></span>
+                                        <div class="perm-module__icon">
+                                            <template x-if="moduleIcon(mKey) === 'wallet'"><x-misc.icon name="wallet" :size="15" /></template>
+                                            <template x-if="moduleIcon(mKey) === 'database'"><x-misc.icon name="database" :size="15" /></template>
+                                            <template x-if="moduleIcon(mKey) === 'cart'"><x-misc.icon name="cart" :size="15" /></template>
+                                            <template x-if="moduleIcon(mKey) === 'trend'"><x-misc.icon name="trend" :size="15" /></template>
+                                            <template x-if="moduleIcon(mKey) === 'layers'"><x-misc.icon name="layers" :size="15" /></template>
+                                        </div>
+                                        <span class="perm-module__title" x-text="moduleLabel(mKey)"></span>
                                     </div>
-                                    <x-misc.icon name="chevron-down" :size="14" stroke="var(--ink-3)"
-                                        x-bind:style="expandedModules[mKey] ? 'transform:rotate(180deg); transition:.2s' : 'transition:.2s'" />
+                                    <div class="perm-module__meta">
+                                        <span class="perm-module__count"
+                                            x-text="moduleActiveCount(mKey) + '/' + moduleTotalCount(mKey) + ' aktif'"></span>
+                                        <span class="perm-module__chevron" :class="expandedModules[mKey] ? 'perm-module__chevron--open' : ''">
+                                            <x-misc.icon name="chev-down" :size="14" stroke="var(--ink-3)" />
+                                        </span>
+                                    </div>
                                 </div>
                                 {{-- Resources --}}
                                 <div x-show="expandedModules[mKey]">
                                     <template x-for="[rKey, actions] in Object.entries(module)" :key="rKey">
-                                        <div style="padding:8px 14px 8px 38px; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--border); background:var(--bg-0);">
-                                            <div style="font-size:13px; font-weight:500; color:var(--ink-2); min-width:160px; text-transform:capitalize;"
-                                                x-text="resourceLabel(rKey)"></div>
-                                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                        <div class="perm-resource-row">
+                                            <div class="perm-resource__label" x-text="resourceLabel(rKey)"></div>
+                                            <div class="perm-actions">
                                                 <template x-for="action in actions" :key="action">
-                                                    <label style="display:flex; align-items:center; gap:5px; padding:3px 10px; border-radius:99px; border:1px solid var(--border); cursor:pointer; font-size:12px; user-select:none;"
-                                                        :style="hasPermission(mKey, rKey, action) ? 'background:oklch(0.92 0.06 145); border-color:oklch(0.75 0.12 145); color:oklch(0.38 0.12 145);' : 'background:var(--bg-1); color:var(--ink-4);'">
+                                                    <label class="perm-action-chip"
+                                                        :class="hasPermission(mKey, rKey, action) ? (action === 'delete' ? 'perm-action-chip--danger' : 'perm-action-chip--active') : ''">
                                                         <input type="checkbox"
-                                                            style="width:13px; height:13px; accent-color:var(--accent);"
                                                             :checked="hasPermission(mKey, rKey, action)"
                                                             x-on:change="togglePermission(mKey, rKey, action)" />
+                                                        <template x-if="action === 'create'"><x-misc.icon name="plus" :size="12" :sw="2" /></template>
+                                                        <template x-if="action === 'delete'"><x-misc.icon name="trash" :size="12" :sw="2" /></template>
+                                                        <template x-if="action === 'edit'"><x-misc.icon name="edit" :size="12" :sw="2" /></template>
+                                                        <template x-if="action === 'view'"><x-misc.icon name="eye" :size="12" :sw="2" /></template>
                                                         <span x-text="actionLabel(action)"></span>
                                                     </label>
                                                 </template>
