@@ -6,7 +6,8 @@
     ['id'=>'cash-flow',    'label'=>'Arus Kas'],
     ['id'=>'profit-loss',   'label'=>'Laba Rugi'],
     ['id'=>'executive',  'label'=>'Eksekutif'],
-    ['id'=>'payable-receivable',      'label'=>'Utang &amp; Piutang'],
+    ['id'=>'receivable',      'label'=>'Piutang'],
+    ['id'=>'payable',      'label'=>'Utang'],
     ['id'=>'journal',     'label'=>'Jurnal Umum'],
   ];
 @endphp

@@ -1,5 +1,5 @@
 {{-- =================== LABA RUGI =================== --}}
-<div class="labarugi-grid" x-data="profitLossModule()" x-init="init()">
+<div class="labarugi-grid" x-data="profitLossModule()">
     <div class="labarugi-tables">
         <div class="card" style="overflow:hidden;">
             <div class="neraca-card-hd">

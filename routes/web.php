@@ -355,5 +355,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}', 'show')->name('show');
         Route::get('/profit-loss/datatable', 'profitLossDatatable')->name('profit_loss.datatable');
         Route::get('/journal/datatable', 'journalDatatable')->name('journal.datatable');
+        Route::get('/general-ledger/datatable', 'generalLedgerDatatable')->name('general_ledger.datatable');
     });
 });

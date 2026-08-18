@@ -8,7 +8,8 @@ enum ReportTypeEnum: string
     case CASH_FLOW = 'cash-flow';
     case PROFIT_LOSS = 'profit-loss';
     case EXECUTIVE = 'executive';
-    case PAYABLE_RECEIVABLE = 'payable-receivable';
+    case RECEIVABLE = 'receivable';
+    case PAYABLE = 'payable';
     case JOURNAL = 'journal';
 
     public function label(): string
@@ -18,7 +19,8 @@ enum ReportTypeEnum: string
             self::CASH_FLOW => 'Arus Kas',
             self::PROFIT_LOSS => 'Laba Rugi',
             self::EXECUTIVE => 'Eksekutif',
-            self::PAYABLE_RECEIVABLE => 'Hutang & Piutang',
+            self::RECEIVABLE => 'Piutang Dagang',
+            self::PAYABLE => 'Utang Dagang',
             self::JOURNAL => 'Jurnal Umum',
         };
     }

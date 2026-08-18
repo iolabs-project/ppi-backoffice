@@ -1,5 +1,5 @@
 {{-- =================== JURNAL UMUM =================== --}}
-<div class="card" style="overflow:hidden;" x-data="journalModule()" x-init="init()">
+<div class="card" style="overflow:hidden;" x-data="journalModule()">
     <div class="card-hd">
         <div class="display card-hd-title">Jurnal Umum</div>
         <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
