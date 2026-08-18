@@ -21,7 +21,7 @@
     ];
     $navItems = [
         ['id' => 'master',  'icon' => 'database', 'label' => 'Master Data', 'url' => route('master.index')],
-        ['id' => 'laporan', 'icon' => 'clipboard', 'label' => 'Laporan',     'url' => route('laporan.index')],
+        ['id' => 'laporan', 'icon' => 'clipboard', 'label' => 'Laporan',     'url' => route('reports.index')],
     ];
     $bottom = [];
 @endphp

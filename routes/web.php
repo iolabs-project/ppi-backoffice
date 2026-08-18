@@ -26,6 +26,7 @@ use App\Http\Controllers\Master\WarehouseController;
 use App\Http\Controllers\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Purchasing\PurchaseInvoiceController;
 use App\Http\Controllers\Purchasing\PurchaseOrderController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Sale\SaleOrderController;
 use App\Http\Controllers\Sales\DeliveryOrderController;
 use App\Http\Controllers\Sales\SalesInvoiceController;
@@ -345,7 +346,14 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/', 'store')->name('store');
             Route::put('/{id}', 'update')->name('update');
-            Route::put('/{id}/permissions', 'updatePermissions')->name('updatePermissions');
+            Route::put('/{id}/permissions', 'updatePermissions')->name('update_permissions');
         });
+    });
+
+    Route::prefix('reports')->name('reports.')->controller(ReportController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/{id}', 'show')->name('show');
+        Route::get('/profit-loss/datatable', 'profitLossDatatable')->name('profit_loss.datatable');
+        Route::get('/journal/datatable', 'journalDatatable')->name('journal.datatable');
     });
 });

@@ -1352,7 +1352,7 @@
                 async savePermissions() {
                     this.saving = true;
                     try {
-                        await axios.put(route('master.roles.updatePermissions', this.selectedRole.id), {
+                        await axios.put(route('master.roles.update_permissions', this.selectedRole.id), {
                             permissions: this.activePermissions,
                         });
                         // update local role entry
