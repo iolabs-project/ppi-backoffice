@@ -4,80 +4,132 @@
         <div class="display card-hd-title">Jurnal Umum</div>
         <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
     </div>
-    <table class="tbl">
+    <table class="tbl tbl-journal">
         <thead>
             <tr>
-                <th>Tanggal</th>
-                <th>No. Jurnal</th>
+                <th style="width:100px;">Tanggal</th>
+                <th style="width:130px;">No. Jurnal</th>
                 <th>Keterangan</th>
                 <th>Akun</th>
                 <th style="text-align:right;">Debit</th>
                 <th style="text-align:right;">Kredit</th>
             </tr>
         </thead>
-        <tbody>
-            {{-- @foreach ($jurnal as $j)
-      @php $first = true; @endphp
-      @foreach ($j['entri'] as $e)
-      <tr style="{{ $first ? 'border-top:2px solid var(--line-2);' : '' }}">
-        <td style="color:var(--ink-3); white-space:nowrap; font-size:12.5px;">{{ $first ? $j['tanggal'] : '' }}</td>
-        <td class="mono" style="font-size:11.5px; color:var(--ink-4);">{{ $first ? $j['noJurnal'] : '' }}</td>
-        <td style="font-size:12.5px; color:var(--ink-3);">{{ $first ? $j['keterangan'] : '' }}</td>
-        <td style="font-size:13px; {{ $e['posisi'] === 'kredit' ? 'padding-left:28px; color:var(--ink-3);' : 'font-weight:500;' }}">{{ $e['akun'] }}</td>
-        <td class="num" style="text-align:right; font-size:13px;">{{ $e['posisi'] === 'debit' ? fmt_rp($e['jumlah']) : '' }}</td>
-        <td class="num" style="text-align:right; font-size:13px;">{{ $e['posisi'] === 'kredit' ? fmt_rp($e['jumlah']) : '' }}</td>
-      </tr>
-      @php $first = false; @endphp
-      @endforeach
-      @endforeach --}}
-            <template x-if="loading">
+        <template x-if="loading">
+            <tbody>
                 <tr>
-                    <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">
+                    <td colspan="6" style="text-align:center; color:var(--ink-3); padding:32px;">
                         Memuat data...
                     </td>
                 </tr>
-            </template>
-            <template x-if="!loading && Object.keys(tableData.data).length === 0">
+            </tbody>
+        </template>
+        <template x-if="!loading && tableData.data.length === 0">
+            <tbody>
                 <tr>
-                    <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">
+                    <td colspan="6" style="text-align:center; color:var(--ink-3); padding:32px;">
                         Tidak ada data
                     </td>
                 </tr>
-            </template>
-            <template x-if="!loading && Object.keys(tableData.data).length > 0">
-                <template x-for="[groupName, items] in Object.entries(tableData.data)" :key="groupName">
-                    <tbody>
-                        <tr class="coa-group-row">
-                            <td colspan="6" x-text="groupName"></td>
+            </tbody>
+        </template>
+        <template x-if="!loading && tableData.data.length > 0">
+            <template x-for="journal in tableData.data" :key="journal.id">
+                <tbody>
+                    <tr class="tbl-journal__group">
+                        <td style="white-space:nowrap; font-size:12.5px; color:var(--ink-3); font-weight:600;"
+                            x-text="journal.journal_date"></td>
+                        <td class="mono" style="font-size:11.5px; color:var(--ink-4); font-weight:600;"
+                            x-text="journal.number"></td>
+                        <td style="font-size:13px; color:var(--ink-2); font-weight:600;" x-text="journal.description">
+                        </td>
+                        <td colspan="3"></td>
+                    </tr>
+                    <template x-for="entry in journal.items" :key="entry.id">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td x-text="entry.account.name"
+                                :style="entry.credit > 0 ? 'padding-left:30px; font-size:13px; color:var(--ink-3);' :
+                                    'font-size:13px; font-weight:500; color:var(--ink-2);'">
+                            </td>
+                            <td class="num" style="text-align:right; font-size:13px; color:var(--ink-2);"
+                                x-text="entry.debit > 0 ? m(entry.debit) : '—'"></td>
+                            <td class="num" style="text-align:right; font-size:13px; color:var(--ink-2);"
+                                x-text="entry.credit > 0 ? m(entry.credit) : '—'"></td>
                         </tr>
-                        <template x-for="item in items" :key="item.id">
-                            <tr>
-                                <td style="color:var(--ink-3); white-space:nowrap; font-size:12.5px;" x-text="item.tanggal"></td>
-                                <td class="mono" style="font-size:11.5px; color:var(--ink-4);" x-text="item.noJurnal"></td>
-                                <td style="font-size:12.5px; color:var(--ink-3);" x-text="item.keterangan"></td>
-                                <td style="font-size:13px;" x-text="item.akun"></td>
-                                <td class="num" style="text-align:right; font-size:13px;" x-text="item.posisi === 'debit' ? item.jumlah_formatted : ''"></td>
-                                <td class="num" style="text-align:right; font-size:13px;" x-text="item.posisi === 'kredit' ? item.jumlah_formatted : ''"></td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </template>
+                    </template>
+                    {{-- Subtotal --}}
+                    <tr class="tbl-journal__subtotal">
+                        <td colspan="3"></td>
+                        <td
+                            style="font-size:11.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-4); text-align:right;">
+                            Subtotal</td>
+                        <td class="num" style="text-align:right; font-weight:700; font-size:13px;"
+                            x-text="m(journal.items.reduce((sum, entry) => sum + entry.debit, 0))"></td>
+                        <td class="num" style="text-align:right; font-weight:700; font-size:13px;"
+                            x-text="m(journal.items.reduce((sum, entry) => sum + entry.credit, 0))"></td>
+                    </tr>
+                </tbody>
             </template>
-        </tbody>
+        </template>
     </table>
+
+    <div class="table-pagination">
+            <div class="pagination-actions">
+                <div class="pagination-label">Per</div>
+                <select x-model.number="perPage" x-on:change="page = 1" class="btn btn-ghost btn-sm pagination-select">
+                    <template x-for="n in perPageOptions" :key="n">
+                        <option :value="n" x-text="n"></option>
+                    </template>
+                </select>
+            </div>
+            <div class="pagination-info">
+                <template x-if="tableData.total === 0">
+                    <span x-text="'0 dari 0'"></span>
+                </template>
+                <template x-if="tableData.total > 0">
+                    <span
+                        x-text="( (page-1)*perPage + 1 ) + '-' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                </template>
+            </div>
+            <div class="pagination-controls">
+                <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong
+                        x-text="Math.ceil(tableData.total/tableData.per_page)"></strong></div>
+                <button class="btn btn-ghost btn-sm" x-on:click="prev()" :disabled="page <= 1"><x-misc.icon
+                        name="chev-left" :size="13" /> Prev</button>
+                <button class="btn btn-ghost btn-sm" x-on:click="next()"
+                    :disabled="page >= Math.ceil(tableData.total / tableData.per_page)">Next
+                    <x-misc.icon name="chev-right" :size="13" /></button>
+            </div>
+        </div>
 </div>
 @push('journal-scripts')
     <script>
         function journalModule() {
             return {
                 tableData: {
-                    data: {},
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
                     total: 0,
+                    prev_page_url: null,
+                    next_page_url: null,
+                    data: [],
                 },
+                loading: false,
+                perPageOptions: [10, 25, 50],
+                page: 1,
+                perPage: 10,
                 filter: {
                     search: '',
                     start_date: '{{ now()->startOfMonth()->format('Y-m-d') }}',
                     end_date: '{{ now()->endOfMonth()->format('Y-m-d') }}',
+                },
+
+                m(v) {
+                    return NumberUtils.formatNumericIntoMask(v);
                 },
 
                 async init() {
@@ -97,8 +149,8 @@
                                 end_date: this.filter.end_date
                             }
                         });
-                        console.log('Journal data fetched:', r.data);
-                        this.transformData(r.data);
+                        console.log(r.data);
+                        this.tableData = r.data;
                     } catch {
                         Toast.fire({
                             icon: 'error',
@@ -109,62 +161,6 @@
                     }
                 },
 
-                transformData(journalEntries) {
-                    const groupedData = {};
-                    let total = 0;
-
-                    journalEntries.forEach(entry => {
-                        if (!entry.items || entry.items.length === 0) return;
-
-                        entry.items.forEach(item => {
-                            // Group by account category name
-                            const categoryName = item.account?.category?.name || 'Uncategorized';
-                            
-                            if (!groupedData[categoryName]) {
-                                groupedData[categoryName] = [];
-                            }
-
-                            // Format currency for display
-                            const jumlah_formatted = this.formatCurrency(item.debit || item.credit);
-                            
-                            groupedData[categoryName].push({
-                                id: item.id,
-                                tanggal: this.formatDate(entry.journal_date),
-                                noJurnal: entry.number,
-                                keterangan: entry.description,
-                                akun: item.account?.name || 'Unknown',
-                                posisi: item.debit > 0 ? 'debit' : 'kredit',
-                                jumlah: item.debit || item.credit,
-                                jumlah_formatted: jumlah_formatted
-                            });
-
-                            total += item.debit || item.credit;
-                        });
-                    });
-
-                    this.tableData = {
-                        data: groupedData,
-                        total: total
-                    };
-                },
-
-                formatDate(dateString) {
-                    const date = new Date(dateString);
-                    return date.toLocaleDateString('id-ID', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit'
-                    });
-                },
-
-                formatCurrency(value) {
-                    return new Intl.NumberFormat('id-ID', {
-                        style: 'currency',
-                        currency: 'IDR',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    }).format(value);
-                },
             }
         }
     </script>

@@ -18,7 +18,7 @@ class JournalEntry extends Model
     ];
 
     protected $casts = [
-        'journal_date' => 'datetime',
+        'journal_date' => 'date:Y-m-d',
     ];
 
     public function company()

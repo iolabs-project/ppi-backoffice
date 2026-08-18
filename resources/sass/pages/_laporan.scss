@@ -214,6 +214,22 @@
   opacity: .8;
 }
 
+// Jurnal Umum
+.tbl-journal {
+  tbody + tbody .tbl-journal__group td {
+    border-top: 1px solid var(--line-2);
+  }
+}
+
+.tbl-journal__group td {
+  background: var(--bg-2);
+}
+
+.tbl-journal__subtotal td {
+  background: var(--bg);
+  border-top: 1px dashed var(--line-2);
+}
+
 // Utang & Piutang
 .utang-grid {
   display: grid;
