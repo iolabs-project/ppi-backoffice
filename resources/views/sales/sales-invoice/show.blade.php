@@ -161,9 +161,18 @@
                     <div class="order-notes__text">{{ $salesInvoice->note }}</div>
                 </div>
                 <div class="order-detail-summary">
-                    @foreach ([['Nilai Bruto', $salesInvoice->items->sum('subtotal'), false], ['Diskon Item', -$salesInvoice->items->sum('discount_amount'), false], ['Subtotal', $salesInvoice->subtotal, false], ['Diskon', -$salesInvoice->discount_amount, false], ['Pajak', $salesInvoice->tax_amount, false], ['Biaya Tambahan (Customer)', $salesInvoice->charges->sum('amount'), false], ['Uang Muka', -$salesInvoice->down_payment_amount, false], ['Total', $salesInvoice->total_amount, true]] as [$lbl, $val, $bold])
+                    @foreach ([
+                        ['Nilai Bruto',               $salesInvoice->items->sum('subtotal'),         false, false],
+                        ['Diskon Item',               -$salesInvoice->items->sum('discount_amount'),  false, false],
+                        ['Subtotal',                  $salesInvoice->subtotal,                        false, true],
+                        ['Diskon',                    -$salesInvoice->discount_amount,                false, false],
+                        ['Pajak',                     $salesInvoice->tax_amount,                     false, false],
+                        ['Biaya Tambahan (Customer)', $salesInvoice->charges->sum('amount'),          false, false],
+                        ['Uang Muka',                 -$salesInvoice->down_payment_amount,            false, false],
+                        ['Total',                     $salesInvoice->total_amount,                    true,  true],
+                    ] as [$lbl, $val, $bold, $divider])
                         <div
-                            style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
+                            style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $divider ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
                             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
                             <span class="num"
                                 style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ $val < 0 ? '-' : '' }}{{ number_format(abs($val), 2, '.', ',') }}</span>

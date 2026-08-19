@@ -172,9 +172,18 @@
                     <div class="order-notes__text">{{ $purchaseOrder->note }}</div>
                 </div>
                 <div class="order-detail-summary">
-                    @foreach ([['Nilai Bruto', $purchaseOrder->items->sum('subtotal'), false], ['Diskon Item', -$purchaseOrder->items->sum('discount_amount'), false], ['Subtotal', $purchaseOrder->subtotal, false], ['Diskon', -$purchaseOrder->discount_amount, false], ['Pajak', $purchaseOrder->tax_amount, false], ['Biaya Tambahan (Inventory)', $inventoryCostTotal, false], ['Biaya Tambahan (Non-Inventory)', $nonInventoryCostTotal, false], ['Total Pesanan', $purchaseOrder->total_amount, true]] as [$lbl, $val, $bold])
+                    @foreach ([
+                        ['Nilai Bruto',                    $purchaseOrder->items->sum('subtotal'),         false, false],
+                        ['Diskon Item',                    -$purchaseOrder->items->sum('discount_amount'),  false, false],
+                        ['Subtotal',                       $purchaseOrder->subtotal,                        false, true],
+                        ['Diskon',                         -$purchaseOrder->discount_amount,                false, false],
+                        ['Pajak',                          $purchaseOrder->tax_amount,                      false, false],
+                        ['Biaya Tambahan (Inventory)',     $inventoryCostTotal,                             false, false],
+                        ['Biaya Tambahan (Non-Inventory)', $nonInventoryCostTotal,                          false, false],
+                        ['Total Pesanan',                  $purchaseOrder->total_amount,                    true,  true],
+                    ] as [$lbl, $val, $bold, $divider])
                         <div
-                            style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
+                            style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $divider ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
                             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
                             <span class="num"
                                 style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ $val < 0 ? '–' : '' }}{{ number_format(abs($val), 2, '.', ',') }}</span>
