@@ -50,7 +50,7 @@
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td x-text="entry.account.name"
+                            <td x-text="entry.account.name + (entry.account.code ? ' (' + entry.account.code + ')' : '')"
                                 :style="entry.credit > 0 ? 'padding-left:30px; font-size:13px; color:var(--ink-3);' :
                                     'font-size:13px; font-weight:500; color:var(--ink-2);'">
                             </td>
@@ -144,6 +144,8 @@
                     try {
                         const r = await axios.get(route('reports.journal.datatable'), {
                             params: {
+                                page: this.page,
+                                per_page: this.perPage,
                                 search: this.filter.search,
                                 start_date: this.filter.start_date,
                                 end_date: this.filter.end_date
@@ -160,6 +162,19 @@
                         this.loading = false;
                     }
                 },
+
+                async next() {
+                    if (this.tableData && this.page < this.tableData.last_page) {
+                        this.page++;
+                        await this.fetchData();
+                    }
+                },
+                async prev() {
+                    if (this.tableData && this.page > 1) {
+                        this.page--;
+                        await this.fetchData();
+                    }
+                }
 
             }
         }

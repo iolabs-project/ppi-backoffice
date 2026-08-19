@@ -225,7 +225,7 @@ class PurchaseInvoiceService
     {
         return PurchaseInvoice::with([
             'purchaseOrder:id,number,down_payment_amount,down_payment_remaining_amount',
-            'items:id,purchase_invoice_id,purchase_order_item_id,goods_receipt_item_id,product_id,quantity,unit_price,discount_percentage,discount_amount,total_amount',
+            'items:id,purchase_invoice_id,purchase_order_item_id,goods_receipt_item_id,product_id,quantity,unit_price,discount_percentage,subtotal,discount_amount,total_amount',
             'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
             'items.goodsReceiptItem:id,batch_number',
@@ -302,10 +302,12 @@ class PurchaseInvoiceService
 
     private function postPIJournal(PurchaseInvoice $purchaseInvoice): void
     {
+        $purchaseInvoice->load(['items', 'costs']);
         $payableAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
             ->where('setting_key', AccountSettingEnum::ACCOUNT_PAYABLE->value)
             ->value('account_id');
-        $payableAmount = $purchaseInvoice->total_amount;
+        $payableAmount = $purchaseInvoice->items->sum('total_amount') + $purchaseInvoice->costs->sum('amount')
+            + $purchaseInvoice->tax_amount;
 
         $grniAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
             ->where('setting_key', AccountSettingEnum::GRNI->value)
@@ -327,6 +329,13 @@ class PurchaseInvoiceService
             $journalItems[] = [
                 'account_id' => $grniAccountID,
                 'debit' => $grniAmount,
+            ];
+        }
+
+        foreach ($purchaseInvoice->costs as $cost) {
+            $journalItems[] = [
+                'account_id' => $cost->account_id,
+                'debit' => $cost->amount,
             ];
         }
 
@@ -367,12 +376,12 @@ class PurchaseInvoiceService
 
         $dpJournalItems = [
             [
-                'account_id' => $dpAccountID,
-                'credit' => $purchaseInvoice->down_payment_amount,
-            ],
-            [
                 'account_id' => $payableAccountID,
                 'debit' => $purchaseInvoice->down_payment_amount,
+            ],
+            [
+                'account_id' => $dpAccountID,
+                'credit' => $purchaseInvoice->down_payment_amount,
             ],
         ];
 

@@ -44,6 +44,16 @@ class GoodsReceiptItem extends Model
         return $this->belongsTo(PurchaseOrderItem::class);
     }
 
+    public function purchaseInvoiceItems()
+    {
+        return $this->hasMany(PurchaseInvoiceItem::class);
+    }
+
+    public function purchaseInvoice() 
+    {
+        return $this->hasOneThrough(PurchaseInvoice::class, PurchaseInvoiceItem::class, 'goods_receipt_item_id', 'id', 'id', 'purchase_invoice_id');
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);

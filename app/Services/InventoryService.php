@@ -113,6 +113,12 @@ class InventoryService
             ->lockForUpdate()
             ->first();
 
+        $productStock = ProductStock::where('company_id', $deliveryOrder->company_id)
+            ->where('warehouse_id', $deliveryOrder->warehouse_id)
+            ->where('product_id', $productID)
+            ->lockForUpdate()
+            ->first();
+
         if (!$productBatch) {
             throw ValidationException::withMessages([
                 'details' => "Batch '{$batchNumberHint}' tidak ditemukan atau bukan milik produk/gudang ini.",
@@ -126,6 +132,7 @@ class InventoryService
         }
 
         $productBatch->decrement('quantity', $quantity);
+        $productStock->decrement('quantity', $quantity);
 
         $this->insertOutboundInventoryTransaction(deliveryOrder: $deliveryOrder, batch: $productBatch, productID: $productID, quantity: $quantity);
         // $this->recalculateMovingAverageCost(companyID: $deliveryOrder->company_id, productID: $productID, warehouseID: $deliveryOrder->warehouse_id);

@@ -370,7 +370,7 @@ class DeliveryOrderService
             ->value('account_id');
 
         $this->journalService->post(
-            date: $deliveryOrder->delivery_date,
+            date: null,
             referenceType: DeliveryOrder::class,
             referenceID: $deliveryOrder->id,
             description: 'Pengiriman Barang - DO #' . $deliveryOrder->number,

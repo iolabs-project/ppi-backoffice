@@ -28,6 +28,7 @@ class ExpenseController extends Controller
             'currentPage'    => 'biaya',
             'breadcrumb'     => [['label' => 'Biaya']],
             'status' => ExpenseStatus::dropdownOptions(),
+            'summary' => $this->expenseService->fecthExpenseSummaryThisMonth(companyID: config('context.selected_company_id')),
         ];
         return view('expense.index', $data);
     }

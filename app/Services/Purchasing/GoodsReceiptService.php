@@ -7,6 +7,7 @@ use App\Services\ExpenseService;
 use App\Services\JournalService;
 use App\Services\InventoryService;
 use App\Enums\GoodsReceiptStatus;
+use App\Enums\PurchaseInvoiceStatus;
 use App\Models\AccountSetting;
 use App\Models\Company;
 use App\Models\GoodsReceipt;
@@ -324,10 +325,22 @@ class GoodsReceiptService
 
     public function fetchGRItemsForPurchaseInvoice(int $id): Collection
     {
-        $query = GoodsReceiptItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol'])
+        $query = GoodsReceiptItem::with([
+            'product:id,code,name,unit_id',
+            'product.unit:id,name,symbol'
+        ])
             ->whereHas('goodsReceipt', function ($query) use ($id) {
                 $query->where('purchase_order_id', $id)
                     ->where('status', GoodsReceiptStatus::FINISHED->value);
+            })
+            ->whereDoesntHave('purchaseInvoiceItems', function ($query) {
+                $query->whereHas('purchaseInvoice', function ($query) {
+                    $query->whereIn('status', [
+                        PurchaseInvoiceStatus::OPEN->value,
+                        PurchaseInvoiceStatus::PARTIAL->value,
+                        PurchaseInvoiceStatus::PAID->value,
+                    ]);
+                });
             })
             ->orderBy('id', 'asc');
 

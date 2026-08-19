@@ -29,6 +29,12 @@ class JournalService
                 'created_by' => Auth::id(),
             ]);
 
+            $totalDebit = array_sum(array_column($items, 'debit'));
+            $totalCredit = array_sum(array_column($items, 'credit'));
+            if ($totalDebit !== $totalCredit) {
+                throw ValidationException::withMessages(['error' => 'Total debit dan kredit tidak seimbang.']);
+            }   
+
             foreach ($items as $item) {
                 JournalEntryItem::create([
                     'journal_entry_id' => $journalEntry->id,

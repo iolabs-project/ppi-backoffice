@@ -66,7 +66,7 @@ class SalesOrder extends Model
 
     public function getIsInvoicableAttribute()
     {
-        return $this->status === SalesOrderStatus::OPEN->value && $this->total_invoiced_quantity < $this->total_shipped_quantity;
+        return ($this->status === SalesOrderStatus::OPEN->value || $this->status === SalesOrderStatus::CLOSED->value) && $this->total_invoiced_quantity < $this->total_shipped_quantity;
     }
 
     public function items()

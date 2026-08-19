@@ -2,7 +2,10 @@
 
 namespace App\Services\Sales;
 
+use App\Services\Finance\CashService;
 use App\Enums\AccountSettingEnum;
+use App\Enums\CashTransactionStatusEnum;
+use App\Enums\CashTransactionTypeEnum;
 use App\Enums\DeliveryOrderStatus;
 use App\Enums\SalesOrderStatus;
 use App\Models\AccountSetting;
@@ -21,9 +24,11 @@ use Illuminate\Support\Facades\Auth;
 class SalesOrderService
 {
     private JournalService $journalService;
-    public function __construct(JournalService $journalService)
+    protected CashService $cashService;
+    public function __construct(JournalService $journalService, CashService $cashService)
     {
         $this->journalService = $journalService;
+        $this->cashService = $cashService;
     }
     public function generateSONumber(): string
     {
@@ -212,6 +217,7 @@ class SalesOrderService
             }
 
             if ($form->status === SalesOrderStatus::OPEN->value) {
+                $this->postCashTransaction($form);
                 $this->postSOJournal($form);
             }
         });
@@ -294,6 +300,7 @@ class SalesOrderService
             }
 
             if ($salesOrder->status === SalesOrderStatus::OPEN->value) {
+                $this->postCashTransaction($salesOrder);
                 $this->postSOJournal($salesOrder);
             }
         });
@@ -410,5 +417,22 @@ class SalesOrderService
             $salesOrder->down_payment_remaining_amount = 0;
         }
         $salesOrder->save();
+    }
+
+    private function postCashTransaction(SalesOrder $so)
+    {
+        $request = new Request([
+            'to_account_id' => $so->down_payment_account_id,
+            'contact_id' => $so->customer_id,
+            'transaction_date' => $so->order_date,
+            'description' => 'Pembayaran Uang Muka Penjualan #' . $so->number,
+            'type' => CashTransactionTypeEnum::RECEIVE->value,
+            'status' => CashTransactionStatusEnum::POSTED->value,
+            'subtotal' => $so->down_payment_amount,
+            'reference_type' => SalesOrder::class,
+            'reference_id' => $so->id,
+        ]);
+
+        $this->cashService->storeTransaction($request, $so->company_id);
     }
 }

@@ -421,7 +421,6 @@
                         const response = await axios.get(route('sales.sales_orders.datatable'), {
                             params: {
                                 per_page: 100,
-                                status: 'open',
                                 search: this.soPickerSearch,
                             },
                         });

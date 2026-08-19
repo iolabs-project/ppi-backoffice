@@ -3,6 +3,9 @@
 namespace App\Services\Purchasing;
 
 use App\Enums\AccountSettingEnum;
+use App\Services\Finance\CashService;
+use App\Enums\CashTransactionStatusEnum;
+use App\Enums\CashTransactionTypeEnum;
 use App\Enums\GoodsReceiptStatus;
 use App\Services\JournalService;
 use App\Enums\PurchaseOrderStatus;
@@ -20,9 +23,11 @@ use Illuminate\Support\Facades\Auth;
 class PurchaseOrderService
 {
     private JournalService $journalService;
-    public function __construct(JournalService $journalService)
+    protected CashService $cashService;
+    public function __construct(JournalService $journalService, CashService $cashService)
     {
         $this->journalService = $journalService;
+        $this->cashService = $cashService;
     }
     // Purchase Order
     public function generatePONumber(): string
@@ -201,6 +206,7 @@ class PurchaseOrderService
 
             if ($form->status === PurchaseOrderStatus::OPEN->value) {
                 if ($form->down_payment_account_id && $form->down_payment_amount > 0) {
+                    $this->postCashTransaction($form);
                     $this->postPOJournal($form);
                 }
             }
@@ -279,6 +285,7 @@ class PurchaseOrderService
             }
             if ($purchaseOrder->status === PurchaseOrderStatus::OPEN->value) {
                 if ($purchaseOrder->down_payment_account_id && $purchaseOrder->down_payment_amount > 0) {
+                    $this->postCashTransaction($purchaseOrder);
                     $this->postPOJournal($purchaseOrder);
                 }
             }
@@ -394,5 +401,22 @@ class PurchaseOrderService
             $purchaseOrder->down_payment_remaining_amount = 0;
         }
         $purchaseOrder->save();
+    }
+
+    private function postCashTransaction(PurchaseOrder $po)
+    {
+        $request = new Request([
+            'from_account_id' => $po->down_payment_account_id,
+            'contact_id' => $po->supplier_id,
+            'transaction_date' => $po->order_date,
+            'description' => 'Pembayaran Uang Muka Pembelian #' . $po->number,
+            'type' => CashTransactionTypeEnum::SEND->value,
+            'status' => CashTransactionStatusEnum::POSTED->value,
+            'subtotal' => $po->down_payment_amount,
+            'reference_type' => PurchaseOrder::class,
+            'reference_id' => $po->id,
+        ]);
+
+        $this->cashService->storeTransaction($request, $po->company_id);
     }
 }

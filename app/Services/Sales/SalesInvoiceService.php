@@ -287,10 +287,11 @@ class SalesInvoiceService
 
     private function postSIJournal(SalesInvoice $salesInvoice): void
     {
+        $salesInvoice->load('items', 'charges');
         $receivableAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
             ->where('setting_key', AccountSettingEnum::ACCOUNT_RECEIVABLE->value)
             ->value('account_id');
-        $receivableAmount = $salesInvoice->total_amount;
+        $receivableAmount = $salesInvoice->items->sum('total_amount') + $salesInvoice->charges->sum('amount') + $salesInvoice->tax_amount;
 
         $revenueID = AccountSetting::where('company_id', config('context.selected_company_id'))
             ->where('setting_key', AccountSettingEnum::SALES_REVENUE->value)
@@ -315,17 +316,17 @@ class SalesInvoiceService
             ];
         }
 
-        if ($revenueAmount > 0) {
-            $journalItems[] = [
-                'account_id' => $revenueID,
-                'credit' => $revenueAmount,
-            ];
-        }
-
         if ($discountAmount > 0) {
             $journalItems[] = [
                 'account_id' => $discountID,
                 'debit' => $discountAmount,
+            ];
+        }
+
+        if ($revenueAmount > 0) {
+            $journalItems[] = [
+                'account_id' => $revenueID,
+                'credit' => $revenueAmount,
             ];
         }
 
@@ -361,7 +362,7 @@ class SalesInvoiceService
         $downPaymentAmount = $salesInvoice->down_payment_amount;
 
         $this->journalService->post(
-            date: $salesInvoice->invoice_date,
+            date: null,
             referenceType: SalesInvoice::class,
             referenceID: $salesInvoice->id,
             description: 'Alokasi Uang Muka Penjualan #' . $salesInvoice->number,

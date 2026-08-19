@@ -38,6 +38,27 @@ class ExpenseService
         return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
     }
 
+    public function fecthExpenseSummaryThisMonth(int $companyID)
+    {
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+
+        $query = Expense::where('company_id', $companyID)
+            ->whereBetween('expense_date', [$startOfMonth, $endOfMonth]);
+
+        $totalExpenses = $query->sum('total_amount');
+        $totalOpenExpenses = (clone $query)->where('status', ExpenseStatus::OPEN->value)->sum('total_amount');
+        $totalPaidExpenses = (clone $query)->where('status', ExpenseStatus::PAID->value)->sum('total_amount');
+        $totalCancelledExpenses = (clone $query)->where('status', ExpenseStatus::CANCELLED->value)->sum('total_amount');
+
+        return [
+            'total_expenses' => $totalExpenses,
+            'total_open_expenses' => $totalOpenExpenses,
+            'total_paid_expenses' => $totalPaidExpenses,
+            'total_cancelled_expenses' => $totalCancelledExpenses,
+        ];
+    }
+
     public function fetchExpenseByID(int $id): ?Expense
     {
         return Expense::with([

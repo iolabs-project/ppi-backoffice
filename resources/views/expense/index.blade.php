@@ -179,28 +179,22 @@
         <div class="biaya-summary">
             <div class="card stat-card stat-card--dark">
                 <div class="stat-card__label">Total Biaya Bulan Ini</div>
-                <div class="stat-card__value display num">{{ fmt_rp(0) }}</div>
+                <div class="stat-card__value display num">{{ number_format($summary['total_expenses'], 2, '.', ',') }}</div>
                 {{-- <div class="stat-card__sub"><span x-text="tableData.data.length"></span> entri tercatat</div> --}}
             </div>
-            @php
-                $data = []; // Placeholder for actual data, replace with your data source
-                $disetujui = collect($data)->where('status', 'disetujui')->sum('jumlah');
-                $menunggu = collect($data)->where('status', 'menunggu')->sum('jumlah');
-                $ditolak = collect($data)->where('status', 'ditolak')->sum('jumlah');
-            @endphp
             <div class="card stat-card stat-card--good">
                 <div class="stat-card__label">Sudah Dibayarkan</div>
-                <div class="stat-card__value display num">{{ fmt_rp($disetujui) }}</div>
+                <div class="stat-card__value display num">{{ number_format($summary['total_paid_expenses'], 2, '.', ',') }}</div>
                 {{-- <div class="stat-card__sub">{{ collect($data)->where('status', 'disetujui')->count() }} entri</div> --}}
             </div>
             <div class="card stat-card stat-card--warn">
                 <div class="stat-card__label">Belum Dibayarkan</div>
-                <div class="stat-card__value display num">{{ fmt_rp($menunggu) }}</div>
+                <div class="stat-card__value display num">{{ number_format($summary['total_open_expenses'], 2, '.', ',') }}</div>
                 {{-- <div class="stat-card__sub">{{ collect($data)->where('status', 'menunggu')->count() }} entri</div> --}}
             </div>
             <div class="card stat-card stat-card--bad">
                 <div class="stat-card__label">Dibatalkan</div>
-                <div class="stat-card__value display num">{{ fmt_rp($ditolak) }}</div>
+                <div class="stat-card__value display num">{{ number_format($summary['total_cancelled_expenses'], 2, '.', ',') }}</div>
                 {{-- <div class="stat-card__sub">{{ collect($data)->where('status', 'ditolak')->count() }} entri</div> --}}
             </div>
         </div>
@@ -254,7 +248,7 @@
                     <template x-if="!loading">
                         <template x-for="row in tableData.data" :key="row.id">
                             <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
-                                @click="row.status === '{{ $draft }}' ? window.location = route('expenses.edit', row.id) : null">
+                                @click="window.location = route('expenses.show', row.id)">
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
                                 <td style="color:var(--ink-3);" x-text="row.expense_date ?? '-'"></td>
                                 <td class="mono" style="font-weight:600;" x-text="row.reference_number"></td>

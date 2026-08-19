@@ -108,7 +108,7 @@ class ContactController extends Controller
     public function options(Request $request)
     {
         try {
-            $data = $contactService->fetchOptionData($request);
+            $data = $this->contactService->fetchOptionData($request);
 
             return response()->json([
                 'data' => $data,

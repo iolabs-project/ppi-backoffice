@@ -68,7 +68,6 @@
 
                 // async next
                 async next() {
-                    console.log('Current page:', this.page, 'Last page:', this.tableData.last_page);
                     if (this.tableData && this.page < this.tableData.last_page) {
                         this.page++;
                         await this.fetchData();

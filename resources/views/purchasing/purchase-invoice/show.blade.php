@@ -23,7 +23,7 @@
             </div>
             <div class="order-actions">
                 {{-- TODO: Add edit button --}}
-                
+
                 @if ($purchaseInvoice->status == $draft)
                     <button class="btn btn-ghost" @click="handleCancel({{ $purchaseInvoice->id }})"><x-misc.icon
                             name="x" :size="14" />Batal Tagihan</button>
@@ -76,7 +76,7 @@
                             <td style="color:var(--ink-3);">{{ $it->product->unit->symbol }}</td>
                             <td class="num" style="text-align:right;">
                                 {{ number_format($it->unit_price * $it->quantity, 2, '.', ',') }}
-                                ({{ fmt_rp($it->unit_price) }})
+                                ({{ number_format($it->unit_price, 2, '.', ',') }})
                             </td>
                             <td class="num" style="text-align:right;">
                                 {{ number_format($it->discount_amount, 2, '.', ',') }}
@@ -156,9 +156,19 @@
                     <div class="order-notes__text">{{ $purchaseInvoice->note }}</div>
                 </div>
                 <div class="order-detail-summary">
-                    @foreach ([['Nilai Bruto', $purchaseInvoice->items->sum('subtotal'), false], ['Diskon Item', -$purchaseInvoice->items->sum('discount_amount'), false], ['Subtotal', $purchaseInvoice->subtotal, false], ['Diskon', -$purchaseInvoice->discount_amount, false], ['Pajak', $purchaseInvoice->tax_amount, false], ['Biaya Tambahan (Inventory)', $inventoryCostTotal, false], ['Biaya Tambahan (Non-Inventory)', $nonInventoryCostTotal, false], ['Total Tagihan', $purchaseInvoice->total_amount, true]] as [$lbl, $val, $bold])
+                    @foreach ([
+                        ['Nilai Bruto',                    $purchaseInvoice->items->sum('subtotal'),        false, false],
+                        ['Diskon Item',                    -$purchaseInvoice->items->sum('discount_amount'), false, false],
+                        ['Subtotal',                       $purchaseInvoice->subtotal,                      false, true],
+                        ['Diskon',                         -$purchaseInvoice->discount_amount,              false, false],
+                        ['Pajak',                          $purchaseInvoice->tax_amount,                    false, false],
+                        ['Biaya Tambahan (Inventory)',     $inventoryCostTotal,                             false, false],
+                        ['Biaya Tambahan (Non-Inventory)', $nonInventoryCostTotal,                          false, false],
+                        ['Uang Muka',                      -$purchaseInvoice->down_payment_amount,          false, false],
+                        ['Total Tagihan',                  $purchaseInvoice->total_amount,                  true,  true],
+                    ] as [$lbl, $val, $bold, $divider])
                         <div
-                            style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
+                            style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $divider ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
                             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
                             <span class="num"
                                 style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ $val < 0 ? '–' : '' }}{{ number_format(abs($val), 2, '.', ',') }}</span>
