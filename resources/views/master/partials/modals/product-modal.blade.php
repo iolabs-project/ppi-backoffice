@@ -28,6 +28,10 @@
                     </template>
                 </select>
             </x-misc.field>
+            <x-misc.field label="Prefix Batch" :required="true">
+                <input class="input mono" x-model="form.batch_prefix" placeholder="cth. TPG" />
+                <span class="field__hint">Format nomor batch: <span x-text="(form.batch_prefix || 'PREFIX') + ' - 00001'"></span></span>
+            </x-misc.field>
         </div>
     </div>
     <x-slot:footer>

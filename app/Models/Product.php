@@ -12,6 +12,7 @@ class Product extends Model
         'unit_id',
         'code',
         'name',
+        'batch_prefix',
         'description',
         'minimum_stock',
         'inventory_account_id',

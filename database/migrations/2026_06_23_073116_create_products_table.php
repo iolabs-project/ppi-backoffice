@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('unit_id')->constrained('units')->onDelete('restrict');
             $table->string('name', 255);
             $table->string('code', 50);
+            $table->string('batch_prefix', 50);
             $table->text('description')->nullable();
             $table->decimal('minimum_stock', 18, 4)->default(0);
             $table->foreignId('inventory_account_id')->nullable()->constrained('chart_of_accounts')->onDelete('restrict');

@@ -36,6 +36,12 @@ textarea.input {
 
 .input--readonly { background: var(--bg-2); }
 .field__required { color: var(--accent); margin-left: 3px; }
+.field__hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 11.5px;
+  color: var(--ink-4);
+}
 
 // Form layout helpers (used in modal content and form cards)
 .form-body  { display: grid; gap: 14px; }

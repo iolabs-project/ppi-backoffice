@@ -134,7 +134,7 @@ class AccountReceivableService
             });
         }
 
-        $query = $query->orderBy('payment_date', 'desc')->paginate($request->input('per_page', 10));
+        $query = $query->orderBy('number', 'desc')->paginate($request->input('per_page', 10));
 
         return $query;
     }

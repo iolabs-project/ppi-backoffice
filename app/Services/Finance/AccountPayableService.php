@@ -145,7 +145,7 @@ class AccountPayableService
 
         $query = $query->unionAll($query2);
 
-        $query = $query->orderBy('invoice_date', 'desc')->paginate($request->input('per_page', 10));
+        $query = $query->orderBy('number', 'desc')->paginate($request->input('per_page', 10));
 
         return $query;
     }

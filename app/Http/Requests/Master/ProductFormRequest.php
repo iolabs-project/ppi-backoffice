@@ -37,6 +37,11 @@ class ProductFormRequest extends FormRequest
                 'string',
                 'max:255',
             ],
+            'batch_prefix' => [
+                'required',
+                'string',
+                'max:50',
+            ],
             'description' => [
                 'nullable',
                 'string',
@@ -64,6 +69,10 @@ class ProductFormRequest extends FormRequest
             'name.required' => 'Nama produk wajib diisi.',
             'name.string' => 'Nama produk harus berupa string.',
             'name.max' => 'Nama produk tidak boleh lebih dari 255 karakter.',
+
+            'batch_prefix.required' => 'Prefix batch wajib diisi.',
+            'batch_prefix.string' => 'Prefix batch harus berupa string.',
+            'batch_prefix.max' => 'Prefix batch tidak boleh lebih dari 50 karakter.',
 
             'description.string' => 'Deskripsi produk harus berupa string.',
             'description.max' => 'Deskripsi produk tidak boleh lebih dari 255 karakter.',

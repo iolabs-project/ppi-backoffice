@@ -125,3 +125,239 @@
 
     @include('master.partials.modals.product-modal')
 </div>
+
+@push('product-scripts')
+    <script>
+        function productModule() {
+            return {
+                search: '',
+                tableData: {
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: 0,
+                    data: []
+                },
+                loading: false,
+                page: 1,
+                perPage: 10,
+                perPageOptions: [10, 25, 50],
+                form: {
+                    id: null,
+                    code: null,
+                    name: null,
+                    description: null,
+                    category_id: null,
+                    unit_id: null,
+                },
+
+                async fetchData() {
+                    this.loading = true;
+                    try {
+                        const r = await axios.get(route('master.products.datatable'), {
+                            params: {
+                                page: this.page,
+                                per_page: this.perPage,
+                                search: this.search
+                            }
+                        });
+                        this.tableData = r.data;
+                    } catch {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan saat memuat data.'
+                        });
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                next() {
+                    if (this.page < this.tableData.last_page) {
+                        this.page++;
+                        this.fetchData();
+                    }
+                },
+                prev() {
+                    if (this.page > 1) {
+                        this.page--;
+                        this.fetchData();
+                    }
+                },
+                handleSearch(q) {
+                    this.search = q;
+                    this.page = 1;
+                    this.fetchData();
+                },
+                async handleStatus(id) {
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+                    try {
+                        const r = await axios.post(route('master.products.status', id));
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'success',
+                            title: r.data.message
+                        });
+                        await this.fetchData();
+                    } catch (e) {
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'error',
+                            title: e.response?.data?.message || 'Gagal mengubah status.'
+                        });
+                    }
+                },
+
+                openCreateModal() {
+                    this.form = {
+                        id: null,
+                        code: null,
+                        name: null,
+                        description: null,
+                        category_id: null,
+                        unit_id: null,
+                        batch_prefix: null,
+                    };
+                    this.modal = 'add_product';
+                },
+
+                openEditModal(product) {
+                    this.form = {
+                        id: product.id,
+                        code: product.code,
+                        name: product.name,
+                        description: product.description,
+                        category_id: product.category_id,
+                        unit_id: product.unit_id,
+                        batch_prefix: product.batch_prefix,
+                    };
+                    this.modal = 'edit_product';
+                },
+
+                async handleCreate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Pembuatan Produk',
+                        text: 'Apakah anda yakin ingin membuat produk baru dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat produk',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.form,
+                            };
+
+                            Swal.fire({
+                                title: 'Memproses penyimpanan Produk...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.post(
+                                    route('master.products.store'), body
+                                );
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+
+                            }
+                        }
+                    });
+                },
+
+                async handleUpdate() {
+                    Swal.fire({
+                        title: 'Konfirmasi Perubahan Produk',
+                        text: 'Apakah anda yakin ingin memperbarui produk dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, perbarui produk',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.form,
+                            };
+
+                            Swal.fire({
+                                title: 'Memproses perubahan Produk...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.put(
+                                    route('master.products.update', this.form.id), body
+                                );
+                                this.modal = null;
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+                                await this.fetchData();
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+
+                            }
+                        }
+                    });
+                }
+            };
+
+        }
+    </script>
+@endpush
