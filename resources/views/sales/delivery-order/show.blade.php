@@ -68,12 +68,12 @@
                                 <div class="mono" style="font-size:11px; color:var(--ink-4);">{{ $it->product->code }}
                                 </div>
                             </td>
-                            <td class="num" style="text-align:right;">{{ number_format($it->quantity, 2, '.', ',') }}</td>
+                            <td class="num" style="text-align:right;">{{ number_format($it->quantity, 2) }}</td>
                             <td style="color:var(--ink-3);">{{ $it->product->unit->symbol ?? '-' }}</td>
                             <td>
                                 @foreach ($it->batches as $b)
                                     <div class="mono" style="font-size:12px;">{{ $b->productBatch->batch_number }} ·
-                                        {{ number_format($b->quantity, 2, '.', ',') }}</div>
+                                        {{ number_format($b->quantity, 2) }}</div>
                                 @endforeach
                             </td>
                         </tr>
@@ -82,7 +82,7 @@
                 <tfoot>
                     <tr>
                         <td colspan="2" style="text-align:right; font-weight:600;">Total</td>
-                        <td class="num" style="text-align:right; font-weight:600;">{{ number_format($deliveryOrder->items->sum('quantity'), 2, '.', ',') }}</td>
+                        <td class="num" style="text-align:right; font-weight:600;">{{ number_format($deliveryOrder->items->sum('quantity'), 2) }}</td>
                         <td></td>
                         <td></td>
                     </tr>
@@ -110,14 +110,14 @@
                                 <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
                                 <td>{{ $cost->description ?: '—' }}</td>
                                 <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
-                                <td class="num" style="text-align:right; font-weight:600;">{{ number_format($cost->amount, 2, '.', ',') }}</td>
+                                <td class="num" style="text-align:right; font-weight:600;">{{ number_format($cost->amount, 2) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                     <tfoot>
                         <tr>
                             <td colspan="3" style="text-align:center; font-weight:600;">Total</td>
-                            <td class="num" style="text-align:right; font-weight:600;">{{ number_format($deliveryOrder->costs->sum('amount'), 2, '.', ',') }}</td>
+                            <td class="num" style="text-align:right; font-weight:600;">{{ number_format($deliveryOrder->costs->sum('amount'), 2) }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -135,7 +135,7 @@
                         <div
                             style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
                             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
-                            <span class="num" style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ number_format($val, 2, '.', ',') }}</span>
+                            <span class="num" style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ number_format($val, 2) }}</span>
                         </div>
                     @endforeach
                 </div>

@@ -18,12 +18,13 @@ return new class extends Migration
             $table->foreignId('warehouse_id')->constrained()->onDelete('restrict');
             $table->string('batch_number', 50);
             $table->string('supplier_batch_number', 50)->nullable();
+            $table->decimal('initial_quantity', 18, 4)->default(0);
             $table->decimal('quantity', 18, 4)->default(0);
             $table->decimal('reserved_quantity', 18, 4)->default(0);
             $table->decimal('unit_cost', 18, 4)->default(0);
             $table->timestamps();
 
-            $table->unique(['company_id', 'product_id', 'warehouse_id', 'batch_number'], 'unique_product_batch');
+            $table->unique(['company_id', 'product_id', 'batch_number'], 'unique_product_batch');
         });
     }
 

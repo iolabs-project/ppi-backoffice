@@ -28,24 +28,6 @@
                     );
                 },
 
-                get groupedBatches() {
-                    let src = this.batches;
-                    if (this.search.batch) {
-                        const q = this.search.batch.toLowerCase();
-                        src = src.filter(b =>
-                            b.batch_number.toLowerCase().includes(q) ||
-                            b.product.name.toLowerCase().includes(q) ||
-                            b.product.code.toLowerCase().includes(q)
-                        );
-                    }
-                    const map = {};
-                    for (const b of src) {
-                        if (!map[b.product_id]) map[b.product_id] = { product: b.product, batches: [] };
-                        map[b.product_id].batches.push(b);
-                    }
-                    return Object.values(map);
-                },
-
                 m(v) {
                     return NumberUtils.formatNumericIntoMask(v);
                 },
@@ -154,7 +136,7 @@
 
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 155); color:oklch(0.45 0.14 155);">
-                    {{ number_format($products->sum('quantity'), 2, ',', '.') }}
+                    {{ number_format($products->sum('quantity'), 2) }}
                 </div>
                 <div class="produk-stat__label">Total Stok</div>
                 <div class="produk-stat__unit">{{ $products->count() }} Produk / {{ $batches->count() }} Batch</div>
@@ -162,7 +144,7 @@
 
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 45); color:oklch(0.45 0.14 45);">
-                    {{ number_format($products->sum(fn($p) => $p->quantity * $p->average_unit_cost), 2, ',', '.') }}
+                    {{ number_format($products->sum(fn($p) => $p->quantity * $p->average_unit_cost), 2) }}
                 </div>
                 <div class="produk-stat__label">Total Nilai Produk</div>
                 <div class="produk-stat__unit">berdasarkan harga pokok</div>
@@ -170,7 +152,7 @@
 
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 0); color:oklch(0.45 0.14 0);">
-                    {{ number_format($products->avg('average_unit_cost'), 2, ',', '.') }}
+                    {{ number_format($products->avg('average_unit_cost'), 2) }}
                 </div>
                 <div class="produk-stat__label">Rata-Rata HPP</div>
                 <div class="produk-stat__unit">per produk</div>
@@ -179,99 +161,14 @@
         </div>
 
         {{-- Products table --}}
-        <div class="card" style="overflow:hidden;">
-            <div class="master-toolbar">
-                <div class="master-search">
-                    <span class="master-search__icon"><x-misc.icon name="search" :size="14"
-                            stroke="var(--ink-4)" /></span>
-                    <input class="input master-search__input" placeholder="Cari produk di gudang ini..." x-model="search.product" />
-                </div>
-            </div>
-
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th>Nama Produk</th>
-                        <th>Kode</th>
-                        <th style="text-align:right;">Qty</th>
-                        <th>Satuan</th>
-                        <th style="text-align:right;">HPP (Average)</th>
-                        <th style="text-align:right;">Nilai</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-if="filteredProducts.length === 0">
-                        <tr>
-                            <td colspan="6" style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
-                                Belum ada produk di gudang ini
-                            </td>
-                        </tr>
-                    </template>
-                    <template x-for="p in filteredProducts" :key="p.product_id">
-                        <tr>
-                            <td x-text="p.product.name"></td>
-                            <td x-text="p.product.code"></td>
-                            <td style="text-align:right;" x-text="m(p.quantity)"></td>
-                            <td x-text="p.product.unit.symbol"></td>
-                            <td style="text-align:right;" x-text="m(p.average_unit_cost)"></td>
-                            <td style="text-align:right;" x-text="m(p.quantity * p.average_unit_cost)"></td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
+        @include('master.warehouse.partials.stock-table', ['warehouse' => $warehouse])
 
         {{-- Batches table --}}
-        <div class="card" style="overflow:hidden;">
-            <div class="master-toolbar">
-                <div class="master-search">
-                    <span class="master-search__icon"><x-misc.icon name="search" :size="14"
-                            stroke="var(--ink-4)" /></span>
-                    <input class="input master-search__input" placeholder="Cari batch di gudang ini..." x-model="search.batch" />
-                </div>
-            </div>
+        @include('master.warehouse.partials.batch-table', ['warehouse' => $warehouse])
 
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th>Batch</th>
-                        <th style="text-align:right;">Qty</th>
-                        <th>Satuan</th>
-                        <th style="text-align:right;">HPP (FIFO)</th>
-                        <th style="text-align:right;">Nilai</th>
-                    </tr>
-                </thead>
-                <template x-if="groupedBatches.length === 0">
-                    <tbody>
-                        <tr>
-                            <td colspan="5" style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
-                                Belum ada batch di gudang ini
-                            </td>
-                        </tr>
-                    </tbody>
-                </template>
-                <template x-for="group in groupedBatches" :key="group.product.id">
-                    <tbody>
-                        <tr class="coa-group-row">
-                            <td colspan="5">
-                                <span x-text="group.product.name"></span>
-                                <span class="chip mono" style="font-size:11px; margin-left:6px;" x-text="group.product.code"></span>
-                            </td>
-                        </tr>
-                        <template x-for="b in group.batches" :key="b.id">
-                            <tr>
-                                <td x-text="b.batch_number"></td>
-                                <td style="text-align:right;" x-text="m(b.quantity)"></td>
-                                <td x-text="group.product.unit.symbol"></td>
-                                <td style="text-align:right;" x-text="m(b.unit_cost)"></td>
-                                <td style="text-align:right;" x-text="m(b.quantity * b.unit_cost)"></td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </template>
-            </table>
-        </div>
-
+        {{-- Modals --}}
         @include('master.partials.modals.warehouse-modal')
     </div>
+    @stack('stock-table-scripts')
+    @stack('batch-table-scripts')
 @endsection

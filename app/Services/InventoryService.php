@@ -25,7 +25,7 @@ class InventoryService
     {
         $this->journalService = $journalService;
     }
-    public function fetchGlobalInventoryStock(int $companyID, int | null $warehouseID = null, array $productIDs = []): Collection
+    public function fetchInventoryStock(int $companyID, int | null $warehouseID = null, array $productIDs = []): Collection
     {
         $data = ProductStock::with([
             'product:id,code,name,unit_id',
@@ -57,7 +57,45 @@ class InventoryService
         return $data;
     }
 
-    public function fetchInventoryBatches(int $companyID, int | null $warehouseID = null, array $productIDs = []): Collection
+    public function fetchInventoryStockTableData(int $companyID, int $perPage, int | null $warehouseID = null, array $productIDs = [], string | null $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $data = ProductStock::with([
+            'product:id,code,name,unit_id',
+            'product.unit:id,name,symbol',
+            'warehouse:id,name',
+        ])
+            ->select(
+                'id',
+                'company_id',
+                'product_id',
+                'warehouse_id',
+                'quantity',
+                'reserved_quantity',
+                'average_unit_cost'
+            )
+            ->where('company_id', $companyID)
+            ->when($warehouseID, function ($query) use ($warehouseID) {
+                $query->where('warehouse_id', $warehouseID);
+            })
+            ->whereRaw('quantity - reserved_quantity > 0')
+            ->whereHas('product', function ($query) {
+                $query->whereNull('deleted_at');
+            })
+            ->when(!empty($productIDs), function ($query) use ($productIDs) {
+                $query->whereIn('product_id', $productIDs);
+            })
+            ->when($search !== null, function ($query) use ($search) {
+                $query->whereHas('product', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                          ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
+            ->paginate($perPage);
+
+        return $data;
+    }
+
+    public function fetchInventoryBatches(int $companyID, int | null $warehouseID = null, array $productIDs = [], bool | null $onlyAvailable = null): Collection
     {
         return ProductBatch::with([
             'product:id,code,name,unit_id',
@@ -70,6 +108,7 @@ class InventoryService
                 'warehouse_id',
                 'product_id',
                 'batch_number',
+                'initial_quantity',
                 'quantity',
                 'reserved_quantity',
                 'unit_cost'
@@ -78,14 +117,64 @@ class InventoryService
             ->whereHas('product', function ($query) {
                 $query->whereNull('deleted_at');
             })
-            ->when($warehouseID, function ($query) use ($warehouseID) {
+            ->when($warehouseID !== null, function ($query) use ($warehouseID) {
                 $query->where('warehouse_id', $warehouseID);
             })
-            ->whereRaw('quantity - reserved_quantity > 0')
+            ->when($onlyAvailable !== null, function ($query) use ($onlyAvailable) {
+                if ($onlyAvailable) {
+                    $query->whereRaw('quantity - reserved_quantity > 0');
+                } else {
+                    $query->whereRaw('quantity - reserved_quantity <= 0');
+                }
+            })
             ->when(!empty($productIDs), function ($query) use ($productIDs) {
                 $query->whereIn('product_id', $productIDs);
             })
             ->get();
+    }
+
+    public function fetchInventoryBatchTableData(int $companyID, int $perPage, int | null $warehouseID = null, array $productIDs = [], bool | null $onlyAvailable = null, string | null $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return ProductBatch::with([
+            'product:id,code,name,unit_id',
+            'product.unit:id,name,symbol',
+            'warehouse:id,name',
+        ])
+            ->select(
+                'id',
+                'company_id',
+                'warehouse_id',
+                'product_id',
+                'batch_number',
+                'initial_quantity',
+                'quantity',
+                'reserved_quantity',
+                'unit_cost'
+            )
+            ->where('company_id', $companyID)
+            ->whereHas('product', function ($query) {
+                $query->whereNull('deleted_at');
+            })
+            ->when($warehouseID !== null, function ($query) use ($warehouseID) {
+                $query->where('warehouse_id', $warehouseID);
+            })
+            ->when($onlyAvailable !== null, function ($query) use ($onlyAvailable) {
+                if ($onlyAvailable) {
+                    $query->whereRaw('quantity - reserved_quantity > 0');
+                } else {
+                    $query->whereRaw('quantity - reserved_quantity <= 0');
+                }
+            })
+            ->when(!empty($productIDs), function ($query) use ($productIDs) {
+                $query->whereIn('product_id', $productIDs);
+            })
+            ->when($search !== null, function ($query) use ($search) {
+                $query->whereHas('product', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                          ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
+            ->paginate($perPage);
     }
 
     public function receiveInventoryFromGR(GoodsReceipt $goodsReceipt, GoodsReceiptItem $goodsReceiptItem): ProductBatch
@@ -96,6 +185,7 @@ class InventoryService
             'product_id' => $goodsReceiptItem->product_id,
             'goods_receipt_item_id' => $goodsReceiptItem->id,
             'batch_number' => $goodsReceiptItem->batch_number,
+            'initial_quantity' => $goodsReceiptItem->received_quantity,
             'quantity' => $goodsReceiptItem->received_quantity,
             'unit_cost' => $goodsReceiptItem->unit_cost,
         ]);
@@ -282,11 +372,11 @@ class InventoryService
     public function fetchQuantitySoldByProductThisMonth(int $companyID, int $productID): float
     {
         return DeliveryOrderItem::whereHas('deliveryOrder', function ($query) use ($companyID) {
-                $query->where('company_id', $companyID)
-                      ->whereMonth('delivery_date', now()->month)
-                      ->whereYear('delivery_date', now()->year)
-                      ->where('status', DeliveryOrderStatus::FINISHED);
-            })
+            $query->where('company_id', $companyID)
+                ->whereMonth('delivery_date', now()->month)
+                ->whereYear('delivery_date', now()->year)
+                ->where('status', DeliveryOrderStatus::FINISHED);
+        })
             ->where('product_id', $productID)
             ->sum('quantity');
     }
@@ -294,11 +384,11 @@ class InventoryService
     public function fetchQuantityReceivedByProductThisMonth(int $companyID, int $productID): float
     {
         return GoodsReceiptItem::whereHas('goodsReceipt', function ($query) use ($companyID) {
-                $query->where('company_id', $companyID)
-                      ->whereMonth('receipt_date', now()->month)
-                      ->whereYear('receipt_date', now()->year)
-                      ->where('status', GoodsReceiptStatus::FINISHED);
-            })
+            $query->where('company_id', $companyID)
+                ->whereMonth('receipt_date', now()->month)
+                ->whereYear('receipt_date', now()->year)
+                ->where('status', GoodsReceiptStatus::FINISHED);
+        })
             ->where('product_id', $productID)
             ->sum('received_quantity');
     }

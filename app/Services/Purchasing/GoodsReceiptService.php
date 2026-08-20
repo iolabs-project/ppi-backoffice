@@ -13,11 +13,9 @@ use App\Models\Company;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptCost;
 use App\Models\GoodsReceiptItem;
-use App\Models\InventoryTransaction;
 use App\Models\JournalEntry;
 use App\Models\ProductBatch;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
+use App\Services\Master\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -31,12 +29,14 @@ class GoodsReceiptService
     private ExpenseService $expenseService;
     private InventoryService $inventoryService;
     private JournalService $journalService;
-    public function __construct(PurchaseOrderService $purchaseOrderService, ExpenseService $expenseService, InventoryService $inventoryService, JournalService $journalService)
+    protected ProductService $productService;
+    public function __construct(PurchaseOrderService $purchaseOrderService, ExpenseService $expenseService, InventoryService $inventoryService, JournalService $journalService, ProductService $productService)
     {
         $this->purchaseOrderService = $purchaseOrderService;
         $this->expenseService = $expenseService;
         $this->inventoryService = $inventoryService;
         $this->journalService = $journalService;
+        $this->productService = $productService;
     }
     public function generateGoodsReceiptNumber(): string
     {
@@ -118,7 +118,7 @@ class GoodsReceiptService
     {
         return GoodsReceipt::with([
             'items',
-            'items.product:id,code,name,unit_id',
+            'items.product:id,code,name,unit_id,batch_prefix',
             'items.product.unit:id,name,symbol',
             'items.purchaseOrderItem:id,quantity,received_quantity,discount_percentage,discount_amount,unit_price,total_amount',
             'costs:id,goods_receipt_id,account_id,description,amount,is_inventory_cost',
@@ -194,7 +194,6 @@ class GoodsReceiptService
                 'goods_receipt_id' => $goodsReceipt->id,
                 'purchase_order_item_id' => $item['purchase_order_item_id'],
                 'product_id' => $item['product_id'],
-                'batch_number' => $item['batch_number'],
                 'expected_quantity' => $expectedQty,
                 'shrinkage_quantity' => $expectedQty - $receivedQty,
                 'received_quantity' => $receivedQty,
@@ -262,17 +261,11 @@ class GoodsReceiptService
                 $unitCost = $unitPrice - ($qty > 0 ? $unitDiscountAmount / $qty : 0) + $addtionalCostPerUnit;
             }
 
-            if ($this->validateBatchNumber($item['batch_number'], $item['product_id'], $goodsReceipt->company_id)) {
-                throw ValidationException::withMessages([
-                    'batch_number' => "Nomor batch '{$item['batch_number']}' untuk produk ini sudah ada.",
-                ]);
-            }
-
             $goodsReceiptItem = GoodsReceiptItem::create([
                 'goods_receipt_id' => $goodsReceipt->id,
                 'purchase_order_item_id' => $item['purchase_order_item_id'],
                 'product_id' => $item['product_id'],
-                'batch_number' => $item['batch_number'],
+                'batch_number' => $this->productService->generateBatchNumber($item['product_id'], $goodsReceipt->company_id),
                 'expected_quantity' => $expectedQty,
                 'shrinkage_quantity' => $expectedQty - $qty,
                 'received_quantity' => $qty,

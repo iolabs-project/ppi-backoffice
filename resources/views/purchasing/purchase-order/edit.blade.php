@@ -59,7 +59,6 @@
                 cashBanks: @json($cashBankAccounts),
                 cashBankSelected: null,
                 // Submit
-                isSubmitting: false,
 
                 // Shorthand: parse masked string to number
                 n(v) {
@@ -279,48 +278,67 @@
                 },
 
                 async submit(status) {
-                    this.isSubmitting = true;
-                    const titles = {
-                        draft: 'Memproses penyimpanan draft PO...',
-                        open: 'Memproses penyimpanan PO...',
-                    };
-                    Swal.fire({
-                        title: titles[status] ?? 'Memproses...',
-                        allowOutsideClick: false,
-                        didOpen: () => Swal.showLoading(),
-                    });
-                    try {
-                        const response = await axios.put(
-                            route('purchasings.purchase_orders.update', this.formData.id), this.buildBody(status)
-                        );
-                        Swal.close();
-                        Toast.fire({
-                            icon: 'success',
-                            title: response.data.message
+                    let isValid = false;
+                    if (status === 'draft') {
+                        this.formData.status = 'draft';
+                        isValid = true;
+                    } else if (status === 'open') {
+                        this.formData.status = 'open';
+
+                        const result = await Swal.fire({
+                            title: 'Konfirmasi Buka PO',
+                            text: 'Apakah anda yakin ingin menyimpan dan membuka PO dengan data yang telah diisi?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, buka',
+                            cancelButtonText: 'Batal',
+                            reverseButtons: true,
                         });
-                        window.location.href = response.data.redirect;
-                    } catch (error) {
-                        Swal.close();
-                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-                        let html = null;
-                        if (error.response?.status === 422) {
-                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
-                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
-                                Object.values(error.response.data.errors)
-                                .flat()
-                                .map(msg => `<li>${msg}</li>`)
-                                .join('') +
-                                '</ul>';
-                        } else if (error.response?.data?.message) {
-                            title = error.response.data.message;
+                        isValid = result.isConfirmed;
+                    }
+
+                    if (isValid) {
+                        const titles = {
+                            draft: 'Memproses penyimpanan draft PO...',
+                            open: 'Memproses penyimpanan PO...',
+                        };
+                        Swal.fire({
+                            title: titles[status] ?? 'Memproses...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading(),
+                        });
+                        try {
+                            const response = await axios.put(
+                                route('purchasings.purchase_orders.update', this.formData.id), this.buildBody(
+                                    status)
+                            );
+                            Swal.close();
+                            Toast.fire({
+                                icon: 'success',
+                                title: response.data.message
+                            });
+                            window.location.href = response.data.redirect;
+                        } catch (error) {
+                            Swal.close();
+                            let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                            let html = null;
+                            if (error.response?.status === 422) {
+                                title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                    Object.values(error.response.data.errors)
+                                    .flat()
+                                    .map(msg => `<li>${msg}</li>`)
+                                    .join('') +
+                                    '</ul>';
+                            } else if (error.response?.data?.message) {
+                                title = error.response.data.message;
+                            }
+                            Toast.fire({
+                                icon: 'error',
+                                title: title,
+                                html: html
+                            });
                         }
-                        Toast.fire({
-                            icon: 'error',
-                            title: title,
-                            html: html
-                        });
-                    } finally {
-                        this.isSubmitting = false;
                     }
                 }
 
@@ -674,8 +692,7 @@
         <div class="order-form-footer">
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
             <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check"
-                    :size="14" />Simpan
-                SO</button>
+                    :size="14" />Buka PO</button>
         </div>
 
     </div>

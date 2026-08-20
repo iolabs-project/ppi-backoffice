@@ -304,6 +304,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/', 'store')->name('store');
             Route::get('/options', 'options')->name('options');
             Route::get('/{id}', 'show')->name('show');
+            Route::get('/{id}/stock-datatable', 'datatableStock')->name('stock_datatable');
+            Route::get('/{id}/batch-datatable', 'datatableBatch')->name('batch_datatable');
             Route::put('/{id}', 'update')->name('update');
             Route::post('/{id}/status', 'status')->name('status');
         });

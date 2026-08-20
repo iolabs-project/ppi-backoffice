@@ -13,12 +13,14 @@ class ProductBatch extends Model
         'goods_receipt_item_id',
         'batch_number',
         'supplier_batch_number',
+        'initial_quantity',
         'quantity',
         'reserved_quantity',
         'unit_cost',
     ];
 
     protected $casts = [
+        'initial_quantity' => 'double',
         'quantity' => 'double',
         'available_quantity' => 'double',
         'reserved_quantity' => 'double',

@@ -4,8 +4,6 @@ namespace App\Services\Master;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\ProductTransaction;
-use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -317,5 +315,29 @@ class ProductService
             ->get();
 
         return $data;
+    }
+
+    public function generateBatchNumber(int $productID, int $companyID): string
+    {
+        $product = Product::where('id', $productID)
+            ->where('company_id', $companyID)
+            ->firstOrFail();
+
+        $prefix = $product->batch_prefix . '-' . date('Ymd') . '-';
+        $lastBatch = DB::table('product_batches')
+            ->where('company_id', $companyID)
+            ->where('product_id', $productID)
+            ->where('batch_number', 'like', $prefix . '%')
+            ->orderBy('batch_number', 'desc')
+            ->first();
+
+        if ($lastBatch) {
+            $lastBatchNumber = (int) substr($lastBatch->batch_number, strrpos($lastBatch->batch_number, '-') + 1);
+            $newBatchNumber = $lastBatchNumber + 1;
+        } else {
+            $newBatchNumber = 1;
+        }
+
+        return $prefix . str_pad($newBatchNumber, 4, '0', STR_PAD_LEFT);
     }
 }

@@ -178,19 +178,19 @@
         <div class="produk-stat-grid">
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 155); color:oklch(0.45 0.14 155);">
-                    {{ number_format($stocks->sum('quantity'), 2, '.', ',') }}</div>
+                    {{ number_format($stocks->sum('quantity'), 2) }}</div>
                 <div class="produk-stat__label">Stok di tangan</div>
                 <div class="produk-stat__unit">{{ $product->unit->symbol }}</div>
             </div>
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 220); color:oklch(0.45 0.14 220);">
-                    {{ number_format($soldQty, 2, '.', ',') }}</div>
+                    {{ number_format($soldQty, 2) }}</div>
                 <div class="produk-stat__label">Terjual</div>
                 <div class="produk-stat__unit">Unit · Bulan Ini</div>
             </div>
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 45); color:oklch(0.45 0.14 45);">
-                    {{ number_format($receivedQty, 2, '.', ',') }}</div>
+                    {{ number_format($receivedQty, 2) }}</div>
                 <div class="produk-stat__label">Diterima</div>
                 <div class="produk-stat__unit">Unit · Bulan Ini</div>
             </div>

@@ -179,22 +179,22 @@
         <div class="biaya-summary">
             <div class="card stat-card stat-card--dark">
                 <div class="stat-card__label">Total Biaya Bulan Ini</div>
-                <div class="stat-card__value display num">{{ number_format($summary['total_expenses'], 2, '.', ',') }}</div>
+                <div class="stat-card__value display num">{{ number_format($summary['total_expenses'], 2) }}</div>
                 {{-- <div class="stat-card__sub"><span x-text="tableData.data.length"></span> entri tercatat</div> --}}
             </div>
             <div class="card stat-card stat-card--good">
                 <div class="stat-card__label">Sudah Dibayarkan</div>
-                <div class="stat-card__value display num">{{ number_format($summary['total_paid_expenses'], 2, '.', ',') }}</div>
+                <div class="stat-card__value display num">{{ number_format($summary['total_paid_expenses'], 2) }}</div>
                 {{-- <div class="stat-card__sub">{{ collect($data)->where('status', 'disetujui')->count() }} entri</div> --}}
             </div>
             <div class="card stat-card stat-card--warn">
                 <div class="stat-card__label">Belum Dibayarkan</div>
-                <div class="stat-card__value display num">{{ number_format($summary['total_open_expenses'], 2, '.', ',') }}</div>
+                <div class="stat-card__value display num">{{ number_format($summary['total_open_expenses'], 2) }}</div>
                 {{-- <div class="stat-card__sub">{{ collect($data)->where('status', 'menunggu')->count() }} entri</div> --}}
             </div>
             <div class="card stat-card stat-card--bad">
                 <div class="stat-card__label">Dibatalkan</div>
-                <div class="stat-card__value display num">{{ number_format($summary['total_cancelled_expenses'], 2, '.', ',') }}</div>
+                <div class="stat-card__value display num">{{ number_format($summary['total_cancelled_expenses'], 2) }}</div>
                 {{-- <div class="stat-card__sub">{{ collect($data)->where('status', 'ditolak')->count() }} entri</div> --}}
             </div>
         </div>

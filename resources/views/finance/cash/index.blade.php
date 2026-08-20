@@ -117,7 +117,7 @@
         <div class="card saldo-hero">
             <div>
                 <div class="saldo-hero__label">Total Saldo Tersedia</div>
-                <div class="saldo-hero__value display num">{{ number_format($totalAmount, 2, '.', ',') }}</div>
+                <div class="saldo-hero__value display num">{{ number_format($totalAmount, 2) }}</div>
                 {{-- <div class="saldo-hero__sub">{{ count($activeAccounts) }} rekening · diperbarui hari ini</div> --}}
             </div>
             <div class="saldo-hero__icon">
@@ -144,7 +144,7 @@
                         <span class="account-card__pct">{{ $percentage }}%</span>
                     </div>
                     <div>
-                        <div class="account-card__value display num">{{ number_format($account->balance, 2, '.', ',') }}
+                        <div class="account-card__value display num">{{ number_format($account->balance, 2) }}
                         </div>
                         <div class="account-card__bar">
                             <div class="account-card__bar-fill" style="width:{{ $percentage }}%;"></div>

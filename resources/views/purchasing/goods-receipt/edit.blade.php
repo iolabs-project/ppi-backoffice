@@ -28,8 +28,8 @@
                         product_id: item.product_id,
                         code: item.product.code,
                         name: item.product.name,
+                        batch_prefix: item.product.batch_prefix,
                         unit: item.product.unit.symbol,
-                        batch_number: item.batch_number,
                         remaining_quantity: item.purchase_order_item.quantity - item.purchase_order_item
                             .received_quantity,
                         expected_quantity: item.expected_quantity,
@@ -54,7 +54,7 @@
                         name: null,
                         code: null,
                         unit: null,
-                        batch_number: null,
+                        batch_prefix: null,
                         expected_quantity: null,
                         received_quantity: null,
                         shrinkage_quantity: null,
@@ -96,6 +96,8 @@
                     item.discount_percentage = poItem.discount_percentage;
                     item.discount_amount = poItem.discount_amount;
 
+                    item.batch_prefix = poItem.product_batch_prefix;
+
                     this.recalc();
                 },
 
@@ -118,6 +120,14 @@
                     }
 
                     return list;
+                },
+
+                batchNumberPlaceholder(prefix) {
+                    if (!prefix) {
+                        return '-';
+                    }
+                    const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                    return `${prefix}-${datePart}-XXXX`;
                 },
 
                 recalc() {
@@ -483,7 +493,7 @@
                     <tr>
                         <th style="width:48px;">#</th>
                         <th>Produk</th>
-                        <th style="text-align:right; width:140px;">Batch</th>
+                        <th style="width:240px;">Batch</th>
                         <th style="text-align:right; width:140px;">Sisa (PO)</th>
                         <th style="text-align:right; width:140px;">Qty (Ekspektasi)</th>
                         <th style="text-align:right; width:140px;">Qty (Diterima)</th>
@@ -527,10 +537,18 @@
                                     </div>
                                 </div>
                             </td>
-                            <td><input class="input" style="height:32px;" x-model="item.batch_number" /></td>
+                            {{-- <td><input class="input" style="height:32px;" x-model="item.batch_number" /></td> --}}
                             {{-- <td><input class="input num" style="height:32px; text-align:right;"
                                     x-model.number="item.remaining_quantity" x-mask:dynamic="$money($input, '.',',')"
                                     disabled /></td> --}}
+                            <td>
+                                <div class="input input--readonly"
+                                    style="display:flex; align-items:center; gap:10px; height: 32px;">
+                                    <span style="flex:1; font-weight:500;"
+                                        x-text="batchNumberPlaceholder(item.batch_prefix)"></span>
+                                    <span class="auto-tag">Auto</span>
+                                </div>
+                            </td>
                             <td style="text-align: right"><span class="mono" style="font-weight:600"
                                     x-text="item.remaining_quantity ? NumberUtils.formatNumericIntoMask(item.remaining_quantity) : '0'"></span>
                             </td>
@@ -579,8 +597,20 @@
                         </tr>
 
                     </template>
+                    <template x-if="formData.details.length === 0">
+                        <tr>
+                            <td colspan="12" style="text-align:center; color:var(--ink-4); padding:16px 0;">
+                                Belum ada produk yang ditambahkan. Klik tombol <strong>Tambah Produk</strong> untuk
+                                menambahkan produk dari PO.
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
+            <div style="padding:12px 16px; font-size:12px; color:var(--ink-3); line-height:1.7;">
+                <div>• <strong>Nomor Batch</strong> akan otomatis terbuat ketika penerimaan barang <strong>SELESAI</strong>.
+                </div>
+            </div>
         </div>
 
         @include('purchasing.partials.additional-cost-table', [
@@ -636,7 +666,7 @@
         <div class="order-form-footer">
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
             <button class="btn btn-primary" @click="submitFinish()"><x-misc.icon name="check"
-                    :size="14" />Selesaikan</button>
+                    :size="14" />Selesai</button>
         </div>
     </div>
 @endsection

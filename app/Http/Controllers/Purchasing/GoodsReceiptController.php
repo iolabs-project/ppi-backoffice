@@ -99,7 +99,7 @@ class GoodsReceiptController extends Controller
     {
         try {
             $goodsReceiptService->updateGoodsReceipt($request, $id);
-            return response()->json(['redirect' => route('purchasings.goods_receipts.index'), 'message' => 'Goods Receipt berhasil diperbarui.']);
+            return response()->json(['redirect' => route('purchasings.goods_receipts.index'), 'message' => 'Penerimaan barang berhasil diperbarui.']);
         } catch (ValidationException $e) {
             Log::error('Error GoodsReceiptController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -121,7 +121,7 @@ class GoodsReceiptController extends Controller
     {
         try {
             $goodsReceiptService->changeGoodsReceiptStatus($id, GoodsReceiptStatus::CANCELLED->value);
-            return response()->json(['message' => 'Goods Receipt berhasil dibatalkan.']);
+            return response()->json(['message' => 'Penerimaan barang berhasil dibatalkan.']);
         } catch (\Exception $e) {
             Log::error('Error GoodsReceiptController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,

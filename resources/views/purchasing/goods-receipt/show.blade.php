@@ -51,14 +51,13 @@
         <div class="card" style="overflow:hidden;">
             <div class="card-hd">
                 <div class="display card-hd-title">Daftar Produk</div>
-                <div style="font-size:12px; color:var(--ink-4);">{{ count($goodsReceipt->items) }} item ·
-                    {{ $goodsReceipt->items->sum('received_quantity') }} unit diterima</div>
             </div>
             <table class="tbl">
                 <thead>
                     <tr>
                         <th style="width:48px;">#</th>
                         <th>Produk</th>
+                        <th>Batch</th>
                         <th style="text-align:right;">Quantity (Diharapkan)</th>
                         <th style="text-align:right;">Quantity (Diterima)</th>
                         <th style="text-align:right;">Quantity (Susut)</th>
@@ -77,36 +76,39 @@
                                 <div class="mono" style="font-size:11px; color:var(--ink-4);">{{ $it->product->code }}
                                 </div>
                             </td>
-                            <td class="num" style="text-align:right;">
-                                {{ number_format($it->expected_quantity, 2, '.', ',') }}</td>
-                            <td class="num" style="text-align:right;">
-                                {{ number_format($it->received_quantity, 2, '.', ',') }}</td>
-                            <td class="num" style="text-align:right;">
-                                {{ number_format($it->shrinkage_quantity, 2, '.', ',') }}</td>
-                            <td style="color:var(--ink-3);">{{ $it->product->unit->symbol }}</td>
-                            <td class="num" style="text-align:right;">{{ number_format($it->unit_price, 2, '.', ',') }}
+                            <td>
+                                <div style="font-weight:600;">{{ $it->batch_number }}</div>
                             </td>
                             <td class="num" style="text-align:right;">
-                                {{ number_format($it->discount_percentage, 2, '.', ',') }}</td>
+                                {{ number_format($it->expected_quantity, 2) }}</td>
+                            <td class="num" style="text-align:right;">
+                                {{ number_format($it->received_quantity, 2) }}</td>
+                            <td class="num" style="text-align:right;">
+                                {{ number_format($it->shrinkage_quantity, 2) }}</td>
+                            <td style="color:var(--ink-3);">{{ $it->product->unit->symbol }}</td>
+                            <td class="num" style="text-align:right;">{{ number_format($it->unit_price, 2) }}
+                            </td>
+                            <td class="num" style="text-align:right;">
+                                {{ number_format($it->discount_percentage, 2) }}</td>
                             <td class="num" style="text-align:right; font-weight:600;">
-                                {{ number_format($it->unit_cost, 2, '.', ',') }}</td>
+                                {{ number_format($it->unit_cost, 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="2" style="text-align:center; font-weight:600;">Total</td>
+                        <td colspan="3" style="text-align:center; font-weight:600;">Total</td>
                         <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($goodsReceipt->items->sum('expected_quantity'), 2, '.', ',') }}</td>
+                            {{ number_format($goodsReceipt->items->sum('expected_quantity'), 2) }}</td>
                         <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($goodsReceipt->items->sum('received_quantity'), 2, '.', ',') }}</td>
+                            {{ number_format($goodsReceipt->items->sum('received_quantity'), 2) }}</td>
                         <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($goodsReceipt->items->sum('shrinkage_quantity'), 2, '.', ',') }}</td>
+                            {{ number_format($goodsReceipt->items->sum('shrinkage_quantity'), 2) }}</td>
                         <td>Unit</td>
                         <td></td>
                         <td></td>
                         <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($goodsReceipt->items->sum('unit_cost'), 2, '.', ',') }}</td>
+                            {{ number_format($goodsReceipt->items->sum('unit_cost'), 2) }}</td>
                     </tr>
                 </tfoot>
             </table>
@@ -140,7 +142,7 @@
                                 <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
                                 <td style="text-align:center;">{{ $cost->is_inventory_cost ? 'Ya' : 'Tidak' }}</td>
                                 <td class="num" style="text-align:right; font-weight:600;">
-                                    {{ number_format($cost->amount, 2, '.', ',') }}</td>
+                                    {{ number_format($cost->amount, 2) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -148,7 +150,7 @@
                         <tr>
                             <td colspan="4" style="text-align:center; font-weight:600;">Total Biaya Tambahan</td>
                             <td class="num" style="text-align:right; font-weight:600;">
-                                {{ number_format($goodsReceipt->costs->sum('amount'), 2, '.', ',') }}</td>
+                                {{ number_format($goodsReceipt->costs->sum('amount'), 2) }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -167,7 +169,7 @@
                             style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
                             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
                             <span class="num"
-                                style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ $val < 0 ? '–' : '' }}{{ number_format(abs($val), 2, '.', ',') }}</span>
+                                style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ $val < 0 ? '–' : '' }}{{ number_format(abs($val), 2) }}</span>
                         </div>
                     @endforeach
                     {{-- TODO: Add profit margin calculation --}}

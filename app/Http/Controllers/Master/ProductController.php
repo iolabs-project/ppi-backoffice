@@ -77,7 +77,7 @@ class ProductController extends Controller
     public function show(int $id)
     {
         $product = $this->productService->fetchProductById($id);
-        $stocks = $this->inventoryService->fetchGlobalInventoryStock(companyID: config('context.selected_company_id'), productIDs: [$id]);
+        $stocks = $this->inventoryService->fetchInventoryStock(companyID: config('context.selected_company_id'), productIDs: [$id]);
         $data = [
             'currentPage'      => 'master',
             'breadcrumb'       => [

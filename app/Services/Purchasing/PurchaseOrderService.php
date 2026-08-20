@@ -309,7 +309,7 @@ class PurchaseOrderService
 
     public function fetchPOItemsForGoodsReceipt(int $id): Collection
     {
-        $query = PurchaseOrderItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol'])
+        $query = PurchaseOrderItem::with(['product:id,code,name,unit_id,batch_prefix', 'product.unit:id,name,symbol'])
             ->where('purchase_order_id', $id)
             ->orderBy('id', 'asc');
 
@@ -319,6 +319,7 @@ class PurchaseOrderService
                 'product_id' => $item->product_id,
                 'product_code' => $item->product->code,
                 'product_name' => $item->product->name,
+                'product_batch_prefix' => $item->product->batch_prefix,
                 'quantity' => $item->quantity,
                 'received_quantity' => $item->received_quantity,
                 'remaining_quantity' => $item->quantity - $item->received_quantity,

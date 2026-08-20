@@ -71,19 +71,19 @@
                                 <div class="mono" style="font-size:11px; color:var(--ink-4);">{{ $it->product->code }}
                                 </div>
                             </td>
-                            <td class="num" style="text-align:right;">{{ number_format($it->quantity, 2, '.', ',') }}
+                            <td class="num" style="text-align:right;">{{ number_format($it->quantity, 2) }}
                             </td>
                             <td style="color:var(--ink-3);">{{ $it->product->unit->symbol }}</td>
                             <td class="num" style="text-align:right;">
-                                {{ number_format($it->unit_price * $it->quantity, 2, '.', ',') }}
-                                ({{ number_format($it->unit_price, 2, '.', ',') }})
+                                {{ number_format($it->unit_price * $it->quantity, 2) }}
+                                ({{ number_format($it->unit_price, 2) }})
                             </td>
                             <td class="num" style="text-align:right;">
-                                {{ number_format($it->discount_amount, 2, '.', ',') }}
-                                ({{ number_format($it->discount_percentage, 2, '.', ',') }}%)
+                                {{ number_format($it->discount_amount, 2) }}
+                                ({{ number_format($it->discount_percentage, 2) }}%)
                             </td>
                             <td class="num" style="text-align:right; font-weight:600;">
-                                {{ number_format($it->total_amount, 2, '.', ',') }}
+                                {{ number_format($it->total_amount, 2) }}
                             </td>
                         </tr>
                     @endforeach
@@ -93,7 +93,7 @@
                         <td colspan="2" style="text-align:center; font-weight:600;">Total</td>
 
                         <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($salesInvoice->items->sum('quantity'), 2, '.', ',') }}</td>
+                            {{ number_format($salesInvoice->items->sum('quantity'), 2) }}</td>
                         <td>Unit</td>
                         <td class="num" style="text-align:right; font-weight:600;">
                             {{ number_format(
@@ -106,9 +106,9 @@
                             ) }}
                         </td>
                         <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($salesInvoice->items->sum('discount_amount'), 2, '.', ',') }}</td>
+                            {{ number_format($salesInvoice->items->sum('discount_amount'), 2) }}</td>
                         <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($salesInvoice->items->sum('total_amount'), 2, '.', ',') }}</td>
+                            {{ number_format($salesInvoice->items->sum('total_amount'), 2) }}</td>
                     </tr>
                 </tfoot>
             </table>
@@ -137,7 +137,7 @@
                                     <td>{{ $charge->description ?: '—' }}</td>
                                     <td>{{ $charge->account->code }} - {{ $charge->account->name }}</td>
                                     <td class="num" style="text-align:right; font-weight:600;">
-                                        {{ number_format($charge->amount, 2, '.', ',') }}</td>
+                                        {{ number_format($charge->amount, 2) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -146,7 +146,7 @@
                             <tr>
                                 <td colspan="3" style="text-align:center; font-weight:600;">Total</td>
                                 <td class="num" style="text-align:right; font-weight:600;">
-                                    {{ number_format($salesInvoice->charges->sum('amount'), 2, '.', ',') }}</td>
+                                    {{ number_format($salesInvoice->charges->sum('amount'), 2) }}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -175,7 +175,7 @@
                             style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $divider ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
                             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
                             <span class="num"
-                                style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ $val < 0 ? '-' : '' }}{{ number_format(abs($val), 2, '.', ',') }}</span>
+                                style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ $val < 0 ? '-' : '' }}{{ number_format(abs($val), 2) }}</span>
                         </div>
                     @endforeach
                 </div>

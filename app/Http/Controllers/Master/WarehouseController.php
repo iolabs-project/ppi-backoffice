@@ -11,10 +11,17 @@ use Illuminate\Support\Facades\Log;
 
 class WarehouseController extends Controller
 {
-    public function datatable(Request $request, WarehouseService $warehouseService)
+    protected WarehouseService $warehouseService;
+    protected InventoryService $inventoryService;
+    public function __construct(WarehouseService $warehouseService, InventoryService $inventoryService)
+    {
+        $this->warehouseService = $warehouseService;
+        $this->inventoryService = $inventoryService;
+    }
+    public function datatable(Request $request)
     {
         try {
-            $data = $warehouseService->fetchWarehouseTableData($request);
+            $data = $this->warehouseService->fetchWarehouseTableData($request);
 
             return response()->json($data);
         } catch (\Exception $e) {
@@ -29,10 +36,57 @@ class WarehouseController extends Controller
         }
     }
 
-    public function store(WarehouseFormRequest $request, WarehouseService $warehouseService)
+    public function datatableStock(Request $request, int $id)
     {
         try {
-            $warehouseService->storeWarehouse($request);
+            $data = $this->inventoryService->fetchInventoryStockTableData(
+                companyID: config('context.selected_company_id'),
+                warehouseID: $id,
+                perPage: $request->input('per_page', 10),
+                search: $request->input('search', null)
+            );
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Error Master/WarehouseController@datatableStock: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat mengambil data stock gudang',
+            ], 500);
+        }
+    }
+
+    public function datatableBatch(Request $request, int $id)
+    {
+        try {
+            $data = $this->inventoryService->fetchInventoryBatchTableData(
+                companyID: config('context.selected_company_id'),
+                warehouseID: $id,
+                perPage: $request->input('per_page', 10),
+                onlyAvailable: $request->input('only_available', null),
+                search: $request->input('search', null)
+            );
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Error Master/WarehouseController@datatableBatch: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat mengambil data batch gudang',
+            ], 500);
+        }
+    }
+
+    public function store(WarehouseFormRequest $request)
+    {
+        try {
+            $this->warehouseService->storeWarehouse($request);
 
             return response()->json([
                 'message' => 'Gudang berhasil dibuat',
@@ -49,23 +103,23 @@ class WarehouseController extends Controller
         }
     }
 
-    public function show(WarehouseService $warehouseService, InventoryService $inventoryService, int $id)
+    public function show(int $id)
     {
         $data = [
             'currentPage'          => 'master',
             'breadcrumb'           => [['label' => 'Master Gudang']],
-            'warehouse' => $warehouseService->fetchWarehouseById($id),
-            'products' => $inventoryService->fetchGlobalInventoryStock(companyID: config('context.selected_company_id'), warehouseID: $id),
-            'batches' => $inventoryService->fetchInventoryBatches(companyID: config('context.selected_company_id'), warehouseID: $id),
+            'warehouse' => $this->warehouseService->fetchWarehouseById($id),
+            'products' => $this->inventoryService->fetchInventoryStock(companyID: config('context.selected_company_id'), warehouseID: $id),
+            'batches' => $this->inventoryService->fetchInventoryBatches(companyID: config('context.selected_company_id'), warehouseID: $id),
         ];
 
         return view('master.warehouse.show', $data);
     }
 
-    public function update(WarehouseFormRequest $request, WarehouseService $warehouseService, int $id)
+    public function update(WarehouseFormRequest $request, int $id)
     {
         try {
-            $warehouseService->updateWarehouse($request, $id);
+            $this->warehouseService->updateWarehouse($request, $id);
 
             return response()->json([
                 'message' => 'Gudang berhasil diperbarui',
@@ -82,10 +136,10 @@ class WarehouseController extends Controller
         }
     }
 
-    public function status(Request $request, WarehouseService $warehouseService, int $id)
+    public function status(Request $request, int $id)
     {
         try {
-            $warehouseService->toggleWarehouseStatus($id);
+            $this->warehouseService->toggleWarehouseStatus($id);
 
             return response()->json([
                 'message' => 'Status gudang berhasil diperbarui',
@@ -101,10 +155,10 @@ class WarehouseController extends Controller
             ], 500);
         }
     }
-    public function options(Request $request, WarehouseService $warehouseService)
+    public function options(Request $request)
     {
         try {
-            $data = $warehouseService->fetchOptionData($request);
+            $data = $this->warehouseService->fetchOptionData($request);
 
             return response()->json([
                 'data' => $data,
