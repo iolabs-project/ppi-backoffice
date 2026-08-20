@@ -21,6 +21,11 @@ class Product extends Model
         'deleted_at',
     ];
 
+    // cast
+    protected $casts = [
+        'average_unit_cost' => 'double',
+    ];
+
     public function category()
     {
         return $this->belongsTo(ProductCategory::class, 'category_id');

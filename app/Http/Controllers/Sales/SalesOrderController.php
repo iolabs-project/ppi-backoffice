@@ -9,28 +9,27 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\SalesOrderFormRequest;
 use App\Services\Master\AccountService;
 use App\Services\Master\ContactService;
-use App\Services\InventoryService;
+use App\Services\Master\ProductService;
 use App\Services\Sales\SalesOrderService;
 use App\Services\Master\WarehouseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
 
 class SalesOrderController extends Controller
 {
     private SalesOrderService $salesOrderService;
-    private InventoryService $inventoryService;
     private WarehouseService $warehouseService;
     private ContactService $contactService;
     private AccountService $accountService;
+    protected ProductService $productService;
 
-    public function __construct(SalesOrderService $salesOrderService, InventoryService $inventoryService, WarehouseService $warehouseService, ContactService $contactService, AccountService $accountService)
+    public function __construct(SalesOrderService $salesOrderService, WarehouseService $warehouseService, ContactService $contactService, AccountService $accountService, ProductService $productService)
     {
         $this->salesOrderService = $salesOrderService;
-        $this->inventoryService = $inventoryService;
         $this->warehouseService = $warehouseService;
         $this->contactService = $contactService;
         $this->accountService = $accountService;
+        $this->productService = $productService;
     }
 
     public function index()
@@ -60,7 +59,7 @@ class SalesOrderController extends Controller
             ],
             'number' => $this->salesOrderService->generateSONumber(),
             'paymentTerms' => PaymentTerm::dropdownOptions(),
-            'inventories' => $this->inventoryService->fetchInventoryStock(companyID:config('context.selected_company_id')),
+            'products' => $this->productService->fetchProductDataWithUnitCost($companyID),
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
             'customers' => $this->contactService->fetchContactData('customer'),
             'salesPersons' => $this->contactService->fetchContactData('employee'),
@@ -120,8 +119,8 @@ class SalesOrderController extends Controller
             ],
             'salesOrder' => $salesOrder,
             'paymentTerms' => PaymentTerm::dropdownOptions(),
-            'inventories' => $this->inventoryService->fetchInventoryStock(companyID: config('context.selected_company_id')),
             'warehouses' => $this->warehouseService->fetchWarehouseData(),
+            'products' => $this->productService->fetchProductDataWithUnitCost($companyID),
             'customers' => $this->contactService->fetchContactData('customer'),
             'salesPersons' => $this->contactService->fetchContactData('employee'),
             'cashBankAccounts' => $this->accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::CASH_BANK->value),

@@ -70,8 +70,8 @@
                                 @click="window.location = route('sales.sales_orders.show', row.id)">
                                 <td class="mono" style="font-weight:600;" x-text="row.number"></td>
                                 <td style="color:var(--ink-3);" x-text="row.order_date ?? '-'"></td>
-                                <td style="font-weight:500;" x-text="row.customer.name ?? '-'"></td>
-                                <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
+                                <td style="font-weight:500;" x-text="row.customer?.name ?? '-'"></td>
+                                <td style="color:var(--ink-3);" x-text="row.warehouse?.name ?? '-'"></td>
                                 <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
                                 <td style="min-width:100px;">
                                     <template

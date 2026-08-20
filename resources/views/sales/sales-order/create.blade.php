@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
     <script>
-        const inventories = @json($inventories);
+        const products = @json($products);
 
         function salesOrderForm() {
             return {
@@ -29,7 +29,6 @@
                         product_id: null,
                         name: null,
                         code: null,
-                        available_stock: null,
                         quantity: null,
                         unit: null,
                         unit_price: null,
@@ -118,8 +117,8 @@
                         });
                     }
                 },
-                selectInventory(item, inventory) {
-                    if (this.formData.details.some(d => d.product_id === inventory.product_id)) {
+                selectProduct(item, product) {
+                    if (this.formData.details.some(d => d.product_id === product.id)) {
                         Toast.fire({
                             icon: 'error',
                             title: 'Produk sudah terpilih sebelumnya'
@@ -127,12 +126,11 @@
 
                         return;
                     }
-                    item.name = inventory.product.name;
-                    item.product_id = inventory.product_id;
-                    item.code = inventory.product.code;
-                    item.unit = inventory.product.unit.symbol;
-                    item.available_stock = inventory.available_quantity;
-                    item.average_unit_cost = inventory.average_unit_cost;
+                    item.name = product.name;
+                    item.product_id = product.id;
+                    item.code = product.code;
+                    item.unit = product.unit_symbol;
+                    item.average_unit_cost = product.average_unit_cost;
                 },
                 addCharge() {
                     this.formData.charges.push({
@@ -191,7 +189,6 @@
                                 product_id: null,
                                 name: null,
                                 code: null,
-                                available_stock: null,
                                 quantity: null,
                                 unit: null,
                                 unit_price: null,
@@ -211,8 +208,7 @@
                 },
                 handleQuantityInput(index) {
                     const d = this.formData.details[index];
-                    d.quantity = Math.max(0, this.n(d.quantity));
-                    d.quantity = Math.min(d.quantity, d.available_stock);
+                    d.quantity = this.n(d.quantity);
                     this.calculateDetailTotal(index);
                 },
                 handleDetailDiscountPercentageInput(index) {
@@ -271,17 +267,19 @@
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
                 },
 
-                availableInventories(q) {
-                    let list = inventories.filter(p =>
-                        !this.formData.details.some(d => d.product_id === p.id) &&
-                        this.formData.warehouse_id && p.warehouse_id === this.formData.warehouse_id
+                availableProducts(q) {
+                    let list = products.filter(p =>
+                        // If warehouse selected, only show products from that warehouse
+                        (this.formData.warehouse_id && p.warehouse_id === this.formData.warehouse_id) &&
+                        // Don't show products already added to details
+                        !this.formData.details.some(d => d.product_id === p.id)
                     );
 
                     if (q) {
                         const s = q.toLowerCase();
                         list = list.filter(p =>
-                            (p.product.name || '').toLowerCase().includes(s) ||
-                            (p.product.code || '').toLowerCase().includes(s)
+                            (p.name || '').toLowerCase().includes(s) ||
+                            (p.code || '').toLowerCase().includes(s)
                         );
                     }
 
@@ -297,14 +295,14 @@
                     body.tax_percentage = this.n(body.tax_percentage);
                     body.down_payment_amount = this.n(body.down_payment_amount);
                     body.details = body.details
-                    .filter(d => d.product_id !== null)
-                    .map(d => ({
-                        ...d,
-                        quantity: this.n(d.quantity),
-                        unit_price: this.n(d.unit_price),
-                        discount_percentage: this.n(d.discount_percentage),
-                        total_amount: this.n(d.total_amount),
-                    }));
+                        .filter(d => d.product_id !== null)
+                        .map(d => ({
+                            ...d,
+                            quantity: this.n(d.quantity),
+                            unit_price: this.n(d.unit_price),
+                            discount_percentage: this.n(d.discount_percentage),
+                            total_amount: this.n(d.total_amount),
+                        }));
                     body.charges = body.charges
                         .map(c => ({
                             ...c,
@@ -516,24 +514,20 @@
                                         <x-misc.select display="it.product_id ? it.name : 'Pilih Produk'"
                                             hasValue="it.product_id" placeholder="Cari produk..." min-width="320px"
                                             height="32px">
-                                            <template x-for="p in availableInventories(q)" :key="p.id">
-                                                <div class="dropdown-item"
-                                                    @click="selectInventory(it, p);open=false;q=''">
+                                            <template x-for="(p, pi) in availableProducts(q)" :key="pi">
+                                                <div class="dropdown-item" @click="selectProduct(it, p);open=false;q=''">
                                                     <div style="flex:1; min-width:0;">
-                                                        <div style="font-size:13px;" x-text="p.product.name"></div>
+                                                        <div style="font-size:13px;" x-text="p.name"></div>
                                                         <div class="mono" style="font-size:11px; color:var(--ink-4);"
-                                                            x-text="p.product.code"></div>
+                                                            x-text="p.code"></div>
                                                     </div>
-                                                    <span class="dropdown-item__sub"
-                                                        x-text="NumberUtils.formatNumericIntoMask(p.available_quantity) + ' ' + p.product.unit.symbol"></span>
-                                                </div>
                                             </template>
-                                            <template x-if="availableInventories(q).length === 0">
+                                            <template x-if="availableProducts(q).length === 0">
                                                 <div class="dropdown-empty">Tidak ditemukan</div>
                                             </template>
                                         </x-misc.select>
                                         <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
-                                            x-text="it.product_id ? it.code + ' (' + it.available_stock + ' ' + it.unit + ')' : '— belum dipilih'">
+                                            x-text="it.product_id ? it.code  : '— belum dipilih'">
                                         </div>
                                     </div>
                                 </div>
