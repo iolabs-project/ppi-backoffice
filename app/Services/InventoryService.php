@@ -130,6 +130,7 @@ class InventoryService
             ->when(!empty($productIDs), function ($query) use ($productIDs) {
                 $query->whereIn('product_id', $productIDs);
             })
+            ->orderBy('id', 'asc')
             ->get();
     }
 

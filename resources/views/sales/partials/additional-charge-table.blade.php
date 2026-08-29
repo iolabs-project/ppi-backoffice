@@ -5,13 +5,22 @@
        - handleChargeInput() -- called on every change to trigger recalculation
      Blade params:
        - $accounts: collection of {id, code, name}
+       - $title: card title, defaults to "Biaya Tambahan (Tagih ke Customer)".
+       - $footnotes: one or more bullet lines shown below the table. Pass a
+         string for a single line, an array of strings for multiple lines, or
+         null/[] to hide it. Defaults to the Sales Invoice billing note. HTML
+         (e.g. <strong>) is allowed in each line.
 --}}
+@php
+    $title = $title ?? 'Biaya Tambahan (Tagih ke Customer)';
+    $footnotes = isset($footnotes) ? (is_array($footnotes) ? $footnotes : [$footnotes]) : [];
+@endphp
 <script>
     var accounts = @json($accounts);
 </script>
 <div class="card" style="overflow:visible;">
     <div class="card-hd">
-        <div class="display card-hd-title">Biaya Tambahan (Tagih ke Customer)</div>
+        <div class="display card-hd-title">{{ $title }}</div>
         <button type="button" class="btn btn-ghost btn-sm" @click="addCharge()">
             <x-misc.icon name="plus" :size="13" />Tambah Biaya
         </button>
@@ -75,7 +84,11 @@
             </template>
         </tbody>
     </table>
-    <div style="padding:12px 16px; font-size:12px; color:var(--ink-3); line-height:1.7;">
-        Biaya di tabel ini akan ikut muncul pada Sales Invoice dan ditagihkan ke customer.
-    </div>
+    @if (count($footnotes))
+        <div style="padding:12px 16px; font-size:12px; color:var(--ink-3); line-height:1.7;">
+            @foreach ($footnotes as $line)
+                <div>• {!! $line !!}</div>
+            @endforeach
+        </div>
+    @endif
 </div>

@@ -582,8 +582,21 @@
             </table>
         </div>
 
-        @include('sales.partials.additional-charge-table', ['accounts' => $accounts])
-        @include('sales.partials.additional-cost-table', ['accounts' => $accounts])
+        @include('sales.partials.additional-charge-table', [
+            'accounts' => $accounts,
+            'title' => 'Biaya Tambahan (Customer)',
+            'footnotes' => [
+                'Biaya tambahan ini akan dibebankan ke customer.',
+                'Biaya ini akan otomatis ditambahkan saat tagihan dibuat.',
+            ],
+        ])
+        @include('sales.partials.additional-cost-table', [
+            'accounts' => $accounts,
+            'title' => 'Biaya Tambahan (Internal)',
+            'footnotes' => [
+                'Biaya yang tidak ditagihkan ke customer — hanya digunakan untuk perhitungan estimasi profit.',
+            ],
+        ])
 
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">

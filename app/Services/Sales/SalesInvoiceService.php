@@ -291,7 +291,7 @@ class SalesInvoiceService
         $receivableAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
             ->where('setting_key', AccountSettingEnum::ACCOUNT_RECEIVABLE->value)
             ->value('account_id');
-        $receivableAmount = $salesInvoice->items->sum('total_amount') + $salesInvoice->charges->sum('amount') + $salesInvoice->tax_amount;
+        $receivableAmount = $salesInvoice->items->sum('total_amount') + $salesInvoice->charges->sum('amount') + $salesInvoice->tax_amount - $salesInvoice->discount_amount;
 
         $revenueID = AccountSetting::where('company_id', config('context.selected_company_id'))
             ->where('setting_key', AccountSettingEnum::SALES_REVENUE->value)

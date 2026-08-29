@@ -47,7 +47,7 @@ class DeliveryOrderController extends Controller
         try {
             $data = $deliveryOrderService->storeDeliveryOrder($request);
 
-            return response()->json(['redirect' => route('sales.delivery_orders.edit', $data->id), 'message' => 'Delivery order berhasil dibuat.']);
+            return response()->json(['redirect' => route('sales.delivery_orders.edit', $data->id), 'message' => 'Pengiriman berhasil dibuat.']);
         } catch (ValidationException $e) {
             Log::error('Error DeliveryOrderController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -61,7 +61,7 @@ class DeliveryOrderController extends Controller
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat delivery order. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat pengiriman. Silakan coba lagi.'], 500);
         }
     }
 
@@ -69,7 +69,7 @@ class DeliveryOrderController extends Controller
     {
         $deliveryOrder = $deliveryOrderService->fetchDeliveryOrderByID($id);
         if (!$deliveryOrder) {
-            abort(404, 'Delivery order tidak ditemukan.');
+            abort(404, 'Pengiriman tidak ditemukan.');
         }
 
         $companyID = config('context.selected_company_id');
@@ -111,7 +111,7 @@ class DeliveryOrderController extends Controller
     {
         $deliveryOrder = $deliveryOrderService->fetchDeliveryOrderByID($id);
         if (!$deliveryOrder) {
-            abort(404, 'Delivery order tidak ditemukan.');
+            abort(404, 'Pengiriman tidak ditemukan.');
         }
 
         $data = [
@@ -129,7 +129,7 @@ class DeliveryOrderController extends Controller
     {
         try {
             $deliveryOrderService->updateDeliveryOrder($request, $id);
-            return response()->json(['redirect' => route('sales.delivery_orders.index'), 'message' => 'Pengiriman Barang berhasil diperbarui.']);
+            return response()->json(['redirect' => route('sales.delivery_orders.index'), 'message' => 'Pengiriman berhasil diperbarui.']);
         } catch (ValidationException $e) {
             Log::error('Error DeliveryOrderController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -143,7 +143,7 @@ class DeliveryOrderController extends Controller
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Pengiriman Barang. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui pengiriman. Silakan coba lagi.'], 500);
         }
     }
 
@@ -151,14 +151,14 @@ class DeliveryOrderController extends Controller
     {
         try {
             $deliveryOrderService->changeDeliveryOrderStatus($id, DeliveryOrderStatus::CANCELLED->value);
-            return response()->json(['message' => 'Pengiriman Barang berhasil dibatalkan.']);
+            return response()->json(['message' => 'Pengiriman berhasil dibatalkan.']);
         } catch (\Exception $e) {
             Log::error('Error DeliveryOrderController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Pengiriman Barang. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan pengiriman. Silakan coba lagi.'], 500);
         }
     }
 }

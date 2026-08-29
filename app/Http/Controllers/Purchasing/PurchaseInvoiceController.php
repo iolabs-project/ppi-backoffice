@@ -47,7 +47,7 @@ class PurchaseInvoiceController extends Controller
         try {
             $data = $this->purchaseInvoiceService->storePurchaseInvoice($request);
 
-            return response()->json(['redirect' => route('purchasings.purchase_invoices.edit', $data->id), 'message' => 'Purchase invoice berhasil dibuat.']);
+            return response()->json(['redirect' => route('purchasings.purchase_invoices.edit', $data->id), 'message' => 'Tagihan pembelian berhasil dibuat.']);
         } catch (ValidationException $e) {
             Log::error('Error PurchaseInvoiceController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -105,7 +105,7 @@ class PurchaseInvoiceController extends Controller
     {
         try {
             $this->purchaseInvoiceService->updatePurchaseInvoice($request, $id);
-            return response()->json(['redirect' => route('purchasings.purchase_invoices.index'), 'message' => 'Invoice Pembelian berhasil diperbarui.']);
+            return response()->json(['redirect' => route('purchasings.purchase_invoices.index'), 'message' => 'Tagihan pembelian berhasil diperbarui.']);
         } catch (ValidationException $e) {
             Log::error('Error PurchaseInvoiceController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -119,7 +119,7 @@ class PurchaseInvoiceController extends Controller
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Invoice Pembelian. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Tagihan pembelian. Silakan coba lagi.'], 500);
         }
     }
 
@@ -127,14 +127,14 @@ class PurchaseInvoiceController extends Controller
     {
         try {
             $this->purchaseInvoiceService->cancelPurchaseInvoice($id);
-            return response()->json(['message' => 'Invoice Pembelian berhasil dibatalkan.']);
+            return response()->json(['message' => 'Tagihan pembelian berhasil dibatalkan.']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseInvoiceController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,
                 'purchase_invoice_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Invoice Pembelian. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Tagihan pembelian. Silakan coba lagi.'], 500);
         }
     }
 }

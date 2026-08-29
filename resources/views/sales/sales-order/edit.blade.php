@@ -333,10 +333,10 @@
                     this.formData.details.forEach((d, i) => {
                         const product = products.find(p => p.id === d.product_id && p
                             .warehouse_id === this.formData.warehouse_id);
-                            console.log('product', product);
+                        console.log('product', product);
                         if (product) {
                             d.average_unit_cost = product.average_unit_cost;
-                        }   
+                        }
                     });
                     this.recalculate();
                     Swal.close();
@@ -642,8 +642,21 @@
             </table>
         </div>
 
-        @include('sales.partials.additional-charge-table', ['accounts' => $accounts])
-        @include('sales.partials.additional-cost-table', ['accounts' => $accounts])
+        @include('sales.partials.additional-charge-table', [
+            'accounts' => $accounts,
+            'title' => 'Biaya Tambahan (Customer)',
+            'footnotes' => [
+                'Biaya tambahan ini akan dibebankan ke customer.',
+                'Biaya ini akan otomatis ditambahkan saat tagihan dibuat.',
+            ],
+        ])
+        @include('sales.partials.additional-cost-table', [
+            'accounts' => $accounts,
+            'title' => 'Biaya Tambahan (Internal)',
+            'footnotes' => [
+                'Biaya yang tidak ditagihkan ke customer — hanya digunakan untuk perhitungan estimasi profit.',
+            ],
+        ])
 
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">

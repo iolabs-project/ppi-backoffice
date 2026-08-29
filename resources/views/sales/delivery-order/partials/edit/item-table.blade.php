@@ -1,6 +1,10 @@
 <script>
     window.deliveryOrderTable = {
 
+        m(v) {
+            return NumberUtils.formatNumericIntoMask(v);
+        },
+
         availableSOItems(q) {
             let list = remainingSOItems;
 
@@ -47,6 +51,24 @@
             item.quantity_previously_delivered = soItem.shipped_quantity;
             item.remaining_quantity = soItem.remaining_quantity;
             item.batches = [];
+
+            let remaining = this.n(item.remaining_quantity);
+            for (const batch of this.availableBatchesForItem(item)) {
+                if (remaining <= 0) {
+                    break;
+                }
+                const qty = Math.min(batch.remaining_available, remaining);
+                if (qty <= 0) {
+                    continue;
+                }
+                item.batches.push({
+                    product_batch_id: batch.id,
+                    batch_number: batch.batch_number,
+                    quantity: qty,
+                    unit_cost: batch.unit_cost,
+                });
+                remaining -= qty;
+            }
         },
 
         deleteProduct(index) {
@@ -104,15 +126,24 @@
             const qty = this.n(this.batchForm.quantity);
 
             if (!batch) {
-                Toast.fire({ icon: 'error', title: 'Silakan pilih batch terlebih dahulu.' });
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Silakan pilih batch terlebih dahulu.'
+                });
                 return;
             }
             if (qty <= 0) {
-                Toast.fire({ icon: 'error', title: 'Quantity harus lebih dari 0.' });
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Quantity harus lebih dari 0.'
+                });
                 return;
             }
             if (qty > batch.remaining_available) {
-                Toast.fire({ icon: 'error', title: `Quantity melebihi stok tersedia pada batch tersebut (${batch.remaining_available}).` });
+                Toast.fire({
+                    icon: 'error',
+                    title: `Quantity melebihi stok tersedia pada batch tersebut (${batch.remaining_available}).`
+                });
                 return;
             }
 
@@ -183,13 +214,13 @@
                 </td>
                 <td style="color:var(--ink-3);" x-text="item.unit || '—'"></td>
                 <td style="text-align: right"><span class="mono" style="font-weight:600"
-                        x-text="item.quantity_ordered"></span>
+                        x-text="m(item.quantity_ordered)"></span>
                 </td>
                 <td style="text-align: right"><span class="mono" style="font-weight:600"
-                        x-text="item.quantity_previously_delivered"></span>
+                        x-text="m(item.quantity_previously_delivered)"></span>
                 </td>
                 <td style="text-align:right;">
-                    <span class="mono" style="font-weight:600;" x-text="batchTotal(item)"></span>
+                    <span class="mono" style="font-weight:600;" x-text="m(batchTotal(item))"></span>
                 </td>
                 <td>
                     <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
@@ -206,8 +237,10 @@
                     <div class="batch-panel">
                         <div class="batch-panel__hd">
                             <span>Batch Terpilih</span>
-                            <span class="mono" :class="batchTotal(item) > n(item.remaining_quantity) ? 'batch-panel__total--warn' : 'batch-panel__total--ok'"
-                                x-text="'Qty Dikirim: ' + batchTotal(item) + ' / sisa pesanan ' + item.remaining_quantity + ' ' + (item.unit || '')"></span>
+                            <span class="mono"
+                                :class="batchTotal(item) > n(item.remaining_quantity) ? 'batch-panel__total--warn' :
+                                    'batch-panel__total--ok'"
+                                x-text="'Qty Dikirim: ' + m(batchTotal(item)) + ' / sisa pesanan ' + m(item.remaining_quantity) + ' ' + (item.unit || '')"></span>
                         </div>
                         <template x-if="item.batches.length === 0">
                             <div class="batch-panel__empty">Belum ada batch dipilih.</div>
@@ -224,9 +257,10 @@
                             <tbody>
                                 <template x-for="(b, bIndex) in item.batches" :key="b.product_batch_id">
                                     <tr>
-                                        <td class="mono" style="color:var(--ink-4);" x-text="String(bIndex + 1).padStart(2, '0')"></td>
+                                        <td class="mono" style="color:var(--ink-4);"
+                                            x-text="String(bIndex + 1).padStart(2, '0')"></td>
                                         <td class="mono" x-text="b.batch_number"></td>
-                                        <td class="num" style="text-align:right;" x-text="n(b.quantity)"></td>
+                                        <td class="num" style="text-align:right;" x-text="m(b.quantity)"></td>
                                         <td>
                                             <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
                                                 @click="removeBatch(item, bIndex)">
@@ -245,6 +279,13 @@
             </tr>
         </tbody>
     </template>
+    <template x-if="formData.details.length === 0">
+        <tr>
+            <td colspan="6" style="text-align:center; color:var(--ink-4); padding:16px;">
+                Belum ada produk yang ditambahkan. Klik tombol <strong>Tambah Produk</strong> untuk menambahkan produk.
+            </td>
+        </tr>
+    </template>
 </table>
 
 <x-misc.modal title="Pilih Batch" show="modal === 'add_batch'" close-handler="closeBatchModal()" :width="560">
@@ -260,7 +301,8 @@
                 </thead>
                 <tbody>
                     <template x-for="b in availableBatchesForItem(activeItem())" :key="b.id">
-                        <tr class="row-tap" @click="batchForm.product_batch_id = b.id; batchForm.quantity = remainingToShip(activeItem()) > 0 ? Math.min(b.remaining_available, remainingToShip(activeItem())) : b.remaining_available">
+                        <tr class="row-tap"
+                            @click="batchForm.product_batch_id = b.id; batchForm.quantity = remainingToShip(activeItem()) > 0 ? Math.min(b.remaining_available, remainingToShip(activeItem())) : b.remaining_available">
                             <td><input type="radio" :checked="batchForm.product_batch_id === b.id" /></td>
                             <td class="mono" x-text="b.batch_number"></td>
                             <td class="num" style="text-align:right;" x-text="b.remaining_available"></td>

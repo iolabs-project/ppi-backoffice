@@ -421,6 +421,7 @@
                         const response = await axios.get(route('sales.sales_orders.datatable'), {
                             params: {
                                 per_page: 100,
+                                is_invoicable: true,
                                 search: this.soPickerSearch,
                             },
                         });

@@ -45,7 +45,7 @@ class SalesInvoiceController extends Controller
         try {
             $data = $this->salesInvoiceService->storeSalesInvoice($request);
 
-            return response()->json(['redirect' => route('sales.sales_invoices.edit', $data->id), 'message' => 'Sales invoice berhasil dibuat.']);
+            return response()->json(['redirect' => route('sales.sales_invoices.edit', $data->id), 'message' => 'Tagihan penjualan berhasil dibuat.']);
         } catch (ValidationException $e) {
             Log::error('Error SalesInvoiceController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -107,7 +107,7 @@ class SalesInvoiceController extends Controller
     {
         try {
             $this->salesInvoiceService->updateSalesInvoice($request, $id);
-            return response()->json(['redirect' => route('sales.sales_invoices.index'), 'message' => 'Invoice Penjualan berhasil diperbarui.']);
+            return response()->json(['redirect' => route('sales.sales_invoices.index'), 'message' => 'Tagihan penjualan berhasil diperbarui.']);
         } catch (ValidationException $e) {
             Log::error('Error SalesInvoiceController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -121,7 +121,7 @@ class SalesInvoiceController extends Controller
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Invoice Penjualan. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Tagihan penjualan. Silakan coba lagi.'], 500);
         }
     }
 
@@ -129,14 +129,14 @@ class SalesInvoiceController extends Controller
     {
         try {
             $this->salesInvoiceService->cancelSalesInvoice($id);
-            return response()->json(['message' => 'Invoice Penjualan berhasil dibatalkan.']);
+            return response()->json(['message' => 'Tagihan penjualan berhasil dibatalkan.']);
         } catch (\Exception $e) {
             Log::error('Error SalesInvoiceController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,
                 'sales_invoice_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Invoice Penjualan. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Tagihan penjualan. Silakan coba lagi.'], 500);
         }
     }
 }

@@ -91,6 +91,14 @@ class SalesOrderService
             $query->where('status', $request->input('status'));
         }
 
+        if ($request->filled('is_deliverable') && $request->input('is_deliverable')) {
+            $query->deliverable();
+        }
+
+        if ($request->filled('is_invoicable') && $request->input('is_invoicable')) {
+            $query->invoicable();
+        }
+
         $query = $query->orderBy('order_date', 'desc')->paginate($request->input('per_page', 10));
         return $query;
     }
@@ -217,8 +225,10 @@ class SalesOrderService
             }
 
             if ($form->status === SalesOrderStatus::OPEN->value) {
-                $this->postCashTransaction($form);
-                $this->postSOJournal($form);
+                if ($form->down_payment_account_id && $form->down_payment_amount > 0) {
+                    $this->postCashTransaction($form);
+                    $this->postSOJournal($form);
+                }
             }
         });
     }

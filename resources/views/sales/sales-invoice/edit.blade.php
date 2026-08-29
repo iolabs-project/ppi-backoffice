@@ -227,8 +227,6 @@
                 },
 
                 async submitDraft() {
-                    this.isSubmitting = true;
-
                     let body = {
                         ...this.formData,
                         status: 'draft',
@@ -294,70 +292,81 @@
                 },
 
                 async submitOpen() {
-                    this.isSubmitting = true;
-
-                    let body = {
-                        ...this.formData,
-                        status: 'open',
-                    };
-                    body.discount_percentage = this.n(body.discount_percentage);
-                    body.tax_percentage = this.n(body.tax_percentage);
-                    body.down_payment_amount = this.n(body.down_payment_amount);
-                    body.details = body.details.map(d => ({
-                        ...d,
-                        quantity: this.n(d.quantity),
-                        unit_price: this.n(d.unit_price),
-                        discount_percentage: this.n(d.discount_percentage),
-                        total_amount: this.n(d.total_amount),
-                    }));
-                    body.charges = body.charges
-                        .filter(c => c.account_id && this.n(c.amount) > 0)
-                        .map(c => ({
-                            ...c,
-                            amount: this.n(c.amount)
-                        }));
-
                     Swal.fire({
-                        title: 'Memproses penyimpanan tagihan...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
+                        title: 'Apakah Anda yakin ingin membuka tagihan ini?',
+                        text: 'Setelah tagihan dibuka, tagihan tidak dapat diperbarui lagi.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buka',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let body = {
+                                ...this.formData,
+                                status: 'open',
+                            };
+                            body.discount_percentage = this.n(body.discount_percentage);
+                            body.tax_percentage = this.n(body.tax_percentage);
+                            body.down_payment_amount = this.n(body.down_payment_amount);
+                            body.details = body.details.map(d => ({
+                                ...d,
+                                quantity: this.n(d.quantity),
+                                unit_price: this.n(d.unit_price),
+                                discount_percentage: this.n(d.discount_percentage),
+                                total_amount: this.n(d.total_amount),
+                            }));
+                            body.charges = body.charges
+                                .filter(c => c.account_id && this.n(c.amount) > 0)
+                                .map(c => ({
+                                    ...c,
+                                    amount: this.n(c.amount)
+                                }));
+
+                            Swal.fire({
+                                title: 'Memproses penyimpanan tagihan...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                const response = await axios.put(
+                                    route('sales.sales_invoices.update', this.formData.id), body
+                                );
+
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+
+                                window.location.href = response.data.redirect;
+                            } catch (error) {
+                                Swal.close();
+                                let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                                let html = null;
+                                if (error.response?.status === 422) {
+                                    title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                                    html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                        Object.values(error.response.data.errors)
+                                        .flat()
+                                        .map(msg => `<li>${msg}</li>`)
+                                        .join('') +
+                                        '</ul>';
+                                } else if (error.response?.data?.message) {
+                                    title = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: title,
+                                    html: html
+                                });
+                            }
                         }
                     });
 
-                    try {
-                        const response = await axios.put(
-                            route('sales.sales_invoices.update', this.formData.id), body
-                        );
-
-                        Swal.close();
-                        Toast.fire({
-                            icon: 'success',
-                            title: response.data.message
-                        });
-
-                        window.location.href = response.data.redirect;
-                    } catch (error) {
-                        Swal.close();
-                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-                        let html = null;
-                        if (error.response?.status === 422) {
-                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
-                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
-                                Object.values(error.response.data.errors)
-                                .flat()
-                                .map(msg => `<li>${msg}</li>`)
-                                .join('') +
-                                '</ul>';
-                        } else if (error.response?.data?.message) {
-                            title = error.response.data.message;
-                        }
-                        Toast.fire({
-                            icon: 'error',
-                            title: title,
-                            html: html
-                        });
-                    }
                 }
 
             };
@@ -541,11 +550,22 @@
                                 </button>
                             </td>
                     </template>
+                    <template x-if="formData.details.length === 0">
+                        <tr>
+                            <td colspan="8" style="text-align:center; color:var(--ink-4); padding:16px;"> Belum ada
+                                produk yang ditambahkan. Klik tombol <strong>Tambah Produk</strong> untuk menambahkan
+                                produk.
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>
 
-        @include('sales.partials.additional-charge-table', ['accounts' => $accounts])
+        @include('sales.partials.additional-charge-table', [
+            'accounts' => $accounts,
+            'title' => 'Biaya Tambahan',
+        ])
 
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">
@@ -658,7 +678,7 @@
 
         <div class="order-form-footer">
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
-            <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Simpan
+            <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Buka
                 Tagihan</button>
         </div>
 

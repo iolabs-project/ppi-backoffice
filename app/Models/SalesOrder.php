@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\SalesOrderStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 
 class SalesOrder extends Model
 {
@@ -112,5 +114,22 @@ class SalesOrder extends Model
     public function deliveryOrders()
     {
         return $this->hasMany(DeliveryOrder::class);
+    }
+
+    #[Scope]
+    protected function invoicable(Builder $query): void
+    {
+        $query->where(function ($q) {
+            $q->whereHas('items', function ($q) {
+                $q->whereColumn('invoiced_quantity', '<', 'shipped_quantity');
+            })
+                ->whereNotIn('status', [SalesOrderStatus::DRAFT->value, SalesOrderStatus::CANCELLED->value]);
+        });
+    }
+
+    #[Scope]
+    protected function deliverable(Builder $query): void
+    {
+        $query->where('status', SalesOrderStatus::OPEN->value);
     }
 }

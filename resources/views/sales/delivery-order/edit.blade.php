@@ -263,7 +263,14 @@
             @include('sales.delivery-order.partials.edit.item-table')
         </div>
 
-        @include('sales.partials.additional-cost-table', ['accounts' => $accounts])
+        @include('sales.partials.additional-cost-table', [
+            'accounts' => $accounts,
+            'title' => 'Biaya Tambahan (Internal)',
+            'footnotes' => [
+                'Biaya ini diperuntukkan khusus untuk biaya pengiriman barang yang menggunakan jasa pihak ketiga.',
+                'Setelah proses pengiriman barang selesai, biaya yang tercatat akan secara otomatis dibuat sebagai draft pada modul <strong>Biaya</strong> untuk proses selanjutnya.',
+            ],
+        ])
 
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">
