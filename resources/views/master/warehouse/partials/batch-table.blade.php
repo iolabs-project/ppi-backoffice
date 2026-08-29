@@ -54,7 +54,10 @@
                     </tr>
                     <template x-for="b in group.batches" :key="b.id">
                         <tr>
-                            <td x-text="b.batch_number"></td>
+                            {{-- <td x-text="b.batch_number"></td> --}}
+                            <td>
+                                    <a :href="route('master.products.batches.show', { id: b.product_id, batch_id: b.id })" class="btn btn-ghost btn-sm"  x-text="b.batch_number"></a>
+                                </td>
                             <td style="text-align:right;">
                                 <span x-text="m(b.quantity)"></span>
                                 <div

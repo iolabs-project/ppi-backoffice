@@ -51,7 +51,7 @@ class ProductController extends Controller
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
-                'message' => 'Terjadi kesalahan saat mengambil data produk',
+                'message' => 'Terjadi kesalahan saat mengambil data transaksi produk',
             ], 500);
         }
     }
@@ -82,7 +82,7 @@ class ProductController extends Controller
             'currentPage'      => 'master',
             'breadcrumb'       => [
                 ['label' => 'Master Data', 'url' => route('master.index')],
-                ['label' => $product->name],
+                ['label' => 'Produk'],
             ],
             'product'          => $product,
             'stocks'           => $stocks,

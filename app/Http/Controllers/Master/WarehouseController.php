@@ -66,7 +66,7 @@ class WarehouseController extends Controller
                 companyID: config('context.selected_company_id'),
                 warehouseID: $id,
                 perPage: $request->input('per_page', 10),
-                onlyAvailable: $request->input('only_available', null),
+                onlyAvailable: $request->has('only_available') ? $request->boolean('only_available') : null,
                 search: $request->input('search', null)
             );
 

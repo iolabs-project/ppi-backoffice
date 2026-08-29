@@ -222,7 +222,7 @@
                         <tr>
                             <th>Tanggal</th>
                             <th>Description</th>
-                            <th>No. referensi</th>
+                            <th>Batch</th>
                             <th style="text-align:right;">Qty</th>
                             <th style="text-align:right;">Harga</th>
                             <th style="text-align:right;">Total</th>
@@ -240,34 +240,27 @@
                         <template x-for="(t,i) in tableData.data" :key="i">
                             <tr>
                                 <td style="font-size:13px; color:var(--ink-3);" x-text="t.transaction_date"></td>
-                                <td style="font-size:13px;">
-                                    <template x-if="t.transaction_type === 'purchase_order'">
-                                        <a :href="route('purchasings.purchase_orders.show', t.transaction_id)">
-                                            <span x-text="'Pesanan Pembelian'"></span>
-                                            <span x-text="t.transaction_number"></span>
-                                            <span x-text="t.contact_name"></span>
-                                        </a>
+                                <td>
+                                    <template x-if="t.reference_redirect">
+                                        <a :href="t.reference_redirect" class="btn btn-ghost btn-sm" x-text="t.note">
                                     </template>
-                                    <template x-if="t.transaction_type === 'goods_receipt'">
-                                        <a :href="route('purchasings.goods_receipts.show', t.transaction_id)">
-                                            <span x-text="'Penerimaan Barang'"></span>
-                                            <span x-text="t.transaction_number"></span>
-                                            <span x-text="t.contact_name"></span>
-                                        </a>
-                                    </template>
-                                    <template x-if="t.transaction_type === 'purchase_invoice'">
-                                        <a :href="route('purchasings.purchase_invoices.show', t.transaction_id)">
-                                            <span x-text="'Tagihan Pembelian'"></span>
-                                            <span x-text="t.transaction_number"></span>
-                                            <span x-text="t.contact_name"></span>
-                                        </a>
+                                    <template x-else>
+                                        <span x-text="t.note"></span>
                                     </template>
                                 </td>
-                                <td style="font-size:13px; color:var(--ink-4);" x-text="t.transaction_reference_number">
+                                <td>
+                                    <a :href="route('master.products.batches.show', { id: t.product_id, batch_id: t.product_batch_id })" class="btn btn-ghost btn-sm"  x-text="t.product_batch.batch_number"></a>
                                 </td>
                                 <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.quantity)"></td>
-                                <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.unit_price)"></td>
-                                <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.total_price)"></td>
+                                <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.unit_cost)"></td>
+                                <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.total_cost)"></td>
+                                {{-- <td>
+                                    <template x-if="t.reference_redirect">
+                                        <a :href="t.reference_redirect" class="btn btn-ghost btn-sm">
+                                            <x-misc.icon name="eye" :size="13" />Referensi
+                                        </a>
+                                    </template>
+                                </td> --}}
                             </tr>
                         </template>
                     </tbody>

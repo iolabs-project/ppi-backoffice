@@ -18,6 +18,7 @@ use App\Http\Controllers\Master\AccountController;
 use App\Http\Controllers\Master\AccountSettingController;
 use App\Http\Controllers\Master\ContactController;
 use App\Http\Controllers\Master\MasterController;
+use App\Http\Controllers\Master\ProductBatchController;
 use App\Http\Controllers\Master\ProductCategoryController;
 use App\Http\Controllers\Master\ProductController;
 use App\Http\Controllers\Master\RoleController;
@@ -316,6 +317,7 @@ Route::middleware('auth')->group(function () {
                 Route::put('/{id}', 'update')->name('update');
             });
 
+
             Route::get('/datatable', 'datatable')->name('datatable');
             Route::get('/transaction-datatable', 'transactionDatatable')->name('transaction_datatable');
             Route::post('/', 'store')->name('store');
@@ -323,7 +325,12 @@ Route::middleware('auth')->group(function () {
             Route::get('/{id}', 'show')->name('show');
             Route::put('/{id}', 'update')->name('update');
             Route::post('/{id}/status', 'status')->name('status');
+
+            Route::prefix('{id}/batches')->name('batches.')->controller(ProductBatchController::class)->group(function () {
+                Route::get('/{batch_id}', 'show')->name('show');
+            });
         });
+
 
         Route::prefix('users')->name('users.')->controller(UserController::class)->group(function () {
             Route::get('/datatable', 'datatable')->name('datatable');

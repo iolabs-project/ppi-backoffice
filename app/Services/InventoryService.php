@@ -240,6 +240,11 @@ class InventoryService
             ->orderByDesc('id')
             ->first();
 
+        $unitCost = ProductStock::where('company_id', $deliveryOrder->company_id)
+            ->where('warehouse_id', $deliveryOrder->warehouse_id)
+            ->where('product_id', $productID)
+            ->value('average_unit_cost');
+
         $stockBefore = $latestTransaction ? $latestTransaction->stock_after : 0;
 
         InventoryTransaction::create([
@@ -250,8 +255,8 @@ class InventoryService
             'type' => InventoryTransactionTypeEnum::SALE,
             'direction' => -1,
             'quantity' => $quantity,
-            'unit_cost' => $batch->unit_cost,
-            'total_cost' => $quantity * $batch->unit_cost,
+            'unit_cost' => $unitCost,
+            'total_cost' => $quantity * $unitCost,
             'stock_before' => $stockBefore,
             'stock_after' => $stockBefore - $quantity,
             'reference_type' => DeliveryOrder::class,
@@ -299,8 +304,8 @@ class InventoryService
                 'total_cost' => 0,
                 'stock_before' => $latestTransaction ? $latestTransaction->stock_after : 0,
                 'stock_after' => $latestTransaction ? $latestTransaction->stock_after : 0,
-                'reference_type' => PurchaseInvoiceItem::class,
-                'reference_id' => null, // You can set this to a relevant ID if needed
+                'reference_type' => PurchaseInvoice::class,
+                'reference_id' => $pi->id, // You can set this to a relevant ID if needed
                 'transaction_date' => now(),
                 'note' => 'Penyesuaian HPP dari PI #' . $pi->number,
             ]);
@@ -330,8 +335,8 @@ class InventoryService
             'total_cost' => $goodsReceiptItem->unit_cost * $goodsReceiptItem->received_quantity,
             'stock_before' => $latestTransaction ? $latestTransaction->stock_after : 0,
             'stock_after' => ($latestTransaction ? $latestTransaction->stock_after : 0) + $goodsReceiptItem->received_quantity,
-            'reference_type' => GoodsReceiptItem::class,
-            'reference_id' => $goodsReceiptItem->id,
+            'reference_type' => GoodsReceipt::class,
+            'reference_id' => $goodsReceipt->id,
             'transaction_date' => now(),
             'note' => 'Penerimaan Barang dari GR #' . $goodsReceipt->number,
         ]);
