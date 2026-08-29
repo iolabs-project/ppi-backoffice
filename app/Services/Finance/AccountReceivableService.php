@@ -27,7 +27,8 @@ class AccountReceivableService
         $this->journalService = $journalService;
         $this->cashService = $cashService;
     }
-    public function generateARNumber() {
+    public function generateARNumber()
+    {
         $prefix = 'AR';
         $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
         $datePart = date('Y');
@@ -39,7 +40,7 @@ class AccountReceivableService
 
         return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
     }
-    
+
     public function fetchInvoiceByID(int $id, string $type)
     {
         if ($type === 'sales_invoice') {
@@ -147,39 +148,44 @@ class AccountReceivableService
             throw ValidationException::withMessages(['error' => 'Tipe referensi tidak valid.']);
         }
 
-            DB::transaction(function () use ($request, $invoice) {
-                $payment = ReceivablePayment::create([
-                    'company_id' => $invoice->company_id,
-                    'reference_id' => $invoice->id,
-                    'reference_type' => ReceivablePaymentReferenceTypeEnum::from($request->reference_type)->value,
-                    'account_id' => $request->account_id,
-                    'number' => $this->generateARNumber(),
-                    'payment_date' => $request->payment_date,
-                    'payment_method' => $request->payment_method,
-                    'reference_number' => $request->reference_number,
-                    'amount' => $request->amount,
-                    'note' => $request->note,
-                    'created_by' => Auth::id(),
-                ]);
+        if ($request->amount > $invoice->remaining_amount) {
+            throw ValidationException::withMessages(['amount' => 'Jumlah pembayaran melebihi sisa piutang.']);
+        }
 
-                $invoice->remaining_amount -= $request->amount;
-                if ($invoice->remaining_amount <= 0) {
-                    $invoice->status = $request->reference_type === ReceivablePaymentReferenceTypeEnum::SALES_INVOICE->value
-                        ? SalesInvoiceStatus::PAID->value
-                        : SalesInvoiceStatus::PAID->value;
-                } elseif ($invoice->remaining_amount < $invoice->total_amount) {
-                    $invoice->status = $request->reference_type === ReceivablePaymentReferenceTypeEnum::SALES_INVOICE->value
-                        ? SalesInvoiceStatus::PARTIAL->value
-                        : SalesInvoiceStatus::PARTIAL->value;
-                }
-                $invoice->save();
+        DB::transaction(function () use ($request, $invoice) {
+            $payment = ReceivablePayment::create([
+                'company_id' => $invoice->company_id,
+                'reference_id' => $invoice->id,
+                'reference_type' => ReceivablePaymentReferenceTypeEnum::from($request->reference_type)->value,
+                'account_id' => $request->account_id,
+                'number' => $this->generateARNumber(),
+                'payment_date' => $request->payment_date,
+                'payment_method' => $request->payment_method,
+                'reference_number' => $request->reference_number,
+                'amount' => $request->amount,
+                'note' => $request->note,
+                'created_by' => Auth::id(),
+            ]);
 
-                $this->postCashTransaction($payment);
-                $this->postPaymentJournal($payment);
-            });
+            $invoice->remaining_amount -= $request->amount;
+            if ($invoice->remaining_amount <= 0) {
+                $invoice->status = $request->reference_type === ReceivablePaymentReferenceTypeEnum::SALES_INVOICE->value
+                    ? SalesInvoiceStatus::PAID->value
+                    : SalesInvoiceStatus::PAID->value;
+            } elseif ($invoice->remaining_amount < $invoice->total_amount) {
+                $invoice->status = $request->reference_type === ReceivablePaymentReferenceTypeEnum::SALES_INVOICE->value
+                    ? SalesInvoiceStatus::PARTIAL->value
+                    : SalesInvoiceStatus::PARTIAL->value;
+            }
+            $invoice->save();
+
+            $this->postCashTransaction($payment);
+            $this->postPaymentJournal($payment);
+        });
     }
 
-    private function postPaymentJournal(ReceivablePayment $payment) {
+    private function postPaymentJournal(ReceivablePayment $payment)
+    {
         $receivableID = AccountSetting::where('company_id', config('context.selected_company_id'))
             ->where('setting_key', AccountSettingEnum::ACCOUNT_RECEIVABLE->value)
             ->value('account_id');
@@ -207,7 +213,8 @@ class AccountReceivableService
         );
     }
 
-     private function postCashTransaction(ReceivablePayment $payment) {
+    private function postCashTransaction(ReceivablePayment $payment)
+    {
         $request = new Request([
             'to_account_id' => $payment->account_id,
             'contact_id' => SalesInvoice::find($payment->reference_id)->customer_id,

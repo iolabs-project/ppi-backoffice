@@ -7,9 +7,9 @@
                 <div><span style="color:var(--ink-3);">Supplier</span><br><strong>{{ $invoice->supplier->name }}</strong>
                 </div>
                 <div><span style="color:var(--ink-3);">Invoice
-                        Total</span><br><strong>{{ fmt_rp($invoice->total_amount) }}</strong></div>
+                        Total</span><br><strong>{{ number_format($invoice->total_amount, 2) }}</strong></div>
                 <div><span style="color:var(--ink-3);">Outstanding</span><br><strong
-                        style="color:var(--bad);">{{ fmt_rp($invoice->remaining_amount) }}</strong></div>
+                        style="color:var(--bad);">{{ number_format($invoice->remaining_amount, 2) }}</strong></div>
             </div>
         </div>
         <div class="form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">

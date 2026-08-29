@@ -89,7 +89,7 @@
                             <td style="color:var(--ink-3);">{{ $it->product->unit->name }}</td>
                             <td class="num" style="text-align:right;">
                                 {{ number_format($it->unit_price * $it->quantity, 2) }}
-                                ({{ fmt_rp($it->unit_price) }})
+                                ({{ number_format($it->unit_price, 2) }})
                             </td>
                             <td class="num" style="text-align:right;">
                                 {{ number_format($it->discount_amount, 2) }}

@@ -194,39 +194,44 @@ class AccountPayableService
             throw ValidationException::withMessages(['error' => 'Tipe referensi tidak valid.']);
         }
 
-            DB::transaction(function () use ($request, $invoice) {
-                $payment = PayablePayment::create([
-                    'company_id' => $invoice->company_id,
-                    'reference_id' => $invoice->id,
-                    'reference_type' => PayablePaymentReferenceTypeEnum::from($request->reference_type)->value,
-                    'account_id' => $request->account_id,
-                    'number' => $this->generateAPNumber(),
-                    'payment_date' => $request->payment_date,
-                    'payment_method' => $request->payment_method,
-                    'reference_number' => $request->reference_number,
-                    'amount' => $request->amount,
-                    'note' => $request->note,
-                    'created_by' => Auth::id(),
-                ]);
+        if ($request->amount > $invoice->remaining_amount) {
+            throw ValidationException::withMessages(['amount' => 'Jumlah pembayaran melebihi sisa hutang.']);
+        }
 
-                $invoice->remaining_amount -= $request->amount;
-                if ($invoice->remaining_amount <= 0) {
-                    $invoice->status = $request->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value
-                        ? PurchaseInvoiceStatus::PAID->value
-                        : ExpenseStatus::PAID->value;
-                } elseif ($invoice->remaining_amount < $invoice->total_amount) {
-                    $invoice->status = $request->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value
-                        ? PurchaseInvoiceStatus::PARTIAL->value
-                        : ExpenseStatus::PARTIAL->value;
-                }
-                $invoice->save();
+        DB::transaction(function () use ($request, $invoice) {
+            $payment = PayablePayment::create([
+                'company_id' => $invoice->company_id,
+                'reference_id' => $invoice->id,
+                'reference_type' => PayablePaymentReferenceTypeEnum::from($request->reference_type)->value,
+                'account_id' => $request->account_id,
+                'number' => $this->generateAPNumber(),
+                'payment_date' => $request->payment_date,
+                'payment_method' => $request->payment_method,
+                'reference_number' => $request->reference_number,
+                'amount' => $request->amount,
+                'note' => $request->note,
+                'created_by' => Auth::id(),
+            ]);
 
-                $this->postCashTransaction($payment);
-                $this->postPaymentJournal($payment);
-            });
+            $invoice->remaining_amount -= $request->amount;
+            if ($invoice->remaining_amount <= 0) {
+                $invoice->status = $request->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value
+                    ? PurchaseInvoiceStatus::PAID->value
+                    : ExpenseStatus::PAID->value;
+            } elseif ($invoice->remaining_amount < $invoice->total_amount) {
+                $invoice->status = $request->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value
+                    ? PurchaseInvoiceStatus::PARTIAL->value
+                    : ExpenseStatus::PARTIAL->value;
+            }
+            $invoice->save();
+
+            $this->postCashTransaction($payment);
+            $this->postPaymentJournal($payment);
+        });
     }
 
-    private function postPaymentJournal(PayablePayment $payment) {
+    private function postPaymentJournal(PayablePayment $payment)
+    {
         $payableID = AccountSetting::where('company_id', config('context.selected_company_id'))
             ->where('setting_key', AccountSettingEnum::ACCOUNT_PAYABLE->value)
             ->value('account_id');
@@ -254,7 +259,8 @@ class AccountPayableService
         );
     }
 
-    private function postCashTransaction(PayablePayment $payment) {
+    private function postCashTransaction(PayablePayment $payment)
+    {
         $request = new Request([
             'from_account_id' => $payment->account_id,
             'contact_id' => $payment->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value

@@ -63,17 +63,17 @@
                 <div class="order-detail-summary" style="padding:20px; border-left:1px solid var(--line-2);">
                     <div style="display:flex; justify-content:space-between; padding:6px 0;">
                         <span style="color:var(--ink-3);">Jumlah Invoice</span>
-                        <span class="num" style="font-weight:600;">{{ fmt_rp($invoice->total_amount) }}</span>
+                        <span class="num" style="font-weight:600;" x-text="m(invoiceData.total_amount)"></span>
                     </div>
                     <div style="display:flex; justify-content:space-between; padding:6px 0;">
                         <span style="color:var(--ink-3);">Jumlah Dibayar</span>
-                        <span class="num" style="font-weight:600; color:var(--good);">{{ fmt_rp($paidAmount) }}</span>
+                        <span class="num" style="font-weight:600; color:var(--good);" x-text="m(tableData.data.reduce((sum, p) => sum + p.amount, 0))"></span>
                     </div>
                     <div
                         style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;">
                         <span style="color:var(--ink);font-weight:700;">Sisa Tagihan</span>
                         <span class="num"
-                            style="font-weight:700; color:var(--bad);">{{ fmt_rp($invoice->remaining_amount) }}</span>
+                            style="font-weight:700; color:var(--bad);" x-text="m(outstandingAmount())"></span>
                     </div>
                 </div>
             </div>
@@ -193,6 +193,7 @@
                                 reference_type: this.form.reference_type,
                             },
                         });
+                        console.log(response);
                         this.tableData = response.data;
                     } catch (error) {
                         Toast.fire({

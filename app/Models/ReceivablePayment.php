@@ -20,6 +20,11 @@ class ReceivablePayment extends Model
         'created_by',
     ];
 
+    protected $casts = [
+        'payment_date' => 'date:Y-m-d',
+        'amount' => 'double',
+    ];
+
     public function company()
     {
         return $this->belongsTo(Company::class);
