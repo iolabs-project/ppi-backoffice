@@ -638,6 +638,14 @@
                                 </button>
                             </td>
                     </template>
+                    <template x-if="formData.details.length === 0">
+                        <tr>
+                            <td colspan="8" style="text-align:center; color:var(--ink-4); padding:16px 0;">
+                                Belum ada produk yang ditambahkan. Klik tombol <strong>Tambah Produk</strong> untuk
+                                menambahkan produk.
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>
@@ -645,6 +653,9 @@
         @include('purchasing.partials.additional-cost-table', [
             'accounts' => $accounts,
             'showInventoryCost' => true,
+            'footnotes' => [
+                'Hanya biaya yang memiliki opsi <strong>Biaya Inventory</strong> yang dicentang yang akan dialokasikan ke dalam nilai persediaan dan diperhitungkan sebagai bagian dari <strong>HPP</strong>.',
+            ],
         ])
 
         <div class="card" style="overflow:visible;">

@@ -31,6 +31,7 @@ class JournalService
 
             $totalDebit = array_sum(array_column($items, 'debit'));
             $totalCredit = array_sum(array_column($items, 'credit'));
+            // dd($totalDebit, $totalCredit, $items);
             if ($totalDebit !== $totalCredit) {
                 throw ValidationException::withMessages(['error' => 'Total debit dan kredit tidak seimbang.']);
             }   

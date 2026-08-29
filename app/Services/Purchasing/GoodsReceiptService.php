@@ -280,7 +280,7 @@ class GoodsReceiptService
 
             $this->purchaseOrderService->updateReceivedQuantity(
                 purchaseOrderItemID: $goodsReceiptItem->purchase_order_item_id,
-                receivedQuantity: $goodsReceiptItem->received_quantity
+                receivedQuantity: $goodsReceiptItem->expected_quantity
             );
         }
         $this->expenseService->storeExpenseFromGoodsReceipt($goodsReceipt->id);

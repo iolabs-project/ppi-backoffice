@@ -45,7 +45,7 @@ class GoodsReceiptController extends Controller
         try {
             $data = $goodsReceiptService->storeGoodsReceipt($request);
 
-            return response()->json(['redirect' => route('purchasings.goods_receipts.edit', $data->id), 'message' => 'Goods receipt berhasil dibuat.']);
+            return response()->json(['redirect' => route('purchasings.goods_receipts.edit', $data->id), 'message' => 'Penerimaan barang berhasil dibuat.']);
         } catch (ValidationException $e) {
             Log::error('Error GoodsReceiptController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -113,7 +113,7 @@ class GoodsReceiptController extends Controller
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Penerimaan Barang. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui penerimaan barang. Silakan coba lagi.'], 500);
         }
     }
 
@@ -128,7 +128,7 @@ class GoodsReceiptController extends Controller
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Penerimaan Barang. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan penerimaan barang. Silakan coba lagi.'], 500);
         }
     }
 }

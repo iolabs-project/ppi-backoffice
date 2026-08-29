@@ -401,6 +401,9 @@
         @include('purchasing.partials.additional-cost-table', [
             'accounts' => $accounts,
             'billedByOptions' => $billedByOptions,
+            'footnotes' => [
+                'Hanya biaya yang memiliki opsi <strong>Biaya Inventory</strong> yang dicentang yang akan dialokasikan ke dalam nilai persediaan dan diperhitungkan sebagai bagian dari <strong>HPP</strong>.',
+            ],
         ])
 
         <div class="card" style="overflow:visible;">
@@ -534,8 +537,7 @@
 
         <div class="order-form-footer">
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
-            <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check"
-                    :size="14" />Buka
+            <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check" :size="14" />Buka
                 PO</button>
         </div>
 

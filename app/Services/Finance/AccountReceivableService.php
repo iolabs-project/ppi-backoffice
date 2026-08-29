@@ -189,12 +189,12 @@ class AccountReceivableService
 
         $journalItems = [
             [
-                'account_id' => $receivableID,
-                'credit' => $amount,
-            ],
-            [
                 'account_id' => $cashBankID,
                 'debit' => $amount,
+            ],
+            [
+                'account_id' => $receivableID,
+                'credit' => $amount,
             ],
         ];
 

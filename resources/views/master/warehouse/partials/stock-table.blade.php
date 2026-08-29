@@ -40,8 +40,8 @@
                         <td class="mono" x-text="stock.product.code"></td>
                         <td style="text-align:right;" x-text="m(stock.quantity)"></td>
                         <td x-text="stock.product.unit.name"></td>
-                        <td style="text-align:right;" x-text="m(stock.average_cost)"></td>
-                        <td style="text-align:right;" x-text="m(stock.total_cost)"></td>
+                        <td style="text-align:right;" x-text="m(stock.average_unit_cost)"></td>
+                        <td style="text-align:right;" x-text="m(stock.quantity * stock.average_unit_cost)"></td>
                     </tr>
                 </template>
             </template>

@@ -86,6 +86,14 @@ class PurchaseOrderService
             $query->where('status', $request->input('status'));
         }
 
+        if ($request->filled('is_receivable') && $request->input('is_receivable')){
+            $query->receivable();
+        }
+
+        if ($request->filled('is_invoicable') && $request->input('is_invoicable')){
+            $query->invoicable();
+        }
+
         $query = $query->orderBy('order_date', 'desc')->paginate($request->input('per_page', 10));
         return $query;
     }

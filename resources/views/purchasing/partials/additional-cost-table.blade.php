@@ -9,11 +9,17 @@
          Billed By + Inventory Cost columns (used for Purchase Invoice, where
          every cost is inherently supplier-billed).
        - $title: card title, defaults to "Biaya Tambahan (Landed Cost)".
+       - $footnote: one or more bullet lines shown below the table when
+         $showInventoryCost is true. Pass a string for a single line, an
+         array of strings for multiple lines, or null/[] to hide it even
+         when $showInventoryCost is true. Defaults to the Biaya Inventory
+         allocation note. HTML (e.g. <strong>) is allowed in each line.
 --}}
 @php
     $showBilledBy = !empty($billedByOptions);
     $showInventoryCost = $showInventoryCost ?? $showBilledBy;
     $title = $title ?? 'Biaya Tambahan';
+    $footnotes = $footnotes ?? [];
 @endphp
 <script>
     var accounts = @json($accounts);
@@ -105,9 +111,11 @@
             </template>
         </tbody>
     </table>
-    @if ($showInventoryCost)
+    @if (count($footnotes))
         <div style="padding:12px 16px; font-size:12px; color:var(--ink-3); line-height:1.7;">
-            <div>• Hanya biaya dengan <strong>Biaya Inventory</strong> dicentang yang akan dialokasikan ke dalam nilai persediaan (HPP).</div>
+            @foreach ($footnotes as $line)
+                <div>• {!! $line !!}</div>
+            @endforeach
         </div>
     @endif
 </div>

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Enums\PurchaseOrderStatus;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 
 class PurchaseOrder extends Model
 {
@@ -65,7 +67,7 @@ class PurchaseOrder extends Model
 
     public function getIsInvoicableAttribute()
     {
-        return $this->status === PurchaseOrderStatus::OPEN->value && $this->total_invoiced_quantity < $this->total_received_quantity;
+        return (!in_array($this->status, [PurchaseOrderStatus::DRAFT->value, PurchaseOrderStatus::CANCELLED->value])) && $this->total_invoiced_quantity < $this->total_received_quantity;
     }
 
     public function items()
@@ -101,5 +103,27 @@ class PurchaseOrder extends Model
     public function downPaymentAccount()
     {
         return $this->belongsTo(ChartOfAccount::class, 'down_payment_account_id');
+    }
+
+    #[Scope]
+    protected function invoicable(Builder $query): void
+    {
+        $query->where(function ($q) {
+            $q->whereHas('items', function ($q) {
+                $q->whereColumn('invoiced_quantity', '<', 'received_quantity');
+            })
+                ->whereNotIn('status', [PurchaseOrderStatus::DRAFT->value, PurchaseOrderStatus::CANCELLED->value]);
+        });
+    }
+
+    #[Scope]
+    protected function receivable(Builder $query): void
+    {
+        $query->where(function ($q) {
+            $q->where('status', PurchaseOrderStatus::OPEN->value)
+                ->whereHas('items', function ($q) {
+                    $q->whereColumn('received_quantity', '<', 'quantity');
+                });
+        });
     }
 }

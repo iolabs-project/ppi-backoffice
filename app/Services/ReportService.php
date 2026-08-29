@@ -14,7 +14,10 @@ class ReportService
 {
     public function fetchJournalTableData(Request $request, int $companyID)
     {
-        $query = JournalEntry::with(['items.account'])
+        $query = JournalEntry::with(['items' => function ($q) {
+                $q->with('account')
+                ->orderBy('id', 'asc');
+            }])
             ->where('company_id', $companyID)
             ->where('status', JournalEntryStatusEnum::POSTED->value);
 

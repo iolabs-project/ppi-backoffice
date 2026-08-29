@@ -307,7 +307,7 @@ class PurchaseInvoiceService
             ->where('setting_key', AccountSettingEnum::ACCOUNT_PAYABLE->value)
             ->value('account_id');
         $payableAmount = $purchaseInvoice->items->sum('total_amount') + $purchaseInvoice->costs->sum('amount')
-            + $purchaseInvoice->tax_amount;
+            + $purchaseInvoice->tax_amount - $purchaseInvoice->discount_amount;
 
         $grniAccountID = AccountSetting::where('company_id', config('context.selected_company_id'))
             ->where('setting_key', AccountSettingEnum::GRNI->value)

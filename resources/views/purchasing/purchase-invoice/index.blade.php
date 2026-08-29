@@ -304,7 +304,6 @@
                                 status: this.filter,
                             },
                         });
-                        console.log('Response data:', response.data);
                         this.tableData = response.data;
                     } catch (error) {
                         console.error('Error fetching data:', error);
@@ -422,7 +421,7 @@
                         const response = await axios.get(route('purchasings.purchase_orders.datatable'), {
                             params: {
                                 per_page: 100,
-                                status: 'open',
+                                is_invoicable: true,
                                 search: this.poPickerSearch,
                             },
                         });

@@ -36,4 +36,20 @@ enum BilledBy: string
             ->values()
             ->toArray();
     }
+
+    public static function purchasesDropdownOptions(): array
+    {
+        // return [
+        //     self::SUPPLIER->value => self::SUPPLIER->label(),
+        //     self::THIRD_PARTY->value => self::THIRD_PARTY->label(),
+        // ];
+
+        return collect([self::SUPPLIER, self::THIRD_PARTY])
+            ->map(fn($case) => [
+                'id' => $case->value,
+                'name' => $case->label(),
+            ])
+            ->values()
+            ->toArray();
+    }
 }

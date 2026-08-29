@@ -494,9 +494,9 @@
                         <th style="width:48px;">#</th>
                         <th>Produk</th>
                         <th style="width:240px;">Batch</th>
-                        <th style="text-align:right; width:140px;">Sisa (PO)</th>
-                        <th style="text-align:right; width:140px;">Qty (Ekspektasi)</th>
-                        <th style="text-align:right; width:140px;">Qty (Diterima)</th>
+                        <th style="text-align:right; width:120px;">Sisa (PO)</th>
+                        <th style="text-align:right; width:120px;">Qty (Ekspektasi)</th>
+                        <th style="text-align:right; width:120px;">Qty (Diterima)</th>
                         <th style="text-align:right; width:80px;">Susut</th>
                         <th style="width:50px;">Satuan</th>
                         <th style="width:120px; text-align:right;">Harga</th>
@@ -616,6 +616,11 @@
         @include('purchasing.partials.additional-cost-table', [
             'accounts' => $accounts,
             'showInventoryCost' => true,
+            'footnotes' => [
+                'Hanya biaya yang memiliki opsi <strong>Biaya Inventory</strong> yang dicentang yang akan dialokasikan ke dalam nilai persediaan dan diperhitungkan sebagai bagian dari <strong>HPP</strong>.',
+                'Biaya ini diperuntukkan khusus untuk biaya penerimaan barang yang menggunakan jasa pihak ketiga. Biaya yang ditagihkan langsung oleh supplier harus dicatat sebagai bagian dari tagihan supplier.',
+                'Setelah proses penerimaan barang selesai, biaya yang tercatat akan secara otomatis dibuat sebagai draft pada modul <strong>Biaya</strong> untuk proses selanjutnya.',
+            ],
         ])
 
         <div class="card" style="overflow:visible;">

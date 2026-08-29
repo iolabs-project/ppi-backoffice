@@ -65,7 +65,7 @@ class PurchaseOrderController extends Controller
             'suppliers' => $this->contactService->fetchContactData('supplier'),
             'cashBankAccounts' => $this->accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::CASH_BANK->value),
             'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
-            'billedByOptions' => BilledBy::dropdownOptions(),
+            'billedByOptions' => BilledBy::purchasesDropdownOptions(),
         ];
         return view('purchasing.purchase-order.create', $data);
     }
@@ -125,7 +125,7 @@ class PurchaseOrderController extends Controller
             'suppliers' => $this->contactService->fetchContactData('supplier'),
             'cashBankAccounts' => $this->accountService->fetchAccountData(companyID: $companyID, categoryID: AccountCategoryEnum::CASH_BANK->value),
             'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
-            'billedByOptions' => BilledBy::dropdownOptions(),
+            'billedByOptions' => BilledBy::purchasesDropdownOptions(),
         ];
         return view('purchasing.purchase-order.edit', $data);
     }
@@ -134,14 +134,14 @@ class PurchaseOrderController extends Controller
     {
         try {
             $this->purchaseOrderService->updatePurchaseOrder($request, $id);
-            return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Purchase Order berhasil diperbarui.']);
+            return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Pemesanan pembelian berhasil diperbarui.']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@update: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Purchase Order. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Pemesanan pembelian. Silakan coba lagi.'], 500);
         }
     }
 
@@ -149,14 +149,14 @@ class PurchaseOrderController extends Controller
     {
         try {
             $this->purchaseOrderService->changePurchaseOrderStatus($id, PurchaseOrderStatus::OPEN->value);
-            return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Open"']);
+            return response()->json(['message' => 'Status Pemesanan pembelian berhasil diubah menjadi "Open"']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@open: ' . $e->getMessage(), [
                 'exception' => $e,
                 'purchase_order_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuka Purchase Order. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuka Pemesanan pembelian. Silakan coba lagi.'], 500);
         }
     }
 
@@ -164,14 +164,14 @@ class PurchaseOrderController extends Controller
     {
         try {
             $this->purchaseOrderService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CLOSED->value);
-            return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Closed"']);
+            return response()->json(['message' => 'Status Pemesanan pembelian berhasil diubah menjadi "Closed"']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@close: ' . $e->getMessage(), [
                 'exception' => $e,
                 'purchase_order_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba menutup Purchase Order. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba menutup Pemesanan pembelian. Silakan coba lagi.'], 500);
         }
     }
 
@@ -179,14 +179,14 @@ class PurchaseOrderController extends Controller
     {
         try {
             $this->purchaseOrderService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CANCELLED->value);
-            return response()->json(['message' => 'Status Purchase Order berhasil diubah menjadi "Cancelled"']);
+            return response()->json(['message' => 'Status Pemesanan pembelian berhasil diubah menjadi "Cancelled"']);
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,
                 'purchase_order_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Purchase Order. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Pemesanan pembelian. Silakan coba lagi.'], 500);
         }
     }
 }
