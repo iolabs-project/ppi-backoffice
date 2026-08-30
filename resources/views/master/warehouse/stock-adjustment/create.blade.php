@@ -1,8 +1,6 @@
 @extends('layouts.app')
 @section('content')
     <script>
-        const batches = @json($batches);
-
         function stockAdjustmentForm() {
             return {
                 warehouse: @json($warehouse),
@@ -46,19 +44,10 @@
                 deleteDetail(index) {
                     this.formData.details.splice(index, 1);
                 },
-                availableBatches(q) {
-                    let list = batches.filter(b => !this.formData.details.some(d => d.product_batch_id === b.id));
-
-                    if (q) {
-                        const s = q.toLowerCase();
-                        list = list.filter(b =>
-                            (b.product.name || '').toLowerCase().includes(s) ||
-                            (b.product.code || '').toLowerCase().includes(s) ||
-                            (b.batch_number || '').toLowerCase().includes(s)
-                        );
-                    }
-
-                    return list;
+                excludedBatchIds() {
+                    return this.formData.details
+                        .map(d => d.product_batch_id)
+                        .filter(id => id !== null);
                 },
                 selectBatch(item, batch) {
                     item.product_batch_id = batch.id;
@@ -226,11 +215,14 @@
                                         <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
                                     </div>
                                     <div style="flex:1;">
-                                        <x-misc.select
+                                        <x-misc.async-select
+                                            url="{{ route('master.products.options.batches') }}"
                                             display="it.product_batch_id ? it.product_name : 'Pilih Produk / Batch'"
-                                            hasValue="it.product_batch_id" placeholder="Cari produk atau batch..."
-                                            min-width="320px" height="32px">
-                                            <template x-for="b in availableBatches(q)" :key="b.id">
+                                            hasValue="it.product_batch_id"
+                                            default="it.product_batch_id ? [{ id: it.product_batch_id, product_id: it.product_id, product: { name: it.product_name, code: it.product_code, unit: { symbol: it.unit } }, batch_number: it.batch_number, quantity: it.system_quantity, unit_cost: it.unit_cost }] : []"
+                                            params="{ warehouse_id: warehouse.id, exclude_batch_ids: excludedBatchIds() }"
+                                            placeholder="Cari produk atau batch..." min-width="320px" height="32px">
+                                            <template x-for="b in items" :key="b.id">
                                                 <div class="dropdown-item" @click="selectBatch(it, b);open=false;q=''">
                                                     <div style="flex:1; min-width:0;">
                                                         <div style="font-size:13px;" x-text="b.product.name"></div>
@@ -241,10 +233,7 @@
                                                         x-text="m(b.quantity) + ' ' + b.product.unit.symbol"></span>
                                                 </div>
                                             </template>
-                                            <template x-if="availableBatches(q).length === 0">
-                                                <div class="dropdown-empty">Tidak ditemukan</div>
-                                            </template>
-                                        </x-misc.select>
+                                        </x-misc.async-select>
                                         <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
                                             x-text="it.product_code ? (it.product_code + ' · ' + it.batch_number) : '— belum dipilih'">
                                         </div>

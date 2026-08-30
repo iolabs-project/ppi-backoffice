@@ -18,9 +18,10 @@ use App\Http\Controllers\Master\AccountController;
 use App\Http\Controllers\Master\AccountSettingController;
 use App\Http\Controllers\Master\ContactController;
 use App\Http\Controllers\Master\MasterController;
-use App\Http\Controllers\Master\ProductBatchController;
-use App\Http\Controllers\Master\ProductCategoryController;
-use App\Http\Controllers\Master\ProductController;
+use App\Http\Controllers\Master\Product\ProductBatchController;
+use App\Http\Controllers\Master\Product\ProductCategoryController;
+use App\Http\Controllers\Master\Product\ProductController;
+use App\Http\Controllers\Master\Product\ProductOptionController;
 use App\Http\Controllers\Master\RoleController;
 use App\Http\Controllers\Master\UserController;
 use App\Http\Controllers\Master\Warehouse\StockAdjustmentController;
@@ -329,6 +330,10 @@ Route::middleware('auth')->group(function () {
             Route::prefix('categories')->name('categories.')->controller(ProductCategoryController::class)->group(function () {
                 Route::post('/', 'store')->name('store');
                 Route::put('/{id}', 'update')->name('update');
+            });
+
+            Route::prefix('/options')->name('options.')->controller(ProductOptionController::class)->group(function () {
+                Route::get('/batches', 'batches')->name('batches');
             });
 
 

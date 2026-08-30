@@ -162,70 +162,7 @@ class ProductService
         return $data;
     }
 
-    // public function fetchProductTransactionTableData(Request $request, int $companyID)
-    // {
-    //     $poQuery = DB::table('purchase_order_items', 'i')
-    //         ->join('purchase_orders as po', 'po.id', '=', 'i.purchase_order_id')
-    //         ->join('contacts as c', 'c.id', '=', 'po.supplier_id')
-    //         ->select(
-    //             'po.id as transaction_id',
-    //             'po.number as transaction_number',
-    //             'po.reference_number as transaction_reference_number',
-    //             DB::raw("DATE_FORMAT(po.order_date, '%Y-%m-%d') as transaction_date"),
-    //             'c.name as contact_name',
-    //             'i.quantity as quantity',
-    //             'i.unit_price as unit_price',
-    //             DB::raw('(i.quantity * i.unit_price) as total_price'),
-    //             DB::raw('"purchase_order" as transaction_type'),
-    //         )
-    //         ->where('po.company_id', $companyID)
-    //         ->where('i.product_id', $request->product_id)
-    //         ->limit($request->input('per_page', 10));
-
-    //     $grQuery = DB::table('goods_receipt_items', 'i')
-    //         ->join('goods_receipts as gr', 'gr.id', '=', 'i.goods_receipt_id')
-    //         ->join('contacts as c', 'c.id', '=', 'gr.supplier_id')
-    //         ->select(
-    //             'gr.id as transaction_id',
-    //             'gr.number as transaction_number',
-    //             'gr.reference_number as transaction_reference_number',
-    //             DB::raw("DATE_FORMAT(gr.receipt_date, '%Y-%m-%d') as transaction_date"),
-    //             'c.name as contact_name',
-    //             'i.received_quantity as quantity',
-    //             'i.unit_price as unit_price',
-    //             DB::raw('(i.received_quantity * i.unit_price) as total_price'),
-    //             DB::raw('"goods_receipt" as transaction_type'),
-    //         )
-    //         ->where('gr.company_id', $companyID)
-    //         ->where('i.product_id', $request->product_id)
-    //         ->limit($request->input('per_page', 10));
-
-    //     $piQuery = DB::table('purchase_invoice_items', 'i')
-    //         ->join('purchase_invoices as pi', 'pi.id', '=', 'i.purchase_invoice_id')
-    //         ->join('contacts as c', 'c.id', '=', 'pi.supplier_id')
-    //         ->select(
-    //             'pi.id as transaction_id',
-    //             'pi.number as transaction_number',
-    //             'pi.reference_number as transaction_reference_number',
-    //             DB::raw("DATE_FORMAT(pi.invoice_date, '%Y-%m-%d') as transaction_date"),
-    //             'c.name as contact_name',
-    //             'i.quantity as quantity',
-    //             'i.unit_price as unit_price',
-    //             DB::raw('(i.quantity * i.unit_price) as total_price'),
-    //             DB::raw('"purchase_invoice" as transaction_type'),
-    //         )
-    //         ->where('pi.company_id', $companyID)
-    //         ->where('i.product_id', $request->product_id)
-    //         ->limit($request->input('per_page', 10));
-
-    //     $data = $poQuery->unionAll($grQuery)->unionAll($piQuery);
-    //     $data = $data->orderBy('transaction_date', 'asc')
-    //         ->paginate($request->input('per_page', 10));
-
-    //     return $data;
-    // }
-
-    public function fetchProductTransactionTableData(Request $request, int $companyID)
+ public function fetchProductTransactionTableData(Request $request, int $companyID)
     {
         $query = InventoryTransaction::with(['productBatch:id,batch_number'])->select(
             'id',

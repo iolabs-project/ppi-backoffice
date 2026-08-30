@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Master\Warehouse;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\StockAdjustmentFormRequest;
-use App\Services\InventoryService;
 use App\Services\Master\WarehouseService;
 use App\Services\Master\StockAdjustmentService;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +18,7 @@ class StockAdjustmentController extends Controller
         $this->warehouseService = $warehouseService;
     }
 
-    public function create(StockAdjustmentService $stockAdjustmentService, InventoryService $inventoryService, int $id)
+    public function create(StockAdjustmentService $stockAdjustmentService, int $id)
     {
         $data = [
             'currentPage' => 'master',
@@ -29,10 +28,6 @@ class StockAdjustmentController extends Controller
                 ['label' => 'Penyesuaian Stok'],
             ],
             'warehouse' => $this->warehouseService->fetchWarehouseByID($id),
-            'batches' => $inventoryService->fetchInventoryBatches(
-                companyID: config('context.selected_company_id'),
-                warehouseID: $id,
-            ),
             'number' => $stockAdjustmentService->generateNumber(),
         ];
 

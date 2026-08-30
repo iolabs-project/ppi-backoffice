@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Master;
+namespace App\Http\Controllers\Master\Product;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\ProductFormRequest;
