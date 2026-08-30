@@ -90,7 +90,14 @@ class SalesOrderService
         if ($request->filled('status') && $request->input('status') !== 'all') {
             $query->where('status', $request->input('status'));
         }
+        if ($request->filled('start_date')) {
+            $query->where('order_date', '>=', $request->input('start_date'));
+        }
 
+        if ($request->filled('end_date')) {
+            $query->where('order_date', '<=', $request->input('end_date'));
+        }
+        
         if ($request->filled('is_deliverable') && $request->input('is_deliverable')) {
             $query->deliverable();
         }

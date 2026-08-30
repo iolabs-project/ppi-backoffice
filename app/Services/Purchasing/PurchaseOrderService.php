@@ -94,6 +94,14 @@ class PurchaseOrderService
             $query->invoicable();
         }
 
+        if ($request->filled('start_date')) {
+            $query->where('order_date', '>=', $request->input('start_date'));
+        }
+
+        if ($request->filled('end_date')) {
+            $query->where('order_date', '<=', $request->input('end_date'));
+        }
+
         $query = $query->orderBy('order_date', 'desc')->paginate($request->input('per_page', 10));
         return $query;
     }

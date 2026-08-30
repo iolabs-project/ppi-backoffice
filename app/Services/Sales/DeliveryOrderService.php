@@ -90,6 +90,14 @@ class DeliveryOrderService
             $query->where('status', $request->input('status'));
         }
 
+        if ($request->filled('start_date')) {
+            $query->where('delivery_date', '>=', $request->input('start_date'));
+        }
+
+        if ($request->filled('end_date')) {
+            $query->where('delivery_date', '<=', $request->input('end_date'));
+        }
+
         $query = $query->orderBy('delivery_date', 'desc')->paginate($request->input('per_page', 10));
         return $query;
     }

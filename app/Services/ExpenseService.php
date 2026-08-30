@@ -115,9 +115,16 @@ class ExpenseService
             });
         }
 
-
         if ($request->filled('status') && $request->input('status') !== 'all') {
             $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('start_date')) {
+            $query->where('expense_date', '>=', $request->input('start_date'));
+        }
+
+        if ($request->filled('end_date')) {
+            $query->where('expense_date', '<=', $request->input('end_date'));
         }
 
         $query = $query->orderBy('expense_date', 'desc')->paginate($request->input('per_page', 10));

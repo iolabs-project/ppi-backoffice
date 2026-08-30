@@ -84,6 +84,14 @@ class SalesInvoiceService
             $query->where('status', $request->input('status'));
         }
 
+        if ($request->filled('start_date')) {
+            $query->where('invoice_date', '>=', $request->input('start_date'));
+        }
+
+        if ($request->filled('end_date')) {
+            $query->where('invoice_date', '<=', $request->input('end_date'));
+        }
+
         $query = $query->orderBy('invoice_date', 'desc')->paginate($request->input('per_page', 10));
         return $query;
     }
