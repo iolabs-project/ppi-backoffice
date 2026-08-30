@@ -9,6 +9,7 @@ use App\Models\DeliveryOrder;
 use App\Models\DeliveryOrderItem;
 use App\Models\GoodsReceipt;
 use App\Models\ProductBatch;
+use App\Models\ProductBatchStock;
 use App\Models\ProductStock;
 use App\Models\InventoryTransaction;
 use App\Models\GoodsReceiptItem;
@@ -99,98 +100,89 @@ class InventoryService
 
     public function fetchInventoryBatches(int $companyID, int | null $warehouseID = null, array $productIDs = [], bool | null $onlyAvailable = null): Collection
     {
-        return ProductBatch::with([
-            'product:id,code,name,unit_id',
-            'product.unit:id,name,symbol',
-            'warehouse:id,name',
-        ])
-            ->select(
-                'id',
-                'company_id',
-                'warehouse_id',
-                'product_id',
-                'batch_number',
-                'initial_quantity',
-                'quantity',
-                'reserved_quantity',
-                'unit_cost'
-            )
-            ->where('company_id', $companyID)
-            ->whereHas('product', function ($query) {
-                $query->whereNull('deleted_at');
-            })
-            ->when($warehouseID !== null, function ($query) use ($warehouseID) {
-                $query->where('warehouse_id', $warehouseID);
-            })
-            ->when($onlyAvailable !== null, function ($query) use ($onlyAvailable) {
-                if ($onlyAvailable) {
-                    $query->whereRaw('quantity - reserved_quantity > 0');
-                } else {
-                    $query->whereRaw('quantity - reserved_quantity <= 0');
-                }
-            })
-            ->when(!empty($productIDs), function ($query) use ($productIDs) {
-                $query->whereIn('product_id', $productIDs);
-            })
+        return $this->buildInventoryBatchStockQuery($companyID, $warehouseID, $productIDs, $onlyAvailable)
             ->orderBy('id', 'asc')
-            ->get();
+            ->get()
+            ->map(fn($stock) => $this->transformBatchStock($stock));
     }
 
     public function fetchInventoryBatchTableData(int $companyID, int $perPage, int | null $warehouseID = null, array $productIDs = [], bool | null $onlyAvailable = null, string | null $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return ProductBatch::with([
-            'product:id,code,name,unit_id',
-            'product.unit:id,name,symbol',
+        return $this->buildInventoryBatchStockQuery($companyID, $warehouseID, $productIDs, $onlyAvailable)
+            ->when($search !== null, function ($query) use ($search) {
+                $query->whereHas('productBatch.product', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('id', 'asc')
+            ->paginate($perPage)
+            ->through(fn($stock) => $this->transformBatchStock($stock));
+    }
+
+    private function buildInventoryBatchStockQuery(int $companyID, int | null $warehouseID, array $productIDs, bool | null $onlyAvailable)
+    {
+        return ProductBatchStock::with([
+            'productBatch:id,company_id,product_id,batch_number,initial_quantity,unit_cost',
+            'productBatch.product:id,code,name,unit_id',
+            'productBatch.product.unit:id,name,symbol',
             'warehouse:id,name',
         ])
-            ->select(
-                'id',
-                'company_id',
-                'warehouse_id',
-                'product_id',
-                'batch_number',
-                'initial_quantity',
-                'quantity',
-                'reserved_quantity',
-                'unit_cost'
-            )
-            ->where('company_id', $companyID)
-            ->whereHas('product', function ($query) {
-                $query->whereNull('deleted_at');
+            ->whereHas('productBatch', function ($query) use ($companyID, $productIDs) {
+                $query->where('company_id', $companyID)
+                    ->whereHas('product', function ($query) {
+                        $query->whereNull('deleted_at');
+                    })
+                    ->when(!empty($productIDs), function ($query) use ($productIDs) {
+                        $query->whereIn('product_id', $productIDs);
+                    });
             })
             ->when($warehouseID !== null, function ($query) use ($warehouseID) {
                 $query->where('warehouse_id', $warehouseID);
             })
             ->when($onlyAvailable !== null, function ($query) use ($onlyAvailable) {
                 if ($onlyAvailable) {
-                    $query->whereRaw('quantity - reserved_quantity > 0');
+                    $query->whereColumn('quantity', '>', 'reserved_quantity');
                 } else {
-                    $query->whereRaw('quantity - reserved_quantity <= 0');
+                    $query->whereColumn('quantity', '<=', 'reserved_quantity');
                 }
-            })
-            ->when(!empty($productIDs), function ($query) use ($productIDs) {
-                $query->whereIn('product_id', $productIDs);
-            })
-            ->when($search !== null, function ($query) use ($search) {
-                $query->whereHas('product', function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%");
-                });
-            })
-            ->paginate($perPage);
+            });
+    }
+
+    private function transformBatchStock(ProductBatchStock $stock): array
+    {
+        return [
+            'id' => $stock->product_batch_id,
+            'company_id' => $stock->productBatch->company_id,
+            'warehouse_id' => $stock->warehouse_id,
+            'product_id' => $stock->productBatch->product_id,
+            'batch_number' => $stock->productBatch->batch_number,
+            'initial_quantity' => $stock->productBatch->initial_quantity,
+            'quantity' => $stock->quantity,
+            'reserved_quantity' => $stock->reserved_quantity,
+            'available_quantity' => $stock->available_quantity,
+            'unit_cost' => $stock->productBatch->unit_cost,
+            'product' => $stock->productBatch->product,
+            'warehouse' => $stock->warehouse,
+        ];
     }
 
     public function receiveInventoryFromGR(GoodsReceipt $goodsReceipt, GoodsReceiptItem $goodsReceiptItem): ProductBatch
     {
         $productBatch = ProductBatch::create([
             'company_id' => $goodsReceipt->company_id,
-            'warehouse_id' => $goodsReceipt->warehouse_id,
             'product_id' => $goodsReceiptItem->product_id,
             'goods_receipt_item_id' => $goodsReceiptItem->id,
             'batch_number' => $goodsReceiptItem->batch_number,
             'initial_quantity' => $goodsReceiptItem->received_quantity,
-            'quantity' => $goodsReceiptItem->received_quantity,
             'unit_cost' => $goodsReceiptItem->unit_cost,
+        ]);
+
+        ProductBatchStock::create([
+            'product_batch_id' => $productBatch->id,
+            'warehouse_id' => $goodsReceipt->warehouse_id,
+            'quantity' => $goodsReceiptItem->received_quantity,
+            'reserved_quantity' => 0,
         ]);
 
         // $this->insertInventoryTransactionFromGR(goodsReceipt: $goodsReceipt, goodsReceiptItem: $goodsReceiptItem, batch: $productBatch);
@@ -215,8 +207,17 @@ class InventoryService
     public function issueInventoryFromDO(DeliveryOrder $deliveryOrder, int $productID, int $productBatchID, float $quantity, ?string $batchNumberHint = null): ProductBatch
     {
         $productBatch = ProductBatch::where('id', $productBatchID)
-            ->where('warehouse_id', $deliveryOrder->warehouse_id)
             ->where('product_id', $productID)
+            ->first();
+
+        if (!$productBatch) {
+            throw ValidationException::withMessages([
+                'details' => "Batch '{$batchNumberHint}' tidak ditemukan atau bukan milik produk ini.",
+            ]);
+        }
+
+        $productBatchStock = ProductBatchStock::where('product_batch_id', $productBatch->id)
+            ->where('warehouse_id', $deliveryOrder->warehouse_id)
             ->lockForUpdate()
             ->first();
 
@@ -226,19 +227,13 @@ class InventoryService
             ->lockForUpdate()
             ->first();
 
-        if (!$productBatch) {
-            throw ValidationException::withMessages([
-                'details' => "Batch '{$batchNumberHint}' tidak ditemukan atau bukan milik produk/gudang ini.",
-            ]);
-        }
-
-        if ($productBatch->available_quantity < $quantity) {
+        if (!$productBatchStock || $productBatchStock->available_quantity < $quantity) {
             throw ValidationException::withMessages([
                 'details' => "Stok batch '{$productBatch->batch_number}' tidak mencukupi untuk mengirim {$quantity} unit.",
             ]);
         }
 
-        $productBatch->decrement('quantity', $quantity);
+        $productBatchStock->decrement('quantity', $quantity);
         $productStock->decrement('quantity', $quantity);
 
         $this->insertInventoryTransaction(
@@ -263,62 +258,59 @@ class InventoryService
     {
         $fromWarehouseID = $warehouseTransfer->from_warehouse_id;
 
-        $fromBatch = ProductBatch::where('id', $fromProductBatchID)
-            ->where('warehouse_id', $fromWarehouseID)
+        $batch = ProductBatch::where('id', $fromProductBatchID)
             ->where('product_id', $productID)
+            ->first();
+
+        if (!$batch) {
+            throw ValidationException::withMessages([
+                'details' => "Batch tidak ditemukan atau bukan milik produk ini.",
+            ]);
+        }
+
+        $fromStock = ProductBatchStock::where('product_batch_id', $batch->id)
+            ->where('warehouse_id', $fromWarehouseID)
             ->lockForUpdate()
             ->first();
 
-        if (!$fromBatch) {
+        if (!$fromStock || $fromStock->available_quantity < $quantity) {
             throw ValidationException::withMessages([
-                'details' => "Batch tidak ditemukan atau bukan milik produk/gudang asal ini.",
+                'details' => "Stok batch '{$batch->batch_number}' tidak mencukupi untuk transfer {$quantity} unit.",
             ]);
         }
 
-        if ($fromBatch->available_quantity < $quantity) {
-            throw ValidationException::withMessages([
-                'details' => "Stok batch '{$fromBatch->batch_number}' tidak mencukupi untuk transfer {$quantity} unit.",
-            ]);
-        }
-
-        $fromBatch->decrement('quantity', $quantity);
+        $fromStock->decrement('quantity', $quantity);
 
         $this->insertInventoryTransaction(
             companyID: $warehouseTransfer->company_id,
             warehouseID: $fromWarehouseID,
             productID: $productID,
-            productBatchID: $fromBatch->id,
+            productBatchID: $batch->id,
             type: InventoryTransactionTypeEnum::TRANSFER_OUT->value,
             direction: -1,
             quantity: $quantity,
-            unitCost: $fromBatch->unit_cost,
+            unitCost: $batch->unit_cost,
             referenceType: WarehouseTransfer::class,
             referenceID: $warehouseTransfer->id,
-            transactionDate: $warehouseTransfer->transfer_date,
+            // transactionDate: $warehouseTransfer->transfer_date,
+            transactionDate: now()->format('Y-m-d H:i:s'),
             note: 'Transfer keluar ke gudang lain #' . $warehouseTransfer->number,
         );
 
-        // reuse the batch in the destination warehouse if the same batch number already exists there
-        $toBatch = ProductBatch::where('company_id', $warehouseTransfer->company_id)
+        // the same batch may already hold stock in the destination warehouse
+        $toStock = ProductBatchStock::where('product_batch_id', $batch->id)
             ->where('warehouse_id', $toWarehouseID)
-            ->where('product_id', $productID)
-            ->where('batch_number', $fromBatch->batch_number)
             ->lockForUpdate()
             ->first();
 
-        if ($toBatch) {
-            $toBatch->increment('quantity', $quantity);
-            $toBatch->increment('initial_quantity', $quantity);
+        if ($toStock) {
+            $toStock->increment('quantity', $quantity);
         } else {
-            $toBatch = ProductBatch::create([
-                'company_id' => $warehouseTransfer->company_id,
+            ProductBatchStock::create([
+                'product_batch_id' => $batch->id,
                 'warehouse_id' => $toWarehouseID,
-                'product_id' => $productID,
-                'goods_receipt_item_id' => $fromBatch->goods_receipt_item_id,
-                'batch_number' => $fromBatch->batch_number,
-                'initial_quantity' => $quantity,
                 'quantity' => $quantity,
-                'unit_cost' => $fromBatch->unit_cost,
+                'reserved_quantity' => 0,
             ]);
         }
 
@@ -326,14 +318,15 @@ class InventoryService
             companyID: $warehouseTransfer->company_id,
             warehouseID: $toWarehouseID,
             productID: $productID,
-            productBatchID: $toBatch->id,
+            productBatchID: $batch->id,
             type: InventoryTransactionTypeEnum::TRANSFER_IN->value,
             direction: 1,
             quantity: $quantity,
-            unitCost: $fromBatch->unit_cost,
+            unitCost: $batch->unit_cost,
             referenceType: WarehouseTransfer::class,
             referenceID: $warehouseTransfer->id,
-            transactionDate: $warehouseTransfer->transfer_date,
+            // transactionDate: $warehouseTransfer->transfer_date,
+            transactionDate: now()->format('Y-m-d H:i:s'),
             note: 'Transfer masuk dari gudang lain #' . $warehouseTransfer->number,
         );
 
@@ -341,23 +334,31 @@ class InventoryService
         $this->recalculateMovingAverageCost(companyID: $warehouseTransfer->company_id, productID: $productID, warehouseID: $toWarehouseID);
 
         return [
-            'from_batch' => $fromBatch,
-            'to_batch' => $toBatch,
-            'unit_cost' => $fromBatch->unit_cost,
+            'batch' => $batch,
+            'unit_cost' => $batch->unit_cost,
         ];
     }
 
     public function adjustInventoryFromStockAdjustment(StockAdjustment $stockAdjustment, int $productID, int $productBatchID, float $systemQuantity, float $countedQuantity): ProductBatch
     {
         $productBatch = ProductBatch::where('id', $productBatchID)
-            ->where('warehouse_id', $stockAdjustment->warehouse_id)
             ->where('product_id', $productID)
-            ->lockForUpdate()
             ->first();
 
         if (!$productBatch) {
             throw ValidationException::withMessages([
-                'details' => "Batch tidak ditemukan atau bukan milik produk/gudang ini.",
+                'details' => "Batch tidak ditemukan atau bukan milik produk ini.",
+            ]);
+        }
+
+        $productBatchStock = ProductBatchStock::where('product_batch_id', $productBatch->id)
+            ->where('warehouse_id', $stockAdjustment->warehouse_id)
+            ->lockForUpdate()
+            ->first();
+
+        if (!$productBatchStock) {
+            throw ValidationException::withMessages([
+                'details' => "Batch tidak ditemukan atau bukan milik gudang ini.",
             ]);
         }
 
@@ -367,7 +368,7 @@ class InventoryService
             return $productBatch;
         }
 
-        $productBatch->update(['quantity' => $countedQuantity]);
+        $productBatchStock->update(['quantity' => $countedQuantity]);
 
         $this->insertInventoryTransaction(
             companyID: $stockAdjustment->company_id,
@@ -440,55 +441,65 @@ class InventoryService
     public function updateUnitCostFromPI(PurchaseInvoice $pi, Collection $piItems, float $newInventoryValue, float $totalQty): void
     {
         $grItemIDs = $piItems->pluck('goods_receipt_item_id')->toArray();
-        $oldBatches = ProductBatch::where('company_id', $pi->company_id)
-            ->where('warehouse_id', $pi->warehouse_id)
+        $oldBatches = ProductBatch::with('productBatchStocks')
+            ->where('company_id', $pi->company_id)
             ->whereIn('goods_receipt_item_id', $grItemIDs)
             ->get();
 
         $oldInventoryValue = 0;
         foreach ($oldBatches as $batch) {
-            $oldInventoryValue += $batch->quantity * $batch->unit_cost;
+            $oldInventoryValue += $batch->productBatchStocks->sum('quantity') * $batch->unit_cost;
         }
         $valueDifference = $newInventoryValue - $oldInventoryValue;
 
         foreach ($oldBatches as $batch) {
-            $ratio = $batch->quantity / $totalQty;
-            $adjustment = ($valueDifference * $ratio) / $batch->quantity;
+            $batchQty = $batch->productBatchStocks->sum('quantity');
+            $ratio = $batchQty / $totalQty;
+            $adjustment = ($valueDifference * $ratio) / $batchQty;
             $unitCost = $batch->unit_cost + $adjustment;
             $batch->update(['unit_cost' => $unitCost]);
 
-            $latestTransaction = InventoryTransaction::where('company_id', $batch->company_id)
-                ->where('product_id', $batch->product_id)
-                ->where('warehouse_id', $batch->warehouse_id)
-                ->orderByDesc('transaction_date')
-                ->orderByDesc('id')
-                ->first();
-            InventoryTransaction::create([
-                'company_id' => $batch->company_id,
-                'warehouse_id' => $batch->warehouse_id,
-                'product_id' => $batch->product_id,
-                'product_batch_id' => $batch->id,
-                'type' => InventoryTransactionTypeEnum::COST_ADJUSTMENT,
-                'direction' => 0,
-                'quantity' => 0,
-                'unit_cost' => $unitCost,
-                'total_cost' => 0,
-                'stock_before' => $latestTransaction ? $latestTransaction->stock_after : 0,
-                'stock_after' => $latestTransaction ? $latestTransaction->stock_after : 0,
-                'reference_type' => PurchaseInvoice::class,
-                'reference_id' => $pi->id, // You can set this to a relevant ID if needed
-                'transaction_date' => now(),
-                'note' => 'Penyesuaian HPP dari PI #' . $pi->number,
-            ]);
+            foreach ($batch->productBatchStocks as $stock) {
+                if ($stock->quantity <= 0) {
+                    continue;
+                }
 
-            $this->recalculateMovingAverageCost(companyID: $batch->company_id, productID: $batch->product_id, warehouseID: $batch->warehouse_id);
+                $latestTransaction = InventoryTransaction::where('company_id', $batch->company_id)
+                    ->where('product_id', $batch->product_id)
+                    ->where('warehouse_id', $stock->warehouse_id)
+                    ->orderByDesc('transaction_date')
+                    ->orderByDesc('id')
+                    ->first();
+                InventoryTransaction::create([
+                    'company_id' => $batch->company_id,
+                    'warehouse_id' => $stock->warehouse_id,
+                    'product_id' => $batch->product_id,
+                    'product_batch_id' => $batch->id,
+                    'type' => InventoryTransactionTypeEnum::COST_ADJUSTMENT,
+                    'direction' => 0,
+                    'quantity' => 0,
+                    'unit_cost' => $unitCost,
+                    'total_cost' => 0,
+                    'stock_before' => $latestTransaction ? $latestTransaction->stock_after : 0,
+                    'stock_after' => $latestTransaction ? $latestTransaction->stock_after : 0,
+                    'reference_type' => PurchaseInvoice::class,
+                    'reference_id' => $pi->id, // You can set this to a relevant ID if needed
+                    'transaction_date' => now(),
+                    'note' => 'Penyesuaian HPP dari PI #' . $pi->number,
+                ]);
+
+                $this->recalculateMovingAverageCost(companyID: $batch->company_id, productID: $batch->product_id, warehouseID: $stock->warehouse_id);
+            }
         }
     }
 
     private function recalculateMovingAverageCost(int $companyID, int $productID, int $warehouseID): float | int
     {
-        $batches = ProductBatch::where('company_id', $companyID)
-            ->where('product_id', $productID)
+        $stocks = ProductBatchStock::with('productBatch:id,unit_cost')
+            ->whereHas('productBatch', function ($query) use ($companyID, $productID) {
+                $query->where('company_id', $companyID)
+                    ->where('product_id', $productID);
+            })
             ->where('warehouse_id', $warehouseID)
             ->where('quantity', '>', 0)
             ->orderByDesc('id')
@@ -496,9 +507,9 @@ class InventoryService
 
         $totalQty = 0;
         $totalUnitCost = 0;
-        foreach ($batches as $batch) {
-            $totalQty += $batch->quantity;
-            $totalUnitCost += $batch->unit_cost * $batch->quantity;
+        foreach ($stocks as $stock) {
+            $totalQty += $stock->quantity;
+            $totalUnitCost += $stock->productBatch->unit_cost * $stock->quantity;
         }
 
         $avgUnitCost = $totalQty > 0 ? $totalUnitCost / $totalQty : 0;

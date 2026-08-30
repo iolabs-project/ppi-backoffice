@@ -314,10 +314,12 @@ Route::middleware('auth')->group(function () {
                 Route::post('/status', 'status')->name('status');
 
                 Route::prefix('warehouse-transfers')->name('warehouse_transfers.')->controller(WarehouseTransferController::class)->group(function () {
+                    Route::get('/create', 'create')->name('create');
                     Route::post('/', 'store')->name('store');
                 });
 
                 Route::prefix('stock-adjustments')->name('stock_adjustments.')->controller(StockAdjustmentController::class)->group(function () {
+                    Route::get('/create', 'create')->name('create');
                     Route::post('/', 'store')->name('store');
                 });
             });

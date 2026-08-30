@@ -7,6 +7,7 @@ use App\Models\AccountSetting;
 use App\Models\Warehouse;
 use App\Models\Company;
 use App\Models\ProductBatch;
+use App\Models\ProductBatchStock;
 use App\Models\StockAdjustment;
 use App\Models\StockAdjustmentItem;
 use App\Services\InventoryService;
@@ -59,17 +60,22 @@ class StockAdjustmentService
 
             foreach ($detailsCollection as $item) {
                 $productBatch = ProductBatch::where('id', $item['product_batch_id'])
-                    ->where('warehouse_id', $warehouseID)
                     ->where('product_id', $item['product_id'])
                     ->first();
 
-                if (!$productBatch) {
+                $productBatchStock = $productBatch
+                    ? ProductBatchStock::where('product_batch_id', $productBatch->id)
+                        ->where('warehouse_id', $warehouseID)
+                        ->first()
+                    : null;
+
+                if (!$productBatch || !$productBatchStock) {
                     throw ValidationException::withMessages([
                         'details' => "Batch tidak ditemukan atau bukan milik produk/gudang ini.",
                     ]);
                 }
 
-                $systemQuantity = (float) $productBatch->quantity;
+                $systemQuantity = (float) $productBatchStock->quantity;
                 $countedQuantity = (float) ($item['counted_quantity'] ?? 0);
 
                 $this->inventoryService->adjustInventoryFromStockAdjustment(

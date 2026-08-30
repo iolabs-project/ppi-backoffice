@@ -35,7 +35,7 @@ class WarehouseTransferService
         return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
     }
 
-    public function storeWarehouseTransfer(Request $request, int $fromWarehouseID): WarehouseTransfer
+    public function storeWarehouseTransfer(Request $request, int $fromWarehouseID): void
     {
         $toWarehouseID = (int) $request->input('to_warehouse_id');
 
@@ -48,7 +48,7 @@ class WarehouseTransferService
         $companyID = config('context.selected_company_id');
         $detailsCollection = collect($request->input('details', []));
 
-        return DB::transaction(function () use ($request, $companyID, $fromWarehouseID, $toWarehouseID, $detailsCollection) {
+        DB::transaction(function () use ($request, $companyID, $fromWarehouseID, $toWarehouseID, $detailsCollection) {
             $warehouseTransfer = WarehouseTransfer::create([
                 'company_id' => $companyID,
                 'from_warehouse_id' => $fromWarehouseID,
@@ -80,7 +80,6 @@ class WarehouseTransferService
                 ]);
             }
 
-            return $warehouseTransfer->load(['items', 'fromWarehouse', 'toWarehouse']);
         });
     }
 }

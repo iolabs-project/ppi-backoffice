@@ -18,19 +18,17 @@ class StockAdjustmentController extends Controller
         $this->warehouseService = $warehouseService;
     }
 
+    public function create(int $id) {
+        $data = [];
+        return view('master.warehouse.stock-adjustment.create', $data); 
+    }
+
     public function store(StockAdjustmentFormRequest $request, StockAdjustmentService $stockAdjustmentService, int $id)
     {
         try {
-            $stockAdjustment = $stockAdjustmentService->storeStockAdjustment($request, $id);
+            $stockAdjustmentService->storeStockAdjustment($request, $id);
 
-            return response()->json(['message' => 'Penyesuaian stok berhasil dibuat.', 'data' => $stockAdjustment]);
-        } catch (ValidationException $e) {
-            Log::error('Error StockAdjustmentController@store: ' . $e->getMessage(), [
-                'exception' => $e,
-                'request' => $request->all(),
-                'stack_trace' => $e->getTraceAsString(),
-            ]);
-            return response()->json(['errors' => $e->errors()], 422);
+            return response()->json(['message' => 'Penyesuaian stok berhasil dibuat.', 'redirect' => route('warehouses.show', $id)]);
         } catch (\Exception $e) {
             Log::error('Error StockAdjustmentController@store: ' . $e->getMessage(), [
                 'exception' => $e,

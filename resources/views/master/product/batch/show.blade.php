@@ -83,9 +83,7 @@
                 <div class="order-title-row">
                     <h1 class="order-title display">{{ $batch->batch_number }}</h1>
                     <span class="chip mono" style="font-size:11px;">{{ $product->code }}</span>
-                    @if ($batch->warehouse)
-                        <span class="chip">{{ $batch->warehouse->name }}</span>
-                    @endif
+                    <span class="chip">{{ $batch->productBatchStocks->count() }} Gudang</span>
                 </div>
                 <div class="order-sub">
                     {{ $product->name }}
@@ -94,28 +92,33 @@
         </div>
 
         {{-- Stat cards --}}
+        @php
+            $totalAvailable = $batch->productBatchStocks->sum('available_quantity');
+            $totalQuantity = $batch->productBatchStocks->sum('quantity');
+            $totalReserved = $batch->productBatchStocks->sum('reserved_quantity');
+        @endphp
         <div class="produk-stat-grid">
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 155); color:oklch(0.45 0.14 155);">
-                    {{ number_format($batch->available_quantity, 2) }}</div>
+                    {{ number_format($totalAvailable, 2) }}</div>
                 <div class="produk-stat__label">Tersedia</div>
                 <div class="produk-stat__unit">{{ $product->unit->symbol }}</div>
             </div>
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 220); color:oklch(0.45 0.14 220);">
-                    {{ number_format($batch->quantity, 2) }}</div>
+                    {{ number_format($totalQuantity, 2) }}</div>
                 <div class="produk-stat__label">Sisa Kuantitas</div>
                 <div class="produk-stat__unit">{{ $product->unit->symbol }}</div>
             </div>
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 45); color:oklch(0.45 0.14 45);">
-                    {{ number_format($batch->reserved_quantity, 2) }}</div>
+                    {{ number_format($totalReserved, 2) }}</div>
                 <div class="produk-stat__label">Dipesan (Reserved)</div>
                 <div class="produk-stat__unit">{{ $product->unit->symbol }}</div>
             </div>
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:var(--bg-2); color:var(--ink-2);">
-                    {{ number_format($batch->quantity * $batch->unit_cost, 2, '.', ',') }}
+                    {{ number_format($totalQuantity * $batch->unit_cost, 2, '.', ',') }}
                 </div>
                 <div class="produk-stat__label">Nilai</div>
                 <div class="produk-stat__unit">Berdasarkan HPP Batch</div>
@@ -166,7 +169,7 @@
                                         <span x-text="t.note"></span>
                                     </template>
                                 </td>
-                                <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.quantity)"></td>
+                                <td class="num" style="text-align:right; font-size:13px;" :style="{ color: t.direction < 0 ? 'oklch(0.55 0.16 30)' : 'oklch(0.5 0.14 155)' }" x-text="(t.direction < 0 ? '-' : '+') + m(Math.abs(t.quantity))"></td>
                                 <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.unit_cost)"></td>
                                 <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.total_cost)"></td>
                             </tr>
@@ -232,10 +235,6 @@
                         </div>
                     @endif
                     <div class="produk-sidebar__row">
-                        <span class="produk-sidebar__key">Gudang</span>
-                        <span class="produk-sidebar__val">{{ $batch->warehouse->name ?? '-' }}</span>
-                    </div>
-                    <div class="produk-sidebar__row">
                         <span class="produk-sidebar__key">HPP Batch</span>
                         <span class="produk-sidebar__val num">{{ number_format($batch->unit_cost, 2, '.', ',') }}</span>
                     </div>
@@ -244,6 +243,21 @@
                         <span class="produk-sidebar__val num">{{ number_format($batch->initial_quantity, 2) }}
                             {{ $product->unit->symbol }}</span>
                     </div>
+                </div>
+
+                <div class="produk-sidebar__section">
+                    <div class="produk-sidebar__heading">Distribusi Gudang</div>
+                    @forelse ($batch->productBatchStocks as $stock)
+                        <div class="produk-sidebar__row">
+                            <span class="produk-sidebar__key">{{ $stock->warehouse->name ?? '-' }}</span>
+                            <span class="produk-sidebar__val num">{{ number_format($stock->quantity, 2) }}
+                                {{ $product->unit->symbol }}</span>
+                        </div>
+                    @empty
+                        <div class="produk-sidebar__row">
+                            <span class="produk-sidebar__key">Belum ada stok di gudang manapun</span>
+                        </div>
+                    @endforelse
                 </div>
 
                 @if ($batch->goodsReceiptItem && $batch->goodsReceiptItem->goodsReceipt)

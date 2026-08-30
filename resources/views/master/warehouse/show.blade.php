@@ -125,7 +125,7 @@
                 <button class="btn btn-ghost" x-on:click="openEditModal()">
                     <x-misc.icon name="edit" :size="14" /> Edit Gudang
                 </button>
-                <a href="#" class="btn btn-ghost">
+                <a href="{{ route('master.warehouses.warehouse_transfers.create', $warehouse->id) }}" class="btn btn-ghost">
                     <x-misc.icon name="swap" :size="14" /> Transfer Gudang
                 </a>
             </div>

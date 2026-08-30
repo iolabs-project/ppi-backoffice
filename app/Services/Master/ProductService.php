@@ -238,6 +238,7 @@ class ProductService
             'quantity',
             'unit_cost',
             'total_cost',
+            'direction'
         )
             ->where('company_id', $companyID)
             ->where('product_id', $request->product_id);
@@ -280,7 +281,7 @@ class ProductService
     public function fetchProductBatchByID(int $id)
     {
         return ProductBatch::with([
-            'warehouse:id,name',
+            'productBatchStocks.warehouse:id,name',
             'goodsReceiptItem.goodsReceipt:id,number',
         ])
             ->where('id', $id)

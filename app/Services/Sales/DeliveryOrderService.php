@@ -13,7 +13,6 @@ use App\Models\DeliveryOrderCost;
 use App\Models\DeliveryOrderItem;
 use App\Models\DeliveryOrderItemBatch;
 use App\Models\JournalEntry;
-use App\Models\ProductBatch;
 use App\Models\SalesOrderItem;
 use App\Services\ExpenseService;
 use Illuminate\Http\Request;
@@ -145,29 +144,6 @@ class DeliveryOrderService
                 'created_at',
             )
             ->find($id);
-    }
-
-    public function fetchAvailableBatches(int $warehouseId, array $productIds): Collection
-    {
-        if (empty($productIds)) {
-            return collect();
-        }
-
-        return ProductBatch::where('warehouse_id', $warehouseId)
-            ->whereIn('product_id', $productIds)
-            ->whereColumn('quantity', '>', 'reserved_quantity')
-            ->orderBy('created_at', 'asc')
-            ->get()
-            ->map(function ($batch) {
-                return [
-                    'id' => $batch->id,
-                    'product_id' => $batch->product_id,
-                    'batch_number' => $batch->batch_number,
-                    'available_quantity' => $batch->available_quantity,
-                    'unit_cost' => $batch->unit_cost,
-                ];
-            })
-            ->values();
     }
 
     public function updateDeliveryOrder(Request $request, int $id): void

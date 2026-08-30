@@ -75,21 +75,18 @@ class DeliveryOrderController extends Controller
         $companyID = config('context.selected_company_id');
 
         $remainingSOItems = $salesOrderService->fetchSOItemsForDeliveryOrder($deliveryOrder->sales_order_id);
-        // $availableBatches = $deliveryOrderService->fetchAvailableBatches(
-        //     $deliveryOrder->warehouse_id,
-        //     $remainingSOItems->pluck('product_id')->unique()->values()->all()
-        // );
         $availableBatches = $this->inventoryService->fetchInventoryBatches(
             companyID: $deliveryOrder->company_id,
+            warehouseID: $deliveryOrder->warehouse_id,
             productIDs: $remainingSOItems->pluck('product_id')->unique()->values()->all(),
             onlyAvailable: true
         )->map(function ($batch) {
             return [
-                'id' => $batch->id,
-                'product_id' => $batch->product_id,
-                'batch_number' => $batch->batch_number,
-                'available_quantity' => $batch->available_quantity,
-                'unit_cost' => $batch->unit_cost,
+                'id' => $batch['id'],
+                'product_id' => $batch['product_id'],
+                'batch_number' => $batch['batch_number'],
+                'available_quantity' => $batch['available_quantity'],
+                'unit_cost' => $batch['unit_cost'],
             ];
         })->values();
 
