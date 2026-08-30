@@ -382,6 +382,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/{id}', 'show')->name('show');
         Route::get('/profit-loss/datatable', 'profitLossDatatable')->name('profit_loss.datatable');
+        Route::get('/balance-sheet/datatable', 'balanceSheetDatatable')->name('balance_sheet.datatable');
+        Route::get('/cash-flow/datatable', 'cashFlowDatatable')->name('cash_flow.datatable');
+        Route::get('/executive/datatable', 'executiveDatatable')->name('executive.datatable');
+        Route::get('/receivable/datatable', 'receivableDatatable')->name('receivable.datatable');
+        Route::get('/payable/datatable', 'payableDatatable')->name('payable.datatable');
         Route::get('/journal/datatable', 'journalDatatable')->name('journal.datatable');
         Route::get('/general-ledger/datatable', 'generalLedgerDatatable')->name('general_ledger.datatable');
     });

@@ -35,6 +35,11 @@
         @include('report.partials.' . $activeTab)
 
     </div>
+    @stack('balance-sheet-scripts')
+    @stack('cash-flow-scripts')
+    @stack('executive-scripts')
+    @stack('receivable-scripts')
+    @stack('payable-scripts')
     @stack('profit-loss-scripts')
     @stack('journal-scripts')
 @endsection

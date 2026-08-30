@@ -17,26 +17,9 @@
                     <template x-if="!loading">
                         <template x-for="row in reportRows()" :key="row.key">
                             <tr :style="row.rowStyle">
-                                <template x-if="row.type === 'section'">
-                                    <td colspan="3" style="font-size:13px; padding-left:16px;" x-text="row.label">
-                                    </td>
-                                </template>
-                                <template x-if="row.type === 'account'">
-                                    <template>
-                                        <td class="mono" style="font-size:11.5px; color:var(--ink-4); width:80px;"
-                                            x-text="row.code"></td>
-                                        <td style="font-size:13px;" x-text="row.name"></td>
-                                        <td class="num" style="text-align:right; font-weight:600; font-size:13px;"
-                                            :style="`color:${row.color}`" x-text="formatCurrency(row.value)"></td>
-                                    </template>
-                                </template>
-                                <template x-if="row.type === 'total' || row.type === 'result'">
-                                    <template>
-                                        <td colspan="2" style="font-size:13px; padding-left:16px;"
-                                            x-text="row.label"></td>
-                                        <td class="num" style="text-align:right;" :style="`color:${row.color}`"
-                                            x-text="formatCurrency(row.value)"></td>
-                                    </template>
+                                <template x-for="cell in row.cells" :key="cell.key">
+                                    <td :colspan="cell.colspan" :class="cell.class" :style="cell.style"
+                                        x-text="cell.text"></td>
                                 </template>
                             </tr>
                         </template>
@@ -182,84 +165,105 @@
                     return Number(this.sectionData(key).total ?? 0);
                 },
 
+                sectionHeaderCells(label) {
+                    return [{
+                        key: 'label',
+                        text: label,
+                        colspan: 3,
+                        style: 'font-size:13px; padding-left:16px;',
+                    }];
+                },
+
+                accountCells(account, color) {
+                    return [{
+                            key: 'code',
+                            text: account.account_code,
+                            class: 'mono',
+                            style: 'font-size:11.5px; color:var(--ink-4); width:80px;',
+                        },
+                        {
+                            key: 'name',
+                            text: account.account_name,
+                            style: 'font-size:13px;',
+                        },
+                        {
+                            key: 'value',
+                            text: this.formatCurrency(account.balance),
+                            class: 'num',
+                            style: `text-align:right; font-weight:600; font-size:13px; color:${color}`,
+                        },
+                    ];
+                },
+
+                totalCells(label, value, color) {
+                    return [{
+                            key: 'label',
+                            text: label,
+                            colspan: 2,
+                            style: 'font-size:13px; padding-left:16px;',
+                        },
+                        {
+                            key: 'value',
+                            text: this.formatCurrency(value),
+                            class: 'num',
+                            style: `text-align:right; color:${color}`,
+                        },
+                    ];
+                },
+
+                resultRow(key, label, value) {
+                    return {
+                        key,
+                        rowStyle: 'background:var(--bg-1); font-weight:700;',
+                        cells: this.totalCells(label, value, this.profitColor(value)),
+                    };
+                },
+
                 reportRows() {
                     const rows = this.sectionGroups.flatMap((group) => {
                         const groupRows = [{
                             key: `${group.key}-group`,
-                            type: 'section',
-                            label: group.label,
                             rowStyle: 'background:var(--bg-1); font-weight:700;',
+                            cells: this.sectionHeaderCells(group.label),
                         }, ];
 
                         group.sections.forEach((section) => {
                             groupRows.push({
                                 key: `${group.key}-${section.key}-section`,
-                                type: 'section',
-                                label: section.label,
                                 rowStyle: 'background:var(--bg-2); font-weight:700;',
+                                cells: this.sectionHeaderCells(section.label),
                             });
 
                             this.sectionAccounts(section.key).forEach((account, accountIndex) => {
                                 groupRows.push({
                                     key: account.account_id ??
                                         `${section.key}-account-${accountIndex}`,
-                                    type: 'account',
-                                    code: account.account_code,
-                                    name: account.account_name,
-                                    value: Number(account.balance ?? 0),
-                                    color: section.color,
                                     rowStyle: '',
+                                    cells: this.accountCells(account, section.color),
                                 });
                             });
 
                             groupRows.push({
                                 key: `${group.key}-${section.key}-subtotal`,
-                                type: 'total',
-                                label: section.subtotalLabel,
-                                value: this.sectionTotal(section.key),
-                                color: section.color,
                                 rowStyle: 'background:var(--bg-2); font-weight:700;',
+                                cells: this.totalCells(section.subtotalLabel, this.sectionTotal(section.key),
+                                    section.color),
                             });
                         });
 
                         groupRows.push({
                             key: `${group.key}-total`,
-                            type: 'result',
-                            label: group.totalLabel,
-                            value: this.groupTotal(group.key),
-                            color: group.color,
                             rowStyle: 'background:var(--bg-1); font-weight:700;',
+                            cells: this.totalCells(group.totalLabel, this.groupTotal(group.key), group.color),
                         });
 
                         return groupRows;
                     });
 
-                    rows.push({
-                        key: 'gross-profit-result',
-                        type: 'result',
-                        label: 'Laba Kotor',
-                        value: Number(this.tableData.gross_profit ?? 0),
-                        color: this.profitColor(this.tableData.gross_profit ?? 0),
-                        rowStyle: 'background:var(--bg-1); font-weight:700;',
-                    });
-
-                    rows.push({
-                        key: 'operating-profit-result',
-                        type: 'result',
-                        label: 'Laba Operasional',
-                        value: Number(this.tableData.operating_profit ?? 0),
-                        color: this.profitColor(this.tableData.operating_profit ?? 0),
-                        rowStyle: 'background:var(--bg-1); font-weight:700;',
-                    });
-
-                    rows.push({
-                        key: 'net-profit-result',
-                        type: 'result',
-                        label: 'Laba Bersih',
-                        value: Number(this.tableData.net_profit ?? 0),
-                        color: this.profitColor(this.tableData.net_profit ?? 0),
-                        rowStyle: 'background:var(--bg-1); font-weight:700;',
-                    });
+                    rows.push(this.resultRow('gross-profit-result', 'Laba Kotor', this.tableData.gross_profit));
+                    rows.push(this.resultRow('operating-profit-result', 'Laba Operasional', this.tableData
+                        .operating_profit));
+                    rows.push(this.resultRow('net-profit-result', 'Laba Bersih', this.tableData.net_profit));
 
                     return rows;
                 },
@@ -329,7 +333,6 @@
                                 end_date: this.filter.end_date
                             }
                         });
-                        console.log('Profit & Loss data fetched:', r.data);
                         this.tableData = r.data;
                     } catch {
                         Toast.fire({

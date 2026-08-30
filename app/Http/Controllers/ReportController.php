@@ -39,7 +39,7 @@ class ReportController extends Controller
     public function profitLossDatatable(Request $request)
     {
         try {
-            $data = $this->reportService->fetchProfitLossTableData($request);
+            $data = $this->reportService->fetchProfitLossTableData($request, config('context.selected_company_id'));
 
             return response()->json($data);
         } catch (\Exception $e) {
@@ -50,6 +50,96 @@ class ReportController extends Controller
             ]);
             return response()->json([
                 'message' => 'Terjadi kesalahan saat mengambil data laporan laba rugi',
+            ], 500);
+        }
+    }
+
+    public function balanceSheetDatatable(Request $request)
+    {
+        try {
+            $data = $this->reportService->fetchBalanceSheetData($request, config('context.selected_company_id'));
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Error ReportController@balanceSheetDatatable: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat mengambil data neraca',
+            ], 500);
+        }
+    }
+
+    public function cashFlowDatatable(Request $request)
+    {
+        try {
+            $data = $this->reportService->fetchCashFlowData($request, config('context.selected_company_id'));
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Error ReportController@cashFlowDatatable: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat mengambil data arus kas',
+            ], 500);
+        }
+    }
+
+    public function executiveDatatable(Request $request)
+    {
+        try {
+            $data = $this->reportService->fetchExecutiveSummaryData($request, config('context.selected_company_id'));
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Error ReportController@executiveDatatable: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat mengambil data ringkasan eksekutif',
+            ], 500);
+        }
+    }
+
+    public function receivableDatatable(Request $request)
+    {
+        try {
+            $data = $this->reportService->fetchReceivableReportData($request, config('context.selected_company_id'));
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Error ReportController@receivableDatatable: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat mengambil data piutang',
+            ], 500);
+        }
+    }
+
+    public function payableDatatable(Request $request)
+    {
+        try {
+            $data = $this->reportService->fetchPayableReportData($request, config('context.selected_company_id'));
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Error ReportController@payableDatatable: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat mengambil data utang',
             ], 500);
         }
     }
