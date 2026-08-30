@@ -23,12 +23,13 @@ use App\Http\Controllers\Master\ProductCategoryController;
 use App\Http\Controllers\Master\ProductController;
 use App\Http\Controllers\Master\RoleController;
 use App\Http\Controllers\Master\UserController;
-use App\Http\Controllers\Master\WarehouseController;
+use App\Http\Controllers\Master\Warehouse\StockAdjustmentController;
+use App\Http\Controllers\Master\Warehouse\WarehouseController;
+use App\Http\Controllers\Master\Warehouse\WarehouseTransferController;
 use App\Http\Controllers\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Purchasing\PurchaseInvoiceController;
 use App\Http\Controllers\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\Sale\SaleOrderController;
 use App\Http\Controllers\Sales\DeliveryOrderController;
 use App\Http\Controllers\Sales\SalesInvoiceController;
 use App\Http\Controllers\Sales\SalesOrderController;
@@ -302,13 +303,24 @@ Route::middleware('auth')->group(function () {
 
         Route::prefix('warehouses')->name('warehouses.')->controller(WarehouseController::class)->group(function () {
             Route::get('/datatable', 'datatable')->name('datatable');
+            Route::get('/stock-datatable', 'datatableStock')->name('stock_datatable');
+            Route::get('/batch-datatable', 'datatableBatch')->name('batch_datatable');
             Route::post('/', 'store')->name('store');
             Route::get('/options', 'options')->name('options');
-            Route::get('/{id}', 'show')->name('show');
-            Route::get('/{id}/stock-datatable', 'datatableStock')->name('stock_datatable');
-            Route::get('/{id}/batch-datatable', 'datatableBatch')->name('batch_datatable');
-            Route::put('/{id}', 'update')->name('update');
-            Route::post('/{id}/status', 'status')->name('status');
+
+            Route::prefix('{id}')->group(function () {
+                Route::get('/', 'show')->name('show');
+                Route::put('/', 'update')->name('update');
+                Route::post('/status', 'status')->name('status');
+
+                Route::prefix('warehouse-transfers')->name('warehouse_transfers.')->controller(WarehouseTransferController::class)->group(function () {
+                    Route::post('/', 'store')->name('store');
+                });
+
+                Route::prefix('stock-adjustments')->name('stock_adjustments.')->controller(StockAdjustmentController::class)->group(function () {
+                    Route::post('/', 'store')->name('store');
+                });
+            });
         });
 
         Route::prefix('products')->name('products.')->controller(ProductController::class)->group(function () {

@@ -150,11 +150,12 @@
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const r = await axios.get(route('master.warehouses.batch_datatable', {{ $warehouse->id }}), {
+                        const r = await axios.get(route('master.warehouses.batch_datatable'), {
                             params: {
                                 page: this.page,
                                 per_page: this.perPage,
                                 search: this.filter.search,
+                                warehouse_id: {{ $warehouse->id }},
                                 only_available: this.filter.only_available,
                             }
                         });

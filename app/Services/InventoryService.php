@@ -15,6 +15,8 @@ use App\Models\GoodsReceiptItem;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceItem;
 use App\Models\SalesInvoiceItem;
+use App\Models\StockAdjustment;
+use App\Models\WarehouseTransfer;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -87,7 +89,7 @@ class InventoryService
             ->when($search !== null, function ($query) use ($search) {
                 $query->whereHas('product', function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
-                          ->orWhere('code', 'like', "%{$search}%");
+                        ->orWhere('code', 'like', "%{$search}%");
                 });
             })
             ->paginate($perPage);
@@ -172,7 +174,7 @@ class InventoryService
             ->when($search !== null, function ($query) use ($search) {
                 $query->whereHas('product', function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
-                          ->orWhere('code', 'like', "%{$search}%");
+                        ->orWhere('code', 'like', "%{$search}%");
                 });
             })
             ->paginate($perPage);
@@ -191,7 +193,21 @@ class InventoryService
             'unit_cost' => $goodsReceiptItem->unit_cost,
         ]);
 
-        $this->insertInventoryTransaction(goodsReceipt: $goodsReceipt, goodsReceiptItem: $goodsReceiptItem, batch: $productBatch);
+        // $this->insertInventoryTransactionFromGR(goodsReceipt: $goodsReceipt, goodsReceiptItem: $goodsReceiptItem, batch: $productBatch);
+        $this->insertInventoryTransaction(
+            companyID: $goodsReceipt->company_id,
+            warehouseID: $goodsReceipt->warehouse_id,
+            productID: $goodsReceiptItem->product_id,
+            productBatchID: $productBatch->id,
+            type: InventoryTransactionTypeEnum::PURCHASE->value,
+            direction: 1,
+            quantity: $goodsReceiptItem->received_quantity,
+            unitCost: $goodsReceiptItem->unit_cost,
+            referenceType: GoodsReceipt::class,
+            referenceID: $goodsReceipt->id,
+            transactionDate: now(),
+            note: 'Penerimaan Barang dari GR #' . $goodsReceipt->number,
+        );
         $this->recalculateMovingAverageCost(companyID: $goodsReceipt->company_id, productID: $goodsReceiptItem->product_id, warehouseID: $goodsReceipt->warehouse_id);
 
         return $productBatch;
@@ -225,44 +241,199 @@ class InventoryService
         $productBatch->decrement('quantity', $quantity);
         $productStock->decrement('quantity', $quantity);
 
-        $this->insertOutboundInventoryTransaction(deliveryOrder: $deliveryOrder, batch: $productBatch, productID: $productID, quantity: $quantity);
-        // $this->recalculateMovingAverageCost(companyID: $deliveryOrder->company_id, productID: $productID, warehouseID: $deliveryOrder->warehouse_id);
+        $this->insertInventoryTransaction(
+            companyID: $deliveryOrder->company_id,
+            warehouseID: $deliveryOrder->warehouse_id,
+            productID: $productID,
+            productBatchID: $productBatch->id,
+            type: InventoryTransactionTypeEnum::SALE->value,
+            direction: -1,
+            quantity: $quantity,
+            unitCost: $productStock->average_unit_cost,
+            referenceType: DeliveryOrder::class,
+            referenceID: $deliveryOrder->id,
+            transactionDate: now(),
+            note: 'Pengiriman Barang dari DO #' . $deliveryOrder->number,
+        );
 
         return $productBatch;
     }
 
-    private function insertOutboundInventoryTransaction(DeliveryOrder $deliveryOrder, ProductBatch $batch, int $productID, float $quantity): void
+    public function transferInventoryBetweenWarehouses(WarehouseTransfer $warehouseTransfer, int $productID, int $fromProductBatchID, int $toWarehouseID, float $quantity): array
     {
-        $latestTransaction = InventoryTransaction::where('company_id', $deliveryOrder->company_id)
+        $fromWarehouseID = $warehouseTransfer->from_warehouse_id;
+
+        $fromBatch = ProductBatch::where('id', $fromProductBatchID)
+            ->where('warehouse_id', $fromWarehouseID)
             ->where('product_id', $productID)
-            ->where('warehouse_id', $deliveryOrder->warehouse_id)
+            ->lockForUpdate()
+            ->first();
+
+        if (!$fromBatch) {
+            throw ValidationException::withMessages([
+                'details' => "Batch tidak ditemukan atau bukan milik produk/gudang asal ini.",
+            ]);
+        }
+
+        if ($fromBatch->available_quantity < $quantity) {
+            throw ValidationException::withMessages([
+                'details' => "Stok batch '{$fromBatch->batch_number}' tidak mencukupi untuk transfer {$quantity} unit.",
+            ]);
+        }
+
+        $fromBatch->decrement('quantity', $quantity);
+
+        $this->insertInventoryTransaction(
+            companyID: $warehouseTransfer->company_id,
+            warehouseID: $fromWarehouseID,
+            productID: $productID,
+            productBatchID: $fromBatch->id,
+            type: InventoryTransactionTypeEnum::TRANSFER_OUT->value,
+            direction: -1,
+            quantity: $quantity,
+            unitCost: $fromBatch->unit_cost,
+            referenceType: WarehouseTransfer::class,
+            referenceID: $warehouseTransfer->id,
+            transactionDate: $warehouseTransfer->transfer_date,
+            note: 'Transfer keluar ke gudang lain #' . $warehouseTransfer->number,
+        );
+
+        // reuse the batch in the destination warehouse if the same batch number already exists there
+        $toBatch = ProductBatch::where('company_id', $warehouseTransfer->company_id)
+            ->where('warehouse_id', $toWarehouseID)
+            ->where('product_id', $productID)
+            ->where('batch_number', $fromBatch->batch_number)
+            ->lockForUpdate()
+            ->first();
+
+        if ($toBatch) {
+            $toBatch->increment('quantity', $quantity);
+            $toBatch->increment('initial_quantity', $quantity);
+        } else {
+            $toBatch = ProductBatch::create([
+                'company_id' => $warehouseTransfer->company_id,
+                'warehouse_id' => $toWarehouseID,
+                'product_id' => $productID,
+                'goods_receipt_item_id' => $fromBatch->goods_receipt_item_id,
+                'batch_number' => $fromBatch->batch_number,
+                'initial_quantity' => $quantity,
+                'quantity' => $quantity,
+                'unit_cost' => $fromBatch->unit_cost,
+            ]);
+        }
+
+        $this->insertInventoryTransaction(
+            companyID: $warehouseTransfer->company_id,
+            warehouseID: $toWarehouseID,
+            productID: $productID,
+            productBatchID: $toBatch->id,
+            type: InventoryTransactionTypeEnum::TRANSFER_IN->value,
+            direction: 1,
+            quantity: $quantity,
+            unitCost: $fromBatch->unit_cost,
+            referenceType: WarehouseTransfer::class,
+            referenceID: $warehouseTransfer->id,
+            transactionDate: $warehouseTransfer->transfer_date,
+            note: 'Transfer masuk dari gudang lain #' . $warehouseTransfer->number,
+        );
+
+        $this->recalculateMovingAverageCost(companyID: $warehouseTransfer->company_id, productID: $productID, warehouseID: $fromWarehouseID);
+        $this->recalculateMovingAverageCost(companyID: $warehouseTransfer->company_id, productID: $productID, warehouseID: $toWarehouseID);
+
+        return [
+            'from_batch' => $fromBatch,
+            'to_batch' => $toBatch,
+            'unit_cost' => $fromBatch->unit_cost,
+        ];
+    }
+
+    public function adjustInventoryFromStockAdjustment(StockAdjustment $stockAdjustment, int $productID, int $productBatchID, float $systemQuantity, float $countedQuantity): ProductBatch
+    {
+        $productBatch = ProductBatch::where('id', $productBatchID)
+            ->where('warehouse_id', $stockAdjustment->warehouse_id)
+            ->where('product_id', $productID)
+            ->lockForUpdate()
+            ->first();
+
+        if (!$productBatch) {
+            throw ValidationException::withMessages([
+                'details' => "Batch tidak ditemukan atau bukan milik produk/gudang ini.",
+            ]);
+        }
+
+        $differenceQuantity = $countedQuantity - $systemQuantity;
+
+        if ($differenceQuantity == 0) {
+            return $productBatch;
+        }
+
+        $productBatch->update(['quantity' => $countedQuantity]);
+
+        $this->insertInventoryTransaction(
+            companyID: $stockAdjustment->company_id,
+            warehouseID: $stockAdjustment->warehouse_id,
+            productID: $productID,
+            productBatchID: $productBatch->id,
+            type: $differenceQuantity > 0
+                ? InventoryTransactionTypeEnum::ADJUSTMENT_PLUS->value
+                : InventoryTransactionTypeEnum::ADJUSTMENT_MINUS->value,
+            direction: $differenceQuantity > 0 ? 1 : -1,
+            quantity: abs($differenceQuantity),
+            unitCost: $productBatch->unit_cost,
+            referenceType: StockAdjustment::class,
+            referenceID: $stockAdjustment->id,
+            transactionDate: $stockAdjustment->adjustment_date,
+            note: 'Penyesuaian Stok #' . $stockAdjustment->number,
+        );
+
+        $this->recalculateMovingAverageCost(companyID: $stockAdjustment->company_id, productID: $productID, warehouseID: $stockAdjustment->warehouse_id);
+
+        return $productBatch;
+    }
+
+    public function insertInventoryTransaction(
+        int $companyID,
+        int $warehouseID,
+        int $productID,
+        int $productBatchID,
+        string $type,
+        int $direction,
+        float $quantity,
+        ?float $unitCost,
+        string $referenceType,
+        int $referenceID,
+        string $transactionDate,
+        ?string $note = null,
+    ): InventoryTransaction {
+        $latestTransaction = InventoryTransaction::where('company_id', $companyID)
+            ->where('product_id', $productID)
+            ->where('product_batch_id', $productBatchID)
+            ->where('warehouse_id', $warehouseID)
             ->orderByDesc('transaction_date')
             ->orderByDesc('id')
             ->first();
 
-        $unitCost = ProductStock::where('company_id', $deliveryOrder->company_id)
-            ->where('warehouse_id', $deliveryOrder->warehouse_id)
-            ->where('product_id', $productID)
-            ->value('average_unit_cost');
+        $stockBefore = $latestTransaction?->stock_after ?? 0;
+        $stockAfter = $stockBefore + ($quantity * $direction);
 
-        $stockBefore = $latestTransaction ? $latestTransaction->stock_after : 0;
-
-        InventoryTransaction::create([
-            'company_id' => $deliveryOrder->company_id,
-            'warehouse_id' => $deliveryOrder->warehouse_id,
+        return InventoryTransaction::create([
+            'company_id' => $companyID,
+            'warehouse_id' => $warehouseID,
             'product_id' => $productID,
-            'product_batch_id' => $batch->id,
-            'type' => InventoryTransactionTypeEnum::SALE,
-            'direction' => -1,
+            'product_batch_id' => $productBatchID,
+            'type' => $type,
+            'direction' => $direction,
             'quantity' => $quantity,
             'unit_cost' => $unitCost,
-            'total_cost' => $quantity * $unitCost,
+            'total_cost' => $unitCost !== null
+                ? $unitCost * $quantity
+                : null,
             'stock_before' => $stockBefore,
-            'stock_after' => $stockBefore - $quantity,
-            'reference_type' => DeliveryOrder::class,
-            'reference_id' => $deliveryOrder->id,
-            'transaction_date' => now(),
-            'note' => 'Pengiriman Barang dari DO #' . $deliveryOrder->number,
+            'stock_after' => $stockAfter,
+            'reference_type' => $referenceType,
+            'reference_id' => $referenceID,
+            'transaction_date' => $transactionDate,
+            'note' => $note,
         ]);
     }
 
@@ -312,34 +483,6 @@ class InventoryService
 
             $this->recalculateMovingAverageCost(companyID: $batch->company_id, productID: $batch->product_id, warehouseID: $batch->warehouse_id);
         }
-    }
-
-    private function insertInventoryTransaction(GoodsReceipt $goodsReceipt, GoodsReceiptItem $goodsReceiptItem, ProductBatch $batch): void
-    {
-        $latestTransaction = InventoryTransaction::where('company_id', $goodsReceipt->company_id)
-            ->where('product_id', $goodsReceiptItem->product_id)
-            ->where('warehouse_id', $goodsReceipt->warehouse_id)
-            ->orderByDesc('transaction_date')
-            ->orderByDesc('id')
-            ->first();
-
-        InventoryTransaction::create([
-            'company_id' => $goodsReceipt->company_id,
-            'warehouse_id' => $goodsReceipt->warehouse_id,
-            'product_id' => $goodsReceiptItem->product_id,
-            'product_batch_id' => $batch->id,
-            'type' => 'purchase',
-            'direction' => 1,
-            'quantity' => $goodsReceiptItem->received_quantity,
-            'unit_cost' => $goodsReceiptItem->unit_cost,
-            'total_cost' => $goodsReceiptItem->unit_cost * $goodsReceiptItem->received_quantity,
-            'stock_before' => $latestTransaction ? $latestTransaction->stock_after : 0,
-            'stock_after' => ($latestTransaction ? $latestTransaction->stock_after : 0) + $goodsReceiptItem->received_quantity,
-            'reference_type' => GoodsReceipt::class,
-            'reference_id' => $goodsReceipt->id,
-            'transaction_date' => now(),
-            'note' => 'Penerimaan Barang dari GR #' . $goodsReceipt->number,
-        ]);
     }
 
     private function recalculateMovingAverageCost(int $companyID, int $productID, int $warehouseID): float | int

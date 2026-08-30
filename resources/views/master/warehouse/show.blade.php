@@ -122,10 +122,10 @@
                 </div>
             </div>
             <div class="order-actions">
-                <button class="btn btn-primary" x-on:click="openEditModal()">
+                <button class="btn btn-ghost" x-on:click="openEditModal()">
                     <x-misc.icon name="edit" :size="14" /> Edit Gudang
                 </button>
-                <a href="#" class="btn btn-primary">
+                <a href="#" class="btn btn-ghost">
                     <x-misc.icon name="swap" :size="14" /> Transfer Gudang
                 </a>
             </div>

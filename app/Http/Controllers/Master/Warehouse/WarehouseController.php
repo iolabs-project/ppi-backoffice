@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Master;
+namespace App\Http\Controllers\Master\Warehouse;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\WarehouseFormRequest;
@@ -36,12 +36,12 @@ class WarehouseController extends Controller
         }
     }
 
-    public function datatableStock(Request $request, int $id)
+    public function datatableStock(Request $request)
     {
         try {
             $data = $this->inventoryService->fetchInventoryStockTableData(
                 companyID: config('context.selected_company_id'),
-                warehouseID: $id,
+                warehouseID: $request->input('warehouse_id'),
                 perPage: $request->input('per_page', 10),
                 search: $request->input('search', null)
             );
@@ -59,12 +59,12 @@ class WarehouseController extends Controller
         }
     }
 
-    public function datatableBatch(Request $request, int $id)
+    public function datatableBatch(Request $request)
     {
         try {
             $data = $this->inventoryService->fetchInventoryBatchTableData(
                 companyID: config('context.selected_company_id'),
-                warehouseID: $id,
+                warehouseID: $request->input('warehouse_id'),
                 perPage: $request->input('per_page', 10),
                 onlyAvailable: $request->has('only_available') ? $request->boolean('only_available') : null,
                 search: $request->input('search', null)

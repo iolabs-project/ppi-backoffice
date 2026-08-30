@@ -114,11 +114,12 @@
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const r = await axios.get(route('master.warehouses.stock_datatable', {{ $warehouse->id }}), {
+                        const r = await axios.get(route('master.warehouses.stock_datatable'), {
                             params: {
                                 page: this.page,
                                 per_page: this.perPage,
                                 search: this.filter.search,
+                                warehouse_id: {{ $warehouse->id }}
                             }
                         });
                         this.tableData = r.data;

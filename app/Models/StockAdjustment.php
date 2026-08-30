@@ -34,4 +34,9 @@ class StockAdjustment extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function items()
+    {
+        return $this->hasMany(StockAdjustmentItem::class, 'stock_adjustment_id');
+    }
 }
