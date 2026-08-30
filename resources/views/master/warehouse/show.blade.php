@@ -128,6 +128,9 @@
                 <a href="{{ route('master.warehouses.warehouse_transfers.create', $warehouse->id) }}" class="btn btn-ghost">
                     <x-misc.icon name="swap" :size="14" /> Transfer Gudang
                 </a>
+                <a href="{{ route('master.warehouses.stock_adjustments.create', $warehouse->id) }}" class="btn btn-ghost">
+                    <x-misc.icon name="plus" :size="14" /> Penyesuaian Stok
+                </a>
             </div>
         </div>
 

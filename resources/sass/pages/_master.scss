@@ -49,6 +49,12 @@
   padding: 20px 22px;
   display: grid;
   gap: 12px;
+  cursor: pointer;
+  transition: box-shadow .15s;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
 }
 
 .gudang-card__hd {

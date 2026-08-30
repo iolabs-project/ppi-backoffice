@@ -14,7 +14,7 @@
     </template>
     <div class="gudang-grid" x-show="!loading">
         <template x-for="g in tableData.data" :key="g.id">
-            <div class="card gudang-card">
+            <a :href="route('master.warehouses.show', g.id)" class="card gudang-card">
                 <div class="gudang-card__hd">
                     <div class="gudang-card__info">
                         <div class="gudang-card__icon">
@@ -32,11 +32,6 @@
                         </button>
                         <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
                             style="position:absolute; right:0; top:100%; margin-top:4px;">
-                            <a :href="route('master.warehouses.show', g.id)" @click.stop
-                                class="action-menu__item">
-                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />
-                                Detail Gudang
-                            </a>
                             <button class="action-menu__item" x-on:click="openEditModal(g)">
                                 <x-misc.icon name="edit" :size="14" /> Edit Gudang
                             </button>
@@ -70,7 +65,7 @@
                             x-text="!g.deleted_at ? 'Aktif' : 'Nonaktif'"></span>
                     </div>
                 </div>
-            </div>
+            </a>
         </template>
 
         <div class="card gudang-add-card" x-on:click="modal = 'add_gudang'">

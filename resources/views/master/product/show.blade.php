@@ -258,8 +258,38 @@
                         </template>
                     </tbody>
                 </table>
+
+                <div class="table-pagination">
+                    <div class="pagination-actions">
+                        <div class="pagination-label">Per</div>
+                        <select x-model.number="perPage" x-on:change="page = 1; fetchData()"
+                            class="btn btn-ghost btn-sm pagination-select">
+                            <template x-for="n in perPageOptions" :key="n">
+                                <option :value="n" x-text="n"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="pagination-info">
+                        <template x-if="tableData.total === 0">
+                            <span x-text="'0 dari 0'"></span>
+                        </template>
+                        <template x-if="tableData.total > 0">
+                            <span
+                                x-text="( (page-1)*perPage + 1 ) + '-' + Math.min(page*perPage, tableData.total) + ' dari ' + tableData.total"></span>
+                        </template>
+                    </div>
+                    <div class="pagination-controls">
+                        <div class="pagination-page-info">Halaman <strong x-text="page"></strong> / <strong
+                                x-text="tableData.last_page"></strong></div>
+                        <button class="btn btn-ghost btn-sm" @click="prev()" :disabled="page <= 1">
+                            <x-misc.icon name="chev-left" :size="13" /> Prev
+                        </button>
+                        <button class="btn btn-ghost btn-sm" @click="next()" :disabled="page >= tableData.last_page">
+                            Next<x-misc.icon name="chev-right" :size="13" />
+                        </button>
+                    </div>
+                </div>
             </div>
-            
 
             {{-- Right: info sidebar --}}
             <div class="card produk-sidebar">
