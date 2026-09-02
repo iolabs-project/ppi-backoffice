@@ -24,9 +24,35 @@
                     <span x-text="'{{ $s['name'] }}'"></span>
                 </button>
             @endforeach
-            <div style="flex:1;"></div>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="sort" :size="13" />Tanggal</button>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="filter" :size="13" />Filter</button>
+        </div>
+
+        <div class="table-toolbar">
+            <div class="table-search">
+                <span class="table-search__icon"><x-misc.icon name="search" :size="14" /></span>
+                <input class="table-search__input" placeholder="Cari nomor penerimaan / supplier..."
+                    x-model="search" x-on:input.debounce.400ms="page = 1; fetchData()" />
+            </div>
+            <div class="table-toolbar__spacer"></div>
+            <button class="table-filter-btn" :class="showFilters && 'table-filter-btn--active'"
+                @click="showFilters = !showFilters">
+                <x-misc.icon name="filter" :size="13" />Filter
+            </button>
+        </div>
+
+        <div class="filter-panel" x-show="showFilters" x-cloak>
+            <div class="filter-panel__group">
+                <label class="filter-panel__label">Dari Tanggal</label>
+                <input type="date" class="filter-panel__input" x-model="dateFrom"
+                    x-on:change="page = 1; fetchData()" />
+            </div>
+            <div class="filter-panel__group">
+                <label class="filter-panel__label">Sampai Tanggal</label>
+                <input type="date" class="filter-panel__input" x-model="dateTo"
+                    x-on:change="page = 1; fetchData()" />
+            </div>
+            <button class="filter-panel__reset" @click="dateFrom = ''; dateTo = ''; page = 1; fetchData()">
+                <x-misc.icon name="x" :size="12" />Reset
+            </button>
         </div>
 
         <div class="card table-card">
@@ -244,6 +270,10 @@
                 page: 1,
                 perPage: 10,
                 filter: 'all',
+                search: '',
+                showFilters: false,
+                dateFrom: '',
+                dateTo: '',
 
                 poPickerOpen: false,
                 poPickerLoading: false,
@@ -293,6 +323,9 @@
                                 page: this.page,
                                 per_page: this.perPage,
                                 status: this.filter,
+                                search: this.search,
+                                start_date: this.dateFrom,
+                                end_date: this.dateTo,
                             },
                         });
                         console.log('Response data:', response.data);

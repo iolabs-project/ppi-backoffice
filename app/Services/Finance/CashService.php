@@ -111,20 +111,23 @@ class CashService
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('number', 'like', "%{$search}%")
-                    ->orWhereHas('customer', function ($q) use ($search) {
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('contact', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('warehouse', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('salesOrder', function ($q) use ($search) {
-                        $q->where('number', 'like', "%{$search}%");
                     });
             });
         }
 
         if ($request->filled('status') && $request->input('status') !== 'all') {
             $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('start_date')) {
+            $query->where('transaction_date', '>=', $request->input('start_date'));
+        }
+
+        if ($request->filled('end_date')) {
+            $query->where('transaction_date', '<=', $request->input('end_date'));
         }
 
         if ($request->filled('account_id')) {
