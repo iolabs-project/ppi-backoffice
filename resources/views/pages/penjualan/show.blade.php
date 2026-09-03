@@ -18,7 +18,7 @@
         <x-misc.status-badge :status="$so['status']" />
       </div>
       <div class="order-sub">
-        Dibuat {{ $so['tanggal'] }} oleh Albert Irgi · Terakhir diperbarui 8 jam lalu
+        Dibuat {{ $so['tanggal'] }} oleh {{ auth()->user()?->contact?->name ?? auth()->user()?->username ?? 'User' }} · Terakhir diperbarui 8 jam lalu
       </div>
     </div>
     <div class="order-actions">

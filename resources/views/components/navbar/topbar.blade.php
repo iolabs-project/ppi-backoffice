@@ -1,5 +1,11 @@
 @props(['breadcrumb' => []])
-@php $user = ['name' => 'Albert Irgi', 'role' => 'Superadmin']; @endphp
+@php
+    $authUser = auth()->user();
+    $user = [
+        'name' => $authUser?->contact?->name ?? $authUser?->username ?? 'User',
+        'role' => $authUser?->role_name ?? '-',
+    ];
+@endphp
 <header class="topbar">
     <div class="topbar__inner">
 

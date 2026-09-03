@@ -1,4 +1,4 @@
-@props(['label', 'value', 'suffix' => '', 'delta', 'sparkline', 'accent' => false])
+@props(['label', 'value', 'suffix' => '', 'delta', 'sparkline', 'accent' => false, 'rawValue' => null])
 @php
     $positive = $delta >= 0;
     $dBg = $accent ? 'rgba(252,250,245,.12)' : ($positive ? 'var(--ok-bg)' : 'var(--bad-bg)');
@@ -11,8 +11,13 @@
     <div class="kpi-card__hd">
         <div class="kpi-card__body">
             <div class="kpi-card__label">{{ $label }}</div>
-            <div class="kpi-card__value display num">
-                {{ $value }}@if ($suffix)
+            <div class="kpi-card__value display num" @if($rawValue !== null) data-count-target="{{ $rawValue }}" @endif>
+                @if($rawValue !== null)
+                    <span data-count-value>Rp 0</span>
+                @else
+                    {{ $value }}
+                @endif
+                @if ($suffix)
                     <span class="kpi-card__suffix">{{ $suffix }}</span>
                 @endif
             </div>

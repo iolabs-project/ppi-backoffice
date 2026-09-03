@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             AccountSettingSeeder::class,
             InventorySeeder::class,
             ContactSeeder::class,
+            DashboardDummySeeder::class,
         ]);
     }
 }
