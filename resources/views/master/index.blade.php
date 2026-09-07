@@ -837,8 +837,8 @@
                     this.form = {
                         id: user.id,
                         username: user.username,
-                        contact_id: user.contact_id,
-                        role_id: user.role_id
+                        contact_id: user.contact_id == null ? '' : String(user.contact_id),
+                        role_id: user.role_id == null ? '' : String(user.role_id)
                     };
                     this.modal = 'edit_user';
                 },

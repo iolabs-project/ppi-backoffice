@@ -25,7 +25,12 @@ class UserService
             });
         }
 
-        return $data->orderBy('username', 'asc')->paginate($request->input('per_page', 10));
+        return $data->orderBy('username', 'asc')->paginate($request->input('per_page', 10))
+            ->through(function ($user) {
+                $user->role_id = $user->roles->first()?->id;
+                $user->role_name = $user->roles->first()?->name;
+                return $user;
+            });
     }
 
     public function fetchUserOptionData(Request $request)
