@@ -30,5 +30,17 @@ class UserCompanySeeder extends Seeder
         ]);
 
         $user->assignRole(RoleEnum::SUPER_ADMIN->value);
+
+        $user2 = \App\Models\User::create([
+            'username' => 'admin2',
+            'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
+        ]);
+
+        \App\Models\UserCompany::create([
+            'user_id' => $user2->id,
+            'company_id' => $companny->id,
+        ]);
+
+        $user2->assignRole(RoleEnum::ADMIN->value);
     }
 }

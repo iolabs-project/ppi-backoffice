@@ -1,28 +1,36 @@
 @props(['currentPage' => 'dashboard'])
 @php
+    $user = auth()->user();
+    $can = static fn (string $permission): bool => $user?->can($permission) ?? false;
+    $canAny = static fn (array $permissions): bool => $user?->canAny($permissions) ?? false;
+
     $penjualanActive = str_starts_with($currentPage, 'penjualan');
     $pembelianActive = str_starts_with($currentPage, 'pembelian');
     $financeActive = str_starts_with($currentPage, 'finance') || str_starts_with($currentPage, 'biaya');
     $financeSubmenus = [
-        ['id' => 'finance.account_payable',    'label' => 'Hutang',    'desc' => 'Kelola hutang & pembayaran ke supplier', 'url' => route('finances.account_payables.index'),    'icon' => 'wallet', 'bg' => '#FEF2F2', 'fg' => '#DC2626'],
-        ['id' => 'finance.account_receivable', 'label' => 'Piutang', 'desc' => 'Kelola piutang & pembayaran dari customer', 'url' => route('finances.account_receivables.index'), 'icon' => 'coins',  'bg' => '#F0FDF4', 'fg' => '#16A34A'],
-        ['id' => 'finance.cash',            'label' => 'Kas & Bank',          'desc' => 'Kelola akun kas & bank',                 'url' => route('finances.cash.index'),                       'icon' => 'piggy-bank', 'bg' => '#EFF6FF', 'fg' => '#2563EB'],
-        ['id' => 'biaya',                   'label' => 'Biaya',              'desc' => 'Kelola biaya operasional',               'url' => route('expenses.index'),                            'icon' => 'receipt',    'bg' => '#FFF7ED', 'fg' => '#EA580C'],
+        ['id' => 'finance.account_payable',    'label' => 'Hutang',    'desc' => 'Kelola hutang & pembayaran ke supplier', 'url' => route('finances.account_payables.index'),    'icon' => 'wallet', 'bg' => '#FEF2F2', 'fg' => '#DC2626', 'permission' => 'finances.payables.view'],
+        ['id' => 'finance.account_receivable', 'label' => 'Piutang', 'desc' => 'Kelola piutang & pembayaran dari customer', 'url' => route('finances.account_receivables.index'), 'icon' => 'coins',  'bg' => '#F0FDF4', 'fg' => '#16A34A', 'permission' => 'finances.receivables.view'],
+        ['id' => 'finance.cash',            'label' => 'Kas & Bank',          'desc' => 'Kelola akun kas & bank',                 'url' => route('finances.cash.index'),                       'icon' => 'piggy-bank', 'bg' => '#EFF6FF', 'fg' => '#2563EB', 'permission' => 'finances.cash-bank.view'],
+        ['id' => 'biaya',                   'label' => 'Biaya',              'desc' => 'Kelola biaya operasional',               'url' => route('expenses.index'),                            'icon' => 'receipt',    'bg' => '#FFF7ED', 'fg' => '#EA580C', 'permission' => 'finances.expenses.view'],
     ];
     $penjualanSubmenus = [
-        ['id' => 'penjualan',            'label' => 'Sales Order', 'desc' => 'Kelola pesanan penjualan',    'url' => route('sales.sales_orders.index'),           'icon' => 'receipt',  'bg' => '#EEF2FF', 'fg' => '#6366F1'],
-        ['id' => 'penjualan.pengiriman', 'label' => 'Pengiriman',  'desc' => 'Kelola pengiriman penjualan', 'url' => route('sales.delivery_orders.index'), 'icon' => 'truck',  'bg' => '#F0FDF4', 'fg' => '#16A34A'],
-        ['id' => 'penjualan.tagihan',    'label' => 'Tagihan',     'desc' => 'Kelola tagihan penjualan',    'url' => route('sales.sales_invoices.index'),    'icon' => 'wallet', 'bg' => '#FFF7ED', 'fg' => '#EA580C'],
+        ['id' => 'penjualan',            'label' => 'Sales Order', 'desc' => 'Kelola pesanan penjualan',    'url' => route('sales.sales_orders.index'),           'icon' => 'receipt',  'bg' => '#EEF2FF', 'fg' => '#6366F1', 'permission' => 'sales.sales-orders.view'],
+        ['id' => 'penjualan.pengiriman', 'label' => 'Pengiriman',  'desc' => 'Kelola pengiriman penjualan', 'url' => route('sales.delivery_orders.index'), 'icon' => 'truck',  'bg' => '#F0FDF4', 'fg' => '#16A34A', 'permission' => 'sales.delivery-orders.view'],
+        ['id' => 'penjualan.tagihan',    'label' => 'Tagihan',     'desc' => 'Kelola tagihan penjualan',    'url' => route('sales.sales_invoices.index'),    'icon' => 'wallet', 'bg' => '#FFF7ED', 'fg' => '#EA580C', 'permission' => 'sales.invoices.view'],
     ];
     $pembelianSubmenus = [
-        ['id' => 'pembelian',              'label' => 'Purchase Order', 'desc' => 'Kelola pesanan pembelian',  'url' => route('purchasings.purchase_orders.index'),            'icon' => 'receipt',   'bg' => '#EFF6FF', 'fg' => '#2563EB'],
-        ['id' => 'pembelian.penerimaan',   'label' => 'Penerimaan',     'desc' => 'Catatan penerimaan barang', 'url' => route('purchasings.goods_receipts.index'),  'icon' => 'box',    'bg' => '#FFF7ED', 'fg' => '#EA580C'],
-        ['id' => 'pembelian.tagihan', 'label' => 'Tagihan',        'desc' => 'Kelola tagihan pembelian',  'url' => route('purchasings.purchase_invoices.index'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A'],
+        ['id' => 'pembelian',              'label' => 'Purchase Order', 'desc' => 'Kelola pesanan pembelian',  'url' => route('purchasings.purchase_orders.index'),            'icon' => 'receipt',   'bg' => '#EFF6FF', 'fg' => '#2563EB', 'permission' => 'purchasing.purchase-orders.view'],
+        ['id' => 'pembelian.penerimaan',   'label' => 'Penerimaan',     'desc' => 'Catatan penerimaan barang', 'url' => route('purchasings.goods_receipts.index'),  'icon' => 'box',    'bg' => '#FFF7ED', 'fg' => '#EA580C', 'permission' => 'purchasing.goods-receipts.view'],
+        ['id' => 'pembelian.tagihan', 'label' => 'Tagihan',        'desc' => 'Kelola tagihan pembelian',  'url' => route('purchasings.purchase_invoices.index'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A', 'permission' => 'purchasing.invoices.view'],
     ];
     $navItems = [
-        ['id' => 'master',  'icon' => 'database', 'label' => 'Master Data', 'url' => route('master.index')],
-        ['id' => 'laporan', 'icon' => 'clipboard', 'label' => 'Laporan',     'url' => route('reports.index')],
+        ['id' => 'master',  'icon' => 'database', 'label' => 'Master Data', 'url' => route('master.index'), 'permissions' => ['master.products.view', 'master.contacts.view', 'master.warehouses.view', 'master.accounts.view', 'master.users.view', 'master.roles.view']],
+        ['id' => 'laporan', 'icon' => 'clipboard', 'label' => 'Laporan',     'url' => route('reports.index'), 'permissions' => ['reports.balance-sheet.view', 'reports.cash-flow.view', 'reports.profit-loss.view', 'reports.executive.view', 'reports.receivable.view', 'reports.payable.view', 'reports.journal.view']],
     ];
+    $financeSubmenus = array_values(array_filter($financeSubmenus, fn (array $item): bool => $can($item['permission'])));
+    $penjualanSubmenus = array_values(array_filter($penjualanSubmenus, fn (array $item): bool => $can($item['permission'])));
+    $pembelianSubmenus = array_values(array_filter($pembelianSubmenus, fn (array $item): bool => $can($item['permission'])));
+    $navItems = array_values(array_filter($navItems, fn (array $item): bool => $canAny($item['permissions'])));
     $bottom = [];
 @endphp
 
@@ -46,29 +54,35 @@
                 <x-misc.icon name="grid" :size="18" sw="1.7" />
             </a>
 
-            {{-- Penjualan --}}
-            <button type="button" title="Penjualan"
-                class="sidebar-item"
-                :data-active="openPanel === 'penjualan' || (openPanel === null && penjualanActive) ? '' : null"
-                @click="toggle('penjualan')">
-                <x-misc.icon name="dollar" :size="18" sw="1.7" />
-            </button>
+            @if ($penjualanSubmenus)
+                {{-- Penjualan --}}
+                <button type="button" title="Penjualan"
+                    class="sidebar-item"
+                    :data-active="openPanel === 'penjualan' || (openPanel === null && penjualanActive) ? '' : null"
+                    @click="toggle('penjualan')">
+                    <x-misc.icon name="dollar" :size="18" sw="1.7" />
+                </button>
+            @endif
 
-            {{-- Pembelian --}}
-            <button type="button" title="Pembelian"
-                class="sidebar-item"
-                :data-active="openPanel === 'pembelian' || (openPanel === null && pembelianActive) ? '' : null"
-                @click="toggle('pembelian')">
-                <x-misc.icon name="cart" :size="18" sw="1.7" />
-            </button>
+            @if ($pembelianSubmenus)
+                {{-- Pembelian --}}
+                <button type="button" title="Pembelian"
+                    class="sidebar-item"
+                    :data-active="openPanel === 'pembelian' || (openPanel === null && pembelianActive) ? '' : null"
+                    @click="toggle('pembelian')">
+                    <x-misc.icon name="cart" :size="18" sw="1.7" />
+                </button>
+            @endif
 
-            {{-- Finance --}}
-            <button type="button" title="Finance"
-                class="sidebar-item"
-                :data-active="openPanel === 'finance' || (openPanel === null && financeActive) ? '' : null"
-                @click="toggle('finance')">
-                <x-misc.icon name="piggy-bank" :size="18" sw="1.7" />
-            </button>
+            @if ($financeSubmenus)
+                {{-- Finance --}}
+                <button type="button" title="Finance"
+                    class="sidebar-item"
+                    :data-active="openPanel === 'finance' || (openPanel === null && financeActive) ? '' : null"
+                    @click="toggle('finance')">
+                    <x-misc.icon name="piggy-bank" :size="18" sw="1.7" />
+                </button>
+            @endif
 
             {{-- Other nav items --}}
             @foreach ($navItems as $item)
@@ -112,8 +126,9 @@
          @click="openPanel = null"
          x-cloak></div>
 
-    {{-- Penjualan panel --}}
-    <div class="submenu-panel"
+    @if ($penjualanSubmenus)
+        {{-- Penjualan panel --}}
+        <div class="submenu-panel"
          x-show="openPanel === 'penjualan'"
          x-transition:enter="submenu-panel-anim"
          x-transition:enter-start="submenu-panel-start"
@@ -136,10 +151,12 @@
                 </div>
             </a>
         @endforeach
-    </div>
+        </div>
+    @endif
 
-    {{-- Pembelian panel --}}
-    <div class="submenu-panel"
+    @if ($pembelianSubmenus)
+        {{-- Pembelian panel --}}
+        <div class="submenu-panel"
          x-show="openPanel === 'pembelian'"
          x-transition:enter="submenu-panel-anim"
          x-transition:enter-start="submenu-panel-start"
@@ -162,10 +179,12 @@
                 </div>
             </a>
         @endforeach
-    </div>
+        </div>
+    @endif
 
-    {{-- Finance panel --}}
-    <div class="submenu-panel"
+    @if ($financeSubmenus)
+        {{-- Finance panel --}}
+        <div class="submenu-panel"
          x-show="openPanel === 'finance'"
          x-transition:enter="submenu-panel-anim"
          x-transition:enter-start="submenu-panel-start"
@@ -188,6 +207,7 @@
                 </div>
             </a>
         @endforeach
-    </div>
+        </div>
+    @endif
 
 </div>

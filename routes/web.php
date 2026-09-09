@@ -3,13 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Erp\DashboardController;
-use App\Http\Controllers\Erp\PenjualanController;
-use App\Http\Controllers\Erp\PembelianController;
-use App\Http\Controllers\Erp\KasBankController;
-use App\Http\Controllers\Erp\LaporanController;
-// use App\Http\Controllers\Erp\MasterController;
-use App\Http\Controllers\Erp\BiayaController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\Finance\AccountPayableController;
 use App\Http\Controllers\Finance\AccountReceivableController;
@@ -53,19 +47,6 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Penjualan (Sales Orders)
-    Route::prefix('penjualan')->name('penjualan.')->group(function () {
-        Route::get('/',                  [PenjualanController::class, 'index'])->name('index');
-        Route::get('/create',            [PenjualanController::class, 'create'])->name('create');
-        Route::get('/pengiriman',        [PenjualanController::class, 'pengirimanList'])->name('pengiriman_list');
-        Route::get('/tagihan',           [PenjualanController::class, 'tagihanList'])->name('tagihan_list');
-        Route::get('/tagihan/create',    [PenjualanController::class, 'tagihanCreate'])->name('tagihan_create');
-        Route::get('/tagihan/{id}',      [PenjualanController::class, 'tagihanShow'])->name('tagihan_show');
-        Route::get('/{id}',              [PenjualanController::class, 'show'])->name('show');
-        Route::get('/{id}/edit',         [PenjualanController::class, 'edit'])->name('edit');
-        Route::get('/{id}/pengiriman',   [PenjualanController::class, 'pengiriman'])->name('pengiriman');
-    });
 
     Route::prefix('purchasings')->name('purchasings.')->group(function () {
         Route::prefix('purchase-orders')->name('purchase_orders.')->controller(PurchaseOrderController::class)->group(function () {
@@ -230,46 +211,6 @@ Route::middleware('auth')->group(function () {
             Route::post('/cancel', 'cancel')->name('cancel');
         });
     });
-
-    // Pembelian (Purchase Orders)
-    Route::prefix('pembelian')->name('pembelian.')->group(function () {
-        Route::get('/',               [PembelianController::class, 'index'])->name('index');
-        Route::get('/create',         [PembelianController::class, 'create'])->name('create');
-        Route::get('/penerimaan',     [PembelianController::class, 'penerimaanList'])->name('penerimaan_list');
-        Route::get('/tagihan-list',   [PembelianController::class, 'tagihanList'])->name('tagihan_list');
-        Route::get('/tagihan/create', [PembelianController::class, 'tagihanCreate'])->name('tagihan_create');
-        Route::get('/tagihan/{id}',   [PembelianController::class, 'tagihanShow'])->name('tagihan_show');
-        Route::get('/{id}',           [PembelianController::class, 'show'])->name('show');
-        Route::get('/{id}/edit',      [PembelianController::class, 'edit'])->name('edit');
-        Route::get('/{id}/pengiriman', [PembelianController::class, 'pengiriman'])->name('pengiriman');
-        Route::get('/{id}/penerimaan', [PembelianController::class, 'penerimaan'])->name('penerimaan');
-        Route::get('/{id}/tagihan',   [PembelianController::class, 'tagihan'])->name('tagihan');
-    });
-
-    // Kas & Bank
-    Route::prefix('kasbank')->name('kasbank.')->group(function () {
-        Route::get('/',            [KasBankController::class, 'index'])->name('index');
-        Route::get('/options',     [KasBankController::class, 'options'])->name('options');
-        Route::get('/{id}/kirim',  [KasBankController::class, 'kirimDana'])->name('kirim');
-        Route::get('/{id}/terima', [KasBankController::class, 'terimaDana'])->name('terima');
-        Route::get('/{id}',        [KasBankController::class, 'show'])->name('show');
-    });
-
-    // Laporan Keuangan
-    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
-    Route::get('/laporan/{report}', [LaporanController::class, 'show'])->name('laporan.show');
-
-    // Master Data
-    // Route::get('/master',                         [MasterController::class, 'index'])->name('master.index');
-    // Route::get('/master/produk/{kode}',           [MasterController::class, 'showProduk'])->name('master.produk.show');
-    // Route::get('/master/kontak/{id}',             [MasterController::class, 'showKontak'])->name('master.kontak.show');
-    // Route::get('/master/gudang/{kode}',           [MasterController::class, 'showGudang'])->name('master.gudang.show');
-    // Route::get('/master/gudang/{kode}/transfer',  [MasterController::class, 'transferGudang'])->name('master.gudang.transfer');
-
-    // Biaya
-    Route::get('/biaya',        [BiayaController::class, 'index'])->name('biaya.index');
-    Route::get('/biaya/create', [BiayaController::class, 'create'])->name('biaya.create');
-    Route::get('/biaya/{id}',   [BiayaController::class, 'show'])->name('biaya.show');
 
     // Coming-soon placeholders
     Route::get('/pengaturan', function () {

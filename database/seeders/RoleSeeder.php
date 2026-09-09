@@ -31,7 +31,11 @@ class RoleSeeder extends Seeder
 
         // Admin: full access except everything under master.*
         $adminRole->syncPermissions(
-            Permission::where('name', 'not like', 'master.%')->get()
+            Permission::where(function ($query) {
+                $query->where('name', 'not like', 'master.%')
+                    ->where('name', 'not like', 'reports.%');
+            })
+                ->get()
         );
 
         // Accounting: view everything except master.*
