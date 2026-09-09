@@ -1,15 +1,15 @@
 @extends('layouts.app')
 @section('content')
     @php
-        $tabs = [
-            ['id' => 'balance-sheet', 'label' => 'Neraca'],
-            ['id' => 'cash-flow', 'label' => 'Arus Kas'],
-            ['id' => 'profit-loss', 'label' => 'Laba Rugi'],
-            ['id' => 'executive', 'label' => 'Eksekutif'],
-            ['id' => 'receivable', 'label' => 'Piutang'],
-            ['id' => 'payable', 'label' => 'Utang'],
-            ['id' => 'journal', 'label' => 'Jurnal Umum'],
-        ];
+        $tabs = collect([
+            ['id' => 'balance-sheet', 'label' => 'Neraca', 'permission' => 'reports.balance-sheet.view'],
+            ['id' => 'cash-flow', 'label' => 'Arus Kas', 'permission' => 'reports.cash-flow.view'],
+            ['id' => 'profit-loss', 'label' => 'Laba Rugi', 'permission' => 'reports.profit-loss.view'],
+            ['id' => 'executive', 'label' => 'Eksekutif', 'permission' => 'reports.executive.view'],
+            ['id' => 'receivable', 'label' => 'Piutang', 'permission' => 'reports.receivable.view'],
+            ['id' => 'payable', 'label' => 'Utang', 'permission' => 'reports.payable.view'],
+            ['id' => 'journal', 'label' => 'Jurnal Umum', 'permission' => 'reports.journal.view'],
+        ])->filter(fn (array $tab): bool => auth()->user()->can($tab['permission']))->values();
     @endphp
     <div class="laporan-page">
 
@@ -28,7 +28,10 @@
             @endforeach
         </div>
 
-        @include('report.partials.' . $activeTab)
+        @includeWhen(
+            $tabs->contains('id', $activeTab),
+            'report.partials.' . $activeTab
+        )
 
     </div>
     @stack('balance-sheet-scripts')
