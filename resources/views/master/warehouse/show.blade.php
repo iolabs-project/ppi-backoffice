@@ -122,15 +122,19 @@
                 </div>
             </div>
             <div class="order-actions">
-                <button class="btn btn-ghost" x-on:click="openEditModal()">
-                    <x-misc.icon name="edit" :size="14" /> Edit Gudang
-                </button>
-                <a href="{{ route('master.warehouses.warehouse_transfers.create', $warehouse->id) }}" class="btn btn-ghost">
-                    <x-misc.icon name="swap" :size="14" /> Transfer Gudang
-                </a>
-                <a href="{{ route('master.warehouses.stock_adjustments.create', $warehouse->id) }}" class="btn btn-ghost">
-                    <x-misc.icon name="plus" :size="14" /> Penyesuaian Stok
-                </a>
+                @if (auth()->user()->can('master.warehouses.edit'))
+                    <button class="btn btn-ghost" x-on:click="openEditModal()">
+                        <x-misc.icon name="edit" :size="14" /> Edit Gudang
+                    </button>
+                    <a href="{{ route('master.warehouses.warehouse_transfers.create', $warehouse->id) }}"
+                        class="btn btn-ghost">
+                        <x-misc.icon name="swap" :size="14" /> Transfer Gudang
+                    </a>
+                    <a href="{{ route('master.warehouses.stock_adjustments.create', $warehouse->id) }}"
+                        class="btn btn-ghost">
+                        <x-misc.icon name="plus" :size="14" /> Penyesuaian Stok
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -163,14 +167,14 @@
 
         </div>
 
-        {{-- Products table --}}
-        @include('master.warehouse.partials.stock-table', ['warehouse' => $warehouse])
+            {{-- Products table --}}
+            @include('master.warehouse.partials.stock-table', ['warehouse' => $warehouse])
 
-        {{-- Batches table --}}
-        @include('master.warehouse.partials.batch-table', ['warehouse' => $warehouse])
+            {{-- Batches table --}}
+            @include('master.warehouse.partials.batch-table', ['warehouse' => $warehouse])
 
-        {{-- Modals --}}
-        @include('master.partials.modals.warehouse-modal')
+            {{-- Modals --}}
+            @includeWhen(auth()->user()->can('master.warehouses.edit'), 'master.partials.modals.warehouse-modal')
     </div>
     @stack('stock-table-scripts')
     @stack('batch-table-scripts')

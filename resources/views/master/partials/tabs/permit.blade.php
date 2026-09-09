@@ -9,9 +9,11 @@
                     <div style="font-size:11.5px; color:var(--ink-4); margin-top:2px;"
                         x-text="roles.length + ' role terdaftar'"></div>
                 </div>
-                <button class="btn btn-primary btn-sm" x-on:click="openCreateModal()">
-                    <x-misc.icon name="plus" :size="14" /> Tambah
-                </button>
+                @if (auth()->user()->can('master.roles.create'))
+                    <button class="btn btn-primary btn-sm" x-on:click="openCreateModal()">
+                        <x-misc.icon name="plus" :size="14" /> Tambah
+                    </button>
+                @endif
             </div>
             <div class="permit-roles__list">
                 <template x-if="roles.length === 0">
@@ -33,9 +35,11 @@
                                 </button>
                                 <div class="action-menu__panel role-item__menu" x-show="open" x-cloak
                                     x-on:click="open = false">
-                                    <button class="action-menu__item" x-on:click="openEditModal(r)">
-                                        <x-misc.icon name="edit" :size="14" /> Edit Nama Role
-                                    </button>
+                                    @if (auth()->user()->can('master.roles.edit'))
+                                        <button class="action-menu__item" x-on:click="openEditModal(r)">
+                                            <x-misc.icon name="edit" :size="14" /> Edit Nama Role
+                                        </button>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -61,11 +65,13 @@
                             <div style="font-weight:700; font-size:14px;" x-text="selectedRole.name"></div>
                             <div style="font-size:12px; color:var(--ink-4); margin-top:2px;">Atur hak akses untuk role ini</div>
                         </div>
-                        <button class="btn btn-primary btn-sm" :disabled="saving"
-                            x-on:click="savePermissions()">
-                            <template x-if="!saving"><x-misc.icon name="check" :size="14" /></template>
-                            <span x-text="saving ? 'Menyimpan...' : 'Simpan Hak Akses'"></span>
-                        </button>
+                        @if (auth()->user()->can('master.roles.edit'))
+                            <button class="btn btn-primary btn-sm" :disabled="saving"
+                                x-on:click="savePermissions()">
+                                <template x-if="!saving"><x-misc.icon name="check" :size="14" /></template>
+                                <span x-text="saving ? 'Menyimpan...' : 'Simpan Hak Akses'"></span>
+                            </button>
+                        @endif
                     </div>
 
                     {{-- Permission tree --}}

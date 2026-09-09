@@ -25,7 +25,7 @@
                             <div class="gudang-card__code mono" x-text="g.code"></div>
                         </div>
                     </div>
-                    <div class="action-menu" x-data="{ open: false }" x-on:click.stop>
+                    <div class="action-menu" x-data="{ open: false }" x-on:click.stop.prevent>
                         <button class="btn btn-ghost btn-icon btn-sm" style="border:none;" x-on:click="open = !open"
                             x-on:click.outside="open = false">
                             <x-misc.icon name="more" :size="15" />
@@ -68,12 +68,12 @@
             </a>
         </template>
 
-        <div class="card gudang-add-card" x-on:click="modal = 'add_gudang'">
+        {{-- <div class="card gudang-add-card" x-on:click="modal = 'add_gudang'">
             <div>
                 <x-misc.icon name="plus" :size="24" stroke="var(--ink-3)" />
                 <div class="gudang-add-label">Tambah Gudang</div>
             </div>
-        </div>
+        </div> --}}
     </div>
     <div class="table-pagination" x-show="!loading">
         <span class="pagination-info"

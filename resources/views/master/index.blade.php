@@ -1,9 +1,24 @@
 @extends('layouts.app')
 @section('content')
+    @php
+        $masterTabs = collect([
+            ['id' => 'produk', 'label' => 'Produk', 'permission' => 'master.products.view'],
+            ['id' => 'gudang', 'label' => 'Gudang', 'permission' => 'master.warehouses.view'],
+            ['id' => 'kontak', 'label' => 'Kontak', 'permission' => 'master.contacts.view'],
+            ['id' => 'user', 'label' => 'User', 'permission' => 'master.users.view'],
+            ['id' => 'permit', 'label' => 'Hak Akses', 'permission' => 'master.roles.view'],
+            ['id' => 'akun', 'label' => 'Akun', 'permission' => 'master.accounts.view'],
+            ['id' => 'account_setting', 'label' => 'Pengaturan Akun', 'permission' => 'master.accounts.view'],
+        ])->filter(fn (array $tab): bool => auth()->user()->can($tab['permission']))->values();
+        $permittedMasterTabIds = $masterTabs->pluck('id');
+    @endphp
     <script>
         function masterPageData() {
+            const permittedTabs = @json($permittedMasterTabIds);
+            const storedTab = sessionStorage.getItem('master_tab');
+
             return {
-                tab: sessionStorage.getItem('master_tab') || 'produk',
+                tab: permittedTabs.includes(storedTab) ? storedTab : permittedTabs[0],
                 modal: null,
 
                 // shared data for modals
@@ -1279,20 +1294,20 @@
 
         {{-- Tab bar --}}
         <div class="utab">
-            @foreach ([['produk', 'Produk'], ['gudang', 'Gudang'], ['kontak', 'Kontak'], ['user', 'User'], ['permit', 'Hak Akses'], ['akun', 'Akun'], ['account_setting', 'Pengaturan Akun']] as [$id, $lbl])
-                <button class="utab-item"
-                    x-on:click="tab = '{{ $id }}'; sessionStorage.setItem('master_tab', '{{ $id }}')"
-                    :class="tab === '{{ $id }}' ? 'utab-active' : ''">{{ $lbl }}</button>
+            @foreach ($masterTabs as $masterTab)
+                <button type="button" class="utab-item"
+                    x-on:click="tab = '{{ $masterTab['id'] }}'; sessionStorage.setItem('master_tab', '{{ $masterTab['id'] }}')"
+                    :class="tab === '{{ $masterTab['id'] }}' ? 'utab-active' : ''">{{ $masterTab['label'] }}</button>
             @endforeach
         </div>
 
-        @include('master.partials.tabs.product')
-        @include('master.partials.tabs.warehouse')
-        @include('master.partials.tabs.contact')
-        @include('master.partials.tabs.user')
-        @include('master.partials.tabs.permit')
-        @include('master.partials.tabs.account')
-        @include('master.partials.tabs.account-setting')
+        @includeWhen(auth()->user()->can('master.products.view'), 'master.partials.tabs.product')
+        @includeWhen(auth()->user()->can('master.warehouses.view'), 'master.partials.tabs.warehouse')
+        @includeWhen(auth()->user()->can('master.contacts.view'), 'master.partials.tabs.contact')
+        @includeWhen(auth()->user()->can('master.users.view'), 'master.partials.tabs.user')
+        @includeWhen(auth()->user()->can('master.roles.view'), 'master.partials.tabs.permit')
+        @includeWhen(auth()->user()->can('master.accounts.view'), 'master.partials.tabs.account')
+        @includeWhen(auth()->user()->can('master.accounts.view'), 'master.partials.tabs.account-setting')
 
     </div>
     @stack('product-scripts')

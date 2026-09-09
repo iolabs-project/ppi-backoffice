@@ -26,6 +26,9 @@ class RoleSeeder extends Seeder
         $accountingRole = Role::firstOrCreate([
             'name' => RoleEnum::ACCOUNTING->value,
         ]);
+        $checkerRole = Role::firstOrCreate([
+            'name' => 'Checker',
+        ]);
 
         $superAdminRole->syncPermissions(Permission::all());
 
@@ -42,6 +45,12 @@ class RoleSeeder extends Seeder
         $accountingRole->syncPermissions(
             Permission::where('name', 'like', '%.view')
                 ->where('name', 'not like', 'master.%')
+                ->get()
+        );
+
+        // Checker: for testing
+        $checkerRole->syncPermissions(
+            Permission::where('name', 'like', 'master.roles.%')
                 ->get()
         );
         app()[PermissionRegistrar::class]->forgetCachedPermissions();

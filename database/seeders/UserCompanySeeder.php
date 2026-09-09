@@ -41,6 +41,6 @@ class UserCompanySeeder extends Seeder
             'company_id' => $companny->id,
         ]);
 
-        $user2->assignRole(RoleEnum::ADMIN->value);
+        $user2->assignRole('Checker');
     }
 }

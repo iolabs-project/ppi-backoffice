@@ -167,8 +167,10 @@
                 </div>
             </div>
             <div class="order-actions">
-                <button class="btn btn-ghost" x-on:click="openEditModal()"><x-misc.icon name="edit"
-                        :size="14" /> Edit Produk</button>
+                @if (auth()->user()->can('master.products.edit'))
+                    <button class="btn btn-ghost" x-on:click="openEditModal()"><x-misc.icon name="edit"
+                            :size="14" /> Edit Produk</button>
+                @endif
                 {{-- <button class="btn btn-primary" x-on:click="modal = 'penyesuaian'"><x-misc.icon name="plus"
                         :size="14" /> Penyesuaian Stok</button> --}}
             </div>
@@ -329,6 +331,6 @@
             </div>
         </div>
 
-        @include('master.partials.modals.product-modal')
+        @includeWhen(auth()->user()->can('master.products.edit'), 'master.partials.modals.product-modal')
     </div>
 @endsection
