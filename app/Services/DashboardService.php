@@ -8,6 +8,7 @@ use App\Enums\SalesInvoiceStatus;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Enums\SalesOrderStatus;
 use App\Enums\DeliveryOrderStatus;
+use App\Enums\ExpenseStatus;
 use App\Models\ChartOfAccount;
 use App\Models\CashTransaction;
 use App\Models\DeliveryOrder;
@@ -195,7 +196,7 @@ class DashboardService
                 'date'    => $so->order_date,
                 'amount'  => $so->total_amount,
                 'status'  => $so->status,
-                'url'     => route('penjualan.show', $so->id),
+                'url'     => route('sales.sales_orders.show', $so->id),
                 'icon'    => 'cart',
                 'color'   => 'var(--accent)',
             ]);
@@ -213,7 +214,7 @@ class DashboardService
                 'date'    => $po->order_date,
                 'amount'  => $po->total_amount,
                 'status'  => $po->status,
-                'url'     => route('pembelian.show', $po->id),
+                'url'     => route('purchasings.purchase_orders.show', $po->id),
                 'icon'    => 'inbox',
                 'color'   => 'var(--ink-2)',
             ]);
@@ -222,7 +223,7 @@ class DashboardService
         $siList = SalesInvoice::where('company_id', $companyId)
             ->whereNotIn('status', [SalesInvoiceStatus::DRAFT->value, SalesInvoiceStatus::CANCELLED->value])
             ->orderBy('invoice_date', 'desc')
-            ->limit(5)
+            ->limit(5)  
             ->get(['id', 'number', 'invoice_date', 'total_amount', 'status'])
             ->map(fn($si) => [
                 'type'    => 'SI',
@@ -231,7 +232,7 @@ class DashboardService
                 'date'    => $si->invoice_date,
                 'amount'  => $si->total_amount,
                 'status'  => $si->status,
-                'url'     => route('penjualan.tagihan_show', $si->id),
+                'url'     => route('sales.sales_invoices.show', $si->id),
                 'icon'    => 'receipt',
                 'color'   => 'var(--good)',
             ]);
@@ -249,7 +250,7 @@ class DashboardService
                 'date'    => $e->expense_date,
                 'amount'  => $e->total_amount,
                 'status'  => $e->status,
-                'url'     => route('biaya.show', $e->id),
+                'url'     => route('expenses.show', $e->id),
                 'icon'    => 'wallet',
                 'color'   => 'var(--bad)',
             ]);
@@ -291,7 +292,7 @@ class DashboardService
                 'amount'   => $inv->remaining_amount,
                 'days'     => $inv->days_overdue,
                 'type'     => 'Piutang',
-                'url'      => route('penjualan.tagihan_show', $inv->id),
+                'url'      => route('finances.account_receivables.show',['id' => $inv->id, 'reference_type' => 'sales_invoice']),
             ]);
 
         $purchaseOverdue = PurchaseInvoice::where('purchase_invoices.company_id', $companyId)
@@ -311,12 +312,32 @@ class DashboardService
                 'amount'   => $inv->remaining_amount,
                 'days'     => $inv->days_overdue,
                 'type'     => 'Utang',
-                'url'      => route('pembelian.tagihan_show', $inv->id),
+                'url'      => route('finances.account_payables.show', ['id' => $inv->id, 'reference_type' => 'purchase_invoice']),
+            ]);
+
+        $expenseOverdue = Expense::where('expenses.company_id', $companyId)
+            ->where('expenses.remaining_amount', '>', 0)
+            ->whereNotIn('expenses.status', [ExpenseStatus::DRAFT->value, ExpenseStatus::CANCELLED->value, ExpenseStatus::PAID->value])
+            ->join('contacts', 'contacts.id', '=', 'expenses.contact_id')
+            ->selectRaw('expenses.id, expenses.number, expenses.due_date, expenses.remaining_amount, contacts.name as contact_name, DATEDIFF(?, expenses.due_date) as days_overdue', [$today])
+            ->orderBy('expenses.due_date')
+            ->limit(5)
+            ->get()
+            ->map(fn($inv) => [
+                'id'       => $inv->id,
+                'number'   => $inv->number,
+                'contact'  => $inv->contact_name,
+                'due_date' => $inv->due_date,
+                'amount'   => $inv->remaining_amount,
+                'days'     => $inv->days_overdue,
+                'type'     => 'Utang',
+                'url'      => route('finances.account_payables.show', ['id' => $inv->id, 'reference_type' => 'expense']),
             ]);
 
         return collect()
             ->merge($salesOverdue)
             ->merge($purchaseOverdue)
+            ->merge($expenseOverdue)
             ->sortBy('due_date')
             ->take(8)
             ->values()

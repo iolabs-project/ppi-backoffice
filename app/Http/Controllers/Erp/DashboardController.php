@@ -12,7 +12,7 @@ class DashboardController extends Controller
         $companyId = config('context.selected_company_id');
         $data = DashboardService::getData($companyId);
 
-        return view('pages.dashboard', array_merge($data, [
+        return view('dashboard.index', array_merge($data, [
             'currentPage' => 'dashboard',
             'breadcrumb'  => [['label' => 'Dashboard']],
         ]));

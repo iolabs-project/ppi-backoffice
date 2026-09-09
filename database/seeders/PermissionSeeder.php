@@ -125,6 +125,30 @@ class PermissionSeeder extends Seeder
                     'delete',
                 ]
             ],
+
+            'reports' => [
+                'balance-sheet' =>  [
+                    'view'
+                ],
+                'cash-flow' => [
+                    'view'
+                ],
+                'profit-loss' => [
+                    'view'
+                ],
+                'executive' => [
+                    'view'
+                ],
+                'receivable' => [
+                    'view'
+                ],
+                'payable' => [
+                    'view'
+                ],
+                'journal' => [
+                    'view'
+                ]
+            ]
         ];
 
         foreach ($permissions as $module => $resources) {
