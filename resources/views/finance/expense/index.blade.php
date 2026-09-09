@@ -176,9 +176,11 @@
                 <div class="order-sub">Pencatatan dan persetujuan biaya operasional</div>
             </div>
             <div class="order-actions">
-                <a href="{{ route('expenses.create') }}" class="btn btn-primary">
-                    <x-misc.icon name="plus" :size="14" />Tambah Biaya
-                </a>
+                @if (auth()->user()->can('finances.expenses.create'))
+                    <a href="{{ route('expenses.create') }}" class="btn btn-primary">
+                        <x-misc.icon name="plus" :size="14" />Tambah Biaya
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -319,7 +321,7 @@
                                                 <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
                                                 Biaya
                                             </button>
-                                            <template x-if="row.status === '{{ $draft }}'">
+                                            <template x-if="row.status === '{{ $draft }}' && @js(auth()->user()->can('finances.expenses.edit'))">
                                                 <div>
                                                     <a :href="route('expenses.edit', row.id)" @click.stop
                                                         class="action-menu__item">
@@ -330,7 +332,7 @@
                                                 </div>
                                             </template>
                                             <template
-                                                x-if="row.status === '{{ $draft }}' || row.status === '{{ $open }}'">
+                                                x-if="(row.status === '{{ $draft }}' || row.status === '{{ $open }}') && @js(auth()->user()->can('finances.expenses.delete'))">
                                                 <div>
                                                     <div class="action-menu__divider"></div>
                                                     <button class="action-menu__item action-menu__item--danger"

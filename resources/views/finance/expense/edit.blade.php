@@ -1,28 +1,35 @@
 @extends('layouts.app')
 @section('content')
     <script>
+        const expense = @json($expense);
+
         function expenseForm() {
             return {
                 formData: {
-                    contact_id: null,
-                    number: '{{ $number }}',
-                    reference_number: null,
-                    expense_date: "{{ now()->format('Y-m-d') }}",
-                    due_date: null,
-                    payment_terms: null,
-                    discount_percentage: null,
-                    discount_amount: null,
-                    tax_percentage: null,
-                    tax_amount: null,
-                    subtotal: null,
-                    total_amount: null,
-                    note: null,
-                    items: [{
-                        account_id: null,
-                        description: null,
-                        amount: null,
-                    }],
-                    costs: [],
+                    id: expense.id || null,
+                    contact_id: expense.contact_id || null,
+                    number: expense.number || null,
+                    reference_number: expense.reference_number || null,
+                    expense_date: expense.expense_date || "{{ now()->format('Y-m-d') }}",
+                    due_date: expense.due_date || null,
+                    payment_terms: expense.payment_terms || null,
+                    discount_percentage: expense.discount_percentage || null,
+                    discount_amount: expense.discount_amount || null,
+                    tax_percentage: expense.tax_percentage || null,
+                    tax_amount: expense.tax_amount || null,
+                    subtotal: expense.subtotal || null,
+                    total_amount: expense.total_amount || null,
+                    note: expense.note || null,
+                    items: (expense.items || []).map(it => ({
+                        account_id: it.account_id,
+                        description: it.description,
+                        amount: it.amount,
+                    })),
+                    costs: (expense.costs || []).map(c => ({
+                        account_id: c.account_id,
+                        description: c.description,
+                        amount: c.amount,
+                    })),
                 },
                 // Contact Options
                 contacts: @json($contacts),
@@ -30,6 +37,8 @@
                 // Payment Terms
                 paymentTerms: @json($paymentTerms),
                 paymentTermSelected: null,
+                // Submit
+                isSubmitting: false,
 
                 // Shorthand: parse masked string to number
                 n(v) {
@@ -137,10 +146,14 @@
                 },
 
                 init() {
+                    this.contactSelected = this.contacts.find(c => c.id === this.formData.contact_id) || null;
+                    this.paymentTermSelected = this.paymentTerms.find(t => t.id === this.formData.payment_terms) ||
+                        null;
                     this.recalculate();
                 },
 
                 async submit(status) {
+                    this.isSubmitting = true;
                     const titles = {
                         draft: 'Memproses penyimpanan draft biaya...',
                         open: 'Memproses penyimpanan biaya...',
@@ -151,7 +164,9 @@
                         didOpen: () => Swal.showLoading(),
                     });
                     try {
-                        const response = await axios.post(route('expenses.store'), this.buildBody(status));
+                        const response = await axios.put(
+                            route('expenses.update', this.formData.id), this.buildBody(status)
+                        );
                         Swal.close();
                         Toast.fire({
                             icon: 'success',
@@ -178,6 +193,8 @@
                             title: title,
                             html: html
                         });
+                    } finally {
+                        this.isSubmitting = false;
                     }
                 }
             };
@@ -190,8 +207,8 @@
             <a href="{{ route('expenses.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
                 <x-misc.icon name="chev-left" :size="13" />Kembali
             </a>
-            <h1 class="order-title display">Tambah Biaya</h1>
-            <div class="order-sub">Catat biaya operasional baru</div>
+            <h1 class="order-title display">Edit Biaya</h1>
+            <div class="order-sub">Ubah dokumen biaya yang ada</div>
         </div>
 
         {{-- Info Biaya --}}
@@ -340,11 +357,15 @@
             </div>
         </div>
 
+        @if (auth()->user()->can('finances.expenses.edit'))
         <div class="order-form-footer">
-            <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
-            <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check" :size="14" />Simpan
+            <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')"
+                :disabled="isSubmitting">Simpan Draft</button>
+            <button class="btn btn-primary" @click="submit('open')" :disabled="isSubmitting"><x-misc.icon
+                    name="check" :size="14" />Simpan
                 Biaya</button>
         </div>
+        @endif
 
     </div>
 @endsection

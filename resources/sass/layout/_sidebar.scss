@@ -86,7 +86,7 @@
 // ── Backdrop ────────────────────────────────────────────────────────────────
 
 .submenu-backdrop {
-    position: fixed;
+    position: absolute;
     inset: 0;
     left: 72px;
     background: rgba(0, 0, 0, 0.28);
@@ -106,10 +106,10 @@
 // ── Slide panel ─────────────────────────────────────────────────────────────
 
 .submenu-panel {
-    position: fixed;
+    position: absolute;
     left: 72px;
     top: 0;
-    height: 100vh;
+    height: 100%;
     width: 260px;
     background: var(--bg-2);
     border-right: 1px solid var(--line);

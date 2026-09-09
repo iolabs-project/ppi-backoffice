@@ -28,18 +28,18 @@
 
                 {{-- TODO: Add edit button --}}
 
-                @if ($salesOrder->is_cancellable)
+                @if (auth()->user()->can('sales.sales-orders.delete') && $salesOrder->is_cancellable)
                     <button class="btn btn-ghost" @click="handleCancel({{ $salesOrder->id }})"><x-misc.icon name="x"
                             :size="14" />Batal Pemesanan</button>
                 @endif
 
-                @if ($salesOrder->is_deliverable)
+                @if (auth()->user()->can('sales.delivery-orders.create') && $salesOrder->is_deliverable)
                     <button @click="handleCreateDeliveryOrder({{ $salesOrder->id }})" class="btn btn-dark">
                         <x-misc.icon name="truck" :size="14" />Buat Pengiriman
                     </button>
                 @endif
 
-                @if ($salesOrder->is_invoicable)
+                @if (auth()->user()->can('sales.invoices.create') && $salesOrder->is_invoicable)
                     <button @click="handleCreateSalesInvoice({{ $salesOrder->id }})" class="btn btn-primary">
                         <x-misc.icon name="wallet" :size="14" />Buat Tagihan
                     </button>
@@ -52,7 +52,7 @@
         </div>
 
         <div class="card order-meta">
-            @foreach ([['Customer', $salesOrder->customer->name, true], ['Tanggal SO', $salesOrder->order_date->format('d/m/Y'), false], ['Jatuh Tempo', $salesOrder->due_date->format('d/m/Y'), false], ['Gudang', $salesOrder->warehouse->name, false]] as [$lbl, $val, $av])
+            @foreach ([['Customer', $salesOrder->customer?->name ?? '-', true], ['Tanggal SO', $salesOrder->order_date?->format('d/m/Y') ?? '-', false], ['Jatuh Tempo', $salesOrder->due_date?->format('d/m/Y') ?? '-', false], ['Gudang', $salesOrder->warehouse?->name ?? '-', false]] as [$lbl, $val, $av])
                 <div>
                     <div class="label order-meta__label">{{ $lbl }}</div>
                     <div class="order-meta__value">

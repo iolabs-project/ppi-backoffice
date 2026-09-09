@@ -7,9 +7,11 @@
                 <input class="input master-search__input" placeholder="Cari kontak..." x-model="search"
                     x-on:input.debounce.400ms="handleSearch(search)" />
             </div>
-            <button class="btn btn-primary btn-sm" x-on:click="modal = 'add_contact'">
-                <x-misc.icon name="plus" :size="14" /> Tambah Kontak
-            </button>
+            @if (auth()->user()->can('master.contacts.create'))
+                <button class="btn btn-primary btn-sm" x-on:click="modal = 'add_contact'">
+                    <x-misc.icon name="plus" :size="14" /> Tambah Kontak
+                </button>
+            @endif
         </div>
         <table class="tbl">
             <thead>
@@ -73,20 +75,24 @@
                                             <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />
                                             Detail Kontak
                                         </a>
-                                        <button class="action-menu__item" x-on:click="openEditModal(row)">
-                                            <x-misc.icon name="edit" :size="14" /> Edit Kontak
-                                        </button>
-                                        <template x-if="!row.deleted_at">
-                                            <button class="action-menu__item action-menu__item--danger"
-                                                x-on:click="handleStatus(row.id)">
-                                                <x-misc.icon name="trash" :size="14" /> Nonaktifkan
+                                        @if (auth()->user()->can('master.contacts.edit'))
+                                            <button class="action-menu__item" x-on:click="openEditModal(row)">
+                                                <x-misc.icon name="edit" :size="14" /> Edit Kontak
                                             </button>
-                                        </template>
-                                        <template x-if="row.deleted_at">
-                                            <button class="action-menu__item" x-on:click="handleStatus(row.id)">
-                                                <x-misc.icon name="refresh" :size="14" /> Aktifkan
-                                            </button>
-                                        </template>
+                                        @endif
+                                        @if (auth()->user()->can('master.contacts.delete'))
+                                            <template x-if="!row.deleted_at">
+                                                <button class="action-menu__item action-menu__item--danger"
+                                                    x-on:click="handleStatus(row.id)">
+                                                    <x-misc.icon name="trash" :size="14" /> Nonaktifkan
+                                                </button>
+                                            </template>
+                                            <template x-if="row.deleted_at">
+                                                <button class="action-menu__item" x-on:click="handleStatus(row.id)">
+                                                    <x-misc.icon name="refresh" :size="14" /> Aktifkan
+                                                </button>
+                                            </template>
+                                        @endif
                                     </div>
                                 </div>
                             </td>

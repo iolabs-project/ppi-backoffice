@@ -7,10 +7,12 @@
                     Akun yang digunakan sistem secara otomatis saat membentuk jurnal untuk setiap jenis transaksi.
                 </div>
             </div>
-            <button class="btn btn-primary btn-sm" x-on:click="submitSettings()">
-                <x-misc.icon name="check" :size="13" />
-                <span x-text="'Simpan Perubahan'"></span>
-            </button>
+            @if (auth()->user()->can('master.accounts.edit'))
+                <button class="btn btn-primary btn-sm" x-on:click="submitSettings()">
+                    <x-misc.icon name="check" :size="13" />
+                    <span x-text="'Simpan Perubahan'"></span>
+                </button>
+            @endif
         </div>
         <table class="tbl">
             <thead>

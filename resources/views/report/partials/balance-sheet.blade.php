@@ -1,5 +1,16 @@
 {{-- =================== NERACA =================== --}}
-<div class="neraca-grid" x-data="balanceSheetModule()">
+<div x-data="balanceSheetModule()">
+    <div class="card-hd-2" style="margin-bottom:12px;">
+        <div class="display card-hd-title">Neraca</div>
+        <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
+            <label style="font-size:12px; color:var(--ink-3);">Per Tanggal</label>
+            <input type="date" class="filter-panel__input" x-model="filter.as_of_date"
+                x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
+            <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+        </div>
+    </div>
+<div class="neraca-grid">
     {{-- Aset --}}
     <div class="card" style="overflow:hidden;">
         <div class="neraca-card-hd">
@@ -95,6 +106,7 @@
                 x-text="formatCurrency(tableData.total_liabilities_and_equity)"></span>
         </div>
     </div>
+</div>
 </div>
 
 @push('balance-sheet-scripts')

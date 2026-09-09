@@ -23,7 +23,7 @@
 
                 {{-- TODO: Add edit button --}}
                 
-                @if ($salesInvoice->status === $draft)
+                @if (auth()->user()->can('sales.invoices.delete') && $salesInvoice->status === $draft)
                     <button class="btn btn-ghost" @click="handleCancel({{ $salesInvoice->id }})"><x-misc.icon name="x"
                             :size="14" />Batal Tagihan</button>
                 @endif
@@ -114,7 +114,7 @@
             </table>
         </div>
 
-        @if ($salesInvoice->charges->isNotEmpty() || $salesInvoice->costs->isNotEmpty())
+        @if (($salesInvoice->charges && $salesInvoice->charges->isNotEmpty()) || ($salesInvoice->costs && $salesInvoice->costs->isNotEmpty()))
             <div class="card" style="overflow:hidden;">
                 @if ($salesInvoice->charges->isNotEmpty())
                     <div class="card-hd">

@@ -114,9 +114,11 @@
                 <div class="order-sub">{{ count($activeAccounts) }} rekening aktif</div>
             </div>
             <div class="order-actions">
-                <button class="btn btn-primary" x-on:click="modal = 'tambah'">
-                    <x-misc.icon name="plus" :size="14" />Tambah Rekening
-                </button>
+                @if (auth()->user()->can('finances.cash-bank.create'))
+                    <button class="btn btn-primary" x-on:click="modal = 'tambah'">
+                        <x-misc.icon name="plus" :size="14" />Tambah Rekening
+                    </button>
+                @endif
             </div>
         </div>
 

@@ -92,7 +92,7 @@
                                     icon: 'success',
                                     title: response.data.message
                                 });
-                                
+
                                 window.location.reload();
                             } catch (error) {
                                 Swal.close();
@@ -164,9 +164,11 @@
                 </div>
             </div>
             <div class="order-actions">
-                <button class="btn btn-ghost" x-on:click="openEditModal()">
-                    <x-misc.icon name="edit" :size="14" /> Edit Kontak
-                </button>
+                @if (auth()->user()->can('master.contacts.edit'))
+                    <button class="btn btn-ghost" x-on:click="openEditModal()">
+                        <x-misc.icon name="edit" :size="14" /> Edit Kontak
+                    </button>
+                @endif
             </div>
         </div>
 
@@ -224,7 +226,7 @@
                             {{-- TODO: implement contact transaction datatable --}}
                         </tbody>
                     </table>
-                    
+
                 </div>
             </div>
 
@@ -294,7 +296,7 @@
             </div>
         </div>
 
-        @include('master.partials.modals.contact-modal')
+        @includeWhen(auth()->user()->can('master.contacts.edit'), 'master.partials.modals.contact-modal')
 
     </div>
 @endsection

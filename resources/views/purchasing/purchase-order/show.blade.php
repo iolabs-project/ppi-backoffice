@@ -23,19 +23,19 @@
             </div>
             <div class="order-actions">
                 {{-- TODO: Add edit button --}}
-                
-                @if ($purchaseOrder->is_cancellable)
+
+                @if (auth()->user()->can('purchasing.purchase-orders.delete') && $purchaseOrder->is_cancellable)
                     <button class="btn btn-ghost" @click="handleCancel({{ $purchaseOrder->id }})"><x-misc.icon
                             name="x" :size="14" />Batal Pemesanan</button>
                 @endif
 
-                @if ($purchaseOrder->is_receivable)
+                @if (auth()->user()->can('purchasing.goods-receipts.create') && $purchaseOrder->is_receivable)
                     <button @click="handleCreateGoodsReceipt({{ $purchaseOrder->id }})" class="btn btn-dark">
                         <x-misc.icon name="truck" :size="14" />Buat Penerimaan
                     </button>
                 @endif
 
-                @if ($purchaseOrder->is_invoicable)
+                @if (auth()->user()->can('purchasing.invoices.create') && $purchaseOrder->is_invoicable)
                     <button @click="handleCreatePurchaseInvoice({{ $purchaseOrder->id }})" class="btn btn-primary">
                         <x-misc.icon name="wallet" :size="14" />Buat Tagihan
                     </button>
@@ -109,9 +109,13 @@
                             {{ number_format($purchaseOrder->items->sum('quantity'), 2) }}</td>
                         <td>Unit</td>
                         <td class="num" style="text-align:right; font-weight:600;">
-                            {{ number_format($purchaseOrder->items->sum(function($item) {
-                                return $item->unit_price * $item->quantity;
-                            }), 2) }}</td>
+                            {{ number_format(
+                                $purchaseOrder->items->sum(function ($item) {
+                                    return $item->unit_price * $item->quantity;
+                                }),
+                                2,
+                            ) }}
+                        </td>
                         <td class="num" style="text-align:right; font-weight:600;">
                             {{ number_format($purchaseOrder->items->sum('discount_amount'), 2) }}</td>
                         <td class="num" style="text-align:right; font-weight:600;">
@@ -172,16 +176,7 @@
                     <div class="order-notes__text">{{ $purchaseOrder->note }}</div>
                 </div>
                 <div class="order-detail-summary">
-                    @foreach ([
-                        ['Nilai Bruto',                    $purchaseOrder->items->sum('subtotal'),         false, false],
-                        ['Diskon Item',                    -$purchaseOrder->items->sum('discount_amount'),  false, false],
-                        ['Subtotal',                       $purchaseOrder->subtotal,                        false, true],
-                        ['Diskon',                         -$purchaseOrder->discount_amount,                false, false],
-                        ['Pajak',                          $purchaseOrder->tax_amount,                      false, false],
-                        ['Biaya Tambahan (Inventory)',     $inventoryCostTotal,                             false, false],
-                        ['Biaya Tambahan (Non-Inventory)', $nonInventoryCostTotal,                          false, false],
-                        ['Total Pesanan',                  $purchaseOrder->total_amount,                    true,  true],
-                    ] as [$lbl, $val, $bold, $divider])
+                    @foreach ([['Nilai Bruto', $purchaseOrder->items->sum('subtotal'), false, false], ['Diskon Item', -$purchaseOrder->items->sum('discount_amount'), false, false], ['Subtotal', $purchaseOrder->subtotal, false, true], ['Diskon', -$purchaseOrder->discount_amount, false, false], ['Pajak', $purchaseOrder->tax_amount, false, false], ['Biaya Tambahan (Inventory)', $inventoryCostTotal, false, false], ['Biaya Tambahan (Non-Inventory)', $nonInventoryCostTotal, false, false], ['Total Pesanan', $purchaseOrder->total_amount, true, true]] as [$lbl, $val, $bold, $divider])
                         <div
                             style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $divider ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
                             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
@@ -246,7 +241,7 @@
                     })
                 },
 
-                 async handleCreateGoodsReceipt(id) {
+                async handleCreateGoodsReceipt(id) {
                     Swal.fire({
                         title: 'Apakah Anda yakin ingin membuat Penerimaan Barang untuk PO ini?',
                         icon: 'warning',

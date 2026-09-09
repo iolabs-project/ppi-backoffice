@@ -184,15 +184,17 @@
                 <h1 class="order-title display">{{ $account->name }} ({{ $account->code }})</h1>
             </div>
             <div class="order-actions">
-                <a href="{{ route('finances.cash.transfer.create', $account->id) }}" class="btn btn-ghost">
-                    <x-misc.icon name="swap" :size="14" />Transfer Dana
-                </a>
-                <a href="{{ route('finances.cash.send.create', $account->id) }}" class="btn btn-ghost">
-                    <x-misc.icon name="send" :size="14" />Kirim Dana
-                </a>
-                <a href="{{ route('finances.cash.receive.create', $account->id) }}" class="btn btn-ghost">
-                    <x-misc.icon name="inbox" :size="14" />Terima Dana
-                </a>
+                @if (auth()->user()->can('finances.cash-bank.edit'))
+                    <a href="{{ route('finances.cash.transfer.create', $account->id) }}" class="btn btn-ghost">
+                        <x-misc.icon name="swap" :size="14" />Transfer Dana
+                    </a>
+                    <a href="{{ route('finances.cash.send.create', $account->id) }}" class="btn btn-ghost">
+                        <x-misc.icon name="send" :size="14" />Kirim Dana
+                    </a>
+                    <a href="{{ route('finances.cash.receive.create', $account->id) }}" class="btn btn-ghost">
+                        <x-misc.icon name="inbox" :size="14" />Terima Dana
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -302,7 +304,7 @@
                                             x-on:click.away="open = false" class="action-menu__panel">
                                             <template x-if="tx.status === '{{ $draft }}'">
                                                 <div>
-                                                    <template x-if="tx.type === '{{ $transfer }}'">
+                                                    <template x-if="tx.type === '{{ $transfer }}' && @js(auth()->user()->can('finances.cash-bank.edit'))">
                                                         <div>
                                                             <a :href="route('finances.cash.transfer.edit', {
                                                                 id: '{{ $account->id }}',
@@ -316,7 +318,7 @@
 
                                                         </div>
                                                     </template>
-                                                    <template x-if="tx.type === '{{ $receive }}'">
+                                                    <template x-if="tx.type === '{{ $receive }}' && @js(auth()->user()->can('finances.cash-bank.edit'))">
                                                         <div>
                                                             <a :href="route('finances.cash.receive.edit', {
                                                                 id: '{{ $account->id }}',
@@ -330,13 +332,15 @@
 
                                                         </div>
                                                     </template>
-                                                    <div class="action-menu__divider"></div>
-                                                    <button class="action-menu__item action-menu__item--danger"
-                                                        @click.stop="cancel(tx.from_account.id, tx.id, tx.type)">
-                                                        <x-misc.icon name="trash" :size="14"
-                                                            stroke="currentColor" />Batalkan
-                                                        Transaksi
-                                                    </button>
+                                                    @if (auth()->user()->can('finances.cash-bank.delete'))
+                                                        <div class="action-menu__divider"></div>
+                                                        <button class="action-menu__item action-menu__item--danger"
+                                                            @click.stop="cancel(tx.from_account.id, tx.id, tx.type)">
+                                                            <x-misc.icon name="trash" :size="14"
+                                                                stroke="currentColor" />Batalkan
+                                                            Transaksi
+                                                        </button>
+                                                    @endif
                                                 </div>
                                             </template>
                                             <template x-if="tx.status === '{{ $posted }}'">

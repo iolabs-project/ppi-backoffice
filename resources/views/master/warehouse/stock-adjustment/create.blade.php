@@ -61,7 +61,8 @@
                     item.counted_quantity = null;
                 },
                 difference(item) {
-                    if (item.product_batch_id === null || item.counted_quantity === null || item.counted_quantity === '') return null;
+                    if (item.product_batch_id === null || item.counted_quantity === null || item.counted_quantity === '')
+                        return null;
                     return this.n(item.counted_quantity) - item.system_quantity;
                 },
                 hasValidDetails() {
@@ -215,8 +216,7 @@
                                         <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
                                     </div>
                                     <div style="flex:1;">
-                                        <x-misc.async-select
-                                            url="{{ route('master.products.options.batches') }}"
+                                        <x-misc.async-select url="{{ route('master.products.options.batches') }}"
                                             display="it.product_batch_id ? it.product_name : 'Pilih Produk / Batch'"
                                             hasValue="it.product_batch_id"
                                             default="it.product_batch_id ? [{ id: it.product_batch_id, product_id: it.product_id, product: { name: it.product_name, code: it.product_code, unit: { symbol: it.unit } }, batch_number: it.batch_number, quantity: it.system_quantity, unit_cost: it.unit_cost }] : []"
@@ -252,8 +252,10 @@
                                     x-mask:dynamic="$money($input, '.',',')" />
                             </td>
                             <td class="mono" style="text-align:right;"
-                                :style="difference(it) > 0 ? 'color:var(--ok);' : (difference(it) < 0 ? 'color:var(--bad);' : 'color:var(--ink-3);')">
-                                <span x-text="difference(it) !== null ? (difference(it) > 0 ? '+' : '') + m(difference(it)) : '—'"></span>
+                                :style="difference(it) > 0 ? 'color:var(--ok);' : (difference(it) < 0 ? 'color:var(--bad);' :
+                                    'color:var(--ink-3);')">
+                                <span
+                                    x-text="difference(it) !== null ? (difference(it) > 0 ? '+' : '') + m(difference(it)) : '—'"></span>
                             </td>
                             <td>
                                 <div class="input input--readonly"
@@ -280,17 +282,18 @@
             <div class="order-items-split2">
                 <div class="order-extras">
                     <x-misc.field label="Catatan">
-                        <textarea class="input" rows="2" placeholder="Tulis catatan untuk penyesuaian ini…"
-                            x-model="formData.note"></textarea>
+                        <textarea class="input" rows="2" placeholder="Tulis catatan untuk penyesuaian ini…" x-model="formData.note"></textarea>
                     </x-misc.field>
                 </div>
             </div>
         </div>
 
         <div class="order-form-footer">
-            <button class="btn btn-primary" @click="submit()">
-                <x-misc.icon name="check" :size="14" />Buat Penyesuaian
-            </button>
+            @if (auth()->user()->can('master.warehouses.edit'))
+                <button class="btn btn-primary" @click="submit()">
+                    <x-misc.icon name="check" :size="14" />Buat Penyesuaian
+                </button>
+            @endif
         </div>
 
     </div>

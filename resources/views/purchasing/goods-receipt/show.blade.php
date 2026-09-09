@@ -25,7 +25,7 @@
 
                 {{-- TODO: Add edit button --}}
                 
-                @if ($goodsReceipt->status == $draft)
+                @if (auth()->user()->can('purchasing.goods-receipts.delete') && $goodsReceipt->status == $draft)
                     <button class="btn btn-ghost" @click="handleCancel({{ $goodsReceipt->id }})"><x-misc.icon name="x"
                             :size="14" />Batal Penerimaan</button>
                 @endif

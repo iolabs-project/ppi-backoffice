@@ -133,7 +133,8 @@
 
                     try {
                         const response = await axios.post(
-                            route('master.warehouses.warehouse_transfers.store', this.warehouse.id), this.buildBody()
+                            route('master.warehouses.warehouse_transfers.store', this.warehouse.id), this
+                            .buildBody()
                         );
                         Swal.close();
                         Toast.fire({
@@ -207,7 +208,8 @@
                             :key="g.id">
                             <div class="dropdown-item"
                                 @click="toWarehouseSelected=g; formData.to_warehouse_id=g.id; open=false; q=''">
-                                <div class="avatar" style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
+                                <div class="avatar"
+                                    style="width:28px;height:28px;background:var(--bg-3);color:var(--ink-2);"
                                     x-text="initials(g.name)"></div>
                                 <span x-text="g.name"></span>
                             </div>
@@ -322,17 +324,18 @@
             <div class="order-items-split2">
                 <div class="order-extras">
                     <x-misc.field label="Catatan">
-                        <textarea class="input" rows="2" placeholder="Tulis catatan untuk transfer ini…"
-                            x-model="formData.note"></textarea>
+                        <textarea class="input" rows="2" placeholder="Tulis catatan untuk transfer ini…" x-model="formData.note"></textarea>
                     </x-misc.field>
                 </div>
             </div>
         </div>
 
         <div class="order-form-footer">
-            <button class="btn btn-primary" @click="submit()">
-                <x-misc.icon name="check" :size="14" />Buat Transfer
-            </button>
+            @if (auth()->user()->can('master.warehouses.edit'))
+                <button class="btn btn-primary" @click="submit()">
+                    <x-misc.icon name="check" :size="14" />Buat Transfer
+                </button>
+            @endif
         </div>
 
     </div>

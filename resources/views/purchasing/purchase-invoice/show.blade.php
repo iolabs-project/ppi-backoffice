@@ -24,7 +24,7 @@
             <div class="order-actions">
                 {{-- TODO: Add edit button --}}
 
-                @if ($purchaseInvoice->status == $draft)
+                @if (auth()->user()->can('purchasing.invoices.delete') && $purchaseInvoice->status == $draft)
                     <button class="btn btn-ghost" @click="handleCancel({{ $purchaseInvoice->id }})"><x-misc.icon
                             name="x" :size="14" />Batal Tagihan</button>
                 @endif

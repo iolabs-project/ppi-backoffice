@@ -7,9 +7,11 @@
                 <input class="input master-search__input" placeholder="Cari kontak..." x-model="search"
                     x-on:input.debounce.400ms="handleSearch(search)" />
             </div>
-            <button class="btn btn-primary btn-sm" x-on:click="modal = 'add_account'">
-                <x-misc.icon name="plus" :size="14" /> Tambah Akun
-            </button>
+            @if (auth()->user()->can('master.accounts.create'))
+                <button class="btn btn-primary btn-sm" x-on:click="modal = 'add_account'">
+                    <x-misc.icon name="plus" :size="14" /> Tambah Akun
+                </button>
+            @endif
         </div>
         <table class="tbl">
             <thead>
@@ -65,21 +67,25 @@
                                             <div class="action-menu__panel" x-show="open" x-cloak
                                                 x-on:click="open = false"
                                                 style="position:absolute; right:0; top:100%; margin-top:4px;">
-                                                <button class="action-menu__item" x-on:click="openEditModal(item)">
-                                                    <x-misc.icon name="edit" :size="14" /> Edit Akun
-                                                </button>
-                                                <template x-if="!item.deleted_at">
-                                                    <button class="action-menu__item action-menu__item--danger"
-                                                        x-on:click="handleStatus(item.id)">
-                                                        <x-misc.icon name="trash" :size="14" /> Nonaktifkan
+                                                @if (auth()->user()->can('master.accounts.edit'))
+                                                    <button class="action-menu__item" x-on:click="openEditModal(item)">
+                                                        <x-misc.icon name="edit" :size="14" /> Edit Akun
                                                     </button>
-                                                </template>
-                                                <template x-if="item.deleted_at">
-                                                    <button class="action-menu__item"
-                                                        x-on:click="handleStatus(item.id)">
-                                                        <x-misc.icon name="refresh" :size="14" /> Aktifkan
-                                                    </button>
-                                                </template>
+                                                @endif
+                                                @if (auth()->user()->can('master.accounts.delete'))
+                                                    <template x-if="!item.deleted_at">
+                                                        <button class="action-menu__item action-menu__item--danger"
+                                                            x-on:click="handleStatus(item.id)">
+                                                            <x-misc.icon name="trash" :size="14" /> Nonaktifkan
+                                                        </button>
+                                                    </template>
+                                                    <template x-if="item.deleted_at">
+                                                        <button class="action-menu__item"
+                                                            x-on:click="handleStatus(item.id)">
+                                                            <x-misc.icon name="refresh" :size="14" /> Aktifkan
+                                                        </button>
+                                                    </template>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>

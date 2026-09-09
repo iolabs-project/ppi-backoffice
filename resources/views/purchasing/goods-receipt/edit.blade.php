@@ -657,9 +657,11 @@
             </div>
         </div>
         <div class="order-form-footer">
-            <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
-            <button class="btn btn-primary" @click="submitFinish()"><x-misc.icon name="check"
-                    :size="14" />Selesai</button>
+            @if (auth()->user()->can('purchasing.goods-receipts.edit'))
+                <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
+                <button class="btn btn-primary" @click="submitFinish()"><x-misc.icon name="check"
+                        :size="14" />Selesai</button>
+            @endif
         </div>
     </div>
 @endsection

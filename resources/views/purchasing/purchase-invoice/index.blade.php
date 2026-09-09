@@ -13,8 +13,10 @@
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
-                <button class="btn btn-primary" x-on:click="openPoPicker()"><x-misc.icon name="plus"
-                        :size="15" />Tambah</button>
+                @if (auth()->user()->can('purchasing.invoices.create'))
+                    <button class="btn btn-primary" x-on:click="openPoPicker()"><x-misc.icon name="plus"
+                            :size="15" />Tambah</button>
+                @endif
             </div>
         </div>
         <div class="filter-pills">
@@ -29,8 +31,8 @@
         <div class="table-toolbar">
             <div class="table-search">
                 <span class="table-search__icon"><x-misc.icon name="search" :size="14" /></span>
-                <input class="table-search__input" placeholder="Cari nomor tagihan / supplier..."
-                    x-model="search" x-on:input.debounce.400ms="page = 1; fetchData()" />
+                <input class="table-search__input" placeholder="Cari nomor tagihan / supplier..." x-model="search"
+                    x-on:input.debounce.400ms="page = 1; fetchData()" />
             </div>
             <div class="table-toolbar__spacer"></div>
             <button class="table-filter-btn" :class="showFilters && 'table-filter-btn--active'"
@@ -42,13 +44,11 @@
         <div class="filter-panel" x-show="showFilters" x-cloak>
             <div class="filter-panel__group">
                 <label class="filter-panel__label">Dari Tanggal</label>
-                <input type="date" class="filter-panel__input" x-model="dateFrom"
-                    x-on:change="page = 1; fetchData()" />
+                <input type="date" class="filter-panel__input" x-model="dateFrom" x-on:change="page = 1; fetchData()" />
             </div>
             <div class="filter-panel__group">
                 <label class="filter-panel__label">Sampai Tanggal</label>
-                <input type="date" class="filter-panel__input" x-model="dateTo"
-                    x-on:change="page = 1; fetchData()" />
+                <input type="date" class="filter-panel__input" x-model="dateTo" x-on:change="page = 1; fetchData()" />
             </div>
             <button class="filter-panel__reset" @click="dateFrom = ''; dateTo = ''; page = 1; fetchData()">
                 <x-misc.icon name="x" :size="12" />Reset
@@ -124,37 +124,44 @@
                                                 <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
                                                 Detail
                                             </a>
-                                            <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)"
-                                                @click.stop class="action-menu__item">
-                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
-                                                PO
-                                            </a>
+                                            @if (auth()->user()->can('purchasing.purchase-orders.view'))
+                                                <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)"
+                                                    @click.stop class="action-menu__item">
+                                                    <x-misc.icon name="eye" :size="14"
+                                                        stroke="var(--ink-3)" />Lihat
+                                                    PO
+                                                </a>
+                                            @endif
                                             <button class="action-menu__item" @click.stop>
                                                 <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
                                                 Tagihan
                                             </button>
-                                            <template x-if="row.status === '{{ $draft }}'">
-                                                <div>
-                                                    <a :href="route('purchasings.purchase_invoices.edit', row.id)"
-                                                        @click.stop class="action-menu__item">
-                                                        <x-misc.icon name="edit" :size="14"
-                                                            stroke="var(--ink-3)" />Edit
-                                                        Tagihan
-                                                    </a>
-                                                </div>
-                                            </template>
-                                            <template
-                                                x-if="row.status === '{{ $draft }}' || row.status === '{{ $open }}'">
-                                                <div>
-                                                    <div class="action-menu__divider"></div>
-                                                    <button class="action-menu__item action-menu__item--danger"
-                                                        @click.stop="handleCancel(row.id)">
-                                                        <x-misc.icon name="x" :size="14"
-                                                            stroke="currentColor" />Batal
-                                                        Tagihan
-                                                    </button>
-                                                </div>
-                                            </template>
+                                            @if (auth()->user()->can('purchasing.invoices.edit'))
+                                                <template x-if="row.status === '{{ $draft }}'">
+                                                    <div>
+                                                        <a :href="route('purchasings.purchase_invoices.edit', row.id)"
+                                                            @click.stop class="action-menu__item">
+                                                            <x-misc.icon name="edit" :size="14"
+                                                                stroke="var(--ink-3)" />Edit
+                                                            Tagihan
+                                                        </a>
+                                                    </div>
+                                                </template>
+                                            @endif
+                                            @if (auth()->user()->can('purchasing.invoices.delete'))
+                                                <template
+                                                    x-if="row.status === '{{ $draft }}' || row.status === '{{ $open }}'">
+                                                    <div>
+                                                        <div class="action-menu__divider"></div>
+                                                        <button class="action-menu__item action-menu__item--danger"
+                                                            @click.stop="handleCancel(row.id)">
+                                                            <x-misc.icon name="x" :size="14"
+                                                                stroke="currentColor" />Batal
+                                                            Tagihan
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -195,7 +202,8 @@
             </div>
         </div>
 
-        <x-misc.modal title="Pilih Purchase Order" show="poPickerOpen" close-handler="closePoPicker()" :width="640">
+        <x-misc.modal title="Pilih Purchase Order" show="poPickerOpen" close-handler="closePoPicker()"
+            :width="640">
             <div style="margin-bottom:12px;">
                 <input class="input" style="height:32px; width:100%;" placeholder="Cari nomor PO atau supplier..."
                     x-model="poPickerSearch" x-on:input.debounce.400ms="fetchPoPickerData()" />

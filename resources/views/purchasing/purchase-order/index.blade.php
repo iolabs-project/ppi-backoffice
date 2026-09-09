@@ -14,8 +14,10 @@
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
-                <a href="{{ route('purchasings.purchase_orders.create') }}" class="btn btn-primary"><x-misc.icon
-                        name="plus" :size="15" />Tambah PO</a>
+                @if (auth()->user()->can('purchasing.purchase-orders.create'))
+                    <a href="{{ route('purchasings.purchase_orders.create') }}" class="btn btn-primary"><x-misc.icon
+                            name="plus" :size="15" />Tambah PO</a>
+                @endif
             </div>
         </div>
 
@@ -31,8 +33,8 @@
         <div class="table-toolbar">
             <div class="table-search">
                 <span class="table-search__icon"><x-misc.icon name="search" :size="14" /></span>
-                <input class="table-search__input" placeholder="Cari nomor PO / vendor..."
-                    x-model="search" x-on:input.debounce.400ms="page = 1; fetchData()" />
+                <input class="table-search__input" placeholder="Cari nomor PO / vendor..." x-model="search"
+                    x-on:input.debounce.400ms="page = 1; fetchData()" />
             </div>
             <div class="table-toolbar__spacer"></div>
             <button class="table-filter-btn" :class="showFilters && 'table-filter-btn--active'"
@@ -44,13 +46,11 @@
         <div class="filter-panel" x-show="showFilters" x-cloak>
             <div class="filter-panel__group">
                 <label class="filter-panel__label">Dari Tanggal</label>
-                <input type="date" class="filter-panel__input" x-model="dateFrom"
-                    x-on:change="page = 1; fetchData()" />
+                <input type="date" class="filter-panel__input" x-model="dateFrom" x-on:change="page = 1; fetchData()" />
             </div>
             <div class="filter-panel__group">
                 <label class="filter-panel__label">Sampai Tanggal</label>
-                <input type="date" class="filter-panel__input" x-model="dateTo"
-                    x-on:change="page = 1; fetchData()" />
+                <input type="date" class="filter-panel__input" x-model="dateTo" x-on:change="page = 1; fetchData()" />
             </div>
             <button class="filter-panel__reset" @click="dateFrom = ''; dateTo = ''; page = 1; fetchData()">
                 <x-misc.icon name="x" :size="12" />Reset
@@ -137,8 +137,8 @@
                                         </div>
                                     </template>
                                 </td>
-                                <td class="num" style="text-align:right; font-weight:600;"
-                                    x-text="m(row.total_amount)"></td>
+                                <td class="num" style="text-align:right; font-weight:600;" x-text="m(row.total_amount)">
+                                </td>
                                 <td>
                                     <span :class="statusChip(row.status).chip">
                                         <span :class="statusChip(row.status).dot"></span>
@@ -162,16 +162,18 @@
                                         </button>
                                         <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
                                             x-on:click.away="open = false" class="action-menu__panel">
-                                            <template x-if="row.status === '{{ $draft }}'">
-                                                <div>
-                                                    <a :href="route('purchasings.purchase_orders.edit', row.id)" @click.stop
-                                                        class="action-menu__item">
-                                                        <x-misc.icon name="edit" :size="14"
-                                                            stroke="var(--ink-3)" />
-                                                        Edit Draft
-                                                    </a>
-                                                </div>
-                                            </template>
+                                            @if (auth()->user()->can('purchasing.purchase-orders.edit'))
+                                                <template x-if="row.status === '{{ $draft }}'">
+                                                    <div>
+                                                        <a :href="route('purchasings.purchase_orders.edit', row.id)" @click.stop
+                                                            class="action-menu__item">
+                                                            <x-misc.icon name="edit" :size="14"
+                                                                stroke="var(--ink-3)" />
+                                                            Edit Draft
+                                                        </a>
+                                                    </div>
+                                                </template>
+                                            @endif
                                             <template x-if="row.status !== '{{ $draft }}'">
                                                 <div>
                                                     <a :href="route('purchasings.purchase_orders.show', row.id)" @click.stop
@@ -188,37 +190,41 @@
                                                     </button>
                                                 </div>
                                             </template>
-                                            <template x-if="row.is_receivable">
-                                                <button class="action-menu__item"
-                                                    @click.stop="handleCreateGoodsReceipt(row.id)">
-                                                    <x-misc.icon name="box" :size="14"
-                                                        stroke="var(--ink-3)" />Buat
-                                                    Penerimaan
-                                                </button>
-                                            </template>
-                                            <template
-                                                x-if="row.is_invoicable">
-                                                <button class="action-menu__item"
-                                                    @click.stop="handleCreatePurchaseInvoice(row.id)">
-                                                    <x-misc.icon name="wallet" :size="14"
-                                                        stroke="var(--ink-3)" />Buat
-                                                    Tagihan
-                                                </button>
-                                            </template>
-
-                                            <template
-                                                x-if="row.is_cancellable">
-                                                <div>
-                                                    <div class="action-menu__divider"></div>
-                                                    <button class="action-menu__item action-menu__item--danger"
-                                                        @click.stop="handleCancel(row.id)">
-                                                        <x-misc.icon name="trash" :size="14"
-                                                            stroke="currentColor" />Batalkan
-                                                        PO
+                                            @if (auth()->user()->can('purchasing.goods-receipts.create'))
+                                                <template x-if="row.is_receivable">
+                                                    <button class="action-menu__item"
+                                                        @click.stop="handleCreateGoodsReceipt(row.id)">
+                                                        <x-misc.icon name="box" :size="14"
+                                                            stroke="var(--ink-3)" />Buat
+                                                        Penerimaan
                                                     </button>
-                                                </div>
+                                                </template>
+                                            @endif
+                                            @if (auth()->user()->can('purchasing.invoices.create'))
+                                                <template x-if="row.is_invoicable">
+                                                    <button class="action-menu__item"
+                                                        @click.stop="handleCreatePurchaseInvoice(row.id)">
+                                                        <x-misc.icon name="wallet" :size="14"
+                                                            stroke="var(--ink-3)" />Buat
+                                                        Tagihan
+                                                    </button>
+                                                </template>
+                                            @endif
 
-                                            </template>
+                                            @if (auth()->user()->can('purchasing.purchase-orders.delete'))
+                                                <template x-if="row.is_cancellable">
+                                                    <div>
+                                                        <div class="action-menu__divider"></div>
+                                                        <button class="action-menu__item action-menu__item--danger"
+                                                            @click.stop="handleCancel(row.id)">
+                                                            <x-misc.icon name="trash" :size="14"
+                                                                stroke="currentColor" />Batalkan
+                                                            PO
+                                                        </button>
+                                                    </div>
+
+                                                </template>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -366,7 +372,7 @@
                     }
                 },
 
-                m(v){
+                m(v) {
                     return NumberUtils.formatNumericIntoMask(v);
                 },
 
