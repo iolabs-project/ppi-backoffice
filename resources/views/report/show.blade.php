@@ -18,10 +18,6 @@
                 <h1 class="order-title display">Laporan Keuangan</h1>
                 {{-- <div class="order-sub">Periode Januari - Mei 2026</div> --}}
             </div>
-            <div class="order-actions">
-                <button class="btn btn-ghost"><x-misc.icon name="print" :size="14" />Cetak</button>
-                <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
-            </div>
         </div>
 
         {{-- Tab bar --}}

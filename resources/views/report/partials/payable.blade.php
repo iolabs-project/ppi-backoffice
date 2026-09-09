@@ -1,8 +1,20 @@
 {{-- =================== UTANG =================== --}}
 <div class="card" style="overflow:hidden;" x-data="payableModule()">
     <div class="utang-card-hd">
-        <div class="display" style="font-weight:700; font-size:14px;">Utang Dagang</div>
-        <span style="font-size:12px; color:var(--ink-4);" x-text="`${tableData.invoices.length} tagihan`"></span>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <div class="display" style="font-weight:700; font-size:14px;">Utang Dagang</div>
+            <span style="font-size:12px; color:var(--ink-4);" x-text="`${tableData.invoices.length} tagihan`"></span>
+        </div>
+        <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
+            <label style="font-size:12px; color:var(--ink-3);">Dari</label>
+            <input type="date" class="filter-panel__input" x-model="filter.start_date"
+                x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            <label style="font-size:12px; color:var(--ink-3);">Sampai</label>
+            <input type="date" class="filter-panel__input" x-model="filter.end_date"
+                x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
+            <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+        </div>
     </div>
     <table class="tbl">
         <thead>
@@ -56,6 +68,8 @@
                 },
                 filter: {
                     search: '',
+                    start_date: '',
+                    end_date: '',
                 },
                 loading: false,
 
@@ -97,6 +111,8 @@
                         const r = await axios.get(route('reports.payable.datatable'), {
                             params: {
                                 search: this.filter.search,
+                                start_date: this.filter.start_date,
+                                end_date: this.filter.end_date,
                             }
                         });
                         this.tableData = r.data;

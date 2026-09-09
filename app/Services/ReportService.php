@@ -463,6 +463,14 @@ class ReportService
             });
         }
 
+        if ($request->filled('start_date')) {
+            $query->where("{$table}.due_date", '>=', $request->input('start_date'));
+        }
+
+        if ($request->filled('end_date')) {
+            $query->where("{$table}.due_date", '<=', $request->input('end_date'));
+        }
+
         $today = now()->startOfDay();
 
         $invoices = $query->orderBy("{$table}.due_date")
