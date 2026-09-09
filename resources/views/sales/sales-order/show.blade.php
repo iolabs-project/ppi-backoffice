@@ -52,7 +52,7 @@
         </div>
 
         <div class="card order-meta">
-            @foreach ([['Customer', $salesOrder->customer->name, true], ['Tanggal SO', $salesOrder->order_date->format('d/m/Y'), false], ['Jatuh Tempo', $salesOrder->due_date->format('d/m/Y'), false], ['Gudang', $salesOrder->warehouse->name, false]] as [$lbl, $val, $av])
+            @foreach ([['Customer', $salesOrder->customer?->name ?? '-', true], ['Tanggal SO', $salesOrder->order_date?->format('d/m/Y') ?? '-', false], ['Jatuh Tempo', $salesOrder->due_date?->format('d/m/Y') ?? '-', false], ['Gudang', $salesOrder->warehouse?->name ?? '-', false]] as [$lbl, $val, $av])
                 <div>
                     <div class="label order-meta__label">{{ $lbl }}</div>
                     <div class="order-meta__value">

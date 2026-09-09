@@ -114,7 +114,7 @@
             </table>
         </div>
 
-        @if ($salesInvoice->charges->isNotEmpty() || $salesInvoice->costs->isNotEmpty())
+        @if (($salesInvoice->charges && $salesInvoice->charges->isNotEmpty()) || ($salesInvoice->costs && $salesInvoice->costs->isNotEmpty()))
             <div class="card" style="overflow:hidden;">
                 @if ($salesInvoice->charges->isNotEmpty())
                     <div class="card-hd">
