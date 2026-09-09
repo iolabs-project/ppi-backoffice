@@ -52,6 +52,32 @@
     {{-- Alpine.js --}}
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/mask@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <script>
+        (function () {
+            const BASE_WIDTH = 1280;
+            const root = document.getElementById('root');
+            function applyScale() {
+                if (window.innerWidth >= BASE_WIDTH) {
+                    root.style.transform = '';
+                    root.style.transformOrigin = '';
+                    root.style.width = '';
+                    root.style.height = '';
+                    const shell = root.querySelector('.erp-shell');
+                    if (shell) shell.style.height = '';
+                    return;
+                }
+                const scale = window.innerWidth / BASE_WIDTH;
+                root.style.transform = 'scale(' + scale + ')';
+                root.style.transformOrigin = 'top left';
+                root.style.width = BASE_WIDTH + 'px';
+                root.style.height = (window.innerHeight / scale) + 'px';
+                const shell = root.querySelector('.erp-shell');
+                if (shell) shell.style.height = (window.innerHeight / scale) + 'px';
+            }
+            applyScale();
+            window.addEventListener('resize', applyScale);
+        })();
+    </script>
     @stack('scripts')
 </body>
 
