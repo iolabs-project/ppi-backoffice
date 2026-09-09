@@ -817,10 +817,12 @@
         </div>
 
         <div class="order-form-footer">
+            @if (auth()->user()->can('sales.sales-orders.edit'))
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
             <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check"
                     :size="14" />Simpan
                 SO</button>
+            @endif
         </div>
 
     </div>

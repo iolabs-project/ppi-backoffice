@@ -14,8 +14,10 @@
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
-                <a href="{{ route('sales.sales_orders.create') }}" class="btn btn-primary"><x-misc.icon name="plus"
+                @if (auth()->user()->can('sales.sales-orders.create'))
+                    <a href="{{ route('sales.sales_orders.create') }}" class="btn btn-primary"><x-misc.icon name="plus"
                         :size="15" />Tambah SO</a>
+                @endif
             </div>
         </div>
 
@@ -162,16 +164,18 @@
                                         </button>
                                         <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
                                             x-on:click.away="open = false" class="action-menu__panel">
-                                            <template x-if="row.status === '{{ $draft }}'">
-                                                <div>
-                                                    <a :href="route('sales.sales_orders.edit', row.id)" @click.stop
-                                                        class="action-menu__item">
-                                                        <x-misc.icon name="edit" :size="14"
-                                                            stroke="var(--ink-3)" />
-                                                        Edit Draft
-                                                    </a>
-                                                </div>
-                                            </template>
+                                            @if (auth()->user()->can('sales.sales-orders.edit'))
+                                                <template x-if="row.status === '{{ $draft }}'">
+                                                    <div>
+                                                        <a :href="route('sales.sales_orders.edit', row.id)" @click.stop
+                                                            class="action-menu__item">
+                                                            <x-misc.icon name="edit" :size="14"
+                                                                stroke="var(--ink-3)" />
+                                                            Edit Draft
+                                                        </a>
+                                                    </div>
+                                                </template>
+                                            @endif
                                             <template x-if="row.status !== '{{ $draft }}'">
                                                 <div>
                                                     <a :href="route('sales.sales_orders.show', row.id)" @click.stop
@@ -188,37 +192,40 @@
                                                     </button>
                                                 </div>
                                             </template>
-                                            <template x-if="row.is_deliverable">
-                                                <button class="action-menu__item"
-                                                    @click.stop="handleCreateDeliveryOrder(row.id)">
-                                                    <x-misc.icon name="box" :size="14"
-                                                        stroke="var(--ink-3)" />Buat
-                                                    Pengiriman
-                                                </button>
-                                            </template>
-                                            <template
-                                                x-if="row.is_invoicable">
-                                                <button class="action-menu__item"
-                                                    @click.stop="handleCreateSalesInvoice(row.id)">
-                                                    <x-misc.icon name="wallet" :size="14"
-                                                        stroke="var(--ink-3)" />Buat
-                                                    Tagihan
-                                                </button>
-                                            </template>
-                                            {{-- TODO: Add close button --}}
-                                            <template
-                                                x-if="row.is_cancellable">
-                                                <div>
-                                                    <div class="action-menu__divider"></div>
-                                                    <button class="action-menu__item action-menu__item--danger"
-                                                        @click.stop="handleCancel(row.id)">
-                                                        <x-misc.icon name="trash" :size="14"
-                                                            stroke="currentColor" />Batalkan
-                                                        SO
+                                            @if (auth()->user()->can('sales.delivery-orders.create'))
+                                                <template x-if="row.is_deliverable">
+                                                    <button class="action-menu__item"
+                                                        @click.stop="handleCreateDeliveryOrder(row.id)">
+                                                        <x-misc.icon name="box" :size="14"
+                                                            stroke="var(--ink-3)" />Buat
+                                                        Pengiriman
                                                     </button>
-                                                </div>
-
-                                            </template>
+                                                </template>
+                                            @endif
+                                            @if (auth()->user()->can('sales.invoices.create'))
+                                                <template x-if="row.is_invoicable">
+                                                    <button class="action-menu__item"
+                                                        @click.stop="handleCreateSalesInvoice(row.id)">
+                                                        <x-misc.icon name="wallet" :size="14"
+                                                            stroke="var(--ink-3)" />Buat
+                                                        Tagihan
+                                                    </button>
+                                                </template>
+                                            @endif
+                                            {{-- TODO: Add close button --}}
+                                            @if (auth()->user()->can('sales.sales-orders.delete'))
+                                                <template x-if="row.is_cancellable">
+                                                    <div>
+                                                        <div class="action-menu__divider"></div>
+                                                        <button class="action-menu__item action-menu__item--danger"
+                                                            @click.stop="handleCancel(row.id)">
+                                                            <x-misc.icon name="trash" :size="14"
+                                                                stroke="currentColor" />Batalkan
+                                                            SO
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>

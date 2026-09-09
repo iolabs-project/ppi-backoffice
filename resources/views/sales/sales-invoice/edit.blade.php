@@ -677,9 +677,11 @@
         </div>
 
         <div class="order-form-footer">
+            @if (auth()->user()->can('sales.invoices.edit'))
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
             <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Buka
                 Tagihan</button>
+            @endif
         </div>
 
     </div>

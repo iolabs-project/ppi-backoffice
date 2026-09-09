@@ -301,9 +301,11 @@
         </div>
 
         <div class="order-form-footer">
+            @if (auth()->user()->can('sales.delivery-orders.edit'))
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
             <button class="btn btn-primary" @click="submitFinish()"><x-misc.icon name="check"
-                    :size="14" />Selesaikan</button>
+                        :size="14" />Selesaikan</button>
+                    @endif
         </div>
     </div>
 @endsection

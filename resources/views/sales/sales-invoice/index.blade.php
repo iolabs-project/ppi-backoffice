@@ -13,8 +13,10 @@
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
-                <button class="btn btn-primary" x-on:click="openSoPicker()"><x-misc.icon name="plus"
+                @if (auth()->user()->can('sales.invoices.create'))
+                    <button class="btn btn-primary" x-on:click="openSoPicker()"><x-misc.icon name="plus"
                         :size="15" />Tambah</button>
+                @endif
             </div>
         </div>
         <div class="filter-pills">
@@ -133,28 +135,32 @@
                                                 <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
                                                 Tagihan
                                             </button>
-                                            <template x-if="row.status === '{{ $draft }}'">
-                                                <div>
-                                                    <a :href="route('sales.sales_invoices.edit', row.id)" @click.stop
-                                                        class="action-menu__item">
-                                                        <x-misc.icon name="edit" :size="14"
-                                                            stroke="var(--ink-3)" />Edit
-                                                        Tagihan
-                                                    </a>
-                                                </div>
-                                            </template>
-                                            <template
-                                                x-if="row.status === '{{ $draft }}' || row.status === '{{ $open }}'">
-                                                <div>
-                                                    <div class="action-menu__divider"></div>
-                                                    <button class="action-menu__item action-menu__item--danger"
-                                                        @click.stop="handleCancel(row.id)">
-                                                        <x-misc.icon name="x" :size="14"
-                                                            stroke="currentColor" />Hapus
-                                                        Tagihan
-                                                    </button>
-                                                </div>
-                                            </template>
+                                            @if (auth()->user()->can('sales.invoices.edit'))
+                                                <template x-if="row.status === '{{ $draft }}'">
+                                                    <div>
+                                                        <a :href="route('sales.sales_invoices.edit', row.id)" @click.stop
+                                                            class="action-menu__item">
+                                                            <x-misc.icon name="edit" :size="14"
+                                                                stroke="var(--ink-3)" />Edit
+                                                            Tagihan
+                                                        </a>
+                                                    </div>
+                                                </template>
+                                            @endif
+                                            @if (auth()->user()->can('sales.invoices.delete'))
+                                                <template
+                                                    x-if="row.status === '{{ $draft }}' || row.status === '{{ $open }}'">
+                                                    <div>
+                                                        <div class="action-menu__divider"></div>
+                                                        <button class="action-menu__item action-menu__item--danger"
+                                                            @click.stop="handleCancel(row.id)">
+                                                            <x-misc.icon name="x" :size="14"
+                                                                stroke="currentColor" />Hapus
+                                                            Tagihan
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>

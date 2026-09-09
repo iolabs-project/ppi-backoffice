@@ -21,12 +21,16 @@
                 </div>
             </div>
             <div class="order-actions">
-                @if ($deliveryOrder->status === $draft)
-                    <button class="btn btn-ghost" @click="handleCancel({{ $deliveryOrder->id }})"><x-misc.icon
-                            name="x" :size="14" />Batal Pengiriman</button>
-                    <a href="{{ route('sales.delivery_orders.edit', $deliveryOrder->id) }}" class="btn btn-primary">
-                        <x-misc.icon name="edit" :size="14" />Edit Pengiriman
-                    </a>
+                @if ($deliveryOrder->status === $draft && (auth()->user()->can('sales.delivery-orders.delete') || auth()->user()->can('sales.delivery-orders.edit')))
+                    @if (auth()->user()->can('sales.delivery-orders.delete'))
+                        <button class="btn btn-ghost" @click="handleCancel({{ $deliveryOrder->id }})"><x-misc.icon
+                                name="x" :size="14" />Batal Pengiriman</button>
+                    @endif
+                    @if (auth()->user()->can('sales.delivery-orders.edit'))
+                        <a href="{{ route('sales.delivery_orders.edit', $deliveryOrder->id) }}" class="btn btn-primary">
+                            <x-misc.icon name="edit" :size="14" />Edit Pengiriman
+                        </a>
+                    @endif
                 @endif
             </div>
         </div>

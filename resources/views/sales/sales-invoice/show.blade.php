@@ -23,7 +23,7 @@
 
                 {{-- TODO: Add edit button --}}
                 
-                @if ($salesInvoice->status === $draft)
+                @if (auth()->user()->can('sales.invoices.delete') && $salesInvoice->status === $draft)
                     <button class="btn btn-ghost" @click="handleCancel({{ $salesInvoice->id }})"><x-misc.icon name="x"
                             :size="14" />Batal Tagihan</button>
                 @endif

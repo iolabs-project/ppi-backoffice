@@ -13,8 +13,10 @@
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
-                <button class="btn btn-primary" x-on:click="openSoPicker()"><x-misc.icon name="plus"
+                @if (auth()->user()->can('sales.delivery-orders.create'))
+                    <button class="btn btn-primary" x-on:click="openSoPicker()"><x-misc.icon name="plus"
                         :size="15" />Tambah</button>
+                @endif
             </div>
         </div>
         <div class="filter-pills">
@@ -132,23 +134,29 @@
                                                 <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
                                                 Pengiriman
                                             </button>
-                                            <template x-if="row.status === '{{ $draft }}'">
-                                                <div>
-                                                    <a :href="route('sales.delivery_orders.edit', row.id)" @click.stop
-                                                        class="action-menu__item">
-                                                        <x-misc.icon name="edit" :size="14"
-                                                            stroke="var(--ink-3)" />Edit
-                                                        Catatan
-                                                    </a>
-                                                    <div class="action-menu__divider"></div>
-                                                    <button class="action-menu__item action-menu__item--danger"
-                                                        @click.stop="handleCancel(row.id)">
-                                                        <x-misc.icon name="x" :size="14"
-                                                            stroke="currentColor" />Hapus
-                                                        Catatan
-                                                    </button>
-                                                </div>
-                                            </template>
+                                            @if (auth()->user()->can('sales.delivery-orders.edit') || auth()->user()->can('sales.delivery-orders.delete'))
+                                                <template x-if="row.status === '{{ $draft }}'">
+                                                    <div>
+                                                        @if (auth()->user()->can('sales.delivery-orders.edit'))
+                                                            <a :href="route('sales.delivery_orders.edit', row.id)" @click.stop
+                                                                class="action-menu__item">
+                                                                <x-misc.icon name="edit" :size="14"
+                                                                    stroke="var(--ink-3)" />Edit
+                                                                Catatan
+                                                            </a>
+                                                        @endif
+                                                        @if (auth()->user()->can('sales.delivery-orders.delete'))
+                                                            <div class="action-menu__divider"></div>
+                                                            <button class="action-menu__item action-menu__item--danger"
+                                                                @click.stop="handleCancel(row.id)">
+                                                                <x-misc.icon name="x" :size="14"
+                                                                    stroke="currentColor" />Hapus
+                                                                Catatan
+                                                            </button>
+                                                        @endif
+                                                    </div>
+                                                </template>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
