@@ -536,9 +536,12 @@
         </div>
 
         <div class="order-form-footer">
-            <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
-            <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check" :size="14" />Buka
-                PO</button>
+            @if (auth()->user()->can('purchasing.purchase-orders.create'))
+                <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
+                <button class="btn btn-primary" @click="submit('open')"><x-misc.icon name="check"
+                        :size="14" />Buka
+                    PO</button>
+            @endif
         </div>
 
     </div>

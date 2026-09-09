@@ -778,9 +778,11 @@
         </div>
 
         <div class="order-form-footer">
-            <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
-            <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Simpan
-                SO</button>
+            @if (auth()->user()->can('purchasing.invoices.edit'))
+                <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
+                <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Simpan
+                    SO</button>
+            @endif
         </div>
 
     </div>
