@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Finance;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Enums\ExpenseStatus;
 use App\Enums\PaymentTerm;
@@ -30,7 +31,7 @@ class ExpenseController extends Controller
             'status' => ExpenseStatus::dropdownOptions(),
             'summary' => $this->expenseService->fecthExpenseSummaryThisMonth(companyID: config('context.selected_company_id')),
         ];
-        return view('expense.index', $data);
+        return view('finance.expense.index', $data);
     }
 
     public function datatable(Request $request)
@@ -50,7 +51,7 @@ class ExpenseController extends Controller
             'contacts' => $this->contactService->fetchContactData(),
             'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
         ];
-        return view('expense.create', $data);
+        return view('finance.expense.create', $data);
     }
 
     public function store(ExpenseFormRequest $request)
@@ -70,7 +71,7 @@ class ExpenseController extends Controller
             'breadcrumb'     => [['label' => 'Biaya', 'url' => route('expenses.index')], ['label' => 'Detail']],
             'expense' => $this->expenseService->fetchExpenseByID($id),
         ];
-        return view('expense.show', $data);
+        return view('finance.expense.show', $data);
     }
 
     public function edit(int $id)
@@ -84,7 +85,7 @@ class ExpenseController extends Controller
             'contacts' => $this->contactService->fetchContactData(),
             'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
         ];
-        return view('expense.edit', $data);
+        return view('finance.expense.edit', $data);
     }
 
     public function update(ExpenseFormRequest $request, int $id)

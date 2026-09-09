@@ -82,7 +82,7 @@
         <div class="card" style="overflow:hidden;">
             <div class="card-hd">
                 <div class="display card-hd-title">Riwayat Pembayaran</div>
-                @if ($canPay)
+                @if ($canPay && auth()->user()->can('finances.receivables.edit'))
                     <button class="btn btn-ghost btn-sm" type="button" @click="openModal()">
                         <x-misc.icon name="plus" :size="13" />Tambah Pembayaran
                     </button>

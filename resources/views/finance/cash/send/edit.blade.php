@@ -193,10 +193,12 @@
 
         @include('finance.cash.send.partials.form')
 
+        @if (auth()->user()->can('finances.cash-bank.edit'))
         <div class="order-form-footer">
             <button class="btn btn-ghost" style="border-style:dashed;" @click="submit('draft')">Simpan Draft</button>
             <button class="btn btn-primary" @click="submit('posted')"><x-misc.icon name="check" :size="14" />Kirim
                 Dana</button>
         </div>
+        @endif
     </div>
 @endsection
