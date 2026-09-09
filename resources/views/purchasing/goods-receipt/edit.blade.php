@@ -491,16 +491,14 @@
             <table class="tbl">
                 <thead>
                     <tr>
-                        <th style="width:48px;">#</th>
+                        <th style="width:36px;">#</th>
                         <th>Produk</th>
-                        <th style="width:240px;">Batch</th>
-                        <th style="text-align:right; width:120px;">Sisa (PO)</th>
-                        <th style="text-align:right; width:120px;">Qty (Ekspektasi)</th>
-                        <th style="text-align:right; width:120px;">Qty (Diterima)</th>
+                        <th style="width:180px;">Batch</th>
+                        <th style="text-align:right; width:96px;">Sisa</th>
+                        <th style="text-align:right; width:110px;">Ekspektasi</th>
+                        <th style="text-align:right; width:110px;">Diterima</th>
                         <th style="text-align:right; width:80px;">Susut</th>
-                        <th style="width:50px;">Satuan</th>
-                        <th style="width:120px; text-align:right;">Harga</th>
-                        <th style="width:80px; text-align:right;">Diskon(%)</th>
+                        <th style="width:150px; text-align:right;">Harga</th>
                         <th style="width:120px; text-align:right;">HPP</th>
                         <th style="width:40px;"></th>
                     </tr>
@@ -510,13 +508,13 @@
                         <tr>
                             <td class="mono" style="color:var(--ink-4);" x-text="String(index + 1).padStart(2, '0')"></td>
                             <td>
-                                <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="display:flex; align-items:center; gap:8px; min-width:0;">
                                     <div class="product-icon">
                                         <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
                                     </div>
-                                    <div style="flex:1;">
+                                    <div style="flex:1; min-width:0;">
                                         <x-misc.select display="item.product_id ? item.name : 'Pilih Produk'"
-                                            hasValue="item.product_id" placeholder="Cari produk..." min-width="320px"
+                                            hasValue="item.product_id" placeholder="Cari produk..." min-width="280px"
                                             height="32px">
                                             <template x-for="p in availablePOItems(q)" :key="p.id">
                                                 <div class="dropdown-item" @click="selectProduct(item, p);open=false;q=''">
@@ -532,60 +530,50 @@
                                                 <div class="dropdown-empty">Tidak ditemukan</div>
                                             </template>
                                         </x-misc.select>
-                                        <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
-                                            x-text="item.code || '— belum dipilih'"></div>
+                                        <div class="mono" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:11px; color:var(--ink-4); margin-top:3px;">
+                                            <span x-text="item.code || '— belum dipilih'"></span>
+                                            <template x-if="item.unit">
+                                                <span class="auto-tag" x-text="item.unit"></span>
+                                            </template>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
-                            {{-- <td><input class="input" style="height:32px;" x-model="item.batch_number" /></td> --}}
-                            {{-- <td><input class="input num" style="height:32px; text-align:right;"
-                                    x-model.number="item.remaining_quantity" x-mask:dynamic="$money($input, '.',',')"
-                                    disabled /></td> --}}
                             <td>
                                 <div class="input input--readonly"
-                                    style="display:flex; align-items:center; gap:10px; height: 32px;">
-                                    <span style="flex:1; font-weight:500;"
+                                    style="display:flex; align-items:center; justify-content:space-between; gap:8px; height:32px;">
+                                    <span class="mono" style="flex:1; min-width:0; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
                                         x-text="batchNumberPlaceholder(item.batch_prefix)"></span>
                                     <span class="auto-tag">Auto</span>
                                 </div>
                             </td>
-                            <td style="text-align: right"><span class="mono" style="font-weight:600"
-                                    x-text="item.remaining_quantity ? NumberUtils.formatNumericIntoMask(item.remaining_quantity) : '0'"></span>
-                            </td>
+                            <td class="mono num" style="font-weight:600; text-align:right;"
+                                x-text="item.remaining_quantity != null ? NumberUtils.formatNumericIntoMask(item.remaining_quantity) : '0'"></td>
                             <td><input class="input num" style="height:32px; text-align:right;"
                                     x-model="item.expected_quantity" x-mask:dynamic="$money($input, '.',',')"
                                     @input="handleExpectedQuantityInput(item)" /></td>
                             <td><input class="input num" style="height:32px; text-align:right;"
                                     x-model="item.received_quantity" x-mask:dynamic="$money($input, '.',',')"
                                     @input="handleReceivedQuantityInput(item); recalc()" /></td>
-                            <td style="text-align: right"><span class="mono" style="font-weight:600"
-                                    x-text="item.shrinkage_quantity ? NumberUtils.formatNumericIntoMask(item.shrinkage_quantity) : '0'"></span>
-                            </td>
-                            <td style="color:var(--ink-3);" x-text="item.unit"></td>
-                            <td style="text-align: right">
-                                <span class="mono" style="font-weight:600;"
-                                    x-text="item.unit_price ? NumberUtils.formatNumericIntoMask(item.unit_price) : '0'"></span>
-                                <template x-if="item.subtotal !== null && item.subtotal !== undefined">
+                            <td class="mono num" style="font-weight:600; text-align:right;"
+                                x-text="item.shrinkage_quantity != null ? NumberUtils.formatNumericIntoMask(item.shrinkage_quantity) : '0'"></td>
+                            <td style="text-align:right;">
+                                <div class="mono" style="font-weight:600;"
+                                    x-text="item.unit_price != null ? NumberUtils.formatNumericIntoMask(item.unit_price) : '0'"></div>
+                                <template x-if="item.discount_amount != null || item.discount_percentage != null">
                                     <div class="order-items__sub mono"
-                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align: right;"
-                                        x-text="NumberUtils.formatNumericIntoMask(item.subtotal)">
+                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align:right;"
+                                        x-text="'Disc ' + (item.discount_percentage != null ? NumberUtils.formatNumericIntoMask(item.discount_percentage) : '0') + '%'">
                                     </div>
                                 </template>
-                            </td>
-                            <td style="text-align: right">
-                                <span class="mono" style="font-weight:600;"
-                                    x-text="item.discount_percentage ? NumberUtils.formatNumericIntoMask(item.discount_percentage) : '0'"></span>
-                                <template x-if="item.discount_amount !== null && item.discount_amount !== undefined">
+                                <template x-if="item.subtotal != null">
                                     <div class="order-items__sub mono"
-                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align: right;"
-                                        x-text="NumberUtils.formatNumericIntoMask(item.discount_amount)">
-                                    </div>
+                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align:right;"
+                                        x-text="NumberUtils.formatNumericIntoMask(item.subtotal)"></div>
                                 </template>
                             </td>
-                            <td style="text-align: right">
-                                <span class="mono" style="font-weight:600"
-                                    x-text="item.unit_cost ? NumberUtils.formatNumericIntoMask(item.unit_cost) : '0'"></span>
-                            </td>
+                            <td class="mono num" style="font-weight:600; text-align:right;"
+                                x-text="item.unit_cost != null ? NumberUtils.formatNumericIntoMask(item.unit_cost) : '0'"></td>
                             <td>
                                 <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
                                     :disabled="formData.details.length <= 1"
@@ -599,7 +587,7 @@
                     </template>
                     <template x-if="formData.details.length === 0">
                         <tr>
-                            <td colspan="12" style="text-align:center; color:var(--ink-4); padding:16px 0;">
+                            <td colspan="10" style="text-align:center; color:var(--ink-4); padding:16px 0;">
                                 Belum ada produk yang ditambahkan. Klik tombol <strong>Tambah Produk</strong> untuk
                                 menambahkan produk dari PO.
                             </td>
