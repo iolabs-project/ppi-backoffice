@@ -180,12 +180,21 @@
                     return Number(this.sectionData(key).total ?? 0);
                 },
 
+                groupHeaderCells(label, color) {
+                    return [{
+                        key: 'label',
+                        text: label,
+                        colspan: 3,
+                        style: `font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:${color}; padding:11px 16px;`,
+                    }];
+                },
+
                 sectionHeaderCells(label) {
                     return [{
                         key: 'label',
                         text: label,
                         colspan: 3,
-                        style: 'font-size:13px; padding-left:16px;',
+                        style: 'font-size:13px; font-weight:600; padding:12px 16px 8px 28px; color:var(--ink-2);',
                     }];
                 },
 
@@ -215,7 +224,7 @@
                             key: 'label',
                             text: label,
                             colspan: 2,
-                            style: 'font-size:13px; padding-left:16px;',
+                            style: 'font-size:12px; font-weight:600; padding:9px 16px 9px 28px; color:var(--ink-3);',
                         },
                         {
                             key: 'value',
@@ -229,7 +238,7 @@
                 resultRow(key, label, value) {
                     return {
                         key,
-                        rowStyle: 'background:var(--bg-1); font-weight:700;',
+                        rowStyle: 'background:var(--bg-1); border-top:1px solid var(--line); font-weight:700;',
                         cells: this.totalCells(label, value, this.profitColor(value)),
                     };
                 },
@@ -238,14 +247,14 @@
                     const rows = this.sectionGroups.flatMap((group) => {
                         const groupRows = [{
                             key: `${group.key}-group`,
-                            rowStyle: 'background:var(--bg-1); font-weight:700;',
-                            cells: this.sectionHeaderCells(group.label),
+                            rowStyle: 'background:var(--bg-1); font-weight:700; border-top:1px solid var(--line);',
+                            cells: this.groupHeaderCells(group.label, group.color),
                         }, ];
 
                         group.sections.forEach((section) => {
                             groupRows.push({
                                 key: `${group.key}-${section.key}-section`,
-                                rowStyle: 'background:var(--bg-2); font-weight:700;',
+                                rowStyle: 'background:var(--bg-2); border-bottom:1px solid var(--line);',
                                 cells: this.sectionHeaderCells(section.label),
                             });
 
@@ -260,7 +269,7 @@
 
                             groupRows.push({
                                 key: `${group.key}-${section.key}-subtotal`,
-                                rowStyle: 'background:var(--bg-2); font-weight:700;',
+                                rowStyle: 'background:var(--bg-2);',
                                 cells: this.totalCells(section.subtotalLabel, this.sectionTotal(section.key),
                                     section.color),
                             });
@@ -268,7 +277,7 @@
 
                         groupRows.push({
                             key: `${group.key}-total`,
-                            rowStyle: 'background:var(--bg-1); font-weight:700;',
+                            rowStyle: 'background:var(--bg-1); border-top:1px solid var(--line); font-weight:700;',
                             cells: this.totalCells(group.totalLabel, this.groupTotal(group.key), group.color),
                         });
 
