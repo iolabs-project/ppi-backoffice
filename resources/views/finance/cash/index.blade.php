@@ -22,6 +22,12 @@
                 dateFrom: '',
                 dateTo: '',
                 modal: null,
+                form: {
+                    code: '',
+                    name: '',
+                    category_id: {{ \App\Enums\AccountCategoryEnum::CASH_BANK->value }},
+                    note: '',
+                },
 
                 statusChip(status) {
                     const map = {
@@ -91,6 +97,63 @@
                 m(v) {
                     return NumberUtils.formatNumericIntoMask(v);
                 },
+
+                openCreateAccountModal() {
+                    this.form = {
+                        code: '',
+                        name: '',
+                        category_id: {{ \App\Enums\AccountCategoryEnum::CASH_BANK->value }},
+                        note: '',
+                    };
+                    this.modal = 'add_account';
+                },
+
+                async createAccount() {
+                    const result = await Swal.fire({
+                        title: 'Konfirmasi Pembuatan Rekening',
+                        text: 'Apakah anda yakin ingin membuat rekening baru dengan data yang telah diisi?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat rekening',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    });
+
+                    if (!result.isConfirmed) return;
+
+                    Swal.fire({
+                        title: 'Memproses penyimpanan Rekening...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading(),
+                    });
+
+                    try {
+                        const response = await axios.post(route('master.accounts.store'), this.form);
+                        this.modal = null;
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message,
+                        });
+                        window.location.reload();
+                    } catch (error) {
+                        Swal.close();
+                        let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+                        let html = null;
+                        if (error.response?.status === 422) {
+                            title = 'Validasi gagal. Silakan periksa kembali input Anda.';
+                            html = '<ul style="text-align:left; margin:0; padding-left:20px;">' +
+                                Object.values(error.response.data.errors)
+                                .flat()
+                                .map(message => `<li>${message}</li>`)
+                                .join('') +
+                                '</ul>';
+                        } else if (error.response?.data?.message) {
+                            title = error.response.data.message;
+                        }
+                        Toast.fire({ icon: 'error', title, html });
+                    }
+                },
             }
         }
     </script>
@@ -115,7 +178,7 @@
             </div>
             <div class="order-actions">
                 @if (auth()->user()->can('finances.cash-bank.create'))
-                    <button class="btn btn-primary" x-on:click="modal = 'tambah'">
+                    <button class="btn btn-primary" x-on:click="openCreateAccountModal()">
                         <x-misc.icon name="plus" :size="14" />Tambah Rekening
                     </button>
                 @endif
@@ -306,6 +369,6 @@
             </div>
         </div>
 
-
+        @include('finance.cash.partials.account-modal')
     </div>
 @endsection
