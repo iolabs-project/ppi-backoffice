@@ -28,7 +28,7 @@ class SalesInvoiceController extends Controller
     {
         $data = [
             'currentPage'    => 'penjualan.tagihan',
-            'breadcrumb'     => [['label' => 'Tagihan']],
+            'breadcrumb'     => [['label' => 'Tagihan Penjualan']],
             'status' => SalesInvoiceStatus::dropdownOptions(),
         ];
         return view('sales.sales-invoice.index', $data);
@@ -73,7 +73,7 @@ class SalesInvoiceController extends Controller
         $data = [
             'currentPage' => 'penjualan.tagihan',
             'breadcrumb'  => [
-                ['label' => 'Tagihan', 'url' => route('sales.sales_invoices.index')],
+                ['label' => 'Tagihan Penjualan', 'url' => route('sales.sales_invoices.index')],
                 ['label' => 'Detail'],
             ],
             'salesInvoice' => $salesInvoice,
@@ -92,7 +92,7 @@ class SalesInvoiceController extends Controller
         $data = [
             'currentPage' => 'penjualan.tagihan',
             'breadcrumb'  => [
-                ['label' => 'Tagihan', 'url' => route('sales.sales_invoices.index')],
+                ['label' => 'Tagihan Penjualan', 'url' => route('sales.sales_invoices.index')],
                 ['label' => 'Edit'],
             ],
             'salesInvoice' => $salesInvoice,
@@ -121,7 +121,7 @@ class SalesInvoiceController extends Controller
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Tagihan penjualan. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Tagihan Penjualan. Silakan coba lagi.'], 500);
         }
     }
 
@@ -129,14 +129,14 @@ class SalesInvoiceController extends Controller
     {
         try {
             $this->salesInvoiceService->cancelSalesInvoice($id);
-            return response()->json(['message' => 'Tagihan penjualan berhasil dibatalkan.']);
+            return response()->json(['message' => 'Tagihan Penjualan berhasil dibatalkan.']);
         } catch (\Exception $e) {
             Log::error('Error SalesInvoiceController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,
                 'sales_invoice_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Tagihan penjualan. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Tagihan Penjualan. Silakan coba lagi.'], 500);
         }
     }
 }

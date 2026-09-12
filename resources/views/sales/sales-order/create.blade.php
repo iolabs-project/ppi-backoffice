@@ -368,13 +368,13 @@
             <a href="{{ route('sales.sales_orders.index') }}" class="btn btn-ghost btn-sm" style="margin-bottom:10px;">
                 <x-misc.icon name="chev-left" :size="13" />Kembali
             </a>
-            <h1 class="order-title display">Tambah Sales Order</h1>
-            <div class="order-sub">Buat dokumen SO baru</div>
+            <h1 class="order-title display">Tambah Pemesanan Penjualan</h1>
+            <div class="order-sub">Buat dokumen baru</div>
         </div>
 
         {{-- Info Order --}}
         <div class="card card-bd--form">
-            <div class="display card-hd-title">Informasi Order</div>
+            <div class="display card-hd-title">Informasi Pemesanan</div>
             <div class="order-form-grid-4">
 
                 {{-- Customer Dropdown --}}

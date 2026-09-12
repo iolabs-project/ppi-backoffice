@@ -14,14 +14,14 @@
         ['id' => 'biaya',                   'label' => 'Biaya',              'desc' => 'Kelola biaya operasional',               'url' => route('expenses.index'),                            'icon' => 'receipt',    'bg' => '#FFF7ED', 'fg' => '#EA580C', 'permission' => 'finances.expenses.view'],
     ];
     $penjualanSubmenus = [
-        ['id' => 'penjualan',            'label' => 'Sales Order', 'desc' => 'Kelola pesanan penjualan',    'url' => route('sales.sales_orders.index'),           'icon' => 'receipt',  'bg' => '#EEF2FF', 'fg' => '#6366F1', 'permission' => 'sales.sales-orders.view'],
-        ['id' => 'penjualan.pengiriman', 'label' => 'Pengiriman',  'desc' => 'Kelola pengiriman penjualan', 'url' => route('sales.delivery_orders.index'), 'icon' => 'truck',  'bg' => '#F0FDF4', 'fg' => '#16A34A', 'permission' => 'sales.delivery-orders.view'],
-        ['id' => 'penjualan.tagihan',    'label' => 'Tagihan',     'desc' => 'Kelola tagihan penjualan',    'url' => route('sales.sales_invoices.index'),    'icon' => 'wallet', 'bg' => '#FFF7ED', 'fg' => '#EA580C', 'permission' => 'sales.invoices.view'],
+        ['id' => 'penjualan',            'label' => 'Pemesanan Penjualan', 'desc' => 'Kelola pesanan penjualan',    'url' => route('sales.sales_orders.index'),           'icon' => 'receipt',  'bg' => '#EEF2FF', 'fg' => '#6366F1', 'permission' => 'sales.sales-orders.view'],
+        ['id' => 'penjualan.pengiriman', 'label' => 'Pengiriman Barang',  'desc' => 'Kelola pengiriman penjualan', 'url' => route('sales.delivery_orders.index'), 'icon' => 'truck',  'bg' => '#F0FDF4', 'fg' => '#16A34A', 'permission' => 'sales.delivery-orders.view'],
+        ['id' => 'penjualan.tagihan',    'label' => 'Tagihan Penjualan',     'desc' => 'Kelola tagihan penjualan',    'url' => route('sales.sales_invoices.index'),    'icon' => 'wallet', 'bg' => '#FFF7ED', 'fg' => '#EA580C', 'permission' => 'sales.invoices.view'],
     ];
     $pembelianSubmenus = [
-        ['id' => 'pembelian',              'label' => 'Purchase Order', 'desc' => 'Kelola pesanan pembelian',  'url' => route('purchasings.purchase_orders.index'),            'icon' => 'receipt',   'bg' => '#EFF6FF', 'fg' => '#2563EB', 'permission' => 'purchasing.purchase-orders.view'],
-        ['id' => 'pembelian.penerimaan',   'label' => 'Penerimaan',     'desc' => 'Catatan penerimaan barang', 'url' => route('purchasings.goods_receipts.index'),  'icon' => 'box',    'bg' => '#FFF7ED', 'fg' => '#EA580C', 'permission' => 'purchasing.goods-receipts.view'],
-        ['id' => 'pembelian.tagihan', 'label' => 'Tagihan',        'desc' => 'Kelola tagihan pembelian',  'url' => route('purchasings.purchase_invoices.index'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A', 'permission' => 'purchasing.invoices.view'],
+        ['id' => 'pembelian',              'label' => 'Pemesanan Pembelian', 'desc' => 'Kelola pesanan pembelian',  'url' => route('purchasings.purchase_orders.index'),            'icon' => 'receipt',   'bg' => '#EFF6FF', 'fg' => '#2563EB', 'permission' => 'purchasing.purchase-orders.view'],
+        ['id' => 'pembelian.penerimaan',   'label' => 'Penerimaan Barang',     'desc' => 'Catatan penerimaan barang', 'url' => route('purchasings.goods_receipts.index'),  'icon' => 'box',    'bg' => '#FFF7ED', 'fg' => '#EA580C', 'permission' => 'purchasing.goods-receipts.view'],
+        ['id' => 'pembelian.tagihan', 'label' => 'Tagihan Pembelian',        'desc' => 'Kelola tagihan pembelian',  'url' => route('purchasings.purchase_invoices.index'),     'icon' => 'wallet', 'bg' => '#F0FDF4', 'fg' => '#16A34A', 'permission' => 'purchasing.invoices.view'],
     ];
     $navItems = [
         ['id' => 'master',  'icon' => 'database', 'label' => 'Master Data', 'url' => route('master.index'), 'permissions' => ['master.products.view', 'master.contacts.view', 'master.warehouses.view', 'master.accounts.view', 'master.users.view', 'master.roles.view']],

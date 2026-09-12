@@ -36,7 +36,7 @@ class SalesOrderController extends Controller
     {
         $data = [
             'currentPage'    => 'penjualan',
-            'breadcrumb'     => [['label' => 'Pemesanan']],
+            'breadcrumb'     => [['label' => 'Pemesanan Penjualan']],
             'status' => SalesOrderStatus::dropdownOptions(),
         ];
         return view('sales.sales-order.index', $data);
@@ -54,7 +54,7 @@ class SalesOrderController extends Controller
         $data = [
             'currentPage' => 'penjualan',
             'breadcrumb'  => [
-                ['label' => 'Pemesanan', 'url' => route('sales.sales_orders.index')],
+                ['label' => 'Pemesanan Penjualan', 'url' => route('sales.sales_orders.index')],
                 ['label' => 'Tambah'],
             ],
             'number' => $this->salesOrderService->generateSONumber(),
@@ -94,7 +94,7 @@ class SalesOrderController extends Controller
         $data = [
             'currentPage' => 'penjualan',
             'breadcrumb'  => [
-                ['label' => 'Penjualan', 'url' => route('sales.sales_orders.index')],
+                ['label' => 'Pemesanan Penjualan', 'url' => route('sales.sales_orders.index')],
                 ['label' => 'Detail'],
             ],
             'salesOrder' => $salesOrder,
@@ -114,7 +114,7 @@ class SalesOrderController extends Controller
         $data = [
             'currentPage' => 'penjualan',
             'breadcrumb'  => [
-                ['label' => 'Penjualan', 'url' => route('sales.sales_orders.index')],
+                ['label' => 'Pemesanan Penjualan', 'url' => route('sales.sales_orders.index')],
                 ['label' => 'Edit'],
             ],
             'salesOrder' => $salesOrder,
@@ -140,7 +140,7 @@ class SalesOrderController extends Controller
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Pemesanan penjualan. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Pemesanan Penjualan. Silakan coba lagi.'], 500);
         }
     }
     
@@ -148,14 +148,14 @@ class SalesOrderController extends Controller
     {
         try {
             $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::OPEN->value);
-            return response()->json(['message' => 'Pemesanan penjualan berhasil dibuka.']);
+            return response()->json(['message' => 'Pemesanan Penjualan berhasil dibuka.']);
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@open: ' . $e->getMessage(), [
                 'exception' => $e,
                 'sales_order_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuka Pemesanan penjualan. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuka Pemesanan Penjualan. Silakan coba lagi.'], 500);
         }
     }
 
@@ -163,14 +163,14 @@ class SalesOrderController extends Controller
     {
         try {
             $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::CLOSED->value);
-            return response()->json(['message' => 'Pemesanan penjualan berhasil ditutup.']);
+            return response()->json(['message' => 'Pemesanan Penjualan berhasil ditutup.']);
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@close: ' . $e->getMessage(), [
                 'exception' => $e,
                 'sales_order_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba menutup Pemesanan penjualan. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba menutup Pemesanan Penjualan. Silakan coba lagi.'], 500);
         }
     }
 
@@ -178,14 +178,14 @@ class SalesOrderController extends Controller
     {
         try {
             $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::CANCELLED->value);
-            return response()->json(['message' => 'Pemesanan penjualan berhasil dibatalkan.']);
+            return response()->json(['message' => 'Pemesanan Penjualan berhasil dibatalkan.']);
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,
                 'sales_order_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Pemesanan penjualan. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Pemesanan Penjualan. Silakan coba lagi.'], 500);
         }
     }
 }

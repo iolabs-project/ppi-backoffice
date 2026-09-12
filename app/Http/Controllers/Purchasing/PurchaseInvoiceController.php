@@ -30,7 +30,7 @@ class PurchaseInvoiceController extends Controller
     {
         $data = [
             'currentPage'    => 'pembelian.tagihan',
-            'breadcrumb'     => [['label' => 'Tagihan']],
+            'breadcrumb'     => [['label' => 'Tagihan Pembelian']],
             'status' => PurchaseInvoiceStatus::dropdownOptions(),
         ];
         return view('purchasing.purchase-invoice.index', $data);
@@ -70,7 +70,7 @@ class PurchaseInvoiceController extends Controller
         $data = [
             'currentPage'   => 'pembelian.tagihan',
             'breadcrumb'    => [
-                ['label' => 'Tagihan', 'url' => route('purchasings.purchase_invoices.index')],
+                ['label' => 'Tagihan Pembelian', 'url' => route('purchasings.purchase_invoices.index')],
                 ['label' => 'Detail'],
             ],
             'purchaseInvoice'  => $purchaseInvoiceService->fetchPurchaseInvoiceByID($id),
@@ -90,7 +90,7 @@ class PurchaseInvoiceController extends Controller
         $data = [
             'currentPage' => 'pembelian.tagihan',
             'breadcrumb'  => [
-                ['label' => 'Tagihan', 'url' => route('purchasings.purchase_invoices.index')],
+                ['label' => 'Tagihan Pembelian', 'url' => route('purchasings.purchase_invoices.index')],
                 ['label' => 'Edit'],
             ],
             'purchaseInvoice' => $purchaseInvoice,
@@ -119,7 +119,7 @@ class PurchaseInvoiceController extends Controller
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Tagihan pembelian. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Tagihan Pembelian. Silakan coba lagi.'], 500);
         }
     }
 
@@ -134,7 +134,7 @@ class PurchaseInvoiceController extends Controller
                 'purchase_invoice_id' => $id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Tagihan pembelian. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Tagihan Pembelian. Silakan coba lagi.'], 500);
         }
     }
 }

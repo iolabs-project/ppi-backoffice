@@ -294,13 +294,13 @@
                 style="margin-bottom:10px;">
                 <x-misc.icon name="chev-left" :size="13" />Kembali
             </a>
-            <h1 class="order-title display">Tambah Purchase Order</h1>
-            <div class="order-sub">Buat dokumen PO baru</div>
+            <h1 class="order-title display">Tambah Pemesanan Pembelian</h1>
+            <div class="order-sub">Buat dokumen baru</div>
         </div>
 
         {{-- Info Order --}}
         <div class="card card-bd--form">
-            <div class="display card-hd-title">Informasi Order</div>
+            <div class="display card-hd-title">Informasi Pemesanan</div>
             <div class="order-form-grid-4">
 
                 {{-- Supplier Dropdown --}}

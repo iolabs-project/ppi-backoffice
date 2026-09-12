@@ -37,7 +37,7 @@ class PurchaseOrderController extends Controller
     {
         $data = [
             'currentPage'    => 'pembelian',
-            'breadcrumb'     => [['label' => 'Pemesanan']],
+            'breadcrumb'     => [['label' => 'Pemesanan Pembelian']],
             'status' => PurchaseOrderStatus::dropdownOptions(),
         ];
         return view('purchasing.purchase-order.index', $data);
@@ -55,7 +55,7 @@ class PurchaseOrderController extends Controller
         $data = [
             'currentPage' => 'pembelian',
             'breadcrumb'  => [
-                ['label' => 'Pemesanan', 'url' => route('purchasings.purchase_orders.index')],
+                ['label' => 'Pemesanan Pembelian', 'url' => route('purchasings.purchase_orders.index')],
                 ['label' => 'Tambah'],
             ],
             'number' => $this->purchaseOrderService->generatePONumber(),
@@ -95,7 +95,7 @@ class PurchaseOrderController extends Controller
         $data = [
             'currentPage' => 'pembelian',
             'breadcrumb'  => [
-                ['label' => 'Pemesanan', 'url' => route('purchasings.purchase_orders.index')],
+                ['label' => 'Pemesanan Pembelian', 'url' => route('purchasings.purchase_orders.index')],
                 ['label' => 'Detail'],
             ],
             'purchaseOrder' => $purchaseOrder,
@@ -115,7 +115,7 @@ class PurchaseOrderController extends Controller
         $data = [
             'currentPage' => 'pembelian',
             'breadcrumb'  => [
-                ['label' => 'Pemesanan', 'url' => route('purchasings.purchase_orders.index')],
+                ['label' => 'Pemesanan Pembelian', 'url' => route('purchasings.purchase_orders.index')],
                 ['label' => 'Edit'],
             ],
             'purchaseOrder' => $purchaseOrder,

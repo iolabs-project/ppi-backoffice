@@ -431,7 +431,7 @@
                 <x-misc.icon name="chev-left" :size="13" />Kembali
             </a>
             <div class="order-title-row">
-                <h1 class="order-title display">Buat Penerimaan Barang</h1>
+                <h1 class="order-title display">Edit Penerimaan Barang</h1>
                 <x-misc.status-badge status="draft" />
             </div>
             <div class="order-sub">

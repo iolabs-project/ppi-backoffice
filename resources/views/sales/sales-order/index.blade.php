@@ -16,7 +16,7 @@
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
                 @if (auth()->user()->can('sales.sales-orders.create'))
                     <a href="{{ route('sales.sales_orders.create') }}" class="btn btn-primary"><x-misc.icon name="plus"
-                        :size="15" />Tambah SO</a>
+                        :size="15" />Tambah</a>
                 @endif
             </div>
         </div>

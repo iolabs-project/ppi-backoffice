@@ -29,7 +29,7 @@ class DeliveryOrderController extends Controller
         $data = [
             'currentPage' => 'penjualan.pengiriman',
             'breadcrumb'  => [
-                ['label' => 'Pengiriman'],
+                ['label' => 'Pengiriman Barang'],
             ],
             'status' => DeliveryOrderStatus::dropdownOptions(),
         ];
@@ -93,7 +93,7 @@ class DeliveryOrderController extends Controller
         $data = [
             'currentPage' => 'penjualan.pengiriman',
             'breadcrumb'  => [
-                ['label' => 'Pengiriman', 'url' => route('sales.delivery_orders.index')],
+                ['label' => 'Pengiriman Barang', 'url' => route('sales.delivery_orders.index')],
                 ['label' => 'Edit'],
             ],
             'deliveryOrder' => $deliveryOrder,
@@ -114,7 +114,7 @@ class DeliveryOrderController extends Controller
         $data = [
             'currentPage' => 'penjualan.pengiriman',
             'breadcrumb'  => [
-                ['label' => 'Pengiriman', 'url' => route('sales.delivery_orders.index')],
+                ['label' => 'Pengiriman Barang', 'url' => route('sales.delivery_orders.index')],
                 ['label' => 'Detail'],
             ],
             'deliveryOrder' => $deliveryOrder,
@@ -140,7 +140,7 @@ class DeliveryOrderController extends Controller
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui pengiriman. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Pengiriman Barang. Silakan coba lagi.'], 500);
         }
     }
 
@@ -148,14 +148,14 @@ class DeliveryOrderController extends Controller
     {
         try {
             $deliveryOrderService->changeDeliveryOrderStatus($id, DeliveryOrderStatus::CANCELLED->value);
-            return response()->json(['message' => 'Pengiriman berhasil dibatalkan.']);
+            return response()->json(['message' => 'Pengiriman Barang berhasil dibatalkan.']);
         } catch (\Exception $e) {
             Log::error('Error DeliveryOrderController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request' => $request->all(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan pengiriman. Silakan coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Pengiriman Barang. Silakan coba lagi.'], 500);
         }
     }
 }

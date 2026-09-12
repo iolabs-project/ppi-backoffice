@@ -9,14 +9,14 @@
     <div x-data="datatable()" x-init="fetchData()" class="order-page">
         <div class="order-hd">
             <div>
-                <h1 class="order-title display">Purchase Order</h1>
+                <h1 class="order-title display">Pemesanan Pembelian</h1>
                 <div class="order-sub"><span x-text="tableData ? tableData.total : 0"></span> dokumen</div>
             </div>
             <div class="order-actions">
                 <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
                 @if (auth()->user()->can('purchasing.purchase-orders.create'))
                     <a href="{{ route('purchasings.purchase_orders.create') }}" class="btn btn-primary"><x-misc.icon
-                            name="plus" :size="15" />Tambah PO</a>
+                            name="plus" :size="15" />Tambah</a>
                 @endif
             </div>
         </div>
