@@ -3,9 +3,30 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Expense extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('visible')
+            ->setDescriptionForEvent(function (string $eventName) {
+                $event = match ($eventName) {
+                    'created' => 'dibuat',
+                    'updated' => 'diperbarui',
+                    'deleted' => 'dihapus',
+                    default => $eventName,
+                };
+                return "Biaya {$event}";
+            })
+            ->logAll()
+            ->logOnlyDirty();
+    }
+
     protected $fillable = [
         'company_id',
         'contact_id',
@@ -61,11 +82,6 @@ class Expense extends Model
     public function costs()
     {
         return $this->hasMany(ExpenseCost::class);
-    }
-
-    public function payments()
-    {
-        return $this->hasMany(ExpensePayment::class);
     }
 
     public function creator()

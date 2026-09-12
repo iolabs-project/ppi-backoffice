@@ -4,9 +4,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Enums\DeliveryOrderStatus;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class DeliveryOrder extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('visible')
+            ->setDescriptionForEvent(function (string $eventName) {
+                $event = match ($eventName) {
+                    'created' => 'dibuat',
+                    'updated' => 'diperbarui',
+                    'deleted' => 'dihapus',
+                    default => $eventName,
+                };
+                return "Pengiriman barang {$event}";
+            })
+            ->logAll()
+            ->logOnlyDirty();
+    }
+
     // fillable
     protected $fillable = [
         'company_id',

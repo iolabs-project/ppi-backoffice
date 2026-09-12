@@ -9,18 +9,13 @@ use App\Enums\PurchaseInvoiceStatus;
 use App\Enums\SalesOrderStatus;
 use App\Enums\DeliveryOrderStatus;
 use App\Enums\ExpenseStatus;
-use App\Models\ChartOfAccount;
-use App\Models\CashTransaction;
 use App\Models\DeliveryOrder;
 use App\Models\Expense;
-use App\Models\JournalEntry;
 use App\Models\JournalEntryItem;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseOrder;
 use App\Models\SalesInvoice;
 use App\Models\SalesOrder;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
