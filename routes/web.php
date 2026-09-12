@@ -333,6 +333,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/payable/datatable', 'payableDatatable')->middleware('permission:reports.payable.view')->name('payable.datatable');
         Route::get('/journal/datatable', 'journalDatatable')->middleware('permission:reports.journal.view')->name('journal.datatable');
         Route::get('/general-ledger/datatable', 'generalLedgerDatatable')->middleware('permission:reports.journal.view')->name('general_ledger.datatable');
+        Route::get('/activity-log/datatable', 'activityLogDatatable')->middleware('permission:reports.activity-log.view')->name('activity_log.datatable');
         Route::get('/{id}', 'show')->middleware('report.permission')->name('show');
     });
 });

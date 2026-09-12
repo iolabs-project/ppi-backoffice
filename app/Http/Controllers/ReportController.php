@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ReportTypeEnum;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Services\ReportService;
@@ -10,9 +11,11 @@ use App\Services\ReportService;
 class ReportController extends Controller
 {
     protected ReportService $reportService;
-    public function __construct(ReportService $reportService)
+    protected ActivityLogService $activityLogService;
+    public function __construct(ReportService $reportService, ActivityLogService $activityLogService)
     {
         $this->reportService = $reportService;
+        $this->activityLogService = $activityLogService;
     }
     public function index()
     {
@@ -158,6 +161,24 @@ class ReportController extends Controller
             ]);
             return response()->json([
                 'message' => 'Terjadi kesalahan saat mengambil data laporan jurnal',
+            ], 500);
+        }
+    }
+
+    public function activityLogDatatable(Request $request)
+    {
+        try {
+            $data = $this->activityLogService->fetchTableData($request);
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Error ReportController@activityLogDatatable: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat mengambil data log aktivitas',
             ], 500);
         }
     }
