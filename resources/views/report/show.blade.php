@@ -9,6 +9,7 @@
             ['id' => 'receivable', 'label' => 'Piutang', 'permission' => 'reports.receivable.view'],
             ['id' => 'payable', 'label' => 'Utang', 'permission' => 'reports.payable.view'],
             ['id' => 'journal', 'label' => 'Jurnal Umum', 'permission' => 'reports.journal.view'],
+            ['id' => 'activity-log', 'label' => 'Log Aktivitas', 'permission' => 'reports.activity-log.view'],
         ])->filter(fn (array $tab): bool => auth()->user()->can($tab['permission']))->values();
     @endphp
     <div class="laporan-page">
@@ -41,4 +42,5 @@
     @stack('payable-scripts')
     @stack('profit-loss-scripts')
     @stack('journal-scripts')
+    @stack('activity-log-scripts')
 @endsection

@@ -11,6 +11,7 @@ enum ReportTypeEnum: string
     case RECEIVABLE = 'receivable';
     case PAYABLE = 'payable';
     case JOURNAL = 'journal';
+    case ACTIVITY_LOG = 'activity-log';
 
     public function label(): string
     {
@@ -22,6 +23,7 @@ enum ReportTypeEnum: string
             self::RECEIVABLE => 'Piutang Dagang',
             self::PAYABLE => 'Utang Dagang',
             self::JOURNAL => 'Jurnal Umum',
+            self::ACTIVITY_LOG => 'Log Aktivitas',
         };
     }
 
