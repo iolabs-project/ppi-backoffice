@@ -12,12 +12,15 @@ class ActivityLogService
     public function fetchTableData(Request $request)
     {
         $user = Auth::user();
-        $query = Activity::with(['causer'])
+        $query = Activity::with(['causer','subject'])
             ->select(
                 'id',
                 'description',
+                'event',
                 'causer_type',
                 'causer_id',
+                'subject_type',
+                'subject_id',
                 'created_at'
             )
             ->inLog('visible');

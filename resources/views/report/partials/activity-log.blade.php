@@ -17,14 +17,16 @@
         <thead>
             <tr>
                 <th style="width:160px;">Tanggal</th>
+                <th style="width:180px;">No. Ref</th>
                 <th style="width:180px;">Pengguna</th>
-                <th>Aktivitas</th>
+                <th style="width:180px;">Aksi</th>
+                <th>Deskripsi</th>
             </tr>
         </thead>
         <template x-if="loading">
             <tbody>
                 <tr>
-                    <td colspan="3" style="text-align:center; color:var(--ink-3); padding:32px;">
+                    <td colspan="5" style="text-align:center; color:var(--ink-3); padding:32px;">
                         Memuat data...
                     </td>
                 </tr>
@@ -33,7 +35,7 @@
         <template x-if="!loading && tableData.data.length === 0">
             <tbody>
                 <tr>
-                    <td colspan="3" style="text-align:center; color:var(--ink-3); padding:32px;">
+                    <td colspan="5" style="text-align:center; color:var(--ink-3); padding:32px;">
                         Tidak ada data
                     </td>
                 </tr>
@@ -45,8 +47,28 @@
                     <tr>
                         <td style="white-space:nowrap; font-size:12.5px; color:var(--ink-3); font-weight:500;"
                             x-text="formatDateTime(log.created_at)"></td>
+                            <td>
+                                <span class="mono"
+                                    style="display:inline-flex; align-items:center; min-height:24px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r-chip); font-size:11.5px; font-weight:600; color:var(--accent); background:var(--accent-3);"
+                                    :style="log.subject && log.subject.number ? {} : { color: 'var(--ink-4)', background: 'var(--bg-2)' }"
+                                    x-text="log.subject && log.subject.number ? log.subject.number : '—'"></span>
+                            </td>
                         <td style="font-size:13px; color:var(--ink-2); font-weight:600;"
-                            x-text="log.causer ? log.causer.name : '-'"></td>
+                            x-text="log.causer ? log.causer.username : '-'"></td>
+                            <td>
+                                <span class="chip" :class="{
+                                    'chip-ok': log.event === 'created',
+                                    'chip-info': log.event === 'updated',
+                                    'chip-bad': log.event === 'deleted'
+                                }">
+                                    <span class="chip-dot" :class="{
+                                        'dot-ok': log.event === 'created',
+                                        'dot-info': log.event === 'updated',
+                                        'dot-bad': log.event === 'deleted'
+                                    }"></span>
+                                    <span x-text="eventLabel(log.event)"></span>
+                                </span>
+                            </td>
                         <td style="font-size:13px; color:var(--ink-2);"
                             x-text="log.description"></td>
                     </tr>
@@ -115,6 +137,14 @@
                     const hours = String(d.getHours()).padStart(2, '0');
                     const minutes = String(d.getMinutes()).padStart(2, '0');
                     return `${day}/${month}/${year} ${hours}:${minutes}`;
+                },
+
+                eventLabel(event) {
+                    return {
+                        created: 'Dibuat',
+                        updated: 'Diperbarui',
+                        deleted: 'Dihapus',
+                    }[event] || '-';
                 },
 
                 async init() {
