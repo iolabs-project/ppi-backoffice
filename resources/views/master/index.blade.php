@@ -123,14 +123,24 @@
                     this.page = 1;
                     this.fetchData();
                 },
-                async handleStatus(id) {
+                async handleStatus(row) {
+                    const confirm = await Swal.fire({
+                        title: row.deleted_at ? 'Aktifkan kembali kontak ini?' : 'Nonaktifkan kontak ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true
+                    });
+                    if (!confirm.isConfirmed) return;
+
                     Swal.fire({
                         title: 'Memproses...',
                         allowOutsideClick: false,
                         didOpen: () => Swal.showLoading()
                     });
                     try {
-                        const r = await axios.post(route('master.contacts.status', id));
+                        const r = await axios.post(route('master.contacts.status', row.id));
                         Swal.close();
                         Toast.fire({
                             icon: 'success',
@@ -346,14 +356,24 @@
                     this.search = q;
                     this.fetchData();
                 },
-                async handleStatus(id) {
+                async handleStatus(row) {
+                    const confirm = await Swal.fire({
+                        title: row.deleted_at ? 'Aktifkan kembali akun ini?' : 'Nonaktifkan akun ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true
+                    });
+                    if (!confirm.isConfirmed) return;
+
                     Swal.fire({
                         title: 'Memproses...',
                         allowOutsideClick: false,
                         didOpen: () => Swal.showLoading()
                     });
                     try {
-                        const r = await axios.post(route('master.accounts.status', id));
+                        const r = await axios.post(route('master.accounts.status', row.id));
                         Swal.close();
                         Toast.fire({
                             icon: 'success',
@@ -1050,7 +1070,8 @@
                         purchasing: 'Pembelian',
                         sales: 'Penjualan',
                         finances: 'Keuangan',
-                        master: 'Master Data'
+                        master: 'Master Data',
+                        reports: 'Laporan'
                     };
                     return map[key] || key.replace(/-/g, ' ');
                 },
@@ -1064,7 +1085,32 @@
                     return map[key] || 'layers';
                 },
                 resourceLabel(key) {
-                    return key.replace(/-/g, ' ');
+                    const map = {
+                        'purchase-orders': 'Pemesanan Pembelian',
+                        'goods-receipts': 'Penerimaan Barang',
+                        'sales-orders': 'Pemesanan Penjualan',
+                        'delivery-orders': 'Pengiriman Barang',
+                        invoices: 'Tagihan',
+                        payables: 'Hutang',
+                        receivables: 'Piutang',
+                        'cash-bank': 'Kas & Bank',
+                        expenses: 'Biaya',
+                        products: 'Produk',
+                        contacts: 'Kontak',
+                        warehouses: 'Gudang',
+                        accounts: 'Akun',
+                        users: 'User',
+                        roles: 'Hak Akses',
+                        'balance-sheet': 'Neraca',
+                        'cash-flow': 'Arus Kas',
+                        'profit-loss': 'Laba Rugi',
+                        executive: 'Eksekutif',
+                        receivable: 'Piutang',
+                        payable: 'Hutang',
+                        journal: 'Jurnal Umum',
+                        'activity-log': 'Log Aktivitas'
+                    };
+                    return map[key] || key.replace(/-/g, ' ');
                 },
                 actionLabel(key) {
                     const map = {

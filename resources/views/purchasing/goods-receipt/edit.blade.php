@@ -637,7 +637,7 @@
                         </div>
                         <div class="order-summary__group">
                             <div class="order-summary__row">
-                                <span class="order-summary__label"></span>
+                                <span class="order-summary__label">Subtotal</span>
                                 <span class="num order-summary__val"
                                     x-text="(formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
                             </div>

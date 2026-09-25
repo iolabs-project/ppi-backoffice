@@ -223,7 +223,7 @@
                     <thead>
                         <tr>
                             <th>Tanggal</th>
-                            <th>Description</th>
+                            <th>Deskripsi</th>
                             <th>Batch</th>
                             <th style="text-align:right;">Qty</th>
                             <th style="text-align:right;">Harga</th>
@@ -310,7 +310,7 @@
 
                 <div class="produk-sidebar__section">
                     <div class="produk-sidebar__heading">Lokasi Gudang</div>
-                    @foreach ($stocks as $stock)
+                    @forelse ($stocks as $stock)
                         <div style="margin-bottom:10px;">
                             <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px;">
                                 <span
@@ -325,7 +325,9 @@
                                 </div>
                             </div>
                         </div>
-                    @endforeach
+                    @empty
+                        <div style="font-size:12.5px; color:var(--ink-4);">Belum ada stok di gudang mana pun</div>
+                    @endforelse
                 </div>
 
             </div>

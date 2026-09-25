@@ -21,7 +21,14 @@
                 </a>
                 <div class="order-title-row">
                     <h1 class="order-title display">{{ $invoice->number }}</h1>
-                    <x-misc.status-badge :status="$invoice->status" />
+                    @if ($canPay)
+                        @foreach ([$open, $partial, $paid] as $badgeStatus)
+                            <x-misc.status-badge :status="$badgeStatus" x-show="invoiceStatus === '{{ $badgeStatus }}'"
+                                :style="$invoice->status === $badgeStatus ? null : 'display:none'" />
+                        @endforeach
+                    @else
+                        <x-misc.status-badge :status="$invoice->status" />
+                    @endif
                 </div>
                 <div class="order-sub">{{ $invoice->customer->name }}</div>
             </div>
@@ -83,7 +90,7 @@
             <div class="card-hd">
                 <div class="display card-hd-title">Riwayat Pembayaran</div>
                 @if ($canPay && auth()->user()->can('finances.receivables.edit'))
-                    <button class="btn btn-ghost btn-sm" type="button" @click="openModal()">
+                    <button class="btn btn-ghost btn-sm" type="button" x-show="canPay()" @click="openModal()">
                         <x-misc.icon name="plus" :size="13" />Tambah Pembayaran
                     </button>
                 @endif
@@ -164,6 +171,7 @@
         function paymentModule() {
             return {
                 invoiceData: @js($invoice),
+                invoiceStatus: @js($invoice->status),
                 invoiceId: {{ $invoice->id }},
                 outstanding: {{ $invoice->remaining_amount }},
                 cashBankAccounts: @json($cashBankAccounts),
@@ -231,6 +239,20 @@
                     return this.invoiceData.total_amount - this.tableData.data.reduce((sum, p) => sum + p.amount, 0);
                 },
 
+                canPay() {
+                    return this.outstandingAmount() > 0 && ['{{ $open }}', '{{ $partial }}'].includes(this.invoiceStatus);
+                },
+
+                // Mirror the status the backend sets after a payment, so the badge updates without a reload
+                syncStatus() {
+                    const outstanding = Math.round(this.outstandingAmount() * 100) / 100;
+                    if (outstanding <= 0) {
+                        this.invoiceStatus = '{{ $paid }}';
+                    } else if (outstanding < Number(this.invoiceData.total_amount)) {
+                        this.invoiceStatus = '{{ $partial }}';
+                    }
+                },
+
                 openModal() {
                     this.form.payment_date = new Date().toISOString().substring(0, 10);
                     this.form.account_id = null;
@@ -243,7 +265,7 @@
 
                 paymentMethod(method) {
                     const map = {
-                        cash: 'Cash',
+                        cash: 'Tunai',
                         bank_transfer: 'Transfer Bank',
                         credit_card: 'Kartu Kredit',
                     };
@@ -270,7 +292,7 @@
                     if (amount > this.outstandingAmount()) {
                         Toast.fire({
                             icon: 'error',
-                            title: 'Jumlah pembayaran melebihi outstanding invoice.'
+                            title: 'Jumlah pembayaran melebihi sisa tagihan.'
                         });
                         return;
                     }
@@ -303,7 +325,8 @@
                             icon: 'success',
                             title: response.data.message
                         });
-                        this.fetchData();
+                        await this.fetchData();
+                        this.syncStatus();
                     } catch (error) {
                         Swal.close();
                         let title = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';

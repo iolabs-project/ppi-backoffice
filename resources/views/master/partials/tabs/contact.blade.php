@@ -83,12 +83,12 @@
                                         @if (auth()->user()->can('master.contacts.delete'))
                                             <template x-if="!row.deleted_at">
                                                 <button class="action-menu__item action-menu__item--danger"
-                                                    x-on:click="handleStatus(row.id)">
+                                                    x-on:click="handleStatus(row)">
                                                     <x-misc.icon name="trash" :size="14" /> Nonaktifkan
                                                 </button>
                                             </template>
                                             <template x-if="row.deleted_at">
-                                                <button class="action-menu__item" x-on:click="handleStatus(row.id)">
+                                                <button class="action-menu__item" x-on:click="handleStatus(row)">
                                                     <x-misc.icon name="refresh" :size="14" /> Aktifkan
                                                 </button>
                                             </template>
