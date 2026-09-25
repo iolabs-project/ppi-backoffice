@@ -1,14 +1,14 @@
 <x-misc.modal title="Form Akun" show="modal === 'add_account' || modal === 'edit_account'" close-handler="modal = null">
             <div class="form-body">
                 <div class="form-grid-1-2">
-                    <x-misc.field label="Kode Akun" :required="true">
+                    <x-misc.field label="Kode Akun" name="code" :required="true">
                         <input class="input mono" x-model="form.code" placeholder="1-xxx" />
                     </x-misc.field>
-                    <x-misc.field label="Nama Akun" :required="true">
+                    <x-misc.field label="Nama Akun" name="name" :required="true">
                         <input class="input" x-model="form.name" placeholder="Nama akun" />
                     </x-misc.field>
                 </div>
-                <x-misc.field label="Kategori" :required="true">
+                <x-misc.field label="Kategori" name="category_id" :required="true">
                     <select class="input" x-model="form.category_id">
                         <option value="">— Pilih Kategori —</option>
                         <template x-for="c in accountCategoriesAll" :key="c.id">
@@ -16,7 +16,7 @@
                         </template>
                     </select>
                 </x-misc.field>
-                <x-misc.field label="Catatan">
+                <x-misc.field label="Catatan" name="note">
                     <textarea class="input" rows="2" x-model="form.note" placeholder="Catatan (opsional)"></textarea>
                 </x-misc.field>
             </div>

@@ -273,6 +273,10 @@
                 },
 
                 async submit() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     const amount = NumberUtils.parseMaskIntoNumeric(this.form.amount);
 
                     if (!this.form.account_id) {

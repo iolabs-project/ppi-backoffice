@@ -98,6 +98,10 @@
                 },
 
                 async submit() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     if (!this.formData.to_warehouse_id) {
                         Toast.fire({
                             icon: 'error',
@@ -200,7 +204,7 @@
                 </x-misc.field>
 
                 {{-- Gudang Tujuan --}}
-                <x-misc.field label="Gudang Tujuan" :required="true">
+                <x-misc.field label="Gudang Tujuan" name="to_warehouse_id" :required="true">
                     <x-misc.select display="toWarehouseSelected ? toWarehouseSelected.name : 'Pilih Gudang Tujuan'"
                         hasValue="toWarehouseSelected" placeholder="Cari gudang...">
                         <template
@@ -222,7 +226,7 @@
                 </x-misc.field>
 
                 {{-- Tanggal --}}
-                <x-misc.field label="Tanggal Transfer" :required="true">
+                <x-misc.field label="Tanggal Transfer" name="transfer_date" :required="true">
                     <input type="date" class="input" x-model="formData.transfer_date" />
                 </x-misc.field>
 
@@ -252,7 +256,7 @@
                     <template x-for="(it, i) in formData.details" :key="i">
                         <tr>
                             <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
-                            <td>
+                            <td data-field data-field-compact data-field-required :data-field-label="'Batch baris ' + (i + 1)" :data-field-name="'details.' + i + '.product_batch_id'">
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <div class="product-icon">
                                         <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
@@ -289,7 +293,7 @@
                                     <span x-text="it.available_quantity !== null ? m(it.available_quantity) : '—'"></span>
                                 </div>
                             </td>
-                            <td>
+                            <td data-field data-field-compact data-field-required :data-field-label="'Qty baris ' + (i + 1)" :data-field-name="'details.' + i + '.quantity'">
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.quantity"
                                     :style="isOverQuantity(it) ? 'border-color:var(--danger);' : ''"
                                     x-mask:dynamic="$money($input, '.',',')" />
@@ -323,7 +327,7 @@
         <div class="card" style="overflow:visible;">
             <div class="order-items-split2">
                 <div class="order-extras">
-                    <x-misc.field label="Catatan">
+                    <x-misc.field label="Catatan" name="note">
                         <textarea class="input" rows="2" placeholder="Tulis catatan untuk transfer ini…" x-model="formData.note"></textarea>
                     </x-misc.field>
                 </div>

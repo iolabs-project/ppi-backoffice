@@ -340,6 +340,10 @@
                 },
 
                 async submitFinish() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Apakah Anda yakin ingin menyelesaikan penerimaan barang ini?',
                         text: 'Setelah diselesaikan, penerimaan barang akan membentuk jurnal umum dan menambah stok di gudang tujuan.',
@@ -453,7 +457,7 @@
                         <span class="auto-tag">Auto</span>
                     </div>
                 </x-misc.field>
-                <x-misc.field label="No. Pemesanan" :required="true">
+                <x-misc.field label="No. Pemesanan" name="purchase_order_id" :required="true">
                     <div class="input mono input--readonly" style="display:flex; align-items:center;">
                         <span style="flex:1; font-weight:600;">{{ $goodsReceipt->purchaseOrder->number }}</span>
                         <span class="auto-tag">Auto</span>
@@ -472,10 +476,10 @@
                         <span class="auto-tag">Auto</span>
                     </div>
                 </x-misc.field>
-                <x-misc.field label="Tanggal Penerimaan" :required="true">
+                <x-misc.field label="Tanggal Penerimaan" name="receipt_date" :required="true">
                     <input type="date" class="input" x-model="formData.receipt_date" />
                 </x-misc.field>
-                <x-misc.field label="Nomor Referensi"><input class="input mono" placeholder="(opsional)"
+                <x-misc.field label="Nomor Referensi" name="reference_number"><input class="input mono" placeholder="(opsional)"
                         x-model="formData.reference_number" /></x-misc.field>
             </div>
         </div>
@@ -506,7 +510,7 @@
                     <template class="" x-for="(item, index) in formData.details" :key="index">
                         <tr>
                             <td class="mono" style="color:var(--ink-4);" x-text="String(index + 1).padStart(2, '0')"></td>
-                            <td>
+                            <td data-field data-field-compact data-field-required :data-field-label="'Produk baris ' + (index + 1)" :data-field-name="'details.' + index + '.product_id'">
                                 <div style="display:flex; align-items:center; gap:8px; min-width:0;">
                                     <div class="product-icon">
                                         <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
@@ -551,7 +555,7 @@
                             <td><input class="input num" style="height:32px; text-align:right;"
                                     x-model="item.expected_quantity" x-mask:dynamic="$money($input, '.',',')"
                                     @input="handleExpectedQuantityInput(item)" /></td>
-                            <td><input class="input num" style="height:32px; text-align:right;"
+                            <td data-field data-field-compact data-field-required :data-field-label="'Qty Diterima baris ' + (index + 1)" :data-field-name="'details.' + index + '.received_quantity'"><input class="input num" style="height:32px; text-align:right;"
                                     x-model="item.received_quantity" x-mask:dynamic="$money($input, '.',',')"
                                     @input="handleReceivedQuantityInput(item); recalc()" /></td>
                             <td class="mono num" style="font-weight:600; text-align:right;"
@@ -613,7 +617,7 @@
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">
                 <div class="order-extras">
-                    <x-misc.field label="Catatan Penerimaan">
+                    <x-misc.field label="Catatan Penerimaan" name="note">
                         <textarea class="input" rows="2"
                             placeholder="Catat kondisi barang, kekurangan, atau informasi penting lainnya..." x-model="formData.note"></textarea>
                     </x-misc.field>

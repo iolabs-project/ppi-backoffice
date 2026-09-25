@@ -387,8 +387,9 @@
                         const valueEl = el.querySelector('[data-count-value]');
                         if (!valueEl) return;
 
+                        // Runs before the app.js module (NumberUtils) may be loaded; en-US gives the same 1,234 format
                         function formatRp(n) {
-                            return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+                            return 'Rp ' + Math.round(n).toLocaleString('en-US');
                         }
 
                         function step(now) {
@@ -427,7 +428,7 @@
                         if (n >= 1e9) return 'Rp ' + (n / 1e9).toFixed(1).replace(/\.0$/, '') + ' M';
                         if (n >= 1e6) return 'Rp ' + (n / 1e6).toFixed(1).replace(/\.0$/, '') + ' jt';
                         if (n >= 1e3) return 'Rp ' + (n / 1e3).toFixed(0) + ' rb';
-                        return 'Rp ' + n.toLocaleString('id-ID');
+                        return 'Rp ' + Math.round(n).toLocaleString('en-US');
                     }
 
                     function showTooltip(group) {

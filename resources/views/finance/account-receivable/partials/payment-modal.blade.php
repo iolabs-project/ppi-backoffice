@@ -16,10 +16,10 @@
             <x-misc.field label="No. Pembayaran">
                 <input class="input mono" disabled value="Otomatis saat disimpan" style="color:var(--ink-4);" />
             </x-misc.field>
-            <x-misc.field label="Tanggal Pembayaran" :required="true">
+            <x-misc.field label="Tanggal Pembayaran" name="payment_date" :required="true">
                 <input type="date" class="input" x-model="form.payment_date" />
             </x-misc.field>
-            <x-misc.field label="Akun Kas / Bank" :required="true">
+            <x-misc.field label="Akun Kas / Bank" name="account_id" :required="true">
                 <x-misc.select
                     display="form.account_id ? (cashBankAccounts.find(a => a.id === form.account_id)?.code + ' - ' + cashBankAccounts.find(a => a.id === form.account_id)?.name) : 'Pilih akun'"
                     hasValue="form.account_id" placeholder="Cari akun..." min-width="240px">
@@ -36,17 +36,17 @@
                     </template>
                 </x-misc.select>
             </x-misc.field>
-            <x-misc.field label="Metode Pembayaran" :required="true">
+            <x-misc.field label="Metode Pembayaran" name="payment_method" :required="true">
                 <select class="input" x-model="form.payment_method">
                     <option value="cash">Tunai</option>
                     <option value="bank_transfer">Transfer Bank</option>
                     <option value="credit_card">Kartu Kredit</option>
                 </select>
             </x-misc.field>
-            <x-misc.field label="No. Referensi">
+            <x-misc.field label="No. Referensi" name="reference_number">
                 <input class="input" x-model="form.reference_number" placeholder="Nomor referensi" />
             </x-misc.field>
-            <x-misc.field label="Jumlah" :required="true">
+            <x-misc.field label="Jumlah" name="amount" :required="true">
                 <input class="input num" style="text-align:right;" x-model="form.amount"
                     x-mask:dynamic="$money($input, '.',',')" />
                 <div style="font-size:11px; color:var(--ink-4); margin-top:4px;">
@@ -55,7 +55,7 @@
             </x-misc.field>
         </div>
         <div style="margin-top:14px;">
-            <x-misc.field label="Catatan">
+            <x-misc.field label="Catatan" name="note">
                 <textarea class="input" rows="3" x-model="form.note" placeholder="Catatan pembayaran (opsional)"></textarea>
             </x-misc.field>
         </div>

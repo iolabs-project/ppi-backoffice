@@ -44,6 +44,10 @@
                 },
 
                 async handleUpdate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Perubahan Gudang',
                         text: 'Apakah anda yakin ingin memperbarui gudang dengan data yang telah diisi?',

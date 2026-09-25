@@ -197,6 +197,10 @@
                 },
 
                 async handleCreate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Pembuatan Kontak',
                         text: 'Apakah anda yakin ingin membuat kontak baru dengan data yang telah diisi?',
@@ -257,6 +261,10 @@
                 },
 
                 async handleUpdate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Perubahan Kontak',
                         text: 'Apakah anda yakin ingin memperbarui kontak dengan data yang telah diisi?',
@@ -412,6 +420,10 @@
                 },
 
                 async handleCreate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Pembuatan Akun',
                         text: 'Apakah anda yakin ingin membuat akun baru dengan data yang telah diisi?',
@@ -472,6 +484,10 @@
                 },
 
                 async handleUpdate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Perubahan Akun',
                         text: 'Apakah anda yakin ingin memperbarui akun dengan data yang telah diisi?',
@@ -635,6 +651,10 @@
                 },
 
                 async handleCreate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Pembuatan Gudang',
                         text: 'Apakah anda yakin ingin membuat gudang baru dengan data yang telah diisi?',
@@ -695,6 +715,10 @@
                 },
 
                 async handleUpdate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Perubahan Gudang',
                         text: 'Apakah anda yakin ingin memperbarui gudang dengan data yang telah diisi?',
@@ -890,6 +914,10 @@
                     this.modal = 'change_password';
                 },
                 async handleCreate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Pembuatan User',
                         text: 'Apakah anda yakin ingin membuat user baru dengan data yang telah diisi?',
@@ -938,6 +966,10 @@
                     });
                 },
                 async handleUpdate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Perubahan User',
                         text: 'Apakah anda yakin ingin memperbarui user dengan data yang telah diisi?',
@@ -989,6 +1021,10 @@
                     });
                 },
                 async handlePasswordChange() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Perubahan Password',
                         text: 'Apakah anda yakin ingin memperbarui password user dengan data yang telah diisi?',
@@ -1219,6 +1255,10 @@
                 },
 
                 async handleCreate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     try {
                         const r = await axios.post(route('master.roles.store'), {
                             name: this.form.name
@@ -1235,6 +1275,10 @@
                 },
 
                 async handleUpdate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     try {
                         const r = await axios.put(route('master.roles.update', this.form.id), {
                             name: this.form.name

@@ -23,7 +23,7 @@
         <template x-for="(item, i) in formData.items" :key="i">
             <tr>
                 <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
-                <td>
+                <td data-field data-field-compact data-field-required :data-field-label="'Akun baris ' + (i + 1)" :data-field-name="'items.' + i + '.account_id'">
                     <x-misc.select
                         display="item.account_id ? (accounts.find(a => a.id === item.account_id)?.code + ' - ' + accounts.find(a => a.id === item.account_id)?.name) : 'Pilih akun'"
                         hasValue="item.account_id" placeholder="Cari akun..." min-width="260px" height="32px">
@@ -47,7 +47,7 @@
                     <input class="input" style="height:32px;" placeholder="Deskripsi singkat..."
                         x-model="item.description" @input="handleItemInput()" />
                 </td>
-                <td>
+                <td data-field data-field-compact data-field-required :data-field-label="'Jumlah baris ' + (i + 1)" :data-field-name="'items.' + i + '.amount'">
                     <input class="input num" style="height:32px; text-align:right;" x-model="item.amount"
                         x-mask:dynamic="$money($input, '.',',')" @input="handleItemInput()" />
                 </td>

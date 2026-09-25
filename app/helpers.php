@@ -3,7 +3,7 @@
 if (!function_exists('fmt_rp')) {
     function fmt_rp(int|float $n): string
     {
-        return 'Rp ' . number_format(round($n), 0, ',', '.');
+        return 'Rp ' . number_format(round($n));
     }
 }
 
@@ -14,14 +14,14 @@ if (!function_exists('fmt_rp_short')) {
         if ($abs >= 1_000_000_000) return 'Rp ' . number_format($n / 1_000_000_000, 1) . ' M';
         if ($abs >= 1_000_000)     return 'Rp ' . number_format($n / 1_000_000, 1) . ' Jt';
         if ($abs >= 1_000)         return 'Rp ' . number_format($n / 1_000, 0) . 'rb';
-        return 'Rp ' . number_format($n, 0, ',', '.');
+        return 'Rp ' . number_format($n);
     }
 }
 
 if (!function_exists('fmt_num')) {
     function fmt_num(int|float $n): string
     {
-        return number_format($n, 0, ',', '.');
+        return number_format($n);
     }
 }
 

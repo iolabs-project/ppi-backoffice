@@ -9,6 +9,7 @@
     'triggerStyle' => '',
 ])
 <div class="dropdown-wrap" x-data="{ open: false, q: '' }"
+    :data-has-value="({{ $hasValue }}) ? 'true' : 'false'"
     x-on:close-dropdowns.window="open = false; q = ''"
     x-on:click.outside="open = false; q = ''"
     x-effect="if (open) { $nextTick(() => $refs.searchInput && $refs.searchInput.focus()) }">

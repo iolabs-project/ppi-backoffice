@@ -66,7 +66,7 @@
          <template x-for="(it, i) in formData.details" :key="i">
              <tr>
                  <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
-                 <td>
+                 <td data-field data-field-compact data-field-required :data-field-label="'Produk baris ' + (i + 1)" :data-field-name="'details.' + i + '.product_id'">
                      <div style="display:flex; align-items:center; gap:10px;">
                          <div class="product-icon">
                              <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
@@ -94,7 +94,7 @@
                          </div>
                      </div>
                  </td>
-                 <td>
+                 <td data-field data-field-compact data-field-required :data-field-label="'Qty baris ' + (i + 1)" :data-field-name="'details.' + i + '.quantity'">
                      <input class="input num" style="height:32px; text-align:right;" x-model="it.quantity"
                          @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, '.',',')" />
                  </td>
@@ -104,7 +104,7 @@
                          <span x-text="it.unit || '—'"></span>
                      </div>
                  </td>
-                 <td>
+                 <td data-field data-field-compact data-field-required :data-field-label="'Harga baris ' + (i + 1)" :data-field-name="'details.' + i + '.unit_price'">
                      <input class="input num" style="height:32px; text-align:right;" x-model="it.unit_price"
                          @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, '.',',')" />
 

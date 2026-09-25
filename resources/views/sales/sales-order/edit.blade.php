@@ -373,6 +373,11 @@
                 },
 
                 async submit(status) {
+                    // Drafts may be saved incomplete; required fields only apply when the document is finalized
+                    if (status !== 'draft' && !FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     const titles = {
                         draft: 'Memproses penyimpanan draft SO...',
                         open: 'Memproses penyimpanan SO...',
@@ -438,7 +443,7 @@
             <div class="order-form-grid-4">
 
                 {{-- Customer Dropdown --}}
-                <x-misc.field label="Customer" :required="true">
+                <x-misc.field label="Customer" name="customer_id" :required="true">
                     <x-misc.select display="customerSelected ? customerSelected.name : 'Pilih Customer'"
                         hasValue="customerSelected" placeholder="Cari customer...">
                         <template x-for="c in customers.filter(c => !q || c.name.toLowerCase().includes(q.toLowerCase()))"
@@ -457,7 +462,7 @@
                 </x-misc.field>
 
                 {{-- Nomor SO --}}
-                <x-misc.field label="Nomor SO" :required="true">
+                <x-misc.field label="Nomor SO" name="number" :required="true">
                     <div class="input mono input--readonly" style="display:flex; align-items:center;">
                         <span style="flex:1; font-weight:600;" x-text="formData.number"></span>
                         <span class="auto-tag">Auto</span>
@@ -465,17 +470,17 @@
                 </x-misc.field>
 
                 {{-- Tanggal --}}
-                <x-misc.field label="Tanggal" :required="true">
+                <x-misc.field label="Tanggal" name="order_date" :required="true">
                     <input type="date" class="input" x-model="formData.order_date" @change="handleOrderDateChange" />
                 </x-misc.field>
 
                 {{-- Jatuh Tempo --}}
-                <x-misc.field label="Jatuh Tempo" :required="true">
+                <x-misc.field label="Jatuh Tempo" name="due_date" :required="true">
                     <input type="date" class="input" x-model="formData.due_date" />
                 </x-misc.field>
 
                 {{-- Gudang Dropdown --}}
-                <x-misc.field label="Gudang" :required="true">
+                <x-misc.field label="Gudang" name="warehouse_id" :required="true">
                     <x-misc.select display="warehouseSelected ? warehouseSelected.name : 'Pilih Gudang'"
                         hasValue="warehouseSelected" placeholder="Cari gudang...">
                         <template x-for="g in warehouses.filter(g => !q || g.name.toLowerCase().includes(q.toLowerCase()))"
@@ -494,7 +499,7 @@
                     </x-misc.select>
                 </x-misc.field>
 
-                <x-misc.field label="Sales">
+                <x-misc.field label="Sales" name="sales_person_id">
                     <x-misc.select display="salesPersonSelected ? salesPersonSelected.name : 'Pilih Sales'"
                         hasValue="salesPersonSelected" placeholder="Cari sales...">
                         <template
@@ -515,7 +520,7 @@
                 </x-misc.field>
 
                 {{-- Termin Pembayaran Dropdown --}}
-                <x-misc.field label="Termin Pembayaran" :required="true">
+                <x-misc.field label="Termin Pembayaran" name="payment_terms" :required="true">
                     <x-misc.select display="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"
                         hasValue="paymentTermSelected" placeholder="Cari termin...">
                         <template
@@ -533,7 +538,7 @@
                 </x-misc.field>
 
                 {{-- Nomor Referensi --}}
-                <x-misc.field label="Nomor Referensi">
+                <x-misc.field label="Nomor Referensi" name="reference_number">
                     <input class="input mono" placeholder="(opsional)" x-model="formData.reference_number" />
                 </x-misc.field>
 
@@ -565,7 +570,7 @@
                     <template x-for="(it, i) in formData.details" :key="i">
                         <tr>
                             <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
-                            <td>
+                            <td data-field data-field-compact data-field-required :data-field-label="'Produk baris ' + (i + 1)" :data-field-name="'details.' + i + '.product_id'">
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <div class="product-icon">
                                         <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
@@ -592,7 +597,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>
+                            <td data-field data-field-compact data-field-required :data-field-label="'Qty baris ' + (i + 1)" :data-field-name="'details.' + i + '.quantity'">
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.quantity"
                                     @input="handleQuantityInput(i)" x-mask:dynamic="$money($input, '.',',')" />
                             </td>
@@ -602,7 +607,7 @@
                                     <span x-text="it.product_id ? it.unit : '—'"></span>
                                 </div>
                             </td>
-                            <td>
+                            <td data-field data-field-compact data-field-required :data-field-label="'Harga baris ' + (i + 1)" :data-field-name="'details.' + i + '.unit_price'">
                                 <input class="input num" style="height:32px; text-align:right;" x-model="it.unit_price"
                                     @input="calculateDetailTotal(i)" x-mask:dynamic="$money($input, '.',',')" />
 
@@ -661,7 +666,7 @@
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">
                 <div class="order-extras">
-                    <x-misc.field label="Catatan Internal">
+                    <x-misc.field label="Catatan Internal" name="note">
                         <textarea class="input" rows="2" placeholder="Tulis catatan untuk tim gudang/pengiriman…"
                             x-model="formData.note"></textarea>
                     </x-misc.field>

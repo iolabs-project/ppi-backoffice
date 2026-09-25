@@ -64,12 +64,12 @@
                                     @if (auth()->user()->can('master.users.delete'))
                                         <template x-if="!u.deleted_at">
                                             <button class="action-menu__item action-menu__item--danger"
-                                                x-on:click="handleStatus(u.id)">
+                                                x-on:click="handleStatus(u)">
                                                 <x-misc.icon name="trash" :size="14" /> Nonaktifkan
                                             </button>
                                         </template>
                                         <template x-if="u.deleted_at">
-                                            <button class="action-menu__item" x-on:click="handleStatus(u.id)">
+                                            <button class="action-menu__item" x-on:click="handleStatus(u)">
                                                 <x-misc.icon name="refresh" :size="14" /> Aktifkan
                                             </button>
                                         </template>

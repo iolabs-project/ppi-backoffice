@@ -85,6 +85,10 @@
                 },
 
                 async submit() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     if (!this.hasValidDetails()) {
                         Toast.fire({
                             icon: 'error',
@@ -179,7 +183,7 @@
                 </x-misc.field>
 
                 {{-- Tanggal --}}
-                <x-misc.field label="Tanggal Penyesuaian" :required="true">
+                <x-misc.field label="Tanggal Penyesuaian" name="adjustment_date" :required="true">
                     <input type="date" class="input" x-model="formData.adjustment_date" />
                 </x-misc.field>
 
@@ -210,7 +214,7 @@
                     <template x-for="(it, i) in formData.details" :key="i">
                         <tr>
                             <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
-                            <td>
+                            <td data-field data-field-compact data-field-required :data-field-label="'Batch baris ' + (i + 1)" :data-field-name="'details.' + i + '.product_batch_id'">
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <div class="product-icon">
                                         <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
@@ -246,7 +250,7 @@
                                     <span x-text="it.system_quantity !== null ? m(it.system_quantity) : '—'"></span>
                                 </div>
                             </td>
-                            <td>
+                            <td data-field data-field-compact data-field-required :data-field-label="'Qty Aktual baris ' + (i + 1)" :data-field-name="'details.' + i + '.counted_quantity'">
                                 <input class="input num" style="height:32px; text-align:right;"
                                     x-model="it.counted_quantity" :disabled="!it.product_batch_id"
                                     x-mask:dynamic="$money($input, '.',',')" />
@@ -281,7 +285,7 @@
         <div class="card" style="overflow:visible;">
             <div class="order-items-split2">
                 <div class="order-extras">
-                    <x-misc.field label="Catatan">
+                    <x-misc.field label="Catatan" name="note">
                         <textarea class="input" rows="2" placeholder="Tulis catatan untuk penyesuaian ini…" x-model="formData.note"></textarea>
                     </x-misc.field>
                 </div>

@@ -141,6 +141,11 @@
                 },
 
                 async submit(status) {
+                    // Drafts may be saved incomplete; required fields only apply when the document is finalized
+                    if (status !== 'draft' && !FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     const titles = {
                         draft: 'Memproses penyimpanan draft biaya...',
                         open: 'Memproses penyimpanan biaya...',
@@ -200,7 +205,7 @@
             <div class="order-form-grid-4">
 
                 {{-- Supplier/Contact Dropdown --}}
-                <x-misc.field label="Supplier / Kontak">
+                <x-misc.field label="Supplier / Kontak" name="contact_id" :required="true">
                     <x-misc.select display="contactSelected ? contactSelected.name : 'Pilih supplier / kontak (opsional)'"
                         hasValue="contactSelected" placeholder="Cari kontak...">
                         <template x-for="c in contacts.filter(c => !q || c.name.toLowerCase().includes(q.toLowerCase()))"
@@ -228,18 +233,18 @@
                 </x-misc.field>
 
                 {{-- Tanggal --}}
-                <x-misc.field label="Tanggal Biaya" :required="true">
+                <x-misc.field label="Tanggal Biaya" name="expense_date" :required="true">
                     <input type="date" class="input" x-model="formData.expense_date"
                         @change="handleExpenseDateChange" />
                 </x-misc.field>
 
                 {{-- Jatuh Tempo --}}
-                <x-misc.field label="Jatuh Tempo">
+                <x-misc.field label="Jatuh Tempo" name="due_date">
                     <input type="date" class="input" x-model="formData.due_date" />
                 </x-misc.field>
 
                 {{-- Termin Pembayaran Dropdown --}}
-                <x-misc.field label="Termin Pembayaran">
+                <x-misc.field label="Termin Pembayaran" name="payment_terms">
                     <x-misc.select display="paymentTermSelected ? paymentTermSelected.name : 'Pilih termin pembayaran'"
                         hasValue="paymentTermSelected" placeholder="Cari termin...">
                         <template
@@ -272,10 +277,10 @@
                     <x-misc.icon name="plus" :size="13" />Tambah Item
                 </button>
             </div>
-            @include('expense.partials.item-table', ['accounts' => $accounts])
+            @include('finance.expense.partials.item-table', ['accounts' => $accounts])
         </div>
 
-        @include('expense.partials.cost-table', ['accounts' => $accounts])
+        @include('finance.expense.partials.cost-table', ['accounts' => $accounts])
 
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">

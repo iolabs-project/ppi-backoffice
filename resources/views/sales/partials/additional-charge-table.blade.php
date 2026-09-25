@@ -46,7 +46,7 @@
                         <input class="input" style="height:32px;" placeholder="Deskripsi singkat..."
                             x-model="charge.description" @input="handleChargeInput()" />
                     </td>
-                    <td>
+                    <td data-field data-field-compact :data-field-label="'Akun biaya baris ' + (i + 1)" :data-field-name="'charges.' + i + '.account_id'">
                         <x-misc.select
                             display="charge.account_id ? (accounts.find(a => a.id === charge.account_id)?.code + ' - ' + accounts.find(a => a.id === charge.account_id)?.name) : 'Pilih akun'"
                             hasValue="charge.account_id" placeholder="Cari akun..." min-width="260px" height="32px">
@@ -66,7 +66,7 @@
                             </template>
                         </x-misc.select>
                     </td>
-                    <td>
+                    <td data-field data-field-compact :data-field-label="'Jumlah biaya baris ' + (i + 1)" :data-field-name="'charges.' + i + '.amount'">
                         <input class="input num" style="height:32px; text-align:right;" x-model="charge.amount"
                             x-mask:dynamic="$money($input, '.',',')" @input="handleChargeInput()" />
                     </td>

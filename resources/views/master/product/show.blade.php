@@ -32,6 +32,10 @@
                 },
 
                 async handleUpdate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Perubahan Produk',
                         text: 'Apakah anda yakin ingin memperbarui produk dengan data yang telah diisi?',

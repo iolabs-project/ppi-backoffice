@@ -88,6 +88,10 @@
                 },
 
                 async submitFinish() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     if (!this.validateBatches()) {
                         return;
                     }
@@ -226,7 +230,7 @@
                         <span class="auto-tag">Auto</span>
                     </div>
                 </x-misc.field>
-                <x-misc.field label="No. Pemesanan" :required="true">
+                <x-misc.field label="No. Pemesanan" name="sales_order_id" :required="true">
                     <div class="input mono input--readonly" style="display:flex; align-items:center;">
                         <span style="flex:1; font-weight:600;">{{ $deliveryOrder->salesOrder->number }}</span>
                         <span class="auto-tag">Auto</span>
@@ -245,10 +249,10 @@
                         <span class="auto-tag">Auto</span>
                     </div>
                 </x-misc.field>
-                <x-misc.field label="Tanggal Pengiriman" :required="true">
+                <x-misc.field label="Tanggal Pengiriman" name="delivery_date" :required="true">
                     <input type="date" class="input" x-model="formData.delivery_date" />
                 </x-misc.field>
-                <x-misc.field label="Nomor Referensi"><input class="input mono" placeholder="(opsional)"
+                <x-misc.field label="Nomor Referensi" name="reference_number"><input class="input mono" placeholder="(opsional)"
                         x-model="formData.reference_number" /></x-misc.field>
             </div>
         </div>
@@ -275,7 +279,7 @@
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">
                 <div class="order-extras">
-                    <x-misc.field label="Catatan Penerimaan">
+                    <x-misc.field label="Catatan Penerimaan" name="note">
                         <textarea class="input" rows="2"
                             placeholder="Catat kondisi barang, kekurangan, atau informasi penting lainnya..." x-model="formData.note"></textarea>
                     </x-misc.field>

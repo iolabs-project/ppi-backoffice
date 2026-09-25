@@ -307,17 +307,7 @@
                 },
 
                 formatCurrency(value) {
-                    const amount = Number(value ?? 0);
-
-                    return amount >= 0 ?
-                        amount.toLocaleString('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR'
-                        }) :
-                        '-' + Math.abs(amount).toLocaleString('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR'
-                        });
+                    return NumberUtils.formatNumericIntoMask(value);
                 },
 
                 profitColor(value) {

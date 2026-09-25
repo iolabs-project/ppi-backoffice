@@ -160,14 +160,15 @@
                                                     </div>
                                                 </template>
                                             @endif
-                                            <template x-if="row.status === '{{ $finished }}'">
+                                            <template
+                                                x-if="row.status === '{{ $finished }}' && invoicablePoIds.includes(row.purchase_order_id)">
                                                 <div>
                                                     @if (auth()->user()->can('purchasing.invoices.create'))
-                                                        <a :href="route('pembelian.tagihan', row.purchase_order_id)"
-                                                            @click.stop class="action-menu__item">
+                                                        <button class="action-menu__item"
+                                                            @click.stop="handleCreatePurchaseInvoice(row.purchase_order_id)">
                                                             <x-misc.icon name="receipt" :size="14"
                                                                 stroke="var(--ink-3)" />Buat Tagihan
-                                                        </a>
+                                                        </button>
                                                     @endif
                                                 </div>
                                             </template>
@@ -291,6 +292,8 @@
                 poPickerLoading: false,
                 poPickerSearch: '',
                 poPickerData: [],
+                // POs that still have received-but-uninvoiced quantity; drives the "Buat Tagihan" row action
+                invoicablePoIds: [],
 
                 statusChip(status) {
                     const map = {
@@ -342,6 +345,7 @@
                         });
                         console.log('Response data:', response.data);
                         this.tableData = response.data;
+                        await this.fetchInvoicablePoIds();
                     } catch (error) {
                         console.error('Error fetching data:', error);
                         Toast.fire({
@@ -511,6 +515,66 @@
                                 Swal.close();
                                 let message =
                                     'Terjadi kesalahan saat membuat Penerimaan Barang. Silakan coba lagi.';
+                                if (error.response?.data?.message) {
+                                    message = error.response.data.message;
+                                }
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: message
+                                });
+                            }
+
+                        }
+                    })
+                },
+
+                async fetchInvoicablePoIds() {
+                    try {
+                        const response = await axios.get(route('purchasings.purchase_orders.datatable'), {
+                            params: {
+                                per_page: 100,
+                                is_invoicable: true,
+                            },
+                        });
+                        this.invoicablePoIds = (response.data.data ?? []).filter(po => po.is_invoicable).map(po => po.id);
+                    } catch (error) {
+                        this.invoicablePoIds = [];
+                    }
+                },
+
+                async handleCreatePurchaseInvoice(purchaseOrderId) {
+                    Swal.fire({
+                        title: 'Apakah Anda yakin ingin membuat Tagihan untuk PO ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buat',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Memproses...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            try {
+                                const response = await axios.post(route(
+                                    'purchasings.purchase_invoices.store', {
+                                        purchase_order_id: purchaseOrderId
+                                    }));
+                                Swal.close();
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response.data.message
+                                });
+
+                                window.location.href = response.data.redirect;
+                            } catch (error) {
+                                Swal.close();
+                                let message =
+                                    'Terjadi kesalahan saat membuat Tagihan. Silakan coba lagi.';
                                 if (error.response?.data?.message) {
                                     message = error.response.data.message;
                                 }

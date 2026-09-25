@@ -1,15 +1,15 @@
 <x-misc.modal title="Form Gudang" show="modal === 'add_warehouse' || modal === 'edit_warehouse'" close-handler="modal = null">
             <div class="form-body">
-                <x-misc.field label="Nama Gudang" :required="true">
+                <x-misc.field label="Nama Gudang" name="name" :required="true">
                     <input class="input" x-model="form.name" placeholder="Gudang Bekasi, dll." />
                 </x-misc.field>
-                <x-misc.field label="Kode Gudang" :required="true">
+                <x-misc.field label="Kode Gudang" name="code" :required="true">
                     <input class="input mono" x-model="form.code" placeholder="GDG-xxx" />
                 </x-misc.field>
-                <x-misc.field label="Alamat">
+                <x-misc.field label="Alamat" name="address">
                     <textarea class="input" rows="2" x-model="form.address" placeholder="Alamat gudang..."></textarea>
                 </x-misc.field>
-                <x-misc.field label="Catatan">
+                <x-misc.field label="Catatan" name="note">
                     <textarea class="input" rows="2" x-model="form.note" placeholder="Keterangan gudang..."></textarea>
                 </x-misc.field>
             </div>

@@ -59,6 +59,10 @@
                 },
 
                 async handleUpdate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Perubahan Kontak',
                         text: 'Apakah anda yakin ingin memperbarui kontak dengan data yang telah diisi?',

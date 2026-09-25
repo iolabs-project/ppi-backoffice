@@ -236,11 +236,11 @@
                 },
 
                 formatAmount(value) {
-                    return Math.round(Number(value ?? 0)).toLocaleString('id-ID');
+                    return NumberUtils.formatNumericIntoMask(value);
                 },
 
                 formatNumber(value) {
-                    return Number(value ?? 0).toLocaleString('id-ID');
+                    return NumberUtils.formatNumericIntoMask(value, 0);
                 },
 
                 formatPercent(value) {

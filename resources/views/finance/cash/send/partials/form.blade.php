@@ -4,7 +4,7 @@
     <div class="order-form-grid-3">
 
         {{-- Kepada --}}
-        <x-misc.field label="Kepada" :required="true">
+        <x-misc.field label="Kepada" name="contact_id" :required="true">
             <x-misc.select display="contactSelected ? contactSelected.name : 'Pilih kontak'" hasValue="contactSelected"
                 placeholder="Cari kontak...">
                 <template x-for="k in contacts.filter(k => !q || k.name.toLowerCase().includes(q.toLowerCase()))"
@@ -33,7 +33,7 @@
         </x-misc.field>
 
         {{-- Tanggal Transaksi --}}
-        <x-misc.field label="Tanggal Transaksi" :required="true">
+        <x-misc.field label="Tanggal Transaksi" name="transaction_date" :required="true">
             <input type="date" class="input" x-model="formData.transaction_date" />
         </x-misc.field>
 
@@ -62,7 +62,7 @@
             <template x-for="(row, i) in formData.items" :key="i">
                 <tr>
                     <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
-                    <td>
+                    <td data-field data-field-compact :data-field-label="'Akun baris ' + (i + 1)" :data-field-name="'items.' + i + '.account_id'">
                         <x-misc.select
                             display="row.account_id ? (accounts.find(a => a.id === row.account_id)?.code + ' - ' + accounts.find(a => a.id === row.account_id)?.name) : 'Pilih akun'"
                             hasValue="row.account_id" placeholder="Cari akun..." min-width="260px" height="32px">
@@ -86,7 +86,7 @@
                     <td style="padding:6px 10px;">
                         <input class="input" style="height:32px; width:100%;" x-model="row.description" />
                     </td>
-                    <td style="padding:6px 10px;">
+                    <td data-field data-field-compact :data-field-label="'Jumlah baris ' + (i + 1)" :data-field-name="'items.' + i + '.amount'" style="padding:6px 10px;">
                         <input class="input num" style="height:32px; text-align:right;" x-model="row.amount"
                             x-mask:dynamic="$money($input, '.',',')" @input="calculate()" />
                     </td>
@@ -125,7 +125,7 @@
             <template x-for="(cost, i) in formData.costs" :key="i">
                 <tr>
                     <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
-                    <td>
+                    <td data-field data-field-compact :data-field-label="'Akun biaya baris ' + (i + 1)" :data-field-name="'costs.' + i + '.account_id'">
                         <x-misc.select
                             display="cost.account_id ? (accounts.find(a => a.id === cost.account_id)?.code + ' - ' + accounts.find(a => a.id === cost.account_id)?.name) : 'Pilih akun'"
                             hasValue="cost.account_id" placeholder="Cari akun..." min-width="260px" height="32px">
@@ -149,7 +149,7 @@
                     <td style="padding:6px 10px;">
                         <input class="input" style="height:32px; width:100%;" x-model="cost.description" />
                     </td>
-                    <td style="padding:6px 10px;">
+                    <td data-field data-field-compact :data-field-label="'Jumlah biaya baris ' + (i + 1)" :data-field-name="'costs.' + i + '.amount'" style="padding:6px 10px;">
                         <input class="input num" style="height:32px; text-align:right;" x-model="cost.amount"
                             x-mask:dynamic="$money($input, '.',',')" @input="calculate()" />
                     </td>

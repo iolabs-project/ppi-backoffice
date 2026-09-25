@@ -2,7 +2,7 @@
 <div class="card" style="overflow:hidden;" x-data="payableModule()">
     <div class="utang-card-hd">
         <div style="display:flex; align-items:center; gap:8px;">
-            <div class="display" style="font-weight:700; font-size:14px;">Utang Dagang</div>
+            <div class="display" style="font-weight:700; font-size:14px;">Hutang Dagang</div>
             <span style="font-size:12px; color:var(--ink-4);" x-text="`${tableData.invoices.length} tagihan`"></span>
         </div>
         <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
@@ -53,7 +53,7 @@
         </tbody>
     </table>
     <div class="utang-card-ft">
-        <span style="font-size:13px; font-weight:600;">Total Utang</span>
+        <span style="font-size:13px; font-weight:600;">Total Hutang</span>
         <span class="num" style="font-weight:700; color:var(--bad);" x-text="formatCurrency(tableData.total)"></span>
     </div>
 </div>
@@ -74,17 +74,7 @@
                 loading: false,
 
                 formatCurrency(value) {
-                    const amount = Number(value ?? 0);
-
-                    return amount >= 0 ?
-                        amount.toLocaleString('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR'
-                        }) :
-                        '-' + Math.abs(amount).toLocaleString('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR'
-                        });
+                    return NumberUtils.formatNumericIntoMask(value);
                 },
 
                 formatDueDate(value) {

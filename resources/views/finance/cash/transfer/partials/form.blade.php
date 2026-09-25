@@ -3,7 +3,7 @@
     <div class="order-form-grid-3">
 
         {{-- Ke --}}
-        <x-misc.field label="Akun Tujuan" :required="true">
+        <x-misc.field label="Akun Tujuan" name="to_account_id" :required="true">
             <x-misc.select display="selectedAccount ? selectedAccount.name : 'Pilih akun'" hasValue="selectedAccount"
                 placeholder="Cari akun...">
                 <template x-for="a in accounts.filter(a => !q || a.name.toLowerCase().includes(q.toLowerCase()))"
@@ -29,12 +29,12 @@
         </x-misc.field>
 
         {{-- Tanggal Transaksi --}}
-        <x-misc.field label="Tanggal Transaksi" :required="true">
+        <x-misc.field label="Tanggal Transaksi" name="transaction_date" :required="true">
             <input type="date" class="input" x-model="formData.transaction_date" />
         </x-misc.field>
 
         {{-- Total --}}
-        <x-misc.field label="Total" :required="true">
+        <x-misc.field label="Total" name="subtotal" :required="true">
             <input class="input num" x-model="formData.subtotal" x-mask:dynamic="$money($input, '.',',')" />
         </x-misc.field>
     </div>

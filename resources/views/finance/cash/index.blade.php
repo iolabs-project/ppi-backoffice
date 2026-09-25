@@ -109,6 +109,10 @@
                 },
 
                 async createAccount() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     const result = await Swal.fire({
                         title: 'Konfirmasi Pembuatan Rekening',
                         text: 'Apakah anda yakin ingin membuat rekening baru dengan data yang telah diisi?',

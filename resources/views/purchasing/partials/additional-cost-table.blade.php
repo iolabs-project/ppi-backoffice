@@ -55,7 +55,7 @@
                         <input class="input" style="height:32px;" placeholder="Deskripsi singkat..."
                             x-model="cost.description" @input="handleCostInput()" />
                     </td>
-                    <td>
+                    <td data-field data-field-compact :data-field-label="'Akun biaya baris ' + (i + 1)" :data-field-name="'costs.' + i + '.account_id'">
                         <x-misc.select
                             display="cost.account_id ? (accounts.find(a => a.id === cost.account_id)?.code + ' - ' + accounts.find(a => a.id === cost.account_id)?.name) : 'Pilih akun'"
                             hasValue="cost.account_id" placeholder="Cari akun..." min-width="260px" height="32px">
@@ -90,7 +90,7 @@
                             <input type="checkbox" x-model="cost.is_inventory_cost" @change="handleCostInput()" />
                         </td>
                     @endif
-                    <td>
+                    <td data-field data-field-compact :data-field-label="'Jumlah biaya baris ' + (i + 1)" :data-field-name="'costs.' + i + '.amount'">
                         <input class="input num" style="height:32px; text-align:right;" x-model="cost.amount"
                             x-mask:dynamic="$money($input, '.',',')" @input="handleCostInput()" />
                     </td>
