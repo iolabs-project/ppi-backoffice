@@ -3,87 +3,95 @@
     <div class="card-hd">
         <div class="display card-hd-title">Jurnal Umum</div>
         <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
-            <label style="font-size:12px; color:var(--ink-3);">Dari</label>
-            <input type="date" class="filter-panel__input" x-model="filter.start_date"
-                x-on:change="page = 1; fetchData()" style="height:28px; font-size:12px;">
-            <label style="font-size:12px; color:var(--ink-3);">Sampai</label>
-            <input type="date" class="filter-panel__input" x-model="filter.end_date"
-                x-on:change="page = 1; fetchData()" style="height:28px; font-size:12px;">
+            <label class="report-date">
+                <span>Dari</span>
+                <input type="date" class="filter-panel__input" x-model="filter.start_date"
+                    x-on:change="page = 1; fetchData()" style="height:28px; font-size:12px;">
+            </label>
+            <label class="report-date">
+                <span>Sampai</span>
+                <input type="date" class="filter-panel__input" x-model="filter.end_date"
+                    x-on:change="page = 1; fetchData()" style="height:28px; font-size:12px;">
+            </label>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
     </div>
-    <table class="tbl tbl-journal">
-        <thead>
-            <tr>
-                <th style="width:100px;">Tanggal</th>
-                <th style="width:130px;">No. Jurnal</th>
-                <th>Keterangan</th>
-                <th>Akun</th>
-                <th style="text-align:right;">Debit</th>
-                <th style="text-align:right;">Kredit</th>
-            </tr>
-        </thead>
-        <template x-if="loading">
-            <tbody>
+    <div class="tbl-scroll">
+        <table class="tbl tbl-journal">
+            <thead>
                 <tr>
-                    <td colspan="6" style="text-align:center; color:var(--ink-3); padding:32px;">
-                        Memuat data...
-                    </td>
+                    <th style="width:100px;">Tanggal</th>
+                    <th style="width:130px;">No. Jurnal</th>
+                    <th>Keterangan</th>
+                    <th>Akun</th>
+                    <th style="text-align:right;">Debit</th>
+                    <th style="text-align:right;">Kredit</th>
                 </tr>
-            </tbody>
-        </template>
-        <template x-if="!loading && tableData.data.length === 0">
-            <tbody>
-                <tr>
-                    <td colspan="6" style="text-align:center; color:var(--ink-3); padding:32px;">
-                        Tidak ada data
-                    </td>
-                </tr>
-            </tbody>
-        </template>
-        <template x-if="!loading && tableData.data.length > 0">
-            <template x-for="journal in tableData.data" :key="journal.id">
+            </thead>
+            <template x-if="loading">
                 <tbody>
-                    <tr class="tbl-journal__group">
-                        <td style="white-space:nowrap; font-size:12.5px; color:var(--ink-3); font-weight:600;"
-                            x-text="journal.journal_date"></td>
-                        <td class="mono" style="font-size:11.5px; color:var(--ink-4); font-weight:600;"
-                            x-text="journal.number"></td>
-                        <td style="font-size:13px; color:var(--ink-2); font-weight:600;" x-text="journal.description">
+                    <tr>
+                        <td colspan="6" style="text-align:center; color:var(--ink-3); padding:32px;">
+                            Memuat data...
                         </td>
-                        <td colspan="3"></td>
-                    </tr>
-                    <template x-for="entry in journal.items" :key="entry.id">
-                        <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td x-text="entry.account.name + (entry.account.code ? ' (' + entry.account.code + ')' : '')"
-                                :style="entry.credit > 0 ? 'padding-left:30px; font-size:13px; color:var(--ink-3);' :
-                                    'font-size:13px; font-weight:500; color:var(--ink-2);'">
-                            </td>
-                            <td class="num" style="text-align:right; font-size:13px; color:var(--ink-2);"
-                                x-text="entry.debit > 0 ? m(entry.debit) : '—'"></td>
-                            <td class="num" style="text-align:right; font-size:13px; color:var(--ink-2);"
-                                x-text="entry.credit > 0 ? m(entry.credit) : '—'"></td>
-                        </tr>
-                    </template>
-                    {{-- Subtotal --}}
-                    <tr class="tbl-journal__subtotal">
-                        <td colspan="3"></td>
-                        <td
-                            style="font-size:11.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-4); text-align:right;">
-                            Subtotal</td>
-                        <td class="num" style="text-align:right; font-weight:700; font-size:13px;"
-                            x-text="m(journal.items.reduce((sum, entry) => sum + entry.debit, 0))"></td>
-                        <td class="num" style="text-align:right; font-weight:700; font-size:13px;"
-                            x-text="m(journal.items.reduce((sum, entry) => sum + entry.credit, 0))"></td>
                     </tr>
                 </tbody>
             </template>
-        </template>
-    </table>
+            <template x-if="!loading && tableData.data.length === 0">
+                <tbody>
+                    <tr>
+                        <td colspan="6" style="text-align:center; color:var(--ink-3); padding:32px;">
+                            Tidak ada data
+                        </td>
+                    </tr>
+                </tbody>
+            </template>
+            <template x-if="!loading && tableData.data.length > 0">
+                <template x-for="journal in tableData.data" :key="journal.id">
+                    <tbody>
+                        <tr class="tbl-journal__group">
+                            <td class="tbl-journal__date" style="white-space:nowrap; font-size:12.5px; color:var(--ink-3); font-weight:600;"
+                                x-text="journal.journal_date"></td>
+                            <td class="mono tbl-journal__number" style="font-size:11.5px; color:var(--ink-4); font-weight:600;"
+                                x-text="journal.number"></td>
+                            <td class="tbl-journal__desc" style="font-size:13px; color:var(--ink-2); font-weight:600;" x-text="journal.description">
+                            </td>
+                            <td class="tbl-journal__spacer" colspan="3"></td>
+                        </tr>
+                        <template x-for="entry in journal.items" :key="entry.id">
+                            <tr class="tbl-journal__line">
+                                <td class="tbl-journal__spacer"></td>
+                                <td class="tbl-journal__spacer"></td>
+                                <td class="tbl-journal__spacer"></td>
+                                <td class="tbl-journal__account" x-text="entry.account.name + (entry.account.code ? ' (' + entry.account.code + ')' : '')"
+                                    :style="entry.credit > 0 ? 'padding-left:30px; font-size:13px; color:var(--ink-3);' :
+                                        'font-size:13px; font-weight:500; color:var(--ink-2);'">
+                                </td>
+                                <td class="num tbl-journal__debit" :class="{ 'is-empty': !(entry.debit > 0) }"
+                                    style="text-align:right; font-size:13px; color:var(--ink-2);"
+                                    x-text="entry.debit > 0 ? m(entry.debit) : '—'"></td>
+                                <td class="num tbl-journal__credit" :class="{ 'is-empty': !(entry.credit > 0) }"
+                                    style="text-align:right; font-size:13px; color:var(--ink-2);"
+                                    x-text="entry.credit > 0 ? m(entry.credit) : '—'"></td>
+                            </tr>
+                        </template>
+                        {{-- Subtotal --}}
+                        <tr class="tbl-journal__subtotal">
+                            <td class="tbl-journal__spacer" colspan="3"></td>
+                            <td class="tbl-journal__account"
+                                style="font-size:11.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-4); text-align:right;">
+                                Subtotal</td>
+                            <td class="num tbl-journal__debit" style="text-align:right; font-weight:700; font-size:13px;"
+                                x-text="m(journal.items.reduce((sum, entry) => sum + entry.debit, 0))"></td>
+                            <td class="num tbl-journal__credit" style="text-align:right; font-weight:700; font-size:13px;"
+                                x-text="m(journal.items.reduce((sum, entry) => sum + entry.credit, 0))"></td>
+                        </tr>
+                    </tbody>
+                </template>
+            </template>
+        </table>
+    </div>
 
     <div class="table-pagination">
             <div class="pagination-actions">

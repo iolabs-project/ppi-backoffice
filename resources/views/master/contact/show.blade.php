@@ -177,7 +177,7 @@
         </div>
 
         {{-- Stat cards --}}
-        <div class="produk-stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="produk-stat-grid produk-stat-grid--3">
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 220); color:oklch(0.45 0.14 220);">
                     {{ 0 }}
@@ -216,20 +216,22 @@
                     <div class="card-hd">
                         <div class="display card-hd-title">Riwayat Transaksi</div>
                     </div>
-                    <table class="tbl">
-                        <thead>
-                            <tr>
-                                <th>Tanggal</th>
-                                <th>Nomor</th>
-                                <th>Tipe</th>
-                                <th>Status</th>
-                                <th style="text-align:right;">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{-- TODO: implement contact transaction datatable --}}
-                        </tbody>
-                    </table>
+                    <div class="tbl-scroll">
+                        <table class="tbl">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Nomor</th>
+                                    <th>Tipe</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{-- TODO: implement contact transaction datatable --}}
+                            </tbody>
+                        </table>
+                    </div>
 
                 </div>
             </div>

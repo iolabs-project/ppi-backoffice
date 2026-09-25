@@ -223,47 +223,49 @@
                     </div>
                 </div>
 
-                <table class="tbl">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Deskripsi</th>
-                            <th>Batch</th>
-                            <th style="text-align:right;">Qty</th>
-                            <th style="text-align:right;">Harga</th>
-                            <th style="text-align:right;">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-if="tableData.data.length === 0">
+                <div class="tbl-scroll">
+                    <table class="tbl">
+                        <thead>
                             <tr>
-                                <td colspan="6"
-                                    style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
-                                    Belum ada transaksi untuk produk ini
-                                </td>
+                                <th>Tanggal</th>
+                                <th>Deskripsi</th>
+                                <th>Batch</th>
+                                <th style="text-align:right;">Qty</th>
+                                <th style="text-align:right;">Harga</th>
+                                <th style="text-align:right;">Total</th>
                             </tr>
-                        </template>
-                        <template x-for="(t,i) in tableData.data" :key="i">
-                            <tr>
-                                <td style="font-size:13px; color:var(--ink-3);" x-text="t.transaction_date"></td>
-                                <td>
-                                    <template x-if="t.reference_redirect">
-                                        <a :href="t.reference_redirect" class="btn btn-ghost btn-sm" x-text="t.note">
-                                    </template>
-                                    <template x-if="!t.reference_redirect">
-                                        <span x-text="t.note"></span>
-                                    </template>
-                                </td>
-                                <td>
-                                    <a :href="route('master.products.batches.show', { id: t.product_id, batch_id: t.product_batch_id })" class="btn btn-ghost btn-sm"  x-text="t.product_batch.batch_number"></a>
-                                </td>
-                                <td class="num" style="text-align:right; font-size:13px;" :style="{ color: t.direction < 0 ? 'oklch(0.55 0.16 30)' : 'oklch(0.5 0.14 155)' }" x-text="(t.direction < 0 ? '-' : '+') + m(Math.abs(t.quantity))"></td>
-                                <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.unit_cost)"></td>
-                                <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.total_cost)"></td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <template x-if="tableData.data.length === 0">
+                                <tr>
+                                    <td colspan="6"
+                                        style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
+                                        Belum ada transaksi untuk produk ini
+                                    </td>
+                                </tr>
+                            </template>
+                            <template x-for="(t,i) in tableData.data" :key="i">
+                                <tr>
+                                    <td style="font-size:13px; color:var(--ink-3);" x-text="t.transaction_date"></td>
+                                    <td>
+                                        <template x-if="t.reference_redirect">
+                                            <a :href="t.reference_redirect" class="btn btn-ghost btn-sm" x-text="t.note">
+                                        </template>
+                                        <template x-if="!t.reference_redirect">
+                                            <span x-text="t.note"></span>
+                                        </template>
+                                    </td>
+                                    <td>
+                                        <a :href="route('master.products.batches.show', { id: t.product_id, batch_id: t.product_batch_id })" class="btn btn-ghost btn-sm"  x-text="t.product_batch.batch_number"></a>
+                                    </td>
+                                    <td class="num" style="text-align:right; font-size:13px;" :style="{ color: t.direction < 0 ? 'oklch(0.55 0.16 30)' : 'oklch(0.5 0.14 155)' }" x-text="(t.direction < 0 ? '-' : '+') + m(Math.abs(t.quantity))"></td>
+                                    <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.unit_cost)"></td>
+                                    <td class="num" style="text-align:right; font-size:13px;" x-text="m(t.total_cost)"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
 
                 <div class="table-pagination">
                     <div class="pagination-actions">

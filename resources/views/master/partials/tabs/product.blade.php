@@ -13,90 +13,92 @@
                 </button>
             @endif
         </div>
-        <table class="tbl">
-            <thead>
-                <tr>
-                    <th>Kode</th>
-                    <th>Nama Produk</th>
-                    <th>Kategori</th>
-                    <th>Satuan</th>
-                    <th>Status</th>
-                    <th style="width:40px;"></th>
-            </thead>
-            <tbody>
-                <template x-if="loading">
+        <div class="tbl-scroll">
+            <table class="tbl">
+                <thead>
                     <tr>
-                        <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...
-                        </td>
-                    </tr>
-                </template>
-
-                <template x-if="!loading && tableData.data.length === 0">
-                    <tr>
-                        <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">Tidak ada data
-                        </td>
-                    </tr>
-                </template>
-                <template x-if="!loading && tableData.data.length > 0">
-                    <template x-for="(row, i) in tableData.data" :key="row.id">
-                        <tr class="row-tap" style="cursor:pointer;">
-                            <td class="mono" style="font-weight:600; font-size:12px; color:var(--ink-4);"
-                                x-text="row.code">
-                            </td>
-                            <td>
-                                <div style="font-weight:600; font-size:13px;" x-text="row.name"></div>
-                                <div x-show="row.description" style="font-size:11px; color:var(--ink-4);"
-                                    x-text="row.description">
-                                </div>
-                            </td>
-                            <td><span class="chip" x-text="row.category.name"></span></td>
-                            <td style="color:var(--ink-3); font-size:13px;" x-text="row.unit.symbol"></td>
-                            {{-- <td class="num" style="text-align:right; font-size:13px;" x-text="p.stok ?? 0"></td> --}}
-                            <template x-if="row.deleted_at">
-                                <td><x-misc.status-badge status="inactive" /></td>
-                            </template>
-                            <template x-if="!row.deleted_at">
-                                <td><x-misc.status-badge status="active" /></td>
-                            </template>
-                            <td x-on:click.stop>
-                                <div class="action-menu" x-data="{ open: false }">
-                                    <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
-                                        x-on:click="open = !open" x-on:click.outside="open = false">
-                                        <x-misc.icon name="more" :size="15" />
-                                    </button>
-                                    <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
-                                        style="position:absolute; right:0; top:100%; margin-top:4px;">
-                                        <a :href="route('master.products.show', row.id)" @click.stop
-                                            class="action-menu__item">
-                                            <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />
-                                            Detail Produk
-                                        </a>
-                                        @if (auth()->user()->can('master.products.edit'))
-                                            <button class="action-menu__item" x-on:click="openEditModal(row)">
-                                                <x-misc.icon name="edit" :size="14" /> Edit Produk
-                                            </button>
-                                        @endif
-                                        @if (auth()->user()->can('master.products.delete'))
-                                            <template x-if="!row.deleted_at">
-                                                <button class="action-menu__item action-menu__item--danger"
-                                                    x-on:click="handleStatus(row)">
-                                                    <x-misc.icon name="trash" :size="14" /> Nonaktifkan
-                                                </button>
-                                            </template>
-                                            <template x-if="row.deleted_at">
-                                                <button class="action-menu__item" x-on:click="handleStatus(row)">
-                                                    <x-misc.icon name="refresh" :size="14" /> Aktifkan
-                                                </button>
-                                            </template>
-                                        @endif
-                                    </div>
-                                </div>
+                        <th>Kode</th>
+                        <th>Nama Produk</th>
+                        <th>Kategori</th>
+                        <th>Satuan</th>
+                        <th>Status</th>
+                        <th style="width:40px;"></th>
+                </thead>
+                <tbody>
+                    <template x-if="loading">
+                        <tr>
+                            <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...
                             </td>
                         </tr>
                     </template>
-                </template>
-            </tbody>
-        </table>
+    
+                    <template x-if="!loading && tableData.data.length === 0">
+                        <tr>
+                            <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">Tidak ada data
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loading && tableData.data.length > 0">
+                        <template x-for="(row, i) in tableData.data" :key="row.id">
+                            <tr class="row-tap" style="cursor:pointer;">
+                                <td class="mono" style="font-weight:600; font-size:12px; color:var(--ink-4);"
+                                    x-text="row.code">
+                                </td>
+                                <td>
+                                    <div style="font-weight:600; font-size:13px;" x-text="row.name"></div>
+                                    <div x-show="row.description" style="font-size:11px; color:var(--ink-4);"
+                                        x-text="row.description">
+                                    </div>
+                                </td>
+                                <td><span class="chip" x-text="row.category.name"></span></td>
+                                <td style="color:var(--ink-3); font-size:13px;" x-text="row.unit.symbol"></td>
+                                {{-- <td class="num" style="text-align:right; font-size:13px;" x-text="p.stok ?? 0"></td> --}}
+                                <template x-if="row.deleted_at">
+                                    <td><x-misc.status-badge status="inactive" /></td>
+                                </template>
+                                <template x-if="!row.deleted_at">
+                                    <td><x-misc.status-badge status="active" /></td>
+                                </template>
+                                <td x-on:click.stop>
+                                    <div class="action-menu" x-data="{ open: false }">
+                                        <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                                            x-on:click="open = !open" x-on:click.outside="open = false">
+                                            <x-misc.icon name="more" :size="15" />
+                                        </button>
+                                        <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
+                                            style="position:absolute; right:0; top:100%; margin-top:4px;">
+                                            <a :href="route('master.products.show', row.id)" @click.stop
+                                                class="action-menu__item">
+                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />
+                                                Detail Produk
+                                            </a>
+                                            @if (auth()->user()->can('master.products.edit'))
+                                                <button class="action-menu__item" x-on:click="openEditModal(row)">
+                                                    <x-misc.icon name="edit" :size="14" /> Edit Produk
+                                                </button>
+                                            @endif
+                                            @if (auth()->user()->can('master.products.delete'))
+                                                <template x-if="!row.deleted_at">
+                                                    <button class="action-menu__item action-menu__item--danger"
+                                                        x-on:click="handleStatus(row)">
+                                                        <x-misc.icon name="trash" :size="14" /> Nonaktifkan
+                                                    </button>
+                                                </template>
+                                                <template x-if="row.deleted_at">
+                                                    <button class="action-menu__item" x-on:click="handleStatus(row)">
+                                                        <x-misc.icon name="refresh" :size="14" /> Aktifkan
+                                                    </button>
+                                                </template>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </div>
         <div class="table-pagination">
             <div class="pagination-actions">
                 <div class="pagination-label">Per</div>

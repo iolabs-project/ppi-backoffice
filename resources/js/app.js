@@ -21,3 +21,20 @@ window.axios.interceptors.response.use((response) => response, (error) => {
     }
     return Promise.reject(error);
 });
+
+// Tab bars scroll sideways on phones; keep the active tab in view (no-op when every tab fits)
+const revealActiveTab = (bar) => {
+    const active = bar.querySelector('.utab-active');
+    if (!active || bar.scrollWidth <= bar.clientWidth) {
+        return;
+    }
+    const offset = active.getBoundingClientRect().left - bar.getBoundingClientRect().left + bar.scrollLeft;
+    bar.scrollLeft = offset - (bar.clientWidth - active.offsetWidth) / 2;
+};
+document.addEventListener('alpine:initialized', () => document.querySelectorAll('.utab').forEach(revealActiveTab));
+document.addEventListener('click', (event) => {
+    const bar = event.target.closest('.utab');
+    if (bar) {
+        requestAnimationFrame(() => revealActiveTab(bar));
+    }
+});

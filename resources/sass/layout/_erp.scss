@@ -1,11 +1,13 @@
 .erp-shell {
   display: flex;
   height: 100vh;
+  height: 100dvh; // mobile browsers: exclude the address bar
   overflow: hidden;
 }
 
 .erp-main {
   flex: 1;
+  min-width: 0; // wide content scrolls inside the page instead of stretching the shell
   display: flex;
   flex-direction: column;
   overflow: hidden;

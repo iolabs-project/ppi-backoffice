@@ -56,131 +56,133 @@
         </div>
 
         <div class="card table-card">
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th>No. Penerimaan</th>
-                        <th>Tanggal</th>
-                        <th>Ref. PO</th>
-                        <th>Supplier</th>
-                        <th>Gudang</th>
-                        <th style="text-align:right;">Berat Diterima</th>
-                        <th style="text-align:right;">Berat Susut</th>
-                        <th>Status</th>
-                        <th class="table-action-col">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-if="loading">
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <thead>
                         <tr>
-                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Memuat data...
-                            </td>
+                            <th>No. Penerimaan</th>
+                            <th>Tanggal</th>
+                            <th>Ref. PO</th>
+                            <th>Supplier</th>
+                            <th>Gudang</th>
+                            <th style="text-align:right;">Berat Diterima</th>
+                            <th style="text-align:right;">Berat Susut</th>
+                            <th>Status</th>
+                            <th class="table-action-col">Aksi</th>
                         </tr>
-                    </template>
-
-                    <template x-if="!loading && tableData.data.length === 0">
-                        <tr>
-                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Tidak ada data
-                            </td>
-                        </tr>
-                    </template>
-                    <template x-if="!loading">
-                        <template x-for="row in tableData.data" :key="row.id">
-                            <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
-                                @click="window.location = route('purchasings.goods_receipts.show', row.id)">
-                                <td class="mono" style="font-weight:600;" x-text="row.number"></td>
-                                <td style="color:var(--ink-3);" x-text="row.receipt_date ?? '-'"></td>
-                                <td class="mono" style="font-weight:600;" x-text="row.purchase_order.number"></td>
-                                <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
-                                <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
-                                <td class="num" style="text-align:right;" x-text="m(row.total_received_quantity)"></td>
-                                <td class="num" style="text-align:right;" x-text="m(row.total_shrinkage_quantity)"></td>
-                                <td>
-                                    <span :class="statusChip(row.status).chip">
-                                        <span :class="statusChip(row.status).dot"></span>
-                                        <span x-text="statusChip(row.status).label"></span>
-                                    </span>
+                    </thead>
+                    <tbody>
+                        <template x-if="loading">
+                            <tr>
+                                <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Memuat data...
                                 </td>
-                                <td class="table-action-col">
-                                    <div x-data="{ open: false }" class="action-menu">
-                                        <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
-                                            x-on:click.stop="
-                                            let wasOpen = open;
-                                            $dispatch('close-menus');
-                                            if (!wasOpen) {
-                                                let r = $el.getBoundingClientRect();
-                                                $refs.panel.style.top = (r.bottom + 6) + 'px';
-                                                $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
-                                                open = true;
-                                            }
-                                        ">
-                                            <x-misc.icon name="more" :size="15" />
-                                        </button>
-                                        <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
-                                            x-on:click.away="open = false" class="action-menu__panel">
-                                            <a :href="route('purchasings.goods_receipts.show', row.id)" @click.stop
-                                                class="action-menu__item">
-                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
-                                                Detail
-                                            </a>
-                                            @if (auth()->user()->can('purchasing.purchase-orders.view'))
-                                                <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)"
-                                                    @click.stop class="action-menu__item">
-                                                    <x-misc.icon name="eye" :size="14"
-                                                        stroke="var(--ink-3)" />Lihat
-                                                    PO
-                                                </a>
-                                            @endif
-                                            <button class="action-menu__item" @click.stop>
-                                                <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
-                                                Penerimaan
+                            </tr>
+                        </template>
+    
+                        <template x-if="!loading && tableData.data.length === 0">
+                            <tr>
+                                <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="!loading">
+                            <template x-for="row in tableData.data" :key="row.id">
+                                <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
+                                    @click="window.location = route('purchasings.goods_receipts.show', row.id)">
+                                    <td class="mono" style="font-weight:600;" x-text="row.number"></td>
+                                    <td style="color:var(--ink-3);" x-text="row.receipt_date ?? '-'"></td>
+                                    <td class="mono" style="font-weight:600;" x-text="row.purchase_order.number"></td>
+                                    <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
+                                    <td class="num" style="text-align:right;" x-text="m(row.total_received_quantity)"></td>
+                                    <td class="num" style="text-align:right;" x-text="m(row.total_shrinkage_quantity)"></td>
+                                    <td>
+                                        <span :class="statusChip(row.status).chip">
+                                            <span :class="statusChip(row.status).dot"></span>
+                                            <span x-text="statusChip(row.status).label"></span>
+                                        </span>
+                                    </td>
+                                    <td class="table-action-col">
+                                        <div x-data="{ open: false }" class="action-menu">
+                                            <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
+                                                x-on:click.stop="
+                                                let wasOpen = open;
+                                                $dispatch('close-menus');
+                                                if (!wasOpen) {
+                                                    let r = $el.getBoundingClientRect();
+                                                    $refs.panel.style.top = (r.bottom + 6) + 'px';
+                                                    $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
+                                                    open = true;
+                                                }
+                                            ">
+                                                <x-misc.icon name="more" :size="15" />
                                             </button>
-                                            @if (auth()->user()->can('purchasing.goods-receipts.edit') || auth()->user()->can('purchasing.goods-receipts.delete'))
-                                                <template x-if="row.status === '{{ $draft }}'">
+                                            <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
+                                                x-on:click.away="open = false" class="action-menu__panel">
+                                                <a :href="route('purchasings.goods_receipts.show', row.id)" @click.stop
+                                                    class="action-menu__item">
+                                                    <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                                    Detail
+                                                </a>
+                                                @if (auth()->user()->can('purchasing.purchase-orders.view'))
+                                                    <a :href="route('purchasings.purchase_orders.show', row.purchase_order_id)"
+                                                        @click.stop class="action-menu__item">
+                                                        <x-misc.icon name="eye" :size="14"
+                                                            stroke="var(--ink-3)" />Lihat
+                                                        PO
+                                                    </a>
+                                                @endif
+                                                <button class="action-menu__item" @click.stop>
+                                                    <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
+                                                    Penerimaan
+                                                </button>
+                                                @if (auth()->user()->can('purchasing.goods-receipts.edit') || auth()->user()->can('purchasing.goods-receipts.delete'))
+                                                    <template x-if="row.status === '{{ $draft }}'">
+                                                        <div>
+                                                            @if (auth()->user()->can('purchasing.goods-receipts.edit'))
+                                                                <a :href="route('purchasings.goods_receipts.edit', row.id)"
+                                                                    @click.stop class="action-menu__item">
+                                                                    <x-misc.icon name="edit" :size="14"
+                                                                        stroke="var(--ink-3)" />Edit
+                                                                    Penerimaan
+                                                                </a>
+                                                            @endif
+                                                            @if (auth()->user()->can('purchasing.goods-receipts.delete'))
+                                                                <div class="action-menu__divider"></div>
+                                                                <button class="action-menu__item action-menu__item--danger"
+                                                                    @click.stop="handleCancel(row.id)">
+                                                                    <x-misc.icon name="x" :size="14"
+                                                                        stroke="currentColor" />Batalkan
+                                                                    Penerimaan
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                    </template>
+                                                @endif
+                                                <template
+                                                    x-if="row.status === '{{ $finished }}' && invoicablePoIds.includes(row.purchase_order_id)">
                                                     <div>
-                                                        @if (auth()->user()->can('purchasing.goods-receipts.edit'))
-                                                            <a :href="route('purchasings.goods_receipts.edit', row.id)"
-                                                                @click.stop class="action-menu__item">
-                                                                <x-misc.icon name="edit" :size="14"
-                                                                    stroke="var(--ink-3)" />Edit
-                                                                Penerimaan
-                                                            </a>
-                                                        @endif
-                                                        @if (auth()->user()->can('purchasing.goods-receipts.delete'))
-                                                            <div class="action-menu__divider"></div>
-                                                            <button class="action-menu__item action-menu__item--danger"
-                                                                @click.stop="handleCancel(row.id)">
-                                                                <x-misc.icon name="x" :size="14"
-                                                                    stroke="currentColor" />Batalkan
-                                                                Penerimaan
+                                                        @if (auth()->user()->can('purchasing.invoices.create'))
+                                                            <button class="action-menu__item"
+                                                                @click.stop="handleCreatePurchaseInvoice(row.purchase_order_id)">
+                                                                <x-misc.icon name="receipt" :size="14"
+                                                                    stroke="var(--ink-3)" />Buat Tagihan
                                                             </button>
                                                         @endif
                                                     </div>
                                                 </template>
-                                            @endif
-                                            <template
-                                                x-if="row.status === '{{ $finished }}' && invoicablePoIds.includes(row.purchase_order_id)">
-                                                <div>
-                                                    @if (auth()->user()->can('purchasing.invoices.create'))
-                                                        <button class="action-menu__item"
-                                                            @click.stop="handleCreatePurchaseInvoice(row.purchase_order_id)">
-                                                            <x-misc.icon name="receipt" :size="14"
-                                                                stroke="var(--ink-3)" />Buat Tagihan
-                                                        </button>
-                                                    @endif
-                                                </div>
-                                            </template>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                            </tr>
-
+                                    </td>
+                                </tr>
+    
+                            </template>
                         </template>
-                    </template>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="table-pagination">
@@ -218,49 +220,51 @@
                 <input class="input" style="height:32px; width:100%;" placeholder="Cari nomor PO atau supplier..."
                     x-model="poPickerSearch" x-on:input.debounce.400ms="fetchPoPickerData()" />
             </div>
-            <table class="tbl tbl-tight">
-                <thead>
-                    <tr>
-                        <th>Nomor PO</th>
-                        <th>Tanggal</th>
-                        <th>Vendor</th>
-                        <th style="text-align:right;">Total</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-if="poPickerLoading">
+            <div class="tbl-scroll">
+                <table class="tbl tbl-tight">
+                    <thead>
                         <tr>
-                            <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
-                                Memuat data...
-                            </td>
+                            <th>Nomor PO</th>
+                            <th>Tanggal</th>
+                            <th>Vendor</th>
+                            <th style="text-align:right;">Total</th>
+                            <th>Status</th>
                         </tr>
-                    </template>
-                    <template x-if="!poPickerLoading && poPickerData.length === 0">
-                        <tr>
-                            <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
-                                Tidak ada PO yang tersedia untuk diterima.
-                            </td>
-                        </tr>
-                    </template>
-                    <template x-if="!poPickerLoading">
-                        <template x-for="po in poPickerData" :key="po.id">
-                            <tr class="row-tap" @click="handleCreateGoodsReceipt(po.id)">
-                                <td class="mono" style="font-weight:600;" x-text="po.number"></td>
-                                <td style="color:var(--ink-3);" x-text="po.order_date ?? '-'"></td>
-                                <td style="font-weight:500;" x-text="po.supplier?.name ?? '-'"></td>
-                                <td class="num" style="text-align:right;" x-text="m(po.total_amount)"></td>
-                                <td>
-                                    <span :class="poStatusChip(po.status).chip">
-                                        <span :class="poStatusChip(po.status).dot"></span>
-                                        <span x-text="poStatusChip(po.status).label"></span>
-                                    </span>
+                    </thead>
+                    <tbody>
+                        <template x-if="poPickerLoading">
+                            <tr>
+                                <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
+                                    Memuat data...
                                 </td>
                             </tr>
                         </template>
-                    </template>
-                </tbody>
-            </table>
+                        <template x-if="!poPickerLoading && poPickerData.length === 0">
+                            <tr>
+                                <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
+                                    Tidak ada PO yang tersedia untuk diterima.
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="!poPickerLoading">
+                            <template x-for="po in poPickerData" :key="po.id">
+                                <tr class="row-tap" @click="handleCreateGoodsReceipt(po.id)">
+                                    <td class="mono" style="font-weight:600;" x-text="po.number"></td>
+                                    <td style="color:var(--ink-3);" x-text="po.order_date ?? '-'"></td>
+                                    <td style="font-weight:500;" x-text="po.supplier?.name ?? '-'"></td>
+                                    <td class="num" style="text-align:right;" x-text="m(po.total_amount)"></td>
+                                    <td>
+                                        <span :class="poStatusChip(po.status).chip">
+                                            <span :class="poStatusChip(po.status).dot"></span>
+                                            <span x-text="poStatusChip(po.status).label"></span>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
         </x-misc.modal>
     </div>
 @endsection

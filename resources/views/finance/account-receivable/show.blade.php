@@ -41,7 +41,7 @@
         </div>
 
         <div class="card" style="overflow:hidden;">
-            <div class="order-items-split" style="grid-template-columns:1fr 320px;">
+            <div class="order-items-split order-items-split--aside">
                 <div style="padding:20px;">
                     <div class="label" style="margin-bottom:14px;">Informasi Invoice</div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px 24px;">
@@ -95,70 +95,72 @@
                     </button>
                 @endif
             </div>
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>No. Pembayaran</th>
-                        <th>Tanggal Pembayaran</th>
-                        <th>Metode Pembayaran</th>
-                        <th>No. Referensi</th>
-                        <th style="text-align:right;">Jumlah</th>
-                        <th>Catatan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-if="tableLoading">
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <thead>
                         <tr>
-                            <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Memuat data...
-                            </td>
+                            <th>#</th>
+                            <th>No. Pembayaran</th>
+                            <th>Tanggal Pembayaran</th>
+                            <th>Metode Pembayaran</th>
+                            <th>No. Referensi</th>
+                            <th style="text-align:right;">Jumlah</th>
+                            <th>Catatan</th>
                         </tr>
-                    </template>
-                    <template x-if="!tableLoading && tableData.data.length === 0">
-                        <tr>
-                            <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Tidak ada data
-                            </td>
-                        </tr>
-                    </template>
-                    <template x-if="!tableLoading && tableData.data.length > 0">
-                        <template x-for="(payment, index) in tableData.data" :key="payment.id">
+                    </thead>
+                    <tbody>
+                        <template x-if="tableLoading">
                             <tr>
-                                <td x-text="index + 1"></td>
-                                <td class="mono" style="font-weight:600;" x-text="payment.number"></td>
-                                <td style="color:var(--ink-3);"
-                                    x-text="new Date(payment.payment_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })">
+                                <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Memuat data...
                                 </td>
-                                <td x-text="paymentMethod(payment.payment_method)"></td>
-                                <td class="mono" style="font-size:11.5px; color:var(--ink-4);"
-                                    x-text="payment.reference_number || '—'"></td>
-                                <td class="num" style="text-align:right; font-weight:600;" x-text="m(payment.amount)">
-                                </td>
-                                <td style="color:var(--ink-3);" x-text="payment.note || '—'"></td>
                             </tr>
                         </template>
-                    </template>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="5" style="text-align:right; font-weight:700;">Total Dibayar</td>
-                        <td class="num" style="text-align:right; font-weight:700;"
-                            x-text="m(tableData.data.reduce((sum, p) => sum + p.amount, 0))"></td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-                {{-- @if ($invoice->payments->isNotEmpty())
+                        <template x-if="!tableLoading && tableData.data.length === 0">
+                            <tr>
+                                <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="!tableLoading && tableData.data.length > 0">
+                            <template x-for="(payment, index) in tableData.data" :key="payment.id">
+                                <tr>
+                                    <td x-text="index + 1"></td>
+                                    <td class="mono" style="font-weight:600;" x-text="payment.number"></td>
+                                    <td style="color:var(--ink-3);"
+                                        x-text="new Date(payment.payment_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })">
+                                    </td>
+                                    <td x-text="paymentMethod(payment.payment_method)"></td>
+                                    <td class="mono" style="font-size:11.5px; color:var(--ink-4);"
+                                        x-text="payment.reference_number || '—'"></td>
+                                    <td class="num" style="text-align:right; font-weight:600;" x-text="m(payment.amount)">
+                                    </td>
+                                    <td style="color:var(--ink-3);" x-text="payment.note || '—'"></td>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="4" style="text-align:right; font-weight:700;">Total Dibayar</td>
-                            <td class="num" style="text-align:right; font-weight:700;">
-                                {{ fmt_rp($invoice->payments->sum('amount')) }}</td>
+                            <td colspan="5" style="text-align:right; font-weight:700;">Total Dibayar</td>
+                            <td class="num" style="text-align:right; font-weight:700;"
+                                x-text="m(tableData.data.reduce((sum, p) => sum + p.amount, 0))"></td>
                             <td></td>
                         </tr>
                     </tfoot>
-                @endif --}}
-            </table>
+                    {{-- @if ($invoice->payments->isNotEmpty())
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" style="text-align:right; font-weight:700;">Total Dibayar</td>
+                                <td class="num" style="text-align:right; font-weight:700;">
+                                    {{ fmt_rp($invoice->payments->sum('amount')) }}</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    @endif --}}
+                </table>
+            </div>
         </div>
 
         {{-- Add Payment modal --}}

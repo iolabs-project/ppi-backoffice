@@ -142,3 +142,55 @@
   font-size: 11px;
   color: var(--ink-4);
 }
+
+.topbar__menu {
+  display: none;
+  flex-shrink: 0;
+  width: 44px; // minimum comfortable tap target
+  height: 44px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+@media (max-width: $bp-tablet) {
+  .topbar__inner { padding: 12px 20px; }
+  .topbar__clock-date { display: none; }
+  .topbar__clock { padding-left: 32px; }
+}
+
+@media (max-width: $bp-mobile) {
+  .topbar__inner {
+    padding: 10px 16px;
+    gap: 12px;
+  }
+
+  .topbar__menu { display: grid; }
+
+  // Only the current page fits; earlier crumbs are reachable through "Kembali"
+  .topbar__breadcrumb {
+    flex: 1;
+    overflow: hidden;
+
+    svg, .topbar__crumb--prev { display: none; }
+  }
+
+  .topbar__crumb--last {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .topbar__clock,
+  .topbar__user-text { display: none; }
+
+  .topbar__user {
+    border-left: 0;
+    padding-left: 0;
+    margin-left: 0;
+  }
+}

@@ -3,12 +3,16 @@
     <div class="card-hd-2" style="margin-bottom:12px;">
         <div class="display card-hd-title">Arus Kas</div>
         <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
-            <label style="font-size:12px; color:var(--ink-3);">Dari</label>
-            <input type="date" class="filter-panel__input" x-model="filter.start_date"
-                x-on:change="fetchData()" style="height:28px; font-size:12px;">
-            <label style="font-size:12px; color:var(--ink-3);">Sampai</label>
-            <input type="date" class="filter-panel__input" x-model="filter.end_date"
-                x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            <label class="report-date">
+                <span>Dari</span>
+                <input type="date" class="filter-panel__input" x-model="filter.start_date"
+                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            </label>
+            <label class="report-date">
+                <span>Sampai</span>
+                <input type="date" class="filter-panel__input" x-model="filter.end_date"
+                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            </label>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>

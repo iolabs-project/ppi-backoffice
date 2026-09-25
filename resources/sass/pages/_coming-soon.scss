@@ -3,6 +3,8 @@
   display: grid;
   place-items: center;
   min-height: 60vh;
+
+  @media (max-width: $bp-mobile) { padding: 16px 16px 40px; }
 }
 
 .coming-soon__inner {

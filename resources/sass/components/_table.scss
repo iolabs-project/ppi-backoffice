@@ -229,3 +229,69 @@
         }
     }
 }
+
+// Every .tbl sits in a .tbl-scroll. On smaller screens the table scrolls sideways inside its card
+// instead of stretching the page; cells keep one line so numbers, dates and codes stay readable.
+@media (max-width: $bp-tablet) {
+    .tbl-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        // Edge shadows show there is more table to the side; the "local" covers hide them at the ends
+        background:
+            linear-gradient(to right, var(--paper) 30%, transparent) left / 24px 100% no-repeat local,
+            linear-gradient(to left, var(--paper) 30%, transparent) right / 24px 100% no-repeat local,
+            radial-gradient(farthest-side at 0 50%, rgba(22, 19, 14, .14), transparent) left / 10px 100% no-repeat scroll,
+            radial-gradient(farthest-side at 100% 50%, rgba(22, 19, 14, .14), transparent) right / 10px 100% no-repeat scroll;
+
+        // Size columns by their content (inputs, header widths) instead of squeezing them into the screen
+        > .tbl {
+            width: max-content;
+            min-width: 100%;
+        }
+
+        // Empty states / loaders span the whole (wider) table; keep their text in view
+        tbody td[colspan] {
+            text-align: left !important;
+            padding-left: 16px !important;
+        }
+    }
+
+    .tbl th,
+    .tbl td {
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: $bp-mobile) {
+    // Form-like tables (label | control): each row stacks, the control takes the full width
+    .tbl-scroll:has(> .tbl--stack) {
+        overflow-x: visible;
+        background: none;
+    }
+
+    .tbl--stack {
+        width: 100% !important;
+
+        thead { display: none; }
+
+        tbody, tr, td { display: block; }
+
+        td { white-space: normal !important; }
+
+        td:not([colspan]):first-child {
+            border-bottom: 0;
+            padding-bottom: 6px;
+        }
+
+        td + td { padding-top: 0; }
+    }
+
+    // Tighter cells so small tables fit the card without scrolling
+    .tbl th { padding: 10px; }
+    .tbl td { padding: 12px 10px; }
+
+    .table-pagination {
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+}

@@ -1,7 +1,10 @@
 .kasbank-page {
   padding: 24px 28px 60px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr); // children follow the screen width instead of their widest table
   gap: 16px;
+
+  @media (max-width: $bp-mobile) { padding: 16px 16px 40px; }
 }
 
 // Total saldo hero card
@@ -41,7 +44,7 @@
 // Account cards grid
 .account-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(450px, 100%), 1fr));
   gap: 14px;
 }
 
@@ -166,6 +169,12 @@
 }
 
 .stat-card--dark .stat-card__value { font-size: 26px; }
+
+@media (max-width: $bp-mobile) {
+  .stat-card { padding: 14px 16px; }
+  .stat-card__value { font-size: 20px; }
+  .stat-card--dark .stat-card__value { font-size: 22px; }
+}
 
 .stat-card--good {
   .stat-card__label { color: var(--good); opacity: 1; }

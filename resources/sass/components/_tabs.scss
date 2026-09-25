@@ -3,6 +3,14 @@
   display: flex;
   align-items: center;
   border-bottom: 2px solid var(--line);
+
+  // Too many tabs for a phone: the bar scrolls sideways instead of widening the page
+  @media (max-width: $bp-mobile) {
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    .utab-item { flex-shrink: 0; white-space: nowrap; }
+  }
 }
 
 .utab-item {

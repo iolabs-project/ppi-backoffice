@@ -3,12 +3,16 @@
     <div class="card-hd-2" style="margin-bottom:12px;">
         <div class="display card-hd-title">Laba Rugi</div>
         <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
-            <label style="font-size:12px; color:var(--ink-3);">Dari</label>
-            <input type="date" class="filter-panel__input" x-model="filter.start_date"
-                x-on:change="fetchData()" style="height:28px; font-size:12px;">
-            <label style="font-size:12px; color:var(--ink-3);">Sampai</label>
-            <input type="date" class="filter-panel__input" x-model="filter.end_date"
-                x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            <label class="report-date">
+                <span>Dari</span>
+                <input type="date" class="filter-panel__input" x-model="filter.start_date"
+                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            </label>
+            <label class="report-date">
+                <span>Sampai</span>
+                <input type="date" class="filter-panel__input" x-model="filter.end_date"
+                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            </label>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
@@ -19,27 +23,29 @@
             <div class="neraca-card-hd">
                 <div class="display" style="font-weight:700; font-size:14px;">Laba & Rugi</div>
             </div>
-            <table class="tbl">
-                <tbody>
-                    <template x-if="loading">
-                        <tr>
-                            <td colspan="3" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Memuat data...
-                            </td>
-                        </tr>
-                    </template>
-                    <template x-if="!loading">
-                        <template x-for="row in reportRows()" :key="row.key">
-                            <tr :style="row.rowStyle">
-                                <template x-for="cell in row.cells" :key="cell.key">
-                                    <td :colspan="cell.colspan" :class="cell.class" :style="cell.style"
-                                        x-text="cell.text"></td>
-                                </template>
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <tbody>
+                        <template x-if="loading">
+                            <tr>
+                                <td colspan="3" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Memuat data...
+                                </td>
                             </tr>
                         </template>
-                    </template>
-                </tbody>
-            </table>
+                        <template x-if="!loading">
+                            <template x-for="row in reportRows()" :key="row.key">
+                                <tr :style="row.rowStyle">
+                                    <template x-for="cell in row.cells" :key="cell.key">
+                                        <td :colspan="cell.colspan" :class="cell.class" :style="cell.style"
+                                            x-text="cell.text"></td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

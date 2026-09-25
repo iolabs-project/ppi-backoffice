@@ -13,74 +13,76 @@
                 </button>
             @endif
         </div>
-        <table class="tbl">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Role</th>
-                    <th>Kontak / Karyawan</th>
-                    <th>Status</th>
-                    <th style="width:40px;"></th>
-                </tr>
-            </thead>
-            <tbody>
-                <template x-for="u in tableData.data" :key="u.id">
-                    <tr class="row-tap" style="cursor:pointer;">
-                        <td>
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <div class="avatar"
-                                        :style="'background:' + avatarMeta(u.username).bg + '; color:' + avatarMeta(u.username).fg"
-                                        x-text="avatarMeta(u.username).initials"></div>
-                                    <span style="font-weight:600; font-size:13px;" x-text="u.username"></span>
+        <div class="tbl-scroll">
+            <table class="tbl">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Kontak / Karyawan</th>
+                        <th>Status</th>
+                        <th style="width:40px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="u in tableData.data" :key="u.id">
+                        <tr class="row-tap" style="cursor:pointer;">
+                            <td>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div class="avatar"
+                                            :style="'background:' + avatarMeta(u.username).bg + '; color:' + avatarMeta(u.username).fg"
+                                            x-text="avatarMeta(u.username).initials"></div>
+                                        <span style="font-weight:600; font-size:13px;" x-text="u.username"></span>
+                                    </div>
+                                </td>
+                            <td><span class="chip" x-text="u.role_name || '—'"></span></td>
+                            <td style="font-size:13px; color:var(--ink-3);" x-text="u.contact ? u.contact.name : '—'"></td>
+                            <td>
+                                <span class="chip"
+                                    :style="!u.deleted_at ? 'background:oklch(0.92 0.06 145);color:oklch(0.40 0.12 145)' :
+                                        'background:oklch(0.92 0.04 15);color:oklch(0.45 0.14 15)'"
+                                    x-text="!u.deleted_at ? 'Aktif' : 'Nonaktif'"></span>
+                            </td>
+                            <td x-on:click.stop>
+                                <div class="action-menu" x-data="{ open: false }">
+                                    <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                                        x-on:click="open = !open" x-on:click.outside="open = false">
+                                        <x-misc.icon name="more" :size="15" />
+                                    </button>
+                                    <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
+                                        style="position:absolute; right:0; top:100%; margin-top:4px;">
+                                        @if (auth()->user()->can('master.users.edit'))
+                                            <button class="action-menu__item" x-on:click="openEditModal(u)">
+                                                <x-misc.icon name="edit" :size="14" /> Edit User
+                                            </button>
+                                            {{-- Shown once the backend registers the password endpoint --}}
+                                            @if (Route::has('master.users.password'))
+                                                <button class="action-menu__item" x-on:click="openChangePasswordModal(u)">
+                                                    <x-misc.icon name="lock" :size="14" /> Ganti Password
+                                                </button>
+                                            @endif
+                                        @endif
+                                        @if (auth()->user()->can('master.users.delete'))
+                                            <template x-if="!u.deleted_at">
+                                                <button class="action-menu__item action-menu__item--danger"
+                                                    x-on:click="handleStatus(u)">
+                                                    <x-misc.icon name="trash" :size="14" /> Nonaktifkan
+                                                </button>
+                                            </template>
+                                            <template x-if="u.deleted_at">
+                                                <button class="action-menu__item" x-on:click="handleStatus(u)">
+                                                    <x-misc.icon name="refresh" :size="14" /> Aktifkan
+                                                </button>
+                                            </template>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
-                        <td><span class="chip" x-text="u.role_name || '—'"></span></td>
-                        <td style="font-size:13px; color:var(--ink-3);" x-text="u.contact ? u.contact.name : '—'"></td>
-                        <td>
-                            <span class="chip"
-                                :style="!u.deleted_at ? 'background:oklch(0.92 0.06 145);color:oklch(0.40 0.12 145)' :
-                                    'background:oklch(0.92 0.04 15);color:oklch(0.45 0.14 15)'"
-                                x-text="!u.deleted_at ? 'Aktif' : 'Nonaktif'"></span>
-                        </td>
-                        <td x-on:click.stop>
-                            <div class="action-menu" x-data="{ open: false }">
-                                <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
-                                    x-on:click="open = !open" x-on:click.outside="open = false">
-                                    <x-misc.icon name="more" :size="15" />
-                                </button>
-                                <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
-                                    style="position:absolute; right:0; top:100%; margin-top:4px;">
-                                    @if (auth()->user()->can('master.users.edit'))
-                                        <button class="action-menu__item" x-on:click="openEditModal(u)">
-                                            <x-misc.icon name="edit" :size="14" /> Edit User
-                                        </button>
-                                        {{-- Shown once the backend registers the password endpoint --}}
-                                        @if (Route::has('master.users.password'))
-                                            <button class="action-menu__item" x-on:click="openChangePasswordModal(u)">
-                                                <x-misc.icon name="lock" :size="14" /> Ganti Password
-                                            </button>
-                                        @endif
-                                    @endif
-                                    @if (auth()->user()->can('master.users.delete'))
-                                        <template x-if="!u.deleted_at">
-                                            <button class="action-menu__item action-menu__item--danger"
-                                                x-on:click="handleStatus(u)">
-                                                <x-misc.icon name="trash" :size="14" /> Nonaktifkan
-                                            </button>
-                                        </template>
-                                        <template x-if="u.deleted_at">
-                                            <button class="action-menu__item" x-on:click="handleStatus(u)">
-                                                <x-misc.icon name="refresh" :size="14" /> Aktifkan
-                                            </button>
-                                        </template>
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
         <div class="table-pagination">
             <span class="pagination-info"
                 x-text="(tableData.total === 0 ? 0 : ((tableData.current_page - 1) * tableData.per_page + 1)) + '–' + (tableData.total === 0 ? 0 : Math.min(tableData.current_page * tableData.per_page, tableData.total)) + ' dari ' + tableData.total + ' user'"></span>

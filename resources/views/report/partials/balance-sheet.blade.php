@@ -3,9 +3,11 @@
     <div class="card-hd-2" style="margin-bottom:12px;">
         <div class="display card-hd-title">Neraca</div>
         <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
-            <label style="font-size:12px; color:var(--ink-3);">Per Tanggal</label>
-            <input type="date" class="filter-panel__input" x-model="filter.as_of_date"
-                x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            <label class="report-date">
+                <span>Per Tanggal</span>
+                <input type="date" class="filter-panel__input" x-model="filter.as_of_date"
+                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            </label>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
@@ -17,37 +19,7 @@
             <div class="display" style="font-weight:700; font-size:14px;">Aset</div>
             <div class="num" style="font-weight:700; color:var(--accent);" x-text="formatCurrency(tableData.asset.total)"></div>
         </div>
-        <table class="tbl">
-            <tbody>
-                <template x-if="loading">
-                    <tr>
-                        <td colspan="3" style="text-align:center; color:var(--ink-3); padding:20px;">
-                            Memuat data...
-                        </td>
-                    </tr>
-                </template>
-                <template x-if="!loading">
-                    <template x-for="account in tableData.asset.accounts" :key="account.account_id">
-                        <tr>
-                            <td class="mono" style="font-size:11.5px; color:var(--ink-4); width:80px;"
-                                x-text="account.account_code"></td>
-                            <td style="font-size:13px;" x-text="account.account_name"></td>
-                            <td class="num" style="text-align:right; font-weight:600; font-size:13px;"
-                                x-text="formatCurrency(account.balance)"></td>
-                        </tr>
-                    </template>
-                </template>
-            </tbody>
-        </table>
-    </div>
-
-    {{-- Liabilitas + Ekuitas --}}
-    <div class="neraca-side">
-        <div class="card" style="overflow:hidden;">
-            <div class="neraca-card-hd">
-                <div class="display" style="font-weight:700; font-size:14px;">Liabilitas</div>
-                <div class="num" style="font-weight:700; color:var(--bad);" x-text="formatCurrency(tableData.liability.total)"></div>
-            </div>
+        <div class="tbl-scroll">
             <table class="tbl">
                 <tbody>
                     <template x-if="loading">
@@ -58,7 +30,7 @@
                         </tr>
                     </template>
                     <template x-if="!loading">
-                        <template x-for="account in tableData.liability.accounts" :key="account.account_id">
+                        <template x-for="account in tableData.asset.accounts" :key="account.account_id">
                             <tr>
                                 <td class="mono" style="font-size:11.5px; color:var(--ink-4); width:80px;"
                                     x-text="account.account_code"></td>
@@ -71,34 +43,70 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    {{-- Liabilitas + Ekuitas --}}
+    <div class="neraca-side">
+        <div class="card" style="overflow:hidden;">
+            <div class="neraca-card-hd">
+                <div class="display" style="font-weight:700; font-size:14px;">Liabilitas</div>
+                <div class="num" style="font-weight:700; color:var(--bad);" x-text="formatCurrency(tableData.liability.total)"></div>
+            </div>
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <tbody>
+                        <template x-if="loading">
+                            <tr>
+                                <td colspan="3" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Memuat data...
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="!loading">
+                            <template x-for="account in tableData.liability.accounts" :key="account.account_id">
+                                <tr>
+                                    <td class="mono" style="font-size:11.5px; color:var(--ink-4); width:80px;"
+                                        x-text="account.account_code"></td>
+                                    <td style="font-size:13px;" x-text="account.account_name"></td>
+                                    <td class="num" style="text-align:right; font-weight:600; font-size:13px;"
+                                        x-text="formatCurrency(account.balance)"></td>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
         <div class="card" style="overflow:hidden;">
             <div class="neraca-card-hd">
                 <div class="display" style="font-weight:700; font-size:14px;">Ekuitas</div>
                 <div class="num" style="font-weight:700; color:var(--good);" x-text="formatCurrency(tableData.equity.total)"></div>
             </div>
-            <table class="tbl">
-                <tbody>
-                    <template x-if="loading">
-                        <tr>
-                            <td colspan="3" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Memuat data...
-                            </td>
-                        </tr>
-                    </template>
-                    <template x-if="!loading">
-                        <template x-for="account in tableData.equity.accounts"
-                            :key="account.account_id ?? account.account_name">
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <tbody>
+                        <template x-if="loading">
                             <tr>
-                                <td class="mono" style="font-size:11.5px; color:var(--ink-4); width:80px;"
-                                    x-text="account.account_code"></td>
-                                <td style="font-size:13px;" x-text="account.account_name"></td>
-                                <td class="num" style="text-align:right; font-weight:600; font-size:13px;"
-                                    x-text="formatCurrency(account.balance)"></td>
+                                <td colspan="3" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Memuat data...
+                                </td>
                             </tr>
                         </template>
-                    </template>
-                </tbody>
-            </table>
+                        <template x-if="!loading">
+                            <template x-for="account in tableData.equity.accounts"
+                                :key="account.account_id ?? account.account_name">
+                                <tr>
+                                    <td class="mono" style="font-size:11.5px; color:var(--ink-4); width:80px;"
+                                        x-text="account.account_code"></td>
+                                    <td style="font-size:13px;" x-text="account.account_name"></td>
+                                    <td class="num" style="text-align:right; font-weight:600; font-size:13px;"
+                                        x-text="formatCurrency(account.balance)"></td>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div class="card neraca-total-row">
             <span style="font-size:13px; font-weight:600;">Total Liabilitas + Ekuitas</span>

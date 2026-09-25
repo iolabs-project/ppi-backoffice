@@ -12,7 +12,7 @@
                         style="color:var(--bad);" x-text="m(outstandingAmount())"></strong></div>
             </div>
         </div>
-        <div class="form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="form-grid-2">
             <x-misc.field label="No. Pembayaran">
                 <input class="input mono" disabled value="Otomatis saat disimpan" style="color:var(--ink-4);" />
             </x-misc.field>

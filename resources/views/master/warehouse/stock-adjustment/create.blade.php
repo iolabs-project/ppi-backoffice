@@ -198,87 +198,89 @@
                     <x-misc.icon name="plus" :size="13" />Tambah Produk
                 </button>
             </div>
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th style="width:48px;">#</th>
-                        <th>Pilih Produk / Batch</th>
-                        <th style="width:120px; text-align:right;">Qty Sistem</th>
-                        <th style="width:140px; text-align:right;">Qty Hasil Hitung</th>
-                        <th style="width:120px; text-align:right;">Selisih</th>
-                        <th style="width:100px;">Satuan</th>
-                        <th style="width:40px;"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="(it, i) in formData.details" :key="i">
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <thead>
                         <tr>
-                            <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
-                            <td data-field data-field-compact data-field-required :data-field-label="'Batch baris ' + (i + 1)" :data-field-name="'details.' + i + '.product_batch_id'">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <div class="product-icon">
-                                        <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
-                                    </div>
-                                    <div style="flex:1;">
-                                        <x-misc.async-select url="{{ route('master.products.options.batches') }}"
-                                            display="it.product_batch_id ? it.product_name : 'Pilih Produk / Batch'"
-                                            hasValue="it.product_batch_id"
-                                            default="it.product_batch_id ? [{ id: it.product_batch_id, product_id: it.product_id, product: { name: it.product_name, code: it.product_code, unit: { symbol: it.unit } }, batch_number: it.batch_number, quantity: it.system_quantity, unit_cost: it.unit_cost }] : []"
-                                            params="{ warehouse_id: warehouse.id, exclude_batch_ids: excludedBatchIds() }"
-                                            placeholder="Cari produk atau batch..." min-width="320px" height="32px">
-                                            <template x-for="b in items" :key="b.id">
-                                                <div class="dropdown-item" @click="selectBatch(it, b);open=false;q=''">
-                                                    <div style="flex:1; min-width:0;">
-                                                        <div style="font-size:13px;" x-text="b.product.name"></div>
-                                                        <div class="mono" style="font-size:11px; color:var(--ink-4);"
-                                                            x-text="b.product.code + ' · ' + b.batch_number"></div>
+                            <th style="width:48px;">#</th>
+                            <th>Pilih Produk / Batch</th>
+                            <th style="width:120px; text-align:right;">Qty Sistem</th>
+                            <th style="width:140px; text-align:right;">Qty Hasil Hitung</th>
+                            <th style="width:120px; text-align:right;">Selisih</th>
+                            <th style="width:100px;">Satuan</th>
+                            <th style="width:40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="(it, i) in formData.details" :key="i">
+                            <tr>
+                                <td class="mono" style="color:var(--ink-4);" x-text="String(i+1).padStart(2,'0')"></td>
+                                <td data-field data-field-compact data-field-required :data-field-label="'Batch baris ' + (i + 1)" :data-field-name="'details.' + i + '.product_batch_id'">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div class="product-icon">
+                                            <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
+                                        </div>
+                                        <div style="flex:1;">
+                                            <x-misc.async-select url="{{ route('master.products.options.batches') }}"
+                                                display="it.product_batch_id ? it.product_name : 'Pilih Produk / Batch'"
+                                                hasValue="it.product_batch_id"
+                                                default="it.product_batch_id ? [{ id: it.product_batch_id, product_id: it.product_id, product: { name: it.product_name, code: it.product_code, unit: { symbol: it.unit } }, batch_number: it.batch_number, quantity: it.system_quantity, unit_cost: it.unit_cost }] : []"
+                                                params="{ warehouse_id: warehouse.id, exclude_batch_ids: excludedBatchIds() }"
+                                                placeholder="Cari produk atau batch..." min-width="320px" height="32px">
+                                                <template x-for="b in items" :key="b.id">
+                                                    <div class="dropdown-item" @click="selectBatch(it, b);open=false;q=''">
+                                                        <div style="flex:1; min-width:0;">
+                                                            <div style="font-size:13px;" x-text="b.product.name"></div>
+                                                            <div class="mono" style="font-size:11px; color:var(--ink-4);"
+                                                                x-text="b.product.code + ' · ' + b.batch_number"></div>
+                                                        </div>
+                                                        <span class="dropdown-item__sub"
+                                                            x-text="m(b.quantity) + ' ' + b.product.unit.symbol"></span>
                                                     </div>
-                                                    <span class="dropdown-item__sub"
-                                                        x-text="m(b.quantity) + ' ' + b.product.unit.symbol"></span>
-                                                </div>
-                                            </template>
-                                        </x-misc.async-select>
-                                        <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
-                                            x-text="it.product_code ? (it.product_code + ' · ' + it.batch_number) : '— belum dipilih'">
+                                                </template>
+                                            </x-misc.async-select>
+                                            <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
+                                                x-text="it.product_code ? (it.product_code + ' · ' + it.batch_number) : '— belum dipilih'">
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input input--readonly"
-                                    style="height:32px; display:flex; align-items:center; justify-content:flex-end; padding:0 10px; color:var(--ink-3);">
-                                    <span x-text="it.system_quantity !== null ? m(it.system_quantity) : '—'"></span>
-                                </div>
-                            </td>
-                            <td data-field data-field-compact data-field-required :data-field-label="'Qty Aktual baris ' + (i + 1)" :data-field-name="'details.' + i + '.counted_quantity'">
-                                <input class="input num" style="height:32px; text-align:right;"
-                                    x-model="it.counted_quantity" :disabled="!it.product_batch_id"
-                                    x-mask:dynamic="$money($input, '.',',')" />
-                            </td>
-                            <td class="mono" style="text-align:right;"
-                                :style="difference(it) > 0 ? 'color:var(--ok);' : (difference(it) < 0 ? 'color:var(--bad);' :
-                                    'color:var(--ink-3);')">
-                                <span
-                                    x-text="difference(it) !== null ? (difference(it) > 0 ? '+' : '') + m(difference(it)) : '—'"></span>
-                            </td>
-                            <td>
-                                <div class="input input--readonly"
-                                    style="height:32px; display:flex; align-items:center; padding:0 10px; color:var(--ink-3);">
-                                    <span x-text="it.unit || '—'"></span>
-                                </div>
-                            </td>
-                            <td>
-                                <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
-                                    :disabled="formData.details.length <= 1"
-                                    :style="formData.details.length <= 1 ? 'opacity:0.25; cursor:not-allowed;' : ''"
-                                    @click="deleteDetail(i)">
-                                    <x-misc.icon name="trash" :size="14" stroke="var(--ink-4)" />
-                                </button>
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
+                                </td>
+                                <td>
+                                    <div class="input input--readonly"
+                                        style="height:32px; display:flex; align-items:center; justify-content:flex-end; padding:0 10px; color:var(--ink-3);">
+                                        <span x-text="it.system_quantity !== null ? m(it.system_quantity) : '—'"></span>
+                                    </div>
+                                </td>
+                                <td data-field data-field-compact data-field-required :data-field-label="'Qty Aktual baris ' + (i + 1)" :data-field-name="'details.' + i + '.counted_quantity'">
+                                    <input class="input num" style="height:32px; text-align:right;"
+                                        x-model="it.counted_quantity" :disabled="!it.product_batch_id"
+                                        x-mask:dynamic="$money($input, '.',',')" />
+                                </td>
+                                <td class="mono" style="text-align:right;"
+                                    :style="difference(it) > 0 ? 'color:var(--ok);' : (difference(it) < 0 ? 'color:var(--bad);' :
+                                        'color:var(--ink-3);')">
+                                    <span
+                                        x-text="difference(it) !== null ? (difference(it) > 0 ? '+' : '') + m(difference(it)) : '—'"></span>
+                                </td>
+                                <td>
+                                    <div class="input input--readonly"
+                                        style="height:32px; display:flex; align-items:center; padding:0 10px; color:var(--ink-3);">
+                                        <span x-text="it.unit || '—'"></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                                        :disabled="formData.details.length <= 1"
+                                        :style="formData.details.length <= 1 ? 'opacity:0.25; cursor:not-allowed;' : ''"
+                                        @click="deleteDetail(i)">
+                                        <x-misc.icon name="trash" :size="14" stroke="var(--ink-4)" />
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         {{-- Catatan --}}

@@ -491,113 +491,115 @@
                     <x-misc.icon name="plus" :size="13" />Tambah Produk
                 </button>
             </div>
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th style="width:36px;">#</th>
-                        <th>Produk</th>
-                        <th style="width:180px;">Batch</th>
-                        <th style="text-align:right; width:96px;">Sisa</th>
-                        <th style="text-align:right; width:110px;">Ekspektasi</th>
-                        <th style="text-align:right; width:110px;">Diterima</th>
-                        <th style="text-align:right; width:80px;">Susut</th>
-                        <th style="width:150px; text-align:right;">Harga</th>
-                        <th style="width:120px; text-align:right;">HPP</th>
-                        <th style="width:40px;"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template class="" x-for="(item, index) in formData.details" :key="index">
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <thead>
                         <tr>
-                            <td class="mono" style="color:var(--ink-4);" x-text="String(index + 1).padStart(2, '0')"></td>
-                            <td data-field data-field-compact data-field-required :data-field-label="'Produk baris ' + (index + 1)" :data-field-name="'details.' + index + '.product_id'">
-                                <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-                                    <div class="product-icon">
-                                        <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
-                                    </div>
-                                    <div style="flex:1; min-width:0;">
-                                        <x-misc.select display="item.product_id ? item.name : 'Pilih Produk'"
-                                            hasValue="item.product_id" placeholder="Cari produk..." min-width="280px"
-                                            height="32px">
-                                            <template x-for="p in availablePOItems(q)" :key="p.id">
-                                                <div class="dropdown-item" @click="selectProduct(item, p);open=false;q=''">
-                                                    <div style="flex:1; min-width:0;">
-                                                        <div style="font-size:13px;" x-text="p.product_name"></div>
-                                                        <div class="mono" style="font-size:11px; color:var(--ink-4);"
-                                                            x-text="p.product_code"></div>
+                            <th style="width:36px;">#</th>
+                            <th>Produk</th>
+                            <th style="width:180px;">Batch</th>
+                            <th style="text-align:right; width:96px;">Sisa</th>
+                            <th style="text-align:right; width:110px;">Ekspektasi</th>
+                            <th style="text-align:right; width:110px;">Diterima</th>
+                            <th style="text-align:right; width:80px;">Susut</th>
+                            <th style="width:150px; text-align:right;">Harga</th>
+                            <th style="width:120px; text-align:right;">HPP</th>
+                            <th style="width:40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template class="" x-for="(item, index) in formData.details" :key="index">
+                            <tr>
+                                <td class="mono" style="color:var(--ink-4);" x-text="String(index + 1).padStart(2, '0')"></td>
+                                <td data-field data-field-compact data-field-required :data-field-label="'Produk baris ' + (index + 1)" :data-field-name="'details.' + index + '.product_id'">
+                                    <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                                        <div class="product-icon">
+                                            <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
+                                        </div>
+                                        <div style="flex:1; min-width:0;">
+                                            <x-misc.select display="item.product_id ? item.name : 'Pilih Produk'"
+                                                hasValue="item.product_id" placeholder="Cari produk..." min-width="280px"
+                                                height="32px">
+                                                <template x-for="p in availablePOItems(q)" :key="p.id">
+                                                    <div class="dropdown-item" @click="selectProduct(item, p);open=false;q=''">
+                                                        <div style="flex:1; min-width:0;">
+                                                            <div style="font-size:13px;" x-text="p.product_name"></div>
+                                                            <div class="mono" style="font-size:11px; color:var(--ink-4);"
+                                                                x-text="p.product_code"></div>
+                                                        </div>
+                                                        <span class="dropdown-item__sub" x-text="p.unit"></span>
                                                     </div>
-                                                    <span class="dropdown-item__sub" x-text="p.unit"></span>
-                                                </div>
-                                            </template>
-                                            <template x-if="availablePOItems(q).length === 0">
-                                                <div class="dropdown-empty">Tidak ditemukan</div>
-                                            </template>
-                                        </x-misc.select>
-                                        <div class="mono" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:11px; color:var(--ink-4); margin-top:3px;">
-                                            <span x-text="item.code || '— belum dipilih'"></span>
-                                            <template x-if="item.unit">
-                                                <span class="auto-tag" x-text="item.unit"></span>
-                                            </template>
+                                                </template>
+                                                <template x-if="availablePOItems(q).length === 0">
+                                                    <div class="dropdown-empty">Tidak ditemukan</div>
+                                                </template>
+                                            </x-misc.select>
+                                            <div class="mono" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:11px; color:var(--ink-4); margin-top:3px;">
+                                                <span x-text="item.code || '— belum dipilih'"></span>
+                                                <template x-if="item.unit">
+                                                    <span class="auto-tag" x-text="item.unit"></span>
+                                                </template>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input input--readonly"
-                                    style="display:flex; align-items:center; justify-content:space-between; gap:8px; height:32px;">
-                                    <span class="mono" style="flex:1; min-width:0; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
-                                        x-text="batchNumberPlaceholder(item.batch_prefix)"></span>
-                                    <span class="auto-tag">Auto</span>
-                                </div>
-                            </td>
-                            <td class="mono num" style="font-weight:600; text-align:right;"
-                                x-text="item.remaining_quantity != null ? NumberUtils.formatNumericIntoMask(item.remaining_quantity) : '0'"></td>
-                            <td><input class="input num" style="height:32px; text-align:right;"
-                                    x-model="item.expected_quantity" x-mask:dynamic="$money($input, '.',',')"
-                                    @input="handleExpectedQuantityInput(item)" /></td>
-                            <td data-field data-field-compact data-field-required :data-field-label="'Qty Diterima baris ' + (index + 1)" :data-field-name="'details.' + index + '.received_quantity'"><input class="input num" style="height:32px; text-align:right;"
-                                    x-model="item.received_quantity" x-mask:dynamic="$money($input, '.',',')"
-                                    @input="handleReceivedQuantityInput(item); recalc()" /></td>
-                            <td class="mono num" style="font-weight:600; text-align:right;"
-                                x-text="item.shrinkage_quantity != null ? NumberUtils.formatNumericIntoMask(item.shrinkage_quantity) : '0'"></td>
-                            <td style="text-align:right;">
-                                <div class="mono" style="font-weight:600;"
-                                    x-text="item.unit_price != null ? NumberUtils.formatNumericIntoMask(item.unit_price) : '0'"></div>
-                                <template x-if="item.discount_amount != null || item.discount_percentage != null">
-                                    <div class="order-items__sub mono"
-                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align:right;"
-                                        x-text="'Disc ' + (item.discount_percentage != null ? NumberUtils.formatNumericIntoMask(item.discount_percentage) : '0') + '%'">
+                                </td>
+                                <td>
+                                    <div class="input input--readonly"
+                                        style="display:flex; align-items:center; justify-content:space-between; gap:8px; height:32px;">
+                                        <span class="mono" style="flex:1; min-width:0; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                                            x-text="batchNumberPlaceholder(item.batch_prefix)"></span>
+                                        <span class="auto-tag">Auto</span>
                                     </div>
-                                </template>
-                                <template x-if="item.subtotal != null">
-                                    <div class="order-items__sub mono"
-                                        style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align:right;"
-                                        x-text="NumberUtils.formatNumericIntoMask(item.subtotal)"></div>
-                                </template>
-                            </td>
-                            <td class="mono num" style="font-weight:600; text-align:right;"
-                                x-text="item.unit_cost != null ? NumberUtils.formatNumericIntoMask(item.unit_cost) : '0'"></td>
-                            <td>
-                                <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
-                                    :disabled="formData.details.length <= 1"
-                                    :style="formData.details.length <= 1 ? 'opacity:0.25; cursor:not-allowed;' : ''"
-                                    @click="deleteProduct(index)">
-                                    <x-misc.icon name="trash" :size="14" stroke="var(--ink-4)" />
-                                </button>
-                            </td>
-                        </tr>
-
-                    </template>
-                    <template x-if="formData.details.length === 0">
-                        <tr>
-                            <td colspan="10" style="text-align:center; color:var(--ink-4); padding:16px 0;">
-                                Belum ada produk yang ditambahkan. Klik tombol <strong>Tambah Produk</strong> untuk
-                                menambahkan produk dari PO.
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
+                                </td>
+                                <td class="mono num" style="font-weight:600; text-align:right;"
+                                    x-text="item.remaining_quantity != null ? NumberUtils.formatNumericIntoMask(item.remaining_quantity) : '0'"></td>
+                                <td><input class="input num" style="height:32px; text-align:right;"
+                                        x-model="item.expected_quantity" x-mask:dynamic="$money($input, '.',',')"
+                                        @input="handleExpectedQuantityInput(item)" /></td>
+                                <td data-field data-field-compact data-field-required :data-field-label="'Qty Diterima baris ' + (index + 1)" :data-field-name="'details.' + index + '.received_quantity'"><input class="input num" style="height:32px; text-align:right;"
+                                        x-model="item.received_quantity" x-mask:dynamic="$money($input, '.',',')"
+                                        @input="handleReceivedQuantityInput(item); recalc()" /></td>
+                                <td class="mono num" style="font-weight:600; text-align:right;"
+                                    x-text="item.shrinkage_quantity != null ? NumberUtils.formatNumericIntoMask(item.shrinkage_quantity) : '0'"></td>
+                                <td style="text-align:right;">
+                                    <div class="mono" style="font-weight:600;"
+                                        x-text="item.unit_price != null ? NumberUtils.formatNumericIntoMask(item.unit_price) : '0'"></div>
+                                    <template x-if="item.discount_amount != null || item.discount_percentage != null">
+                                        <div class="order-items__sub mono"
+                                            style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align:right;"
+                                            x-text="'Disc ' + (item.discount_percentage != null ? NumberUtils.formatNumericIntoMask(item.discount_percentage) : '0') + '%'">
+                                        </div>
+                                    </template>
+                                    <template x-if="item.subtotal != null">
+                                        <div class="order-items__sub mono"
+                                            style="font-size:11px; color:var(--ink-4); margin-top:2px; text-align:right;"
+                                            x-text="NumberUtils.formatNumericIntoMask(item.subtotal)"></div>
+                                    </template>
+                                </td>
+                                <td class="mono num" style="font-weight:600; text-align:right;"
+                                    x-text="item.unit_cost != null ? NumberUtils.formatNumericIntoMask(item.unit_cost) : '0'"></td>
+                                <td>
+                                    <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                                        :disabled="formData.details.length <= 1"
+                                        :style="formData.details.length <= 1 ? 'opacity:0.25; cursor:not-allowed;' : ''"
+                                        @click="deleteProduct(index)">
+                                        <x-misc.icon name="trash" :size="14" stroke="var(--ink-4)" />
+                                    </button>
+                                </td>
+                            </tr>
+    
+                        </template>
+                        <template x-if="formData.details.length === 0">
+                            <tr>
+                                <td colspan="10" style="text-align:center; color:var(--ink-4); padding:16px 0;">
+                                    Belum ada produk yang ditambahkan. Klik tombol <strong>Tambah Produk</strong> untuk
+                                    menambahkan produk dari PO.
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
             <div style="padding:12px 16px; font-size:12px; color:var(--ink-3); line-height:1.7;">
                 <div>• <strong>Nomor Batch</strong> akan otomatis terbuat ketika penerimaan barang <strong>SELESAI</strong>.
                 </div>

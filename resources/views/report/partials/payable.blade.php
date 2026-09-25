@@ -6,52 +6,58 @@
             <span style="font-size:12px; color:var(--ink-4);" x-text="`${tableData.invoices.length} tagihan`"></span>
         </div>
         <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
-            <label style="font-size:12px; color:var(--ink-3);">Dari</label>
-            <input type="date" class="filter-panel__input" x-model="filter.start_date"
-                x-on:change="fetchData()" style="height:28px; font-size:12px;">
-            <label style="font-size:12px; color:var(--ink-3);">Sampai</label>
-            <input type="date" class="filter-panel__input" x-model="filter.end_date"
-                x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            <label class="report-date">
+                <span>Dari</span>
+                <input type="date" class="filter-panel__input" x-model="filter.start_date"
+                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            </label>
+            <label class="report-date">
+                <span>Sampai</span>
+                <input type="date" class="filter-panel__input" x-model="filter.end_date"
+                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            </label>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
     </div>
-    <table class="tbl">
-        <thead>
-            <tr>
-                <th>Vendor</th>
-                <th>Ref</th>
-                <th>Jatuh Tempo</th>
-                <th style="text-align:right;">Jumlah</th>
-            </tr>
-        </thead>
-        <tbody>
-            <template x-if="loading">
+    <div class="tbl-scroll">
+        <table class="tbl">
+            <thead>
                 <tr>
-                    <td colspan="4" style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...</td>
+                    <th>Vendor</th>
+                    <th>Ref</th>
+                    <th>Jatuh Tempo</th>
+                    <th style="text-align:right;">Jumlah</th>
                 </tr>
-            </template>
-            <template x-if="!loading && tableData.invoices.length === 0">
-                <tr>
-                    <td colspan="4" style="text-align:center; color:var(--ink-3); padding:20px;">Tidak ada utang
-                        tertunggak</td>
-                </tr>
-            </template>
-            <template x-if="!loading">
-                <template x-for="invoice in tableData.invoices" :key="invoice.id">
+            </thead>
+            <tbody>
+                <template x-if="loading">
                     <tr>
-                        <td style="font-weight:500; font-size:13px;" x-text="invoice.contact_name"></td>
-                        <td class="mono" style="font-size:11.5px; color:var(--ink-4);" x-text="invoice.number"></td>
-                        <td style="font-size:12.5px;"
-                            :style="`color:${invoice.days_overdue > 14 ? 'var(--bad)' : 'var(--ink-3)'}`"
-                            x-text="formatDueDate(invoice.due_date)"></td>
-                        <td class="num" style="text-align:right; font-weight:600;"
-                            x-text="formatCurrency(invoice.amount)"></td>
+                        <td colspan="4" style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...</td>
                     </tr>
                 </template>
-            </template>
-        </tbody>
-    </table>
+                <template x-if="!loading && tableData.invoices.length === 0">
+                    <tr>
+                        <td colspan="4" style="text-align:center; color:var(--ink-3); padding:20px;">Tidak ada utang
+                            tertunggak</td>
+                    </tr>
+                </template>
+                <template x-if="!loading">
+                    <template x-for="invoice in tableData.invoices" :key="invoice.id">
+                        <tr>
+                            <td style="font-weight:500; font-size:13px;" x-text="invoice.contact_name"></td>
+                            <td class="mono" style="font-size:11.5px; color:var(--ink-4);" x-text="invoice.number"></td>
+                            <td style="font-size:12.5px;"
+                                :style="`color:${invoice.days_overdue > 14 ? 'var(--bad)' : 'var(--ink-3)'}`"
+                                x-text="formatDueDate(invoice.due_date)"></td>
+                            <td class="num" style="text-align:right; font-weight:600;"
+                                x-text="formatCurrency(invoice.amount)"></td>
+                        </tr>
+                    </template>
+                </template>
+            </tbody>
+        </table>
+    </div>
     <div class="utang-card-ft">
         <span style="font-size:13px; font-weight:600;">Total Hutang</span>
         <span class="num" style="font-weight:700; color:var(--bad);" x-text="formatCurrency(tableData.total)"></span>

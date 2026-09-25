@@ -1,7 +1,10 @@
 .master-page {
   padding: 24px 28px 60px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr); // children follow the screen width instead of their widest table
   gap: 16px;
+
+  @media (max-width: $bp-mobile) { padding: 16px 16px 40px; }
 }
 
 .master-hd {
@@ -18,6 +21,15 @@
   display: flex;
   align-items: center;
   gap: 10px;
+
+  // Search, filters and actions stack instead of squeezing into one row
+  @media (max-width: $bp-mobile) {
+    flex-wrap: wrap;
+
+    > .filter-pills,
+    > .master-search,
+    > .table-toolbar { flex: 1 1 100%; max-width: none; }
+  }
 }
 
 .master-search {
@@ -130,7 +142,9 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
 
-  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  &--3 { grid-template-columns: repeat(3, 1fr); }
+
+  @media (max-width: 900px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .produk-stat {
@@ -149,6 +163,11 @@
   padding: 4px 12px;
   border-radius: 8px;
   line-height: 1.3;
+
+  @media (max-width: $bp-mobile) {
+    font-size: 17px;
+    padding: 3px 8px;
+  }
 }
 
 .produk-stat__label {
@@ -507,6 +526,8 @@
   transition: background .1s;
 
   &:hover { background: var(--bg); }
+
+  @media (max-width: $bp-mobile) { padding-left: 16px; }
 }
 
 .perm-resource__label {

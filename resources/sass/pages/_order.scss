@@ -2,7 +2,10 @@
 .order-page {
   padding: 24px 28px 60px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr); // children follow the screen width instead of their widest table
   gap: 16px;
+
+  @media (max-width: $bp-mobile) { padding: 16px 16px 40px; }
 }
 
 .order-hd {
@@ -123,6 +126,10 @@
   display: grid;
   grid-template-columns: 5.5fr 4.5fr;
   border-top: 1px solid var(--line);
+
+  // Detail pages: notes on the left, fixed-width summary on the right
+  &--aside { grid-template-columns: 1fr 320px; }
+  &--aside-wide { grid-template-columns: 1fr 500px; }
 }
 
 .order-items-split2 {
@@ -434,4 +441,51 @@
   font-size: 11.5px;
   color: var(--ink-4);
   margin-top: 8px;
+}
+
+// ============ Responsive ============
+@media (max-width: $bp-tablet) {
+  .order-form-grid-4,
+  .order-form-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .order-meta { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  // Summary moves under the notes instead of beside them
+  .order-items-split { grid-template-columns: minmax(0, 1fr); }
+  // An empty notes column only held space next to the summary; stacked it's just a blank strip
+  .order-extras:not(:has(*)) { display: none; }
+  .order-summary { border-radius: 0 0 15px 15px; }
+  .order-detail-summary {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+}
+
+@media (max-width: $bp-mobile) {
+  .order-hd {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .filter-pill { height: 36px; }
+  .order-title { font-size: 22px; }
+  .order-actions { flex-wrap: wrap; }
+
+  .order-form-grid-4,
+  .order-form-grid-3,
+  .order-extras__grid-3,
+  .order-meta { grid-template-columns: minmax(0, 1fr); }
+
+  .order-meta { gap: 14px; padding: 16px; }
+  .order-extras,
+  .order-notes,
+  .order-detail-summary { padding: 16px; }
+  .order-summary__title,
+  .order-summary__row { padding-left: 16px; padding-right: 16px; }
+  .order-summary__row { flex-wrap: wrap; gap: 6px; }
+
+  .order-form-footer {
+    flex-wrap: wrap;
+
+    .btn { flex: 1 1 auto; justify-content: center; }
+  }
 }

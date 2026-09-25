@@ -53,45 +53,47 @@
             <div class="card-hd">
                 <div class="display card-hd-title">Daftar Produk</div>
             </div>
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th style="width:48px;">#</th>
-                        <th>Produk</th>
-                        <th style="text-align:right;">Quantity Dikirim</th>
-                        <th>Satuan</th>
-                        <th>Batch</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($deliveryOrder->items as $i => $it)
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <thead>
                         <tr>
-                            <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
-                            <td>
-                                <div style="font-weight:600;">{{ $it->product->name }}</div>
-                                <div class="mono" style="font-size:11px; color:var(--ink-4);">{{ $it->product->code }}
-                                </div>
-                            </td>
-                            <td class="num" style="text-align:right;">{{ number_format($it->quantity, 2) }}</td>
-                            <td style="color:var(--ink-3);">{{ $it->product->unit->symbol ?? '-' }}</td>
-                            <td>
-                                @foreach ($it->batches as $b)
-                                    <div class="mono" style="font-size:12px;">{{ $b->productBatch->batch_number }} ·
-                                        {{ number_format($b->quantity, 2) }}</div>
-                                @endforeach
-                            </td>
+                            <th style="width:48px;">#</th>
+                            <th>Produk</th>
+                            <th style="text-align:right;">Quantity Dikirim</th>
+                            <th>Satuan</th>
+                            <th>Batch</th>
                         </tr>
-                    @endforeach
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2" style="text-align:right; font-weight:600;">Total</td>
-                        <td class="num" style="text-align:right; font-weight:600;">{{ number_format($deliveryOrder->items->sum('quantity'), 2) }}</td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach ($deliveryOrder->items as $i => $it)
+                            <tr>
+                                <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                                <td>
+                                    <div style="font-weight:600;">{{ $it->product->name }}</div>
+                                    <div class="mono" style="font-size:11px; color:var(--ink-4);">{{ $it->product->code }}
+                                    </div>
+                                </td>
+                                <td class="num" style="text-align:right;">{{ number_format($it->quantity, 2) }}</td>
+                                <td style="color:var(--ink-3);">{{ $it->product->unit->symbol ?? '-' }}</td>
+                                <td>
+                                    @foreach ($it->batches as $b)
+                                        <div class="mono" style="font-size:12px;">{{ $b->productBatch->batch_number }} ·
+                                            {{ number_format($b->quantity, 2) }}</div>
+                                    @endforeach
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" style="text-align:right; font-weight:600;">Total</td>
+                            <td class="num" style="text-align:right; font-weight:600;">{{ number_format($deliveryOrder->items->sum('quantity'), 2) }}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
 
         @if ($deliveryOrder->costs->isNotEmpty())
@@ -99,37 +101,39 @@
                 <div class="card-hd">
                     <div class="display card-hd-title">Biaya Tambahan (Internal Only)</div>
                 </div>
-                <table class="tbl">
-                    <thead>
-                        <tr>
-                            <th style="width:48px;">#</th>
-                            <th>Deskripsi</th>
-                            <th>Akun</th>
-                            <th style="text-align:right;">Jumlah</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($deliveryOrder->costs as $i => $cost)
+                <div class="tbl-scroll">
+                    <table class="tbl">
+                        <thead>
                             <tr>
-                                <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ $cost->description ?: '—' }}</td>
-                                <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
-                                <td class="num" style="text-align:right; font-weight:600;">{{ number_format($cost->amount, 2) }}</td>
+                                <th style="width:48px;">#</th>
+                                <th>Deskripsi</th>
+                                <th>Akun</th>
+                                <th style="text-align:right;">Jumlah</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" style="text-align:center; font-weight:600;">Total</td>
-                            <td class="num" style="text-align:right; font-weight:600;">{{ number_format($deliveryOrder->costs->sum('amount'), 2) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach ($deliveryOrder->costs as $i => $cost)
+                                <tr>
+                                    <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                                    <td>{{ $cost->description ?: '—' }}</td>
+                                    <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
+                                    <td class="num" style="text-align:right; font-weight:600;">{{ number_format($cost->amount, 2) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="text-align:center; font-weight:600;">Total</td>
+                                <td class="num" style="text-align:right; font-weight:600;">{{ number_format($deliveryOrder->costs->sum('amount'), 2) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
         @endif
 
         <div class="card" style="overflow:hidden;">
-            <div class="order-items-split" style="grid-template-columns:1fr 500px;">
+            <div class="order-items-split order-items-split--aside-wide">
                 <div class="order-notes">
                     <div class="label">Catatan Pengiriman</div>
                     <div class="order-notes__text">{{ $deliveryOrder->note ?? '-' }}</div>

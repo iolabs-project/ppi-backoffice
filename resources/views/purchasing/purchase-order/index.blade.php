@@ -58,181 +58,183 @@
         </div>
 
         <div class="card table-card">
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th>Nomor PO</th>
-                        <th>Tanggal</th>
-                        <th>Vendor</th>
-                        <th>Gudang</th>
-                        <th>Jatuh Tempo</th>
-                        <th>Penerimaan</th>
-                        <th>Tagihan</th>
-                        <th style="text-align:right;">Total</th>
-                        <th>Status</th>
-                        <th style="width:40px;"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-if="loading">
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <thead>
                         <tr>
-                            <td colspan="10" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Memuat data...
-                            </td>
+                            <th>Nomor PO</th>
+                            <th>Tanggal</th>
+                            <th>Vendor</th>
+                            <th>Gudang</th>
+                            <th>Jatuh Tempo</th>
+                            <th>Penerimaan</th>
+                            <th>Tagihan</th>
+                            <th style="text-align:right;">Total</th>
+                            <th>Status</th>
+                            <th style="width:40px;"></th>
                         </tr>
-                    </template>
-
-                    <template x-if="!loading && tableData.data.length === 0">
-                        <tr>
-                            <td colspan="10" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Tidak ada data
-                            </td>
-                        </tr>
-                    </template>
-
-                    <template x-if="!loading">
-                        <template x-for="row in tableData.data" :key="row.id">
-                            <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
-                                @click="window.location = route('purchasings.purchase_orders.show', row.id)">
-                                <td class="mono" style="font-weight:600;" x-text="row.number"></td>
-                                <td style="color:var(--ink-3);" x-text="row.order_date ?? '-'"></td>
-                                <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
-                                <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
-                                <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
-                                <td style="min-width:100px;">
-                                    <template
-                                        x-if="row.status === '{{ $draft }}' || row.status === '{{ $cancelled }}'">
-                                        <span style="color:var(--ink-3);">-</span>
-                                    </template>
-                                    <template
-                                        x-if="row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
-                                        <div class="progress-cell">
-                                            <span class="progress-label"
-                                                x-text="m(row.total_received_quantity) + ' / ' + m(row.total_quantity)"></span>
-                                            <div class="progress-track">
-                                                <div class="progress-bar"
-                                                    x-bind:style="'width:' + Math.min((row.total_received_quantity / row
-                                                        .total_quantity) * 100, 100) + '%'">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </template>
-                                </td>
-                                <td style="min-width:100px;">
-                                    <template
-                                        x-if="row.status === '{{ $draft }}' || row.status === '{{ $cancelled }}'">
-                                        <span style="color:var(--ink-3);">-</span>
-                                    </template>
-                                    <template
-                                        x-if="row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
-                                        <div class="progress-cell">
-                                            <span class="progress-label"
-                                                x-text="m(row.total_invoiced_quantity) + ' / ' + m(row.total_quantity)"></span>
-                                            <div class="progress-track">
-                                                <div class="progress-bar progress-bar--invoice"
-                                                    x-bind:style="'width:' + Math.min((row.total_invoiced_quantity / row
-                                                        .total_quantity) * 100, 100) + '%'">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </template>
-                                </td>
-                                <td class="num" style="text-align:right; font-weight:600;" x-text="m(row.total_amount)">
-                                </td>
-                                <td>
-                                    <span :class="statusChip(row.status).chip">
-                                        <span :class="statusChip(row.status).dot"></span>
-                                        <span x-text="statusChip(row.status).label"></span>
-                                    </span>
-                                </td>
-                                <td x-on:click.stop>
-                                    <div x-data="{ open: false }" class="action-menu">
-                                        <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
-                                            x-on:click.stop="
-                                              let wasOpen = open;
-                                              $dispatch('close-menus');
-                                              if (!wasOpen) {
-                                                let r = $el.getBoundingClientRect();
-                                                $refs.panel.style.top = (r.bottom + 6) + 'px';
-                                                $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
-                                                open = true;
-                                              }
-                                            ">
-                                            <x-misc.icon name="more" :size="15" />
-                                        </button>
-                                        <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
-                                            x-on:click.away="open = false" class="action-menu__panel">
-                                            @if (auth()->user()->can('purchasing.purchase-orders.edit'))
-                                                <template x-if="row.status === '{{ $draft }}'">
-                                                    <div>
-                                                        <a :href="route('purchasings.purchase_orders.edit', row.id)" @click.stop
-                                                            class="action-menu__item">
-                                                            <x-misc.icon name="edit" :size="14"
-                                                                stroke="var(--ink-3)" />
-                                                            Edit Draft
-                                                        </a>
-                                                    </div>
-                                                </template>
-                                            @endif
-                                            <template x-if="row.status !== '{{ $draft }}'">
-                                                <div>
-                                                    <a :href="route('purchasings.purchase_orders.show', row.id)" @click.stop
-                                                        class="action-menu__item">
-                                                        <x-misc.icon name="eye" :size="14"
-                                                            stroke="var(--ink-3)" />Lihat
-                                                        Detail
-                                                    </a>
-                                                    <button class="action-menu__item" @click.stop>
-                                                        {{-- TODO: Implement print functionality --}}
-                                                        <x-misc.icon name="print" :size="14"
-                                                            stroke="var(--ink-3)" />Cetak
-                                                        PO
-                                                    </button>
-                                                </div>
-                                            </template>
-                                            @if (auth()->user()->can('purchasing.goods-receipts.create'))
-                                                <template x-if="row.is_receivable">
-                                                    <button class="action-menu__item"
-                                                        @click.stop="handleCreateGoodsReceipt(row.id)">
-                                                        <x-misc.icon name="box" :size="14"
-                                                            stroke="var(--ink-3)" />Buat
-                                                        Penerimaan
-                                                    </button>
-                                                </template>
-                                            @endif
-                                            @if (auth()->user()->can('purchasing.invoices.create'))
-                                                <template x-if="row.is_invoicable">
-                                                    <button class="action-menu__item"
-                                                        @click.stop="handleCreatePurchaseInvoice(row.id)">
-                                                        <x-misc.icon name="wallet" :size="14"
-                                                            stroke="var(--ink-3)" />Buat
-                                                        Tagihan
-                                                    </button>
-                                                </template>
-                                            @endif
-
-                                            @if (auth()->user()->can('purchasing.purchase-orders.delete'))
-                                                <template x-if="row.is_cancellable">
-                                                    <div>
-                                                        <div class="action-menu__divider"></div>
-                                                        <button class="action-menu__item action-menu__item--danger"
-                                                            @click.stop="handleCancel(row.id)">
-                                                            <x-misc.icon name="trash" :size="14"
-                                                                stroke="currentColor" />Batalkan
-                                                            PO
-                                                        </button>
-                                                    </div>
-
-                                                </template>
-                                            @endif
-                                        </div>
-                                    </div>
+                    </thead>
+                    <tbody>
+                        <template x-if="loading">
+                            <tr>
+                                <td colspan="10" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Memuat data...
                                 </td>
                             </tr>
                         </template>
-                    </template>
-                </tbody>
-            </table>
+    
+                        <template x-if="!loading && tableData.data.length === 0">
+                            <tr>
+                                <td colspan="10" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        </template>
+    
+                        <template x-if="!loading">
+                            <template x-for="row in tableData.data" :key="row.id">
+                                <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
+                                    @click="window.location = route('purchasings.purchase_orders.show', row.id)">
+                                    <td class="mono" style="font-weight:600;" x-text="row.number"></td>
+                                    <td style="color:var(--ink-3);" x-text="row.order_date ?? '-'"></td>
+                                    <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
+                                    <td style="min-width:100px;">
+                                        <template
+                                            x-if="row.status === '{{ $draft }}' || row.status === '{{ $cancelled }}'">
+                                            <span style="color:var(--ink-3);">-</span>
+                                        </template>
+                                        <template
+                                            x-if="row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
+                                            <div class="progress-cell">
+                                                <span class="progress-label"
+                                                    x-text="m(row.total_received_quantity) + ' / ' + m(row.total_quantity)"></span>
+                                                <div class="progress-track">
+                                                    <div class="progress-bar"
+                                                        x-bind:style="'width:' + Math.min((row.total_received_quantity / row
+                                                            .total_quantity) * 100, 100) + '%'">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </td>
+                                    <td style="min-width:100px;">
+                                        <template
+                                            x-if="row.status === '{{ $draft }}' || row.status === '{{ $cancelled }}'">
+                                            <span style="color:var(--ink-3);">-</span>
+                                        </template>
+                                        <template
+                                            x-if="row.status !== '{{ $draft }}' && row.status !== '{{ $cancelled }}'">
+                                            <div class="progress-cell">
+                                                <span class="progress-label"
+                                                    x-text="m(row.total_invoiced_quantity) + ' / ' + m(row.total_quantity)"></span>
+                                                <div class="progress-track">
+                                                    <div class="progress-bar progress-bar--invoice"
+                                                        x-bind:style="'width:' + Math.min((row.total_invoiced_quantity / row
+                                                            .total_quantity) * 100, 100) + '%'">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </td>
+                                    <td class="num" style="text-align:right; font-weight:600;" x-text="m(row.total_amount)">
+                                    </td>
+                                    <td>
+                                        <span :class="statusChip(row.status).chip">
+                                            <span :class="statusChip(row.status).dot"></span>
+                                            <span x-text="statusChip(row.status).label"></span>
+                                        </span>
+                                    </td>
+                                    <td x-on:click.stop>
+                                        <div x-data="{ open: false }" class="action-menu">
+                                            <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
+                                                x-on:click.stop="
+                                                  let wasOpen = open;
+                                                  $dispatch('close-menus');
+                                                  if (!wasOpen) {
+                                                    let r = $el.getBoundingClientRect();
+                                                    $refs.panel.style.top = (r.bottom + 6) + 'px';
+                                                    $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
+                                                    open = true;
+                                                  }
+                                                ">
+                                                <x-misc.icon name="more" :size="15" />
+                                            </button>
+                                            <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
+                                                x-on:click.away="open = false" class="action-menu__panel">
+                                                @if (auth()->user()->can('purchasing.purchase-orders.edit'))
+                                                    <template x-if="row.status === '{{ $draft }}'">
+                                                        <div>
+                                                            <a :href="route('purchasings.purchase_orders.edit', row.id)" @click.stop
+                                                                class="action-menu__item">
+                                                                <x-misc.icon name="edit" :size="14"
+                                                                    stroke="var(--ink-3)" />
+                                                                Edit Draft
+                                                            </a>
+                                                        </div>
+                                                    </template>
+                                                @endif
+                                                <template x-if="row.status !== '{{ $draft }}'">
+                                                    <div>
+                                                        <a :href="route('purchasings.purchase_orders.show', row.id)" @click.stop
+                                                            class="action-menu__item">
+                                                            <x-misc.icon name="eye" :size="14"
+                                                                stroke="var(--ink-3)" />Lihat
+                                                            Detail
+                                                        </a>
+                                                        <button class="action-menu__item" @click.stop>
+                                                            {{-- TODO: Implement print functionality --}}
+                                                            <x-misc.icon name="print" :size="14"
+                                                                stroke="var(--ink-3)" />Cetak
+                                                            PO
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                                @if (auth()->user()->can('purchasing.goods-receipts.create'))
+                                                    <template x-if="row.is_receivable">
+                                                        <button class="action-menu__item"
+                                                            @click.stop="handleCreateGoodsReceipt(row.id)">
+                                                            <x-misc.icon name="box" :size="14"
+                                                                stroke="var(--ink-3)" />Buat
+                                                            Penerimaan
+                                                        </button>
+                                                    </template>
+                                                @endif
+                                                @if (auth()->user()->can('purchasing.invoices.create'))
+                                                    <template x-if="row.is_invoicable">
+                                                        <button class="action-menu__item"
+                                                            @click.stop="handleCreatePurchaseInvoice(row.id)">
+                                                            <x-misc.icon name="wallet" :size="14"
+                                                                stroke="var(--ink-3)" />Buat
+                                                            Tagihan
+                                                        </button>
+                                                    </template>
+                                                @endif
+    
+                                                @if (auth()->user()->can('purchasing.purchase-orders.delete'))
+                                                    <template x-if="row.is_cancellable">
+                                                        <div>
+                                                            <div class="action-menu__divider"></div>
+                                                            <button class="action-menu__item action-menu__item--danger"
+                                                                @click.stop="handleCancel(row.id)">
+                                                                <x-misc.icon name="trash" :size="14"
+                                                                    stroke="currentColor" />Batalkan
+                                                                PO
+                                                            </button>
+                                                        </div>
+    
+                                                    </template>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="table-pagination">

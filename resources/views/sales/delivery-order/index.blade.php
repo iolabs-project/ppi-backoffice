@@ -58,114 +58,116 @@
         </div>
 
         <div class="card table-card">
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th>No. Pengiriman</th>
-                        <th>Tanggal</th>
-                        <th>Ref. SO</th>
-                        <th>Customer</th>
-                        <th>Gudang</th>
-                        <th style="text-align:right;">Berat Dikirim</th>
-                        <th>Status</th>
-                        <th class="table-action-col">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-if="loading">
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <thead>
                         <tr>
-                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Memuat data...
-                            </td>
+                            <th>No. Pengiriman</th>
+                            <th>Tanggal</th>
+                            <th>Ref. SO</th>
+                            <th>Customer</th>
+                            <th>Gudang</th>
+                            <th style="text-align:right;">Berat Dikirim</th>
+                            <th>Status</th>
+                            <th class="table-action-col">Aksi</th>
                         </tr>
-                    </template>
-
-                    <template x-if="!loading && tableData.data.length === 0">
-                        <tr>
-                            <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Tidak ada data
-                            </td>
-                        </tr>
-                    </template>
-                    <template x-if="!loading">
-                        <template x-for="row in tableData.data" :key="row.id">
-                            <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
-                                @click="window.location = route('sales.delivery_orders.show', row.id)">
-                                <td class="mono" style="font-weight:600;" x-text="row.number"></td>
-                                <td style="color:var(--ink-3);" x-text="row.delivery_date ?? '-'"></td>
-                                <td class="mono" style="font-weight:600;" x-text="row.sales_order.number"></td>
-                                <td style="font-weight:500;" x-text="row.customer.name ?? '-'"></td>
-                                <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
-                                <td class="num" style="text-align:right;" x-text="m(row.total_shipped_quantity)"></td>
-                                <td>
-                                    <span :class="statusChip(row.status).chip">
-                                        <span :class="statusChip(row.status).dot"></span>
-                                        <span x-text="statusChip(row.status).label"></span>
-                                    </span>
-                                </td>
-                                <td class="table-action-col">
-                                    <div x-data="{ open: false }" class="action-menu">
-                                        <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
-                                            x-on:click.stop="
-                                            let wasOpen = open;
-                                            $dispatch('close-menus');
-                                            if (!wasOpen) {
-                                                let r = $el.getBoundingClientRect();
-                                                $refs.panel.style.top = (r.bottom + 6) + 'px';
-                                                $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
-                                                open = true;
-                                            }
-                                        ">
-                                            <x-misc.icon name="more" :size="15" />
-                                        </button>
-                                        <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
-                                            x-on:click.away="open = false" class="action-menu__panel">
-                                            <a :href="route('sales.delivery_orders.show', row.id)" @click.stop
-                                                class="action-menu__item">
-                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
-                                                Detail
-                                            </a>
-                                            <a :href="route('sales.sales_orders.show', row.sales_order_id)" @click.stop
-                                                class="action-menu__item">
-                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
-                                                SO
-                                            </a>
-                                            <button class="action-menu__item" @click.stop>
-                                                <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
-                                                Pengiriman
-                                            </button>
-                                            @if (auth()->user()->can('sales.delivery-orders.edit') || auth()->user()->can('sales.delivery-orders.delete'))
-                                                <template x-if="row.status === '{{ $draft }}'">
-                                                    <div>
-                                                        @if (auth()->user()->can('sales.delivery-orders.edit'))
-                                                            <a :href="route('sales.delivery_orders.edit', row.id)" @click.stop
-                                                                class="action-menu__item">
-                                                                <x-misc.icon name="edit" :size="14"
-                                                                    stroke="var(--ink-3)" />Edit
-                                                                Catatan
-                                                            </a>
-                                                        @endif
-                                                        @if (auth()->user()->can('sales.delivery-orders.delete'))
-                                                            <div class="action-menu__divider"></div>
-                                                            <button class="action-menu__item action-menu__item--danger"
-                                                                @click.stop="handleCancel(row.id)">
-                                                                <x-misc.icon name="x" :size="14"
-                                                                    stroke="currentColor" />Hapus
-                                                                Catatan
-                                                            </button>
-                                                        @endif
-                                                    </div>
-                                                </template>
-                                            @endif
-                                        </div>
-                                    </div>
+                    </thead>
+                    <tbody>
+                        <template x-if="loading">
+                            <tr>
+                                <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Memuat data...
                                 </td>
                             </tr>
-
                         </template>
-                    </template>
-                </tbody>
-            </table>
+    
+                        <template x-if="!loading && tableData.data.length === 0">
+                            <tr>
+                                <td colspan="9" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="!loading">
+                            <template x-for="row in tableData.data" :key="row.id">
+                                <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
+                                    @click="window.location = route('sales.delivery_orders.show', row.id)">
+                                    <td class="mono" style="font-weight:600;" x-text="row.number"></td>
+                                    <td style="color:var(--ink-3);" x-text="row.delivery_date ?? '-'"></td>
+                                    <td class="mono" style="font-weight:600;" x-text="row.sales_order.number"></td>
+                                    <td style="font-weight:500;" x-text="row.customer.name ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
+                                    <td class="num" style="text-align:right;" x-text="m(row.total_shipped_quantity)"></td>
+                                    <td>
+                                        <span :class="statusChip(row.status).chip">
+                                            <span :class="statusChip(row.status).dot"></span>
+                                            <span x-text="statusChip(row.status).label"></span>
+                                        </span>
+                                    </td>
+                                    <td class="table-action-col">
+                                        <div x-data="{ open: false }" class="action-menu">
+                                            <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
+                                                x-on:click.stop="
+                                                let wasOpen = open;
+                                                $dispatch('close-menus');
+                                                if (!wasOpen) {
+                                                    let r = $el.getBoundingClientRect();
+                                                    $refs.panel.style.top = (r.bottom + 6) + 'px';
+                                                    $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
+                                                    open = true;
+                                                }
+                                            ">
+                                                <x-misc.icon name="more" :size="15" />
+                                            </button>
+                                            <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
+                                                x-on:click.away="open = false" class="action-menu__panel">
+                                                <a :href="route('sales.delivery_orders.show', row.id)" @click.stop
+                                                    class="action-menu__item">
+                                                    <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                                    Detail
+                                                </a>
+                                                <a :href="route('sales.sales_orders.show', row.sales_order_id)" @click.stop
+                                                    class="action-menu__item">
+                                                    <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />Lihat
+                                                    SO
+                                                </a>
+                                                <button class="action-menu__item" @click.stop>
+                                                    <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
+                                                    Pengiriman
+                                                </button>
+                                                @if (auth()->user()->can('sales.delivery-orders.edit') || auth()->user()->can('sales.delivery-orders.delete'))
+                                                    <template x-if="row.status === '{{ $draft }}'">
+                                                        <div>
+                                                            @if (auth()->user()->can('sales.delivery-orders.edit'))
+                                                                <a :href="route('sales.delivery_orders.edit', row.id)" @click.stop
+                                                                    class="action-menu__item">
+                                                                    <x-misc.icon name="edit" :size="14"
+                                                                        stroke="var(--ink-3)" />Edit
+                                                                    Catatan
+                                                                </a>
+                                                            @endif
+                                                            @if (auth()->user()->can('sales.delivery-orders.delete'))
+                                                                <div class="action-menu__divider"></div>
+                                                                <button class="action-menu__item action-menu__item--danger"
+                                                                    @click.stop="handleCancel(row.id)">
+                                                                    <x-misc.icon name="x" :size="14"
+                                                                        stroke="currentColor" />Hapus
+                                                                    Catatan
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                    </template>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+    
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="table-pagination">
@@ -202,49 +204,51 @@
                 <input class="input" style="height:32px; width:100%;" placeholder="Cari nomor SO atau customer..."
                     x-model="soPickerSearch" x-on:input.debounce.400ms="fetchSoPickerData()" />
             </div>
-            <table class="tbl tbl-tight">
-                <thead>
-                    <tr>
-                        <th>Nomor SO</th>
-                        <th>Tanggal</th>
-                        <th>Customer</th>
-                        <th style="text-align:right;">Total</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-if="soPickerLoading">
+            <div class="tbl-scroll">
+                <table class="tbl tbl-tight">
+                    <thead>
                         <tr>
-                            <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
-                                Memuat data...
-                            </td>
+                            <th>Nomor SO</th>
+                            <th>Tanggal</th>
+                            <th>Customer</th>
+                            <th style="text-align:right;">Total</th>
+                            <th>Status</th>
                         </tr>
-                    </template>
-                    <template x-if="!soPickerLoading && soPickerData.length === 0">
-                        <tr>
-                            <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
-                                Tidak ada SO yang tersedia untuk dikirim.
-                            </td>
-                        </tr>
-                    </template>
-                    <template x-if="!soPickerLoading">
-                        <template x-for="so in soPickerData" :key="so.id">
-                            <tr class="row-tap" @click="handleCreateDeliveryOrder(so.id)">
-                                <td class="mono" style="font-weight:600;" x-text="so.number"></td>
-                                <td style="color:var(--ink-3);" x-text="so.order_date ?? '-'"></td>
-                                <td style="font-weight:500;" x-text="so.customer?.name ?? '-'"></td>
-                                <td class="num" style="text-align:right;" x-text="m(so.total_amount)"></td>
-                                <td>
-                                    <span :class="soStatusChip(so.status).chip">
-                                        <span :class="soStatusChip(so.status).dot"></span>
-                                        <span x-text="soStatusChip(so.status).label"></span>
-                                    </span>
+                    </thead>
+                    <tbody>
+                        <template x-if="soPickerLoading">
+                            <tr>
+                                <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
+                                    Memuat data...
                                 </td>
                             </tr>
                         </template>
-                    </template>
-                </tbody>
-            </table>
+                        <template x-if="!soPickerLoading && soPickerData.length === 0">
+                            <tr>
+                                <td colspan="5" style="text-align:center; color:var(--ink-3); padding:16px;">
+                                    Tidak ada SO yang tersedia untuk dikirim.
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="!soPickerLoading">
+                            <template x-for="so in soPickerData" :key="so.id">
+                                <tr class="row-tap" @click="handleCreateDeliveryOrder(so.id)">
+                                    <td class="mono" style="font-weight:600;" x-text="so.number"></td>
+                                    <td style="color:var(--ink-3);" x-text="so.order_date ?? '-'"></td>
+                                    <td style="font-weight:500;" x-text="so.customer?.name ?? '-'"></td>
+                                    <td class="num" style="text-align:right;" x-text="m(so.total_amount)"></td>
+                                    <td>
+                                        <span :class="soStatusChip(so.status).chip">
+                                            <span :class="soStatusChip(so.status).dot"></span>
+                                            <span x-text="soStatusChip(so.status).label"></span>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
         </x-misc.modal>
     </div>
 @endsection

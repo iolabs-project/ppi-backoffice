@@ -13,94 +13,96 @@
                 </button>
             @endif
         </div>
-        <table class="tbl">
-            <thead>
-                <tr>
-                    <th>Nama</th>
-                    <th>Tipe</th>
-                    <th>Email</th>
-                    <th>Telepon</th>
-                    <th>Kota</th>
-                    <th>Status</th>
-                    <th style="width:40px;"></th>
-            </thead>
-            <tbody>
-                <template x-if="loading">
+        <div class="tbl-scroll">
+            <table class="tbl">
+                <thead>
                     <tr>
-                        <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...
-                        </td>
-                    </tr>
-                </template>
-
-                <template x-if="!loading && tableData.data.length === 0">
-                    <tr>
-                        <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">Tidak ada data
-                        </td>
-                    </tr>
-                </template>
-                <template x-if="!loading && tableData.data.length > 0">
-                    <template x-for="(row, i) in tableData.data" :key="row.id">
-                        <tr class="row-tap" style="cursor:pointer;">
-                            <td>
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <div class="avatar"
-                                        :style="'background:' + avatarMeta(row.name).bg + '; color:' + avatarMeta(row.name).fg"
-                                        x-text="avatarMeta(row.name).initials"></div>
-                                    <span style="font-weight:600; font-size:13px;" x-text="row.name"></span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="chip"
-                                    x-text="[row.is_customer ? 'Customer' : null, row.is_supplier ? 'Vendor' : null, row.is_employee ? 'Karyawan' : null].filter(Boolean).join(', ') || '—'"></span>
-                            </td>
-                            <td style="font-size:13px; color:var(--ink-3);" x-text="row.email || '—'"></td>
-                            <td style="font-size:13px; color:var(--ink-3);" x-text="row.phone || '—'"></td>
-                            <td style="font-size:13px; color:var(--ink-3);" x-text="row.city || '—'"></td>
-                            <template x-if="row.deleted_at">
-                                <td><x-misc.status-badge status="inactive" /></td>
-                            </template>
-                            <template x-if="!row.deleted_at">
-                                <td><x-misc.status-badge status="active" /></td>
-                            </template>
-                            <td x-on:click.stop>
-                                <div class="action-menu" x-data="{ open: false }">
-                                    <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
-                                        x-on:click="open = !open" x-on:click.outside="open = false">
-                                        <x-misc.icon name="more" :size="15" />
-                                    </button>
-                                    <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
-                                        style="position:absolute; right:0; top:100%; margin-top:4px;">
-                                        <a :href="route('master.contacts.show', row.id)" @click.stop
-                                            class="action-menu__item">
-                                            <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />
-                                            Detail Kontak
-                                        </a>
-                                        @if (auth()->user()->can('master.contacts.edit'))
-                                            <button class="action-menu__item" x-on:click="openEditModal(row)">
-                                                <x-misc.icon name="edit" :size="14" /> Edit Kontak
-                                            </button>
-                                        @endif
-                                        @if (auth()->user()->can('master.contacts.delete'))
-                                            <template x-if="!row.deleted_at">
-                                                <button class="action-menu__item action-menu__item--danger"
-                                                    x-on:click="handleStatus(row)">
-                                                    <x-misc.icon name="trash" :size="14" /> Nonaktifkan
-                                                </button>
-                                            </template>
-                                            <template x-if="row.deleted_at">
-                                                <button class="action-menu__item" x-on:click="handleStatus(row)">
-                                                    <x-misc.icon name="refresh" :size="14" /> Aktifkan
-                                                </button>
-                                            </template>
-                                        @endif
-                                    </div>
-                                </div>
+                        <th>Nama</th>
+                        <th>Tipe</th>
+                        <th>Email</th>
+                        <th>Telepon</th>
+                        <th>Kota</th>
+                        <th>Status</th>
+                        <th style="width:40px;"></th>
+                </thead>
+                <tbody>
+                    <template x-if="loading">
+                        <tr>
+                            <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">Memuat data...
                             </td>
                         </tr>
                     </template>
-                </template>
-            </tbody>
-        </table>
+    
+                    <template x-if="!loading && tableData.data.length === 0">
+                        <tr>
+                            <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">Tidak ada data
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loading && tableData.data.length > 0">
+                        <template x-for="(row, i) in tableData.data" :key="row.id">
+                            <tr class="row-tap" style="cursor:pointer;">
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div class="avatar"
+                                            :style="'background:' + avatarMeta(row.name).bg + '; color:' + avatarMeta(row.name).fg"
+                                            x-text="avatarMeta(row.name).initials"></div>
+                                        <span style="font-weight:600; font-size:13px;" x-text="row.name"></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="chip"
+                                        x-text="[row.is_customer ? 'Customer' : null, row.is_supplier ? 'Vendor' : null, row.is_employee ? 'Karyawan' : null].filter(Boolean).join(', ') || '—'"></span>
+                                </td>
+                                <td style="font-size:13px; color:var(--ink-3);" x-text="row.email || '—'"></td>
+                                <td style="font-size:13px; color:var(--ink-3);" x-text="row.phone || '—'"></td>
+                                <td style="font-size:13px; color:var(--ink-3);" x-text="row.city || '—'"></td>
+                                <template x-if="row.deleted_at">
+                                    <td><x-misc.status-badge status="inactive" /></td>
+                                </template>
+                                <template x-if="!row.deleted_at">
+                                    <td><x-misc.status-badge status="active" /></td>
+                                </template>
+                                <td x-on:click.stop>
+                                    <div class="action-menu" x-data="{ open: false }">
+                                        <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                                            x-on:click="open = !open" x-on:click.outside="open = false">
+                                            <x-misc.icon name="more" :size="15" />
+                                        </button>
+                                        <div class="action-menu__panel" x-show="open" x-cloak x-on:click="open = false"
+                                            style="position:absolute; right:0; top:100%; margin-top:4px;">
+                                            <a :href="route('master.contacts.show', row.id)" @click.stop
+                                                class="action-menu__item">
+                                                <x-misc.icon name="eye" :size="14" stroke="var(--ink-3)" />
+                                                Detail Kontak
+                                            </a>
+                                            @if (auth()->user()->can('master.contacts.edit'))
+                                                <button class="action-menu__item" x-on:click="openEditModal(row)">
+                                                    <x-misc.icon name="edit" :size="14" /> Edit Kontak
+                                                </button>
+                                            @endif
+                                            @if (auth()->user()->can('master.contacts.delete'))
+                                                <template x-if="!row.deleted_at">
+                                                    <button class="action-menu__item action-menu__item--danger"
+                                                        x-on:click="handleStatus(row)">
+                                                        <x-misc.icon name="trash" :size="14" /> Nonaktifkan
+                                                    </button>
+                                                </template>
+                                                <template x-if="row.deleted_at">
+                                                    <button class="action-menu__item" x-on:click="handleStatus(row)">
+                                                        <x-misc.icon name="refresh" :size="14" /> Aktifkan
+                                                    </button>
+                                                </template>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </div>
         <div class="table-pagination">
             <div class="pagination-actions">
                 <div class="pagination-label">Per</div>

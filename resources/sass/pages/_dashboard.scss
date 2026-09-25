@@ -1,6 +1,7 @@
 .dash {
     padding: 24px 28px 60px;
     display: grid;
+    grid-template-columns: minmax(0, 1fr); // columns follow the screen, not their widest child
     gap: 20px;
 }
 
@@ -203,7 +204,7 @@
 .bc {
     position: relative;
     height: 200px;
-    padding-left: 52px;
+    padding-left: 72px; // y-axis gutter, fits "Rp 1.0 Jt"
     padding-bottom: 28px;
     margin-top: 8px;
     overflow: visible;
@@ -227,7 +228,7 @@
 .bc__yaxis-label {
     position: absolute;
     left: 0;
-    width: 48px;
+    width: 68px;
     text-align: right;
     font-size: 10.5px;
     color: var(--ink-4);
@@ -238,7 +239,7 @@
 
 .bc__yaxis-line {
     position: absolute;
-    left: 52px;
+    left: 72px;
     right: 0;
     height: 0;
     border-top: 1px dashed var(--line);
@@ -784,15 +785,15 @@
 // ============ Responsive ============
 @media (max-width: 1200px) {
     .dash-kpi-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .dash-charts {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .dash-bottom {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 
@@ -802,10 +803,55 @@
     }
 
     .dash-kpi-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .dash-greeting__title {
         font-size: 24px;
+    }
+
+    // Legend under the title instead of squeezed next to it
+    .chart-hd {
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+
+    .card-chart { padding: 18px 16px; }
+
+    .dash-top-contacts__tab { min-height: 36px; }
+
+    .bc__bars { padding-left: 8px; }
+
+    // 12 months don't fit side by side: label every other month (ending on the current one)
+    .bc__group:nth-child(odd) .bc__group-label { visibility: hidden; }
+
+    // List rows: name + amount on the first line, status underneath, long text truncated
+    .dash-activity__item,
+    .dash-overdue__item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        column-gap: 12px;
+        row-gap: 4px;
+        align-items: start;
+        padding: 10px 8px;
+
+        > .chip { grid-column: 1; justify-self: start; }
+    }
+
+    .dash-activity__item {
+        grid-template-columns: 32px minmax(0, 1fr) auto;
+
+        > .chip { grid-column: 2; }
+    }
+
+    .dash-activity__icon { grid-row: span 2; }
+
+    .dash-activity__label,
+    .dash-activity__number,
+    .dash-overdue__number {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }

@@ -3,79 +3,85 @@
     <div class="card-hd">
         <div class="display card-hd-title">Log Aktivitas</div>
         <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
-            <label style="font-size:12px; color:var(--ink-3);">Dari</label>
-            <input type="date" class="filter-panel__input" x-model="filter.start_date"
-                x-on:change="page = 1; fetchData()" style="height:28px; font-size:12px;">
-            <label style="font-size:12px; color:var(--ink-3);">Sampai</label>
-            <input type="date" class="filter-panel__input" x-model="filter.end_date"
-                x-on:change="page = 1; fetchData()" style="height:28px; font-size:12px;">
+            <label class="report-date">
+                <span>Dari</span>
+                <input type="date" class="filter-panel__input" x-model="filter.start_date"
+                    x-on:change="page = 1; fetchData()" style="height:28px; font-size:12px;">
+            </label>
+            <label class="report-date">
+                <span>Sampai</span>
+                <input type="date" class="filter-panel__input" x-model="filter.end_date"
+                    x-on:change="page = 1; fetchData()" style="height:28px; font-size:12px;">
+            </label>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
             <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
     </div>
-    <table class="tbl">
-        <thead>
-            <tr>
-                <th style="width:160px;">Tanggal</th>
-                <th style="width:180px;">No. Ref</th>
-                <th style="width:180px;">Pengguna</th>
-                <th style="width:180px;">Aksi</th>
-                <th>Deskripsi</th>
-            </tr>
-        </thead>
-        <template x-if="loading">
-            <tbody>
+    <div class="tbl-scroll">
+        <table class="tbl">
+            <thead>
                 <tr>
-                    <td colspan="5" style="text-align:center; color:var(--ink-3); padding:32px;">
-                        Memuat data...
-                    </td>
+                    <th style="width:160px;">Tanggal</th>
+                    <th style="width:180px;">No. Ref</th>
+                    <th style="width:180px;">Pengguna</th>
+                    <th style="width:180px;">Aksi</th>
+                    <th>Deskripsi</th>
                 </tr>
-            </tbody>
-        </template>
-        <template x-if="!loading && tableData.data.length === 0">
-            <tbody>
-                <tr>
-                    <td colspan="5" style="text-align:center; color:var(--ink-3); padding:32px;">
-                        Tidak ada data
-                    </td>
-                </tr>
-            </tbody>
-        </template>
-        <template x-if="!loading && tableData.data.length > 0">
-            <tbody>
-                <template x-for="log in tableData.data" :key="log.id">
+            </thead>
+            <template x-if="loading">
+                <tbody>
                     <tr>
-                        <td style="white-space:nowrap; font-size:12.5px; color:var(--ink-3); font-weight:500;"
-                            x-text="formatDateTime(log.created_at)"></td>
-                            <td>
-                                <span class="mono"
-                                    style="display:inline-flex; align-items:center; min-height:24px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r-chip); font-size:11.5px; font-weight:600; color:var(--accent); background:var(--accent-3);"
-                                    :style="log.subject && log.subject.number ? {} : { color: 'var(--ink-4)', background: 'var(--bg-2)' }"
-                                    x-text="log.subject && log.subject.number ? log.subject.number : '—'"></span>
-                            </td>
-                        <td style="font-size:13px; color:var(--ink-2); font-weight:600;"
-                            x-text="log.causer ? log.causer.username : '-'"></td>
-                            <td>
-                                <span class="chip" :class="{
-                                    'chip-ok': log.event === 'created',
-                                    'chip-info': log.event === 'updated',
-                                    'chip-bad': log.event === 'deleted'
-                                }">
-                                    <span class="chip-dot" :class="{
-                                        'dot-ok': log.event === 'created',
-                                        'dot-info': log.event === 'updated',
-                                        'dot-bad': log.event === 'deleted'
-                                    }"></span>
-                                    <span x-text="eventLabel(log.event)"></span>
-                                </span>
-                            </td>
-                        <td style="font-size:13px; color:var(--ink-2);"
-                            x-text="log.description"></td>
+                        <td colspan="5" style="text-align:center; color:var(--ink-3); padding:32px;">
+                            Memuat data...
+                        </td>
                     </tr>
-                </template>
-            </tbody>
-        </template>
-    </table>
+                </tbody>
+            </template>
+            <template x-if="!loading && tableData.data.length === 0">
+                <tbody>
+                    <tr>
+                        <td colspan="5" style="text-align:center; color:var(--ink-3); padding:32px;">
+                            Tidak ada data
+                        </td>
+                    </tr>
+                </tbody>
+            </template>
+            <template x-if="!loading && tableData.data.length > 0">
+                <tbody>
+                    <template x-for="log in tableData.data" :key="log.id">
+                        <tr>
+                            <td style="white-space:nowrap; font-size:12.5px; color:var(--ink-3); font-weight:500;"
+                                x-text="formatDateTime(log.created_at)"></td>
+                                <td>
+                                    <span class="mono"
+                                        style="display:inline-flex; align-items:center; min-height:24px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r-chip); font-size:11.5px; font-weight:600; color:var(--accent); background:var(--accent-3);"
+                                        :style="log.subject && log.subject.number ? {} : { color: 'var(--ink-4)', background: 'var(--bg-2)' }"
+                                        x-text="log.subject && log.subject.number ? log.subject.number : '—'"></span>
+                                </td>
+                            <td style="font-size:13px; color:var(--ink-2); font-weight:600;"
+                                x-text="log.causer ? log.causer.username : '-'"></td>
+                                <td>
+                                    <span class="chip" :class="{
+                                        'chip-ok': log.event === 'created',
+                                        'chip-info': log.event === 'updated',
+                                        'chip-bad': log.event === 'deleted'
+                                    }">
+                                        <span class="chip-dot" :class="{
+                                            'dot-ok': log.event === 'created',
+                                            'dot-info': log.event === 'updated',
+                                            'dot-bad': log.event === 'deleted'
+                                        }"></span>
+                                        <span x-text="eventLabel(log.event)"></span>
+                                    </span>
+                                </td>
+                            <td style="font-size:13px; color:var(--ink-2);"
+                                x-text="log.description"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </template>
+        </table>
+    </div>
 
     <div class="table-pagination">
         <div class="pagination-actions">

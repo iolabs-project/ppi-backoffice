@@ -52,3 +52,18 @@
   gap: 10px;
   background: var(--bg);
 }
+
+@media (max-width: $bp-mobile) {
+  // Inline widths come from <x-misc.modal :width>; on a phone the box uses the screen width instead
+  .modal-box {
+    width: calc(100vw - 24px) !important;
+    max-width: none;
+    max-height: 92dvh;
+  }
+
+  .modal-hd,
+  .modal-bd,
+  .modal-ft { padding-left: 16px; padding-right: 16px; }
+
+  .modal-ft { flex-wrap: wrap; }
+}

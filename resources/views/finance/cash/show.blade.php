@@ -216,151 +216,153 @@
                 <div class="display card-hd-title">Transaksi</div>
                 <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
             </div>
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Keterangan</th>
-                        <th>Akun</th>
-                        <th>Ref</th>
-                        <th style="text-align:right;">Jumlah</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-if="loading">
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <thead>
                         <tr>
-                            <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Memuat data...
-                            </td>
+                            <th>Tanggal</th>
+                            <th>Keterangan</th>
+                            <th>Akun</th>
+                            <th>Ref</th>
+                            <th style="text-align:right;">Jumlah</th>
+                            <th>Status</th>
+                            <th></th>
                         </tr>
-                    </template>
-
-                    <template x-if="!loading && tableData.data.length === 0">
-                        <tr>
-                            <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Tidak ada data
-                            </td>
-                        </tr>
-                    </template>
-                    <template x-if="!loading && tableData.data.length > 0">
-                        <template x-for="tx in tableData.data" :key="tx.id">
+                    </thead>
+                    <tbody>
+                        <template x-if="loading">
                             <tr>
-                                <td style="color:var(--ink-3); white-space:nowrap;" x-text="tx.transaction_date"></td>
-                                <td style="font-weight:500;" x-text="tx.description"></td>
-                                <td>
-                                    <template x-if="tx.type === '{{ $transfer }}'">
-                                        <div style="display:flex; align-items:center; gap:4px;">
-                                            <span class="chip chip-info">
-                                                <span x-text="tx.from_account.name"></span>
-                                            </span>
-                                            <template x-if="tx.to_account">
-                                                <div style="display:flex; align-items:center; gap:4px;">
-                                                    <x-misc.icon name="arrow" :size="12" />
-                                                    <span class="chip chip-info">
-                                                        <span x-text="tx.to_account.name"></span>
-                                                    </span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </template>
-                                    <template x-if="tx.type === '{{ $send }}'">
-                                        <span class="chip chip-info">
-                                            <span x-text="tx.from_account.name"></span>
-                                        </span>
-                                    </template>
-                                    <template x-if="tx.type === '{{ $receive }}'">
-                                        <span class="chip chip-info">
-                                            <span x-text="tx.to_account.name"></span>
-                                        </span>
-                                    </template>
-                                </td>
-                                <td class="mono" style="font-size:11.5px; color:var(--ink-4);"></td>
-                                <td class="num" style="text-align:right; color:var(--ink-5); font-weight:400;"
-                                    x-text="m(tx.total_amount)"></td>
-                                <td>
-                                    <span :class="statusChip(tx.status).chip">
-                                        <span :class="statusChip(tx.status).dot"></span>
-                                        <span x-text="statusChip(tx.status).label"></span>
-                                    </span>
-                                </td>
-                                <td x-on:click.stop>
-                                    <div x-data="{ open: false }" class="action-menu">
-                                        <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
-                                            x-on:click.stop="
-                                              let wasOpen = open;
-                                              $dispatch('close-menus');
-                                              if (!wasOpen) {
-                                                let r = $el.getBoundingClientRect();
-                                                $refs.panel.style.top = (r.bottom + 6) + 'px';
-                                                $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
-                                                open = true;
-                                              }
-                                            ">
-                                            <x-misc.icon name="more" :size="15" />
-                                        </button>
-                                        <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
-                                            x-on:click.away="open = false" class="action-menu__panel">
-                                            <template x-if="tx.status === '{{ $draft }}'">
-                                                <div>
-                                                    <template x-if="tx.type === '{{ $transfer }}' && @js(auth()->user()->can('finances.cash-bank.edit'))">
-                                                        <div>
-                                                            <a :href="route('finances.cash.transfer.edit', {
-                                                                id: '{{ $account->id }}',
-                                                                transfer: tx.id
-                                                            })"
-                                                                @click.stop class="action-menu__item">
-                                                                <x-misc.icon name="edit" :size="14"
-                                                                    stroke="var(--ink-3)" />
-                                                                Edit Transaksi
-                                                            </a>
-
-                                                        </div>
-                                                    </template>
-                                                    <template x-if="tx.type === '{{ $receive }}' && @js(auth()->user()->can('finances.cash-bank.edit'))">
-                                                        <div>
-                                                            <a :href="route('finances.cash.receive.edit', {
-                                                                id: '{{ $account->id }}',
-                                                                receive: tx.id
-                                                            })"
-                                                                @click.stop class="action-menu__item">
-                                                                <x-misc.icon name="edit" :size="14"
-                                                                    stroke="var(--ink-3)" />
-                                                                Edit Transaksi
-                                                            </a>
-
-                                                        </div>
-                                                    </template>
-                                                    @if (auth()->user()->can('finances.cash-bank.delete'))
-                                                        <div class="action-menu__divider"></div>
-                                                        <button class="action-menu__item action-menu__item--danger"
-                                                            @click.stop="cancel(tx.from_account.id, tx.id, tx.type)">
-                                                            <x-misc.icon name="trash" :size="14"
-                                                                stroke="currentColor" />Batalkan
-                                                            Transaksi
-                                                        </button>
-                                                    @endif
-                                                </div>
-                                            </template>
-                                            <template x-if="tx.status === '{{ $posted }}'">
-                                                <div>
-                                                    <a href="#" @click.stop class="action-menu__item">
-                                                        <x-misc.icon name="eye" :size="14"
-                                                            stroke="var(--ink-3)" />
-                                                        Lihat Detail
-                                                    </a>
-                                                </div>
-
-                                            </template>
-                                        </div>
-                                    </div>
+                                <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Memuat data...
                                 </td>
                             </tr>
                         </template>
-                    </template>
-                </tbody>
-            </table>
+    
+                        <template x-if="!loading && tableData.data.length === 0">
+                            <tr>
+                                <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="!loading && tableData.data.length > 0">
+                            <template x-for="tx in tableData.data" :key="tx.id">
+                                <tr>
+                                    <td style="color:var(--ink-3); white-space:nowrap;" x-text="tx.transaction_date"></td>
+                                    <td style="font-weight:500;" x-text="tx.description"></td>
+                                    <td>
+                                        <template x-if="tx.type === '{{ $transfer }}'">
+                                            <div style="display:flex; align-items:center; gap:4px;">
+                                                <span class="chip chip-info">
+                                                    <span x-text="tx.from_account.name"></span>
+                                                </span>
+                                                <template x-if="tx.to_account">
+                                                    <div style="display:flex; align-items:center; gap:4px;">
+                                                        <x-misc.icon name="arrow" :size="12" />
+                                                        <span class="chip chip-info">
+                                                            <span x-text="tx.to_account.name"></span>
+                                                        </span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template x-if="tx.type === '{{ $send }}'">
+                                            <span class="chip chip-info">
+                                                <span x-text="tx.from_account.name"></span>
+                                            </span>
+                                        </template>
+                                        <template x-if="tx.type === '{{ $receive }}'">
+                                            <span class="chip chip-info">
+                                                <span x-text="tx.to_account.name"></span>
+                                            </span>
+                                        </template>
+                                    </td>
+                                    <td class="mono" style="font-size:11.5px; color:var(--ink-4);"></td>
+                                    <td class="num" style="text-align:right; color:var(--ink-5); font-weight:400;"
+                                        x-text="m(tx.total_amount)"></td>
+                                    <td>
+                                        <span :class="statusChip(tx.status).chip">
+                                            <span :class="statusChip(tx.status).dot"></span>
+                                            <span x-text="statusChip(tx.status).label"></span>
+                                        </span>
+                                    </td>
+                                    <td x-on:click.stop>
+                                        <div x-data="{ open: false }" class="action-menu">
+                                            <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
+                                                x-on:click.stop="
+                                                  let wasOpen = open;
+                                                  $dispatch('close-menus');
+                                                  if (!wasOpen) {
+                                                    let r = $el.getBoundingClientRect();
+                                                    $refs.panel.style.top = (r.bottom + 6) + 'px';
+                                                    $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
+                                                    open = true;
+                                                  }
+                                                ">
+                                                <x-misc.icon name="more" :size="15" />
+                                            </button>
+                                            <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
+                                                x-on:click.away="open = false" class="action-menu__panel">
+                                                <template x-if="tx.status === '{{ $draft }}'">
+                                                    <div>
+                                                        <template x-if="tx.type === '{{ $transfer }}' && @js(auth()->user()->can('finances.cash-bank.edit'))">
+                                                            <div>
+                                                                <a :href="route('finances.cash.transfer.edit', {
+                                                                    id: '{{ $account->id }}',
+                                                                    transfer: tx.id
+                                                                })"
+                                                                    @click.stop class="action-menu__item">
+                                                                    <x-misc.icon name="edit" :size="14"
+                                                                        stroke="var(--ink-3)" />
+                                                                    Edit Transaksi
+                                                                </a>
+    
+                                                            </div>
+                                                        </template>
+                                                        <template x-if="tx.type === '{{ $receive }}' && @js(auth()->user()->can('finances.cash-bank.edit'))">
+                                                            <div>
+                                                                <a :href="route('finances.cash.receive.edit', {
+                                                                    id: '{{ $account->id }}',
+                                                                    receive: tx.id
+                                                                })"
+                                                                    @click.stop class="action-menu__item">
+                                                                    <x-misc.icon name="edit" :size="14"
+                                                                        stroke="var(--ink-3)" />
+                                                                    Edit Transaksi
+                                                                </a>
+    
+                                                            </div>
+                                                        </template>
+                                                        @if (auth()->user()->can('finances.cash-bank.delete'))
+                                                            <div class="action-menu__divider"></div>
+                                                            <button class="action-menu__item action-menu__item--danger"
+                                                                @click.stop="cancel(tx.from_account.id, tx.id, tx.type)">
+                                                                <x-misc.icon name="trash" :size="14"
+                                                                    stroke="currentColor" />Batalkan
+                                                                Transaksi
+                                                            </button>
+                                                        @endif
+                                                    </div>
+                                                </template>
+                                                <template x-if="tx.status === '{{ $posted }}'">
+                                                    <div>
+                                                        <a href="#" @click.stop class="action-menu__item">
+                                                            <x-misc.icon name="eye" :size="14"
+                                                                stroke="var(--ink-3)" />
+                                                            Lihat Detail
+                                                        </a>
+                                                    </div>
+    
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
             <div class="table-pagination">
                 <div class="pagination-actions">
                     <div class="pagination-label">Per</div>

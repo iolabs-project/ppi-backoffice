@@ -59,6 +59,15 @@ textarea.input {
 .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 .form-grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 14px; }
 
+@media (max-width: $bp-mobile) {
+  .form-grid-2,
+  .form-grid-3,
+  .form-grid-1-2 { grid-template-columns: minmax(0, 1fr); }
+
+  // 16px keeps iOS from zooming into the field on focus; 36px keeps small table/summary fields tappable
+  .input, .select { font-size: 16px; min-height: 36px; }
+}
+
 .form-section {
   display: grid;
   gap: 12px;

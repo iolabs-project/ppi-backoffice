@@ -18,16 +18,39 @@
         $dispatch('close-dropdowns');
         if (!wasOpen) {
             let r = $el.getBoundingClientRect();
-            $refs.menu.style.top = (r.bottom + 4) + 'px';
+            let m = $refs.menu;
+            if (m.dataset.minWidth === undefined) m.dataset.minWidth = m.style.minWidth;
+            m.style.minWidth = m.dataset.minWidth;
+            m.style.top = (r.bottom + 4) + 'px';
             @if ($align === 'right')
-                $refs.menu.style.right = (window.innerWidth - r.right) + 'px';
-                $refs.menu.style.left = 'auto';
+                m.style.right = (window.innerWidth - r.right) + 'px';
+                m.style.left = 'auto';
             @else
-                $refs.menu.style.left = r.left + 'px';
-                $refs.menu.style.right = 'auto';
+                m.style.left = r.left + 'px';
+                m.style.right = 'auto';
             @endif
-            $refs.menu.style.width = r.width + 'px';
+            m.style.width = r.width + 'px';
             open = true;
+            // Keep the menu on screen: shift it sideways, and open it upwards when there's no room below.
+            // Measured once the menu is actually visible (a hidden menu reports a 0×0 box).
+            const place = () => {
+                if (!open) return;
+                if (!m.offsetWidth) return requestAnimationFrame(place);
+                const pad = 8, vw = window.innerWidth, vh = window.innerHeight;
+                if (m.offsetWidth > vw - pad * 2) {
+                    m.style.minWidth = '0';
+                    m.style.width = (vw - pad * 2) + 'px';
+                }
+                const mr = m.getBoundingClientRect();
+                if (mr.right > vw - pad || mr.left < pad) {
+                    m.style.left = Math.min(Math.max(pad, mr.left), vw - pad - mr.width) + 'px';
+                    m.style.right = 'auto';
+                }
+                if (mr.bottom > vh - pad && r.top > vh - r.bottom) {
+                    m.style.top = Math.max(pad, r.top - 4 - mr.height) + 'px';
+                }
+            };
+            $nextTick(place);
         } else {
             open = false;
         }

@@ -111,6 +111,12 @@
             <path d="M6 14h12v7H6z" />
         @break
 
+        @case('menu')
+            <path d="M4 6h16" />
+            <path d="M4 12h16" />
+            <path d="M4 18h16" />
+        @break
+
         @case('more')
             <circle cx="5" cy="12" r="1.4" />
             <circle cx="12" cy="12" r="1.4" />
