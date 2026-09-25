@@ -162,7 +162,8 @@
                 </div>
                 <div class="order-detail-summary">
                     @foreach ([
-                        ['Nilai Bruto',               $salesInvoice->items->sum('subtotal'),         false, false],
+                        {{-- Sales items only store total_amount (net of item discount), so add the discount back for the gross value --}}
+                        ['Nilai Bruto',               $salesInvoice->items->sum(fn ($item) => $item->total_amount + $item->discount_amount), false, false],
                         ['Diskon Item',               -$salesInvoice->items->sum('discount_amount'),  false, false],
                         ['Subtotal',                  $salesInvoice->subtotal,                        false, true],
                         ['Diskon',                    -$salesInvoice->discount_amount,                false, false],

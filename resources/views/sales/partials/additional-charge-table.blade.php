@@ -17,6 +17,9 @@
 @endphp
 <script>
     var accounts = @json($accounts);
+    // Charges billed to the customer are income, so only revenue accounts are offered as options.
+    // The full list stays in `accounts` so existing charges on other accounts still display.
+    var chargeAccounts = accounts.filter(a => @json([\App\Enums\AccountCategoryEnum::REVENUE->value, \App\Enums\AccountCategoryEnum::OTHER_INCOME->value]).includes(a.category_id));
 </script>
 <div class="card" style="overflow:visible;">
     <div class="card-hd">
@@ -48,7 +51,7 @@
                             display="charge.account_id ? (accounts.find(a => a.id === charge.account_id)?.code + ' - ' + accounts.find(a => a.id === charge.account_id)?.name) : 'Pilih akun'"
                             hasValue="charge.account_id" placeholder="Cari akun..." min-width="260px" height="32px">
                             <template
-                                x-for="a in accounts.filter(a => !q || a.name.toLowerCase().includes(q.toLowerCase()) || (a.code || '').toLowerCase().includes(q.toLowerCase()))"
+                                x-for="a in chargeAccounts.filter(a => !q || a.name.toLowerCase().includes(q.toLowerCase()) || (a.code || '').toLowerCase().includes(q.toLowerCase()))"
                                 :key="a.id">
                                 <div class="dropdown-item" @click="charge.account_id=a.id; handleChargeInput(); open=false; q=''">
                                     <div style="flex:1; min-width:0;">
@@ -58,7 +61,7 @@
                                 </div>
                             </template>
                             <template
-                                x-if="!accounts.some(a => !q || a.name.toLowerCase().includes(q.toLowerCase()) || (a.code || '').toLowerCase().includes(q.toLowerCase()))">
+                                x-if="!chargeAccounts.some(a => !q || a.name.toLowerCase().includes(q.toLowerCase()) || (a.code || '').toLowerCase().includes(q.toLowerCase()))">
                                 <div class="dropdown-empty">Tidak ditemukan</div>
                             </template>
                         </x-misc.select>

@@ -52,6 +52,10 @@
                 <div style="font-size:11px; color:var(--ink-4); margin-top:4px;">
                     Maksimal: <span class="num" x-text="m(outstandingAmount())"></span>
                 </div>
+                <div x-show="insufficientBalance()" x-cloak style="font-size:11px; color:var(--bad); margin-top:4px;">
+                    Saldo akun ini <span class="num" x-text="m(selectedAccountBalance())"></span>, kurang dari jumlah
+                    pembayaran.
+                </div>
             </x-misc.field>
         </div>
         <div style="margin-top:14px;">

@@ -242,6 +242,17 @@
                     return this.outstandingAmount() > 0 && ['{{ $open }}', '{{ $partial }}'].includes(this.invoiceStatus);
                 },
 
+                // Null when the account list carries no balance, so the warning simply stays hidden
+                selectedAccountBalance() {
+                    const account = this.cashBankAccounts.find(a => a.id === this.form.account_id);
+                    return account && account.balance !== undefined && account.balance !== null ? Number(account.balance) : null;
+                },
+
+                insufficientBalance() {
+                    const balance = this.selectedAccountBalance();
+                    return balance !== null && NumberUtils.parseMaskIntoNumeric(this.form.amount) > balance;
+                },
+
                 // Mirror the status the backend sets after a payment, so the badge updates without a reload
                 syncStatus() {
                     const outstanding = Math.round(this.outstandingAmount() * 100) / 100;

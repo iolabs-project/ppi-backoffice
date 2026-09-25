@@ -250,6 +250,9 @@
                         null;
                     this.cashBankSelected = this.cashBanks.find(cb => cb.id === this.formData
                         .down_payment_account_id) || null;
+                    this.supplierSelected = this.suppliers.find(s => s.id === this.formData.supplier_id) || null;
+                    this.warehouseSelected = this.warehouses.find(g => g.id === this.formData.warehouse_id) ||
+                        null;
                     Swal.close();
                 },
 

@@ -99,12 +99,19 @@
   background: var(--accent-3);
   padding: 3px 8px;
   border-radius: 999px;
+
+  &--negative {
+    color: var(--bad);
+    background: var(--bad-bg);
+  }
 }
 
 .account-card__value {
   font-size: 22px;
   font-weight: 700;
   color: var(--ink);
+
+  &--negative { color: var(--bad); }
 }
 
 .account-card__bar {

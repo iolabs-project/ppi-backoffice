@@ -36,3 +36,28 @@
                 :size="14" />Simpan User</button>
     </x-slot:footer>
 </x-misc.modal>
+
+@if (Route::has('master.users.password'))
+    <x-misc.modal title="Ganti Password" show="modal === 'change_password'" close-handler="modal = null">
+        <div class="form-body">
+            <x-misc.field label="Username">
+                <input class="input mono" x-model="form.username" disabled />
+            </x-misc.field>
+            <div class="form-grid-2">
+                <x-misc.field label="Password Baru" :required="true">
+                    <input class="input" type="password" x-model="changePasswordForm.new_password"
+                        placeholder="••••••••" autocomplete="new-password" />
+                </x-misc.field>
+                <x-misc.field label="Konfirmasi Password Baru" :required="true">
+                    <input class="input" type="password" x-model="changePasswordForm.new_password_confirmation"
+                        placeholder="••••••••" autocomplete="new-password" />
+                </x-misc.field>
+            </div>
+        </div>
+        <x-slot:footer>
+            <button class="btn btn-ghost" x-on:click="modal = null">Batal</button>
+            <button class="btn btn-primary" x-on:click="handlePasswordChange()"><x-misc.icon name="check"
+                    :size="14" />Simpan Password</button>
+        </x-slot:footer>
+    </x-misc.modal>
+@endif

@@ -198,10 +198,15 @@
         </div>
 
         {{-- Account cards --}}
+        @php
+            // Shares are taken from positive balances only, so a negative account can't push the others past 100%
+            $positiveTotal = $activeAccounts->sum(fn ($account) => max($account->balance, 0));
+        @endphp
         <div class="account-grid">
             @foreach ($activeAccounts as $account)
                 @php
-                    $percentage = $totalAmount > 0 ? round(($account->balance / $totalAmount) * 100) : 0;
+                    $isNegative = $account->balance < 0;
+                    $percentage = !$isNegative && $positiveTotal > 0 ? round(($account->balance / $positiveTotal) * 100) : 0;
                 @endphp
                 <a href="{{ route('finances.cash.show', $account->id) }}" class="card account-card">
                     <div class="account-card__hd">
@@ -213,10 +218,15 @@
                                 <div class="account-card__name">{{ $account->name }}</div>
                             </div>
                         </div>
-                        <span class="account-card__pct">{{ $percentage }}%</span>
+                        @if ($isNegative)
+                            <span class="account-card__pct account-card__pct--negative">Saldo Minus</span>
+                        @else
+                            <span class="account-card__pct">{{ $percentage }}%</span>
+                        @endif
                     </div>
                     <div>
-                        <div class="account-card__value display num">{{ number_format($account->balance, 2) }}
+                        <div @class(['account-card__value display num', 'account-card__value--negative' => $isNegative])>
+                            {{ number_format($account->balance, 2) }}
                         </div>
                         <div class="account-card__bar">
                             <div class="account-card__bar-fill" style="width:{{ $percentage }}%;"></div>

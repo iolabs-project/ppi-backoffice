@@ -54,6 +54,12 @@
                                         <button class="action-menu__item" x-on:click="openEditModal(u)">
                                             <x-misc.icon name="edit" :size="14" /> Edit User
                                         </button>
+                                        {{-- Shown once the backend registers the password endpoint --}}
+                                        @if (Route::has('master.users.password'))
+                                            <button class="action-menu__item" x-on:click="openChangePasswordModal(u)">
+                                                <x-misc.icon name="lock" :size="14" /> Ganti Password
+                                            </button>
+                                        @endif
                                     @endif
                                     @if (auth()->user()->can('master.users.delete'))
                                         <template x-if="!u.deleted_at">

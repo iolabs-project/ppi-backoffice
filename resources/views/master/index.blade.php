@@ -782,7 +782,6 @@
                 },
 
                 changePasswordForm: {
-                    current_password: null,
                     new_password: null,
                     new_password_confirmation: null
                 },
@@ -885,7 +884,6 @@
                         role_id: user.role_id
                     };
                     this.changePasswordForm = {
-                        current_password: null,
                         new_password: null,
                         new_password_confirmation: null
                     };

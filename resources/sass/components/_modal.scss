@@ -8,10 +8,13 @@
   backdrop-filter: blur(2px);
 }
 
+// Header and footer stay put; only the body scrolls when the content is taller than the box
 .modal-box {
+  display: flex;
+  flex-direction: column;
   max-width: 92vw;
   max-height: 88vh;
-  overflow: auto;
+  overflow: hidden;
   background: var(--paper);
   border-radius: var(--r-card);
   box-shadow: var(--shadow-pop);
@@ -19,6 +22,7 @@
 }
 
 .modal-hd {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -33,10 +37,14 @@
 }
 
 .modal-bd {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
   padding: 20px 22px;
 }
 
 .modal-ft {
+  flex-shrink: 0;
   padding: 14px 22px;
   border-top: 1px solid var(--line);
   display: flex;
