@@ -28,7 +28,7 @@
   ];
   [$chipClass, $dotClass, $label] = $map[$status] ?? $map['pending'];
 @endphp
-<span class="{{ $chipClass }}">
+<span {{ $attributes->merge(['class' => $chipClass]) }}>
   <span class="{{ $dotClass }}"></span>
   {{ $label }}
 </span>

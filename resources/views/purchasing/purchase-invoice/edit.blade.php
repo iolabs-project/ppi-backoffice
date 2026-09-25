@@ -690,7 +690,7 @@
                         {{-- Group 2: Diskon, Pajak, Transport, Biaya Lain-lain -> Subtotal --}}
                         <div class="order-summary__group">
                             <div class="order-summary__row">
-                                <span class="order-summary__label"></span>
+                                <span class="order-summary__label">Subtotal</span>
                                 <span class="num order-summary__val"
                                     x-text="(formData.subtotal ? NumberUtils.formatNumericIntoMask(formData.subtotal) : '0')"></span>
                             </div>
@@ -741,7 +741,7 @@
                             x-if="purchaseInvoice.purchase_order && purchaseInvoice.purchase_order.down_payment_remaining_amount > 0">
                             <div class="order-summary__group">
                                 <div class="order-summary__row">
-                                    <span class="order-summary__label"></span>
+                                    <span class="order-summary__label">Total Sebelum Uang Muka</span>
                                     <span class="num order-summary__val"
                                         x-text="NumberUtils.formatNumericIntoMask(n(formData.total_amount) + n(formData.down_payment_amount))"></span>
                                 </div>
@@ -780,8 +780,8 @@
         <div class="order-form-footer">
             @if (auth()->user()->can('purchasing.invoices.edit'))
                 <button class="btn btn-ghost" style="border-style:dashed;" @click="submitDraft()">Simpan Draft</button>
-                <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Simpan
-                    SO</button>
+                <button class="btn btn-primary" @click="submitOpen()"><x-misc.icon name="check" :size="14" />Buka
+                    Tagihan</button>
             @endif
         </div>
 

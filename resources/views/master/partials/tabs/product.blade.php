@@ -79,12 +79,12 @@
                                         @if (auth()->user()->can('master.products.delete'))
                                             <template x-if="!row.deleted_at">
                                                 <button class="action-menu__item action-menu__item--danger"
-                                                    x-on:click="handleStatus(row.id)">
+                                                    x-on:click="handleStatus(row)">
                                                     <x-misc.icon name="trash" :size="14" /> Nonaktifkan
                                                 </button>
                                             </template>
                                             <template x-if="row.deleted_at">
-                                                <button class="action-menu__item" x-on:click="handleStatus(row.id)">
+                                                <button class="action-menu__item" x-on:click="handleStatus(row)">
                                                     <x-misc.icon name="refresh" :size="14" /> Aktifkan
                                                 </button>
                                             </template>
@@ -194,14 +194,24 @@
                     this.page = 1;
                     this.fetchData();
                 },
-                async handleStatus(id) {
+                async handleStatus(row) {
+                    const confirm = await Swal.fire({
+                        title: row.deleted_at ? 'Aktifkan kembali produk ini?' : 'Nonaktifkan produk ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true
+                    });
+                    if (!confirm.isConfirmed) return;
+
                     Swal.fire({
                         title: 'Memproses...',
                         allowOutsideClick: false,
                         didOpen: () => Swal.showLoading()
                     });
                     try {
-                        const r = await axios.post(route('master.products.status', id));
+                        const r = await axios.post(route('master.products.status', row.id));
                         Swal.close();
                         Toast.fire({
                             icon: 'success',

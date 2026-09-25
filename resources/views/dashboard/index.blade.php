@@ -2,7 +2,7 @@
 @section('content')
     @php
         $authUser = auth()->user();
-        $userName = $authUser?->name ?? 'User';
+        $userName = $authUser?->contact?->name ?? $authUser?->username ?? 'User';
 
         $monthly = $monthly ?? [];
         $maxVal = 0;

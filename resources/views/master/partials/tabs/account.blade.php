@@ -4,7 +4,7 @@
             <div class="master-search">
                 <span class="master-search__icon"><x-misc.icon name="search" :size="14"
                         stroke="var(--ink-4)" /></span>
-                <input class="input master-search__input" placeholder="Cari kontak..." x-model="search"
+                <input class="input master-search__input" placeholder="Cari akun..." x-model="search"
                     x-on:input.debounce.400ms="handleSearch(search)" />
             </div>
             @if (auth()->user()->can('master.accounts.create'))
@@ -75,13 +75,13 @@
                                                 @if (auth()->user()->can('master.accounts.delete'))
                                                     <template x-if="!item.deleted_at">
                                                         <button class="action-menu__item action-menu__item--danger"
-                                                            x-on:click="handleStatus(item.id)">
+                                                            x-on:click="handleStatus(item)">
                                                             <x-misc.icon name="trash" :size="14" /> Nonaktifkan
                                                         </button>
                                                     </template>
                                                     <template x-if="item.deleted_at">
                                                         <button class="action-menu__item"
-                                                            x-on:click="handleStatus(item.id)">
+                                                            x-on:click="handleStatus(item)">
                                                             <x-misc.icon name="refresh" :size="14" /> Aktifkan
                                                         </button>
                                                     </template>

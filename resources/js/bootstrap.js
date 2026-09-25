@@ -12,7 +12,7 @@ window.Swal = Swal.mixin({
     reverseButtons: true,
 });
 
-window.Toast = window.Swal.mixin({
+const BaseToast = window.Swal.mixin({
     toast: true,
     position: 'top-end',
     showConfirmButton: false,
@@ -23,3 +23,11 @@ window.Toast = window.Swal.mixin({
         toast.addEventListener('mouseleave', Swal.resumeTimer)
     }
 });
+
+// Error toasts stay longer so validation messages can actually be read
+window.Toast = {
+    fire: (options = {}) => BaseToast.fire({
+        ...(options.icon === 'error' ? { timer: 7000 } : {}),
+        ...options,
+    }),
+};

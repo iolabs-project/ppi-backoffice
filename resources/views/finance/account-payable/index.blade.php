@@ -62,10 +62,10 @@
                         <th style="width:48px;">No</th>
                         <th>No. Invoice</th>
                         <th>Supplier</th>
-                        <th>Invoice Date</th>
-                        <th>Due Date</th>
-                        <th style="text-align:right;">Invoice Total</th>
-                        <th style="text-align:right;">Outstanding</th>
+                        <th>Tanggal Invoice</th>
+                        <th>Jatuh Tempo</th>
+                        <th style="text-align:right;">Jumlah Invoice</th>
+                        <th style="text-align:right;">Sisa Tagihan</th>
                         <th>Status</th>
                         <th style="width:48px;"></th>
                     </tr>
