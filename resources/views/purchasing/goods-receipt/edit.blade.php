@@ -126,8 +126,7 @@
                     if (!prefix) {
                         return '-';
                     }
-                    const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-                    return `${prefix}-${datePart}-XXXX`;
+                    return `${prefix}-XXXX`;
                 },
 
                 recalc() {

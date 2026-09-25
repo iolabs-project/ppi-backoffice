@@ -132,7 +132,8 @@ class ProductService
                 'category_id',
                 'unit_id',
                 'description',
-                'deleted_at'
+                'deleted_at',
+                'batch_prefix'
             )
             ->where('company_id', config('context.selected_company_id'));
 
@@ -206,6 +207,7 @@ class ProductService
                 'category_id',
                 'unit_id',
                 'description',
+                'batch_prefix',
             )
             ->where('company_id', config('context.selected_company_id'))
             ->where('id', $id);
@@ -244,6 +246,7 @@ class ProductService
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
+            'batch_prefix' => $request->batch_prefix,
         ]);
     }
 
@@ -268,6 +271,7 @@ class ProductService
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
+            'batch_prefix' => $request->batch_prefix,
         ]);
     }
 
@@ -332,7 +336,7 @@ class ProductService
             ->where('company_id', $companyID)
             ->firstOrFail();
 
-        $prefix = $product->batch_prefix . '-' . date('Ymd') . '-';
+        $prefix = $product->batch_prefix . '-';
         $lastBatch = DB::table('product_batches')
             ->where('company_id', $companyID)
             ->where('product_id', $productID)
