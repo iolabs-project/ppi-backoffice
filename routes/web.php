@@ -299,6 +299,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/', 'store')->middleware('permission:master.users.create')->name('store');
             Route::get('/options', 'options')->middleware('permission:master.users.view')->name('options');
             Route::put('/{id}', 'update')->middleware('permission:master.users.edit')->name('update');
+            Route::put('/{id}/password', 'password')->middleware('permission:master.users.edit')->name('password');
             Route::post('/{id}/status', 'status')->middleware('permission:master.users.edit')->name('status');
         });
 

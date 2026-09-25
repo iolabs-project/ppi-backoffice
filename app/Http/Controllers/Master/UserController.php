@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Master\UserFormRequest;
 use App\Services\Master\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,20 +29,8 @@ class UserController extends Controller
         }
     }
 
-    public function store(Request $request, UserService $userService)
+    public function store(UserFormRequest $request, UserService $userService)
     {
-        $request->validate([
-            'username' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('users', 'username'),
-            ],
-            'contact_id' => 'nullable|exists:contacts,id',
-            'password' => 'required|string|min:8',
-            'confirm_password' => 'required|string|min:8|same:password',
-            'role_id' => 'required|exists:roles,id',
-        ]);
         try {
             $userService->storeUser($request);
 
@@ -60,20 +49,8 @@ class UserController extends Controller
         }
     }
 
-    public function update(Request $request, UserService $userService, int $id)
+    public function update(UserFormRequest $request, UserService $userService, int $id)
     {
-        $request->validate([
-            'username' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('users', 'username')->ignore($id),
-            ],
-            'contact_id' => 'nullable|exists:contacts,id',
-            'password' => 'nullable|string|min:8',
-            'confirm_password' => 'nullable|string|min:8|same:password',
-            'role_id' => 'required|exists:roles,id',
-        ]);
         try {
             $userService->updateUser($request, $id);
 
@@ -88,6 +65,26 @@ class UserController extends Controller
             ]);
             return response()->json([
                 'message' => 'Terjadi kesalahan saat memperbarui user',
+            ], 500);
+        }
+    }
+
+    public function password(UserFormRequest $request, UserService $userService, int $id)
+    {
+        try {
+            $userService->updateUserPassword($request, $id);
+
+            return response()->json([
+                'message' => 'Password user berhasil diperbarui',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error UserController@password: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat memperbarui password user',
             ], 500);
         }
     }

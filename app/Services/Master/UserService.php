@@ -88,16 +88,10 @@ class UserService
         }
 
         DB::transaction(function () use ($request, $user) {
-            $updateData = [
+            $user->update([
                 'username' => $request->username,
                 'contact_id' => $request->contact_id ?: null,
-            ];
-
-            if ($request->filled('password')) {
-                $updateData['password'] = Hash::make($request->password);
-            }
-
-            $user->update($updateData);
+            ]);
 
             if ($request->filled('company_ids')) {
                 UserCompany::where('user_id', $user->id)->delete();
@@ -114,6 +108,15 @@ class UserService
                 $user->syncRoles([(int) $request->role_id]);
             }
         });
+    }
+
+    public function updateUserPassword(Request $request, int $id)
+    {
+        $user = User::findOrFail($id);
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
     }
 
     public function toggleUserStatus(int $id)

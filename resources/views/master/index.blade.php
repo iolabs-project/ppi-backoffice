@@ -782,8 +782,8 @@
                 },
 
                 changePasswordForm: {
-                    new_password: null,
-                    new_password_confirmation: null
+                    password: null,
+                    password_confirmation: null
                 },
 
                 avatarMeta(name) {
@@ -884,8 +884,8 @@
                         role_id: user.role_id
                     };
                     this.changePasswordForm = {
-                        new_password: null,
-                        new_password_confirmation: null
+                        password: null,
+                        password_confirmation: null
                     };
                     this.modal = 'change_password';
                 },

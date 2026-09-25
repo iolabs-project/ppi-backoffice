@@ -41,15 +41,15 @@
     <x-misc.modal title="Ganti Password" show="modal === 'change_password'" close-handler="modal = null">
         <div class="form-body">
             <x-misc.field label="Username">
-                <input class="input mono" x-model="form.username" disabled />
+                <input class="input mono input--readonly" x-model="form.username" disabled />
             </x-misc.field>
             <div class="form-grid-2">
                 <x-misc.field label="Password Baru" :required="true">
-                    <input class="input" type="password" x-model="changePasswordForm.new_password"
+                    <input class="input" type="password" x-model="changePasswordForm.password"
                         placeholder="••••••••" autocomplete="new-password" />
                 </x-misc.field>
                 <x-misc.field label="Konfirmasi Password Baru" :required="true">
-                    <input class="input" type="password" x-model="changePasswordForm.new_password_confirmation"
+                    <input class="input" type="password" x-model="changePasswordForm.password_confirmation"
                         placeholder="••••••••" autocomplete="new-password" />
                 </x-misc.field>
             </div>
