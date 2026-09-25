@@ -158,6 +158,7 @@ class GoodsReceiptService
     public function updateGoodsReceipt(Request $request, int $id): void
     {
         $header = GoodsReceipt::findOrFail($id);
+        abort_unless_draft($header->status, 'Penerimaan barang');
         $requestCollection = collect($request->except(['details', 'costs']));
         $detailsCollection = collect($request->input('details', []));
         $costsCollection = collect($request->input('costs', []));

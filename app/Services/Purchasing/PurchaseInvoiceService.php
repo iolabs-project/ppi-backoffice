@@ -131,6 +131,7 @@ class PurchaseInvoiceService
     {
         DB::transaction(function () use ($request, $id) {
             $purchaseInvoice = PurchaseInvoice::findOrFail($id);
+            abort_unless_draft($purchaseInvoice->status, 'Tagihan pembelian');
             $detailsCollection = collect($request->input('details', []));
             $costCollection = collect($request->input('costs', []));
             $subtotal = $detailsCollection->sum(function ($detail) {

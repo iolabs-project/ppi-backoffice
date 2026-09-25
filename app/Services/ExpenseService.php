@@ -273,6 +273,7 @@ class ExpenseService
 
         DB::transaction(function () use ($request, $id) {
             $expense = Expense::findOrFail($id);
+            abort_unless_draft($expense->status, 'Biaya');
             $expense->update([
                 'contact_id' => $request->input('contact_id'),
                 'reference_number' => $request->input('reference_number'),

@@ -233,6 +233,7 @@ class PurchaseOrderService
     {
         DB::transaction(function () use ($request, $id) {
             $purchaseOrder = PurchaseOrder::findOrFail($id);
+            abort_unless_draft($purchaseOrder->status, 'Purchase Order');
             $detailsCollection = collect($request->input('details', []));
             $costCollection = collect($request->input('costs', []));
 

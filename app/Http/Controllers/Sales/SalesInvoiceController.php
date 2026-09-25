@@ -87,6 +87,8 @@ class SalesInvoiceController extends Controller
         if (!$salesInvoice) {
             abort(404, 'Tagihan penjualan tidak ditemukan.');
         }
+        abort_unless_draft($salesInvoice->status, 'Tagihan penjualan');
+
         $companyID = config('context.selected_company_id');
 
         $data = [

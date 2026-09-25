@@ -85,6 +85,8 @@ class PurchaseInvoiceController extends Controller
         if (!$purchaseInvoice) {
             abort(404, 'Tagihan pembelian tidak ditemukan.');
         }
+        abort_unless_draft($purchaseInvoice->status, 'Tagihan pembelian');
+
         $companyID = config('context.selected_company_id');
 
         $data = [

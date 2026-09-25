@@ -108,6 +108,7 @@ class SalesOrderController extends Controller
         if (!$salesOrder) {
             abort(404, 'Pemesanan penjualan tidak ditemukan.');
         }
+        abort_unless_draft($salesOrder->status, 'Pemesanan penjualan');
 
         $companyID = config('context.selected_company_id');
 

@@ -157,6 +157,7 @@ class DeliveryOrderService
     public function updateDeliveryOrder(Request $request, int $id): void
     {
         $header = DeliveryOrder::findOrFail($id);
+        abort_unless_draft($header->status, 'Pengiriman barang');
         $requestCollection = collect($request->except('details'));
         $detailsCollection = collect($request->input('details', []));
         $costsCollection = collect($request->input('costs', []));

@@ -25,6 +25,18 @@ if (!function_exists('fmt_num')) {
     }
 }
 
+if (!function_exists('abort_unless_draft')) {
+    /**
+     * Hanya izinkan edit/update saat record masih berstatus draft.
+     */
+    function abort_unless_draft(?string $status, string $label): void
+    {
+        if ($status !== 'draft') {
+            abort(403, "{$label} hanya dapat diubah saat berstatus draft.");
+        }
+    }
+}
+
 if (!function_exists('avatar_meta')) {
     function avatar_meta(string $name): array
     {

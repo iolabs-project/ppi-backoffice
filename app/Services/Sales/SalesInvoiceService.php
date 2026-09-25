@@ -136,6 +136,7 @@ class SalesInvoiceService
     public function updateSalesInvoice(Request $request, int $id)
     {
         $salesInvoice = SalesInvoice::findOrFail($id);
+        abort_unless_draft($salesInvoice->status, 'Tagihan penjualan');
         $detailsCollection = collect($request->input('details', []));
         $chargesCollection = collect($request->input('charges', []));
         $subtotal = $detailsCollection->sum(function ($detail) {

@@ -109,6 +109,7 @@ class PurchaseOrderController extends Controller
         if (!$purchaseOrder) {
             abort(404, 'Purchase Order tidak ditemukan.');
         }
+        abort_unless_draft($purchaseOrder->status, 'Purchase Order');
 
         $companyID = config('context.selected_company_id');
 

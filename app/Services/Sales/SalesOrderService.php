@@ -244,6 +244,7 @@ class SalesOrderService
     {
         DB::transaction(function () use ($request, $id) {
             $salesOrder = SalesOrder::findOrFail($id);
+            abort_unless_draft($salesOrder->status, 'Pemesanan penjualan');
             $detailsCollection = collect($request->input('details', []));
             $costsCollection = collect($request->input('costs', []));
             $chargesCollection = collect($request->input('charges', []));

@@ -76,11 +76,17 @@ class ExpenseController extends Controller
 
     public function edit(int $id)
     {
+        $expense = $this->expenseService->fetchExpenseByID($id);
+        if (!$expense) {
+            abort(404, 'Biaya tidak ditemukan.');
+        }
+        abort_unless_draft($expense->status, 'Biaya');
+
         $companyID = config('context.selected_company_id');
         $data = [
             'currentPage'    => 'biaya',
             'breadcrumb'     => [['label' => 'Biaya', 'url' => route('expenses.index')], ['label' => 'Edit']],
-            'expense' => $this->expenseService->fetchExpenseByID($id),
+            'expense' => $expense,
             'paymentTerms' => PaymentTerm::dropdownOptions(),
             'contacts' => $this->contactService->fetchContactData(),
             'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),

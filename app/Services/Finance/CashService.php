@@ -205,6 +205,7 @@ class CashService
         $costCollection = collect($request->input('costs', []));
         DB::transaction(function () use ($request, $itemsCollection, $costCollection, $transactionID, $accountID) {
             $transaction = CashTransaction::findOrFail($transactionID);
+            abort_unless_draft($transaction->status, 'Transaksi kas');
             $subtotal = $itemsCollection->count() == 0 && $request->filled('subtotal') ? $request->input('subtotal') : $itemsCollection->sum('amount');
             $costTotalAmount = $costCollection->sum('amount');
             $taxPercentage = $request->input('tax_percentage') ?? 0;

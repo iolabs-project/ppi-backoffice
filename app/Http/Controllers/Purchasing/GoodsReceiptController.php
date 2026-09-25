@@ -80,6 +80,11 @@ class GoodsReceiptController extends Controller
     public function edit(GoodsReceiptService $goodsReceiptService, PurchaseOrderService $purchaseOrderService, int $id)
     {
         $goodsReceipt = $goodsReceiptService->fetchGoodsReceiptByID($id);
+        if (!$goodsReceipt) {
+            abort(404, 'Penerimaan barang tidak ditemukan.');
+        }
+        abort_unless_draft($goodsReceipt->status, 'Penerimaan barang');
+
         $companyID = config('context.selected_company_id');
         $data = [
             'currentPage'   => 'pembelian.penerimaan',

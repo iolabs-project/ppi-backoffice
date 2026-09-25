@@ -71,6 +71,7 @@ class DeliveryOrderController extends Controller
         if (!$deliveryOrder) {
             abort(404, 'Pengiriman tidak ditemukan.');
         }
+        abort_unless_draft($deliveryOrder->status, 'Pengiriman barang');
 
         $companyID = config('context.selected_company_id');
 

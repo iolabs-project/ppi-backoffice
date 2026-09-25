@@ -100,6 +100,7 @@ class CashController extends Controller
     {
         $account = $this->cashService->fetchActiveAccountDataByID(config('context.selected_company_id'), $id);
         $transaction = $this->cashService->fetchTransactionByID($transfer);
+        abort_unless_draft($transaction->status, 'Transaksi kas');
         $companyID = config('context.selected_company_id');
         $data = [
             'currentPage'    => 'finance.cash',
@@ -180,6 +181,7 @@ class CashController extends Controller
     {
         $account = $this->cashService->fetchActiveAccountDataByID(config('context.selected_company_id'), $id);
         $transaction = $this->cashService->fetchTransactionByID($receive);
+        abort_unless_draft($transaction->status, 'Transaksi kas');
         $companyID = config('context.selected_company_id');
         $data = [
             'currentPage'    => 'finance.cash',
@@ -261,6 +263,7 @@ class CashController extends Controller
     {
         $account = $this->cashService->fetchActiveAccountDataByID(config('context.selected_company_id'), $id);
         $transaction = $this->cashService->fetchTransactionByID($receive);
+        abort_unless_draft($transaction->status, 'Transaksi kas');
         $companyID = config('context.selected_company_id');
         $data = [
             'currentPage'    => 'finance.cash',
