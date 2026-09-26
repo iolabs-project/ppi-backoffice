@@ -1,0 +1,26 @@
+{
+  "node_modules/xlsx/xlsx.mjs": {
+    "file": "assets/xlsx-CKwrMZHi.js",
+    "name": "xlsx",
+    "src": "node_modules/xlsx/xlsx.mjs",
+    "isDynamicEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-DD_u5VJB.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "node_modules/xlsx/xlsx.mjs"
+    ]
+  },
+  "resources/sass/app.scss": {
+    "file": "assets/app-fZhRb0Ge.css",
+    "src": "resources/sass/app.scss",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  }
+}
