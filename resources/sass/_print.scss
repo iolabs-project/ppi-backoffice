@@ -1,0 +1,51 @@
+// Printing an app page (the reports' "Cetak"): only the page content, full length, no app chrome.
+// Documents (invoice, PO, ...) have their own print layout: layouts/print.blade.php.
+
+.print-header { display: none; }
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  html, body, #root, .erp-shell, .erp-main, .erp-scroll {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  body, .erp-main { background: #fff !important; }
+  body::before { display: none; } // paper texture overlay
+
+  .sidebar, .submenu-panel, .submenu-backdrop, .topbar,
+  .utab, .table-pagination, .btn, .table-toolbar, .filter-pills { display: none !important; }
+
+  .print-header {
+    display: block;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+
+  .laporan-page, .order-page, .master-page, .kasbank-page, .biaya-page, .dash { padding: 0 !important; }
+
+  .card { box-shadow: none !important; }
+
+  .tbl-scroll {
+    overflow: visible !important;
+    background: none !important;
+  }
+
+  .tbl th, .tbl td { white-space: normal !important; }
+
+  // Date filters print as plain text: "Dari 01/09/2026  Sampai 30/09/2026"
+  .report-date input {
+    border: 0 !important;
+    background: none !important;
+    padding: 0 !important;
+    height: auto !important;
+    color: var(--ink) !important;
+  }
+
+  .report-date input::-webkit-calendar-picker-indicator { display: none; }
+}

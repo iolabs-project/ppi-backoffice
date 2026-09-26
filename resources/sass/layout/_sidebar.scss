@@ -192,7 +192,7 @@
 
 // ── Mobile: the rail becomes a drawer ───────────────────────────────────────
 
-@media (max-width: $bp-mobile) {
+@media screen and (max-width: $bp-mobile) {
     .sidebar {
         position: fixed;
         top: 0;

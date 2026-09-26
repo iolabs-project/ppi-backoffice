@@ -8,8 +8,8 @@
                 <input type="date" class="filter-panel__input" x-model="filter.as_of_date"
                     x-on:change="fetchData()" style="height:28px; font-size:12px;">
             </label>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="window.print()"><x-misc.icon name="print" :size="13" />Cetak</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
     </div>
 <div class="neraca-grid">
@@ -121,6 +121,33 @@
     <script>
         function balanceSheetModule() {
             return {
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const d = this.tableData;
+                        const section = (label, part, totalLabel) => [
+                            { code: '', name: label.toUpperCase(), amount: null },
+                            ...part.accounts.map(a => ({ code: a.account_code, name: a.account_name, amount: a.balance })),
+                            { code: '', name: totalLabel, amount: part.total },
+                        ];
+                        await ExportUtils.exportXlsx({
+                            filename: 'Neraca',
+                            title: 'Neraca',
+                            subtitle: 'Per tanggal ' + this.filter.as_of_date,
+                            columns: [
+                                { header: 'Kode', value: r => r.code },
+                                { header: 'Akun', value: r => r.name },
+                                { header: 'Saldo', value: r => r.amount, type: 'number' },
+                            ],
+                            rows: [
+                                ...section('Aset', d.asset, 'Total Aset'),
+                                ...section('Liabilitas', d.liability, 'Total Liabilitas'),
+                                ...section('Ekuitas', d.equity, 'Total Ekuitas'),
+                                { code: '', name: 'Total Liabilitas + Ekuitas', amount: d.total_liabilities_and_equity },
+                            ],
+                        });
+                    });
+                },
+
                 tableData: {
                     as_of_date: null,
                     asset: {

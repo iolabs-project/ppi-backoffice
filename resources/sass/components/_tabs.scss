@@ -5,7 +5,7 @@
   border-bottom: 2px solid var(--line);
 
   // Too many tabs for a phone: the bar scrolls sideways instead of widening the page
-  @media (max-width: $bp-mobile) {
+  @media screen and (max-width: $bp-mobile) {
     overflow-x: auto;
     scrollbar-width: none;
 

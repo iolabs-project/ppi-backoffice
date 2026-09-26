@@ -32,6 +32,38 @@
                     await this.fetchData();
                 },
 
+                // Same filters as the table, every page, as an Excel file
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const rows = await ExportUtils.fetchAllRows(route('expenses.datatable'), {
+                            status: this.filter,
+                            search: this.search,
+                            start_date: this.dateFrom,
+                            end_date: this.dateTo,
+                        });
+                        await ExportUtils.exportXlsx({
+                            filename: 'Biaya',
+                            title: 'Biaya',
+                            subtitle: ExportUtils.describeFilters({
+                                status: this.filter === 'all' ? 'Semua' : this.statusChip(this.filter).label,
+                                from: this.dateFrom,
+                                to: this.dateTo,
+                                search: this.search,
+                            }),
+                            columns: [
+                                { header: 'No. Biaya', value: r => r.number },
+                                { header: 'Tanggal', value: r => r.expense_date },
+                                { header: 'No. Ref', value: r => r.reference_number },
+                                { header: 'Penerima', value: r => r.contact?.name },
+                                { header: 'Sisa', value: r => r.remaining_amount, type: 'number' },
+                                { header: 'Total', value: r => r.total_amount, type: 'number' },
+                                { header: 'Status', value: r => this.statusChip(r.status).label }
+                            ],
+                            rows,
+                        });
+                    });
+                },
+
                 async fetchData() {
                     this.loading = true;
                     try {
@@ -229,7 +261,7 @@
                         @click="showFilters = !showFilters">
                         <x-misc.icon name="filter" :size="13" />Filter
                     </button>
-                    <button class="btn btn-ghost btn-sm">
+                    <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()">
                         <x-misc.icon name="download" :size="13" />Ekspor
                     </button>
                 </div>
@@ -318,10 +350,8 @@
                                             </button>
                                             <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
                                                 x-on:click.away="open = false" class="action-menu__panel">
-                                                <button class="action-menu__item" @click.stop>
-                                                    <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
-                                                    Biaya
-                                                </button>
+                                                <a :href="route('expenses.print', row.id)" target="_blank" rel="noopener" @click.stop
+                                                    class="action-menu__item"><x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak Biaya</a>
                                                 <template x-if="row.status === '{{ $draft }}' && @js(auth()->user()->can('finances.expenses.edit'))">
                                                     <div>
                                                         <a :href="route('expenses.edit', row.id)" @click.stop

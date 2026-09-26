@@ -13,8 +13,8 @@
                 <input type="date" class="filter-panel__input" x-model="filter.end_date"
                     x-on:change="fetchData()" style="height:28px; font-size:12px;">
             </label>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="window.print()"><x-misc.icon name="print" :size="13" />Cetak</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
     </div>
 <div class="labarugi-grid">
@@ -75,6 +75,35 @@
     <script>
         function profitLossModule() {
             return {
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const rows = [];
+                        this.sectionGroups.forEach(group => {
+                            rows.push({ code: '', name: group.label.toUpperCase(), amount: null });
+                            group.sections.forEach(section => {
+                                rows.push({ code: '', name: section.label, amount: null });
+                                this.sectionAccounts(section.key).forEach(a => rows.push({ code: a.account_code, name: a.account_name, amount: a.balance }));
+                                rows.push({ code: '', name: section.subtotalLabel, amount: this.sectionTotal(section.key) });
+                            });
+                            rows.push({ code: '', name: group.totalLabel, amount: this.groupTotal(group.key) });
+                        });
+                        rows.push({ code: '', name: 'Laba Kotor', amount: this.tableData.gross_profit });
+                        rows.push({ code: '', name: 'Laba Operasional', amount: this.tableData.operating_profit });
+                        rows.push({ code: '', name: 'Laba Bersih', amount: this.tableData.net_profit });
+                        await ExportUtils.exportXlsx({
+                            filename: 'Laba Rugi',
+                            title: 'Laba Rugi',
+                            subtitle: ExportUtils.describeFilters({ from: this.filter.start_date, to: this.filter.end_date }),
+                            columns: [
+                                { header: 'Kode', value: r => r.code },
+                                { header: 'Akun', value: r => r.name },
+                                { header: 'Jumlah', value: r => r.amount, type: 'number' },
+                            ],
+                            rows,
+                        });
+                    });
+                },
+
                 tableData: {
                     revenue: {
                         accounts: [],

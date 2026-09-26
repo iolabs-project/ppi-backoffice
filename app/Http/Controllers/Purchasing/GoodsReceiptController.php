@@ -77,6 +77,18 @@ class GoodsReceiptController extends Controller
         return view('purchasing.goods-receipt.show', $data);
     }
 
+    public function print(GoodsReceiptService $goodsReceiptService, int $id)
+    {
+        $goodsReceipt = $goodsReceiptService->fetchGoodsReceiptByID($id);
+        if (!$goodsReceipt) {
+            abort(404, 'Penerimaan barang tidak ditemukan.');
+        }
+        // The detail query only selects the supplier's name; the printed document also shows the address
+        $goodsReceipt->load('supplier');
+
+        return view('print.goods-receipt', ['goodsReceipt' => $goodsReceipt]);
+    }
+
     public function edit(GoodsReceiptService $goodsReceiptService, PurchaseOrderService $purchaseOrderService, int $id)
     {
         $goodsReceipt = $goodsReceiptService->fetchGoodsReceiptByID($id);

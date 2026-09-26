@@ -28,7 +28,9 @@
                             :size="14" />Batal Tagihan</button>
                 @endif
 
-                {{-- TODO: Add print button --}}
+                <a href="{{ route('sales.sales_invoices.print', $salesInvoice->id) }}" target="_blank" rel="noopener" class="btn btn-ghost">
+                    <x-misc.icon name="print" :size="14" />Cetak
+                </a>
             </div>
         </div>
 

@@ -81,6 +81,18 @@ class SalesInvoiceController extends Controller
         return view('sales.sales-invoice.show', $data);
     }
 
+    public function print(int $id)
+    {
+        $salesInvoice = $this->salesInvoiceService->fetchSalesInvoiceByID($id);
+        if (!$salesInvoice) {
+            abort(404, 'Tagihan penjualan tidak ditemukan.');
+        }
+        // The detail query only selects the customer's name; the printed document also shows the address
+        $salesInvoice->load('customer');
+
+        return view('print.sales-invoice', ['salesInvoice' => $salesInvoice]);
+    }
+
     public function edit(DeliveryOrderService $deliveryOrderService, int $id)
     {
         $salesInvoice = $this->salesInvoiceService->fetchSalesInvoiceByID($id);

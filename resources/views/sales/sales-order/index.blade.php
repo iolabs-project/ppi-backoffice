@@ -13,7 +13,7 @@
                 <div class="order-sub"><span x-text="tableData ? tableData.total : 0"></span> dokumen</div>
             </div>
             <div class="order-actions">
-                <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
+                <button class="btn btn-ghost" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="14" />Ekspor</button>
                 @if (auth()->user()->can('sales.sales-orders.create'))
                     <a href="{{ route('sales.sales_orders.create') }}" class="btn btn-primary"><x-misc.icon name="plus"
                         :size="15" />Tambah</a>
@@ -185,12 +185,9 @@
                                                                 stroke="var(--ink-3)" />Lihat
                                                             Detail
                                                         </a>
-                                                        <button class="action-menu__item" @click.stop>
-                                                            {{-- TODO: Implement print functionality --}}
-                                                            <x-misc.icon name="print" :size="14"
-                                                                stroke="var(--ink-3)" />Cetak
-                                                            SO
-                                                        </button>
+                                                        <a :href="route('sales.sales_orders.print', row.id)" target="_blank" rel="noopener" @click.stop
+                                                    class="action-menu__item"><x-misc.icon name="print" :size="14"
+                                                                stroke="var(--ink-3)" />Cetak SO</a>
                                                     </div>
                                                 </template>
                                                 @if (auth()->user()->can('sales.delivery-orders.create'))
@@ -332,6 +329,41 @@
 
                 async tableLoad() {
                     await this.fetchData();
+                },
+
+                // Same filters as the table, every page, as an Excel file
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const rows = await ExportUtils.fetchAllRows(route('sales.sales_orders.datatable'), {
+                            status: this.filter,
+                            search: this.search,
+                            start_date: this.dateFrom,
+                            end_date: this.dateTo,
+                        });
+                        await ExportUtils.exportXlsx({
+                            filename: 'Pemesanan Penjualan',
+                            title: 'Pemesanan Penjualan',
+                            subtitle: ExportUtils.describeFilters({
+                                status: this.filter === 'all' ? 'Semua' : this.statusChip(this.filter).label,
+                                from: this.dateFrom,
+                                to: this.dateTo,
+                                search: this.search,
+                            }),
+                            columns: [
+                                { header: 'Nomor SO', value: r => r.number },
+                                { header: 'Tanggal', value: r => r.order_date },
+                                { header: 'Customer', value: r => r.customer?.name },
+                                { header: 'Gudang', value: r => r.warehouse?.name },
+                                { header: 'Jatuh Tempo', value: r => r.due_date },
+                                { header: 'Qty Dipesan', value: r => r.total_quantity, type: 'number' },
+                                { header: 'Qty Dikirim', value: r => r.total_shipped_quantity, type: 'number' },
+                                { header: 'Qty Ditagih', value: r => r.total_invoiced_quantity, type: 'number' },
+                                { header: 'Total', value: r => r.total_amount, type: 'number' },
+                                { header: 'Status', value: r => this.statusChip(r.status).label }
+                            ],
+                            rows,
+                        });
+                    });
                 },
 
                 async fetchData() {

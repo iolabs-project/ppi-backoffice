@@ -44,7 +44,7 @@
 .btn-icon { width: 38px; padding: 0; }
 
 // Comfortable touch targets on phones
-@media (max-width: $bp-mobile) {
+@media screen and (max-width: $bp-mobile) {
   .btn-sm { height: 36px; font-size: 12px; }
   .btn-icon.btn-sm { width: 36px; }
 }

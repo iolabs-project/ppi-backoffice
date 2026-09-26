@@ -188,7 +188,7 @@
   }
 }
 
-@media (max-width: $bp-mobile) {
+@media screen and (max-width: $bp-mobile) {
   .table-search { flex: 1 1 100%; }
   .table-search__input,
   .table-search__input:focus { width: 100%; }

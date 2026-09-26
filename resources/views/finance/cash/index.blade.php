@@ -54,6 +54,37 @@
                     };
                 },
 
+                // Same filters as the table, every page, as an Excel file
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const rows = await ExportUtils.fetchAllRows(route('finances.cash.datatable'), {
+                            status: this.filter,
+                            search: this.search,
+                            start_date: this.dateFrom,
+                            end_date: this.dateTo,
+                        });
+                        await ExportUtils.exportXlsx({
+                            filename: 'Transaksi Kas & Bank',
+                            title: 'Transaksi Kas & Bank',
+                            subtitle: ExportUtils.describeFilters({
+                                status: this.filter === 'all' ? 'Semua' : this.statusChip(this.filter).label,
+                                from: this.dateFrom,
+                                to: this.dateTo,
+                                search: this.search,
+                            }),
+                            columns: [
+                                { header: 'Tanggal', value: r => r.transaction_date },
+                                { header: 'Keterangan', value: r => r.description },
+                                { header: 'Tipe', value: r => ({ transfer: 'Transfer Dana', send: 'Kirim Dana', receive: 'Terima Dana' })[r.type] ?? r.type },
+                                { header: 'Akun', value: r => r.type === 'transfer' ? [r.from_account?.name, r.to_account?.name].filter(Boolean).join(' → ') : (r.type === 'send' ? r.from_account?.name : r.to_account?.name) },
+                                { header: 'Jumlah', value: r => r.total_amount, type: 'number' },
+                                { header: 'Status', value: r => this.statusChip(r.status).label }
+                            ],
+                            rows,
+                        });
+                    });
+                },
+
                 async fetchData() {
                     this.loading = true;
                     try {
@@ -259,7 +290,7 @@
                         @click="showFilters = !showFilters">
                         <x-misc.icon name="filter" :size="13" />Filter
                     </button>
-                    <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+                    <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
                 </div>
             </div>
             <div class="filter-panel" x-show="showFilters" x-cloak style="border-radius:0; border-left:none; border-right:none;">

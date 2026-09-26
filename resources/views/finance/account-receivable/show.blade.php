@@ -33,10 +33,12 @@
                 <div class="order-sub">{{ $invoice->customer->name }}</div>
             </div>
             <div class="order-actions">
-                <button class="btn btn-ghost" type="button">
-                    {{-- TODO: Implement print functionality --}}
-                    <x-misc.icon name="print" :size="14" />Print Invoice
-                </button>
+                @can('sales.invoices.view')
+                    <a href="{{ route('sales.sales_invoices.print', $invoice->id) }}" target="_blank" rel="noopener"
+                        class="btn btn-ghost">
+                        <x-misc.icon name="print" :size="14" />Cetak Tagihan
+                    </a>
+                @endcan
             </div>
         </div>
 

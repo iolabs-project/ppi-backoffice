@@ -57,6 +57,7 @@ Route::middleware('auth')->group(function () {
 
             Route::prefix('/{id}')->group(function () {
                 Route::get('/', 'show')->middleware('permission:purchasing.purchase-orders.view')->name('show');
+                Route::get('/print', 'print')->middleware('permission:purchasing.purchase-orders.view')->name('print');
                 Route::get('/edit', 'edit')->middleware('permission:purchasing.purchase-orders.edit')->name('edit');
                 Route::put('/', 'update')->middleware('permission:purchasing.purchase-orders.edit')->name('update');
                 Route::post('/open', 'open')->middleware('permission:purchasing.purchase-orders.edit')->name('open');
@@ -72,6 +73,7 @@ Route::middleware('auth')->group(function () {
 
             Route::prefix('/{id}')->group(function () {
                 Route::get('/', 'show')->middleware('permission:purchasing.goods-receipts.view')->name('show');
+                Route::get('/print', 'print')->middleware('permission:purchasing.goods-receipts.view')->name('print');
                 Route::get('/edit', 'edit')->middleware('permission:purchasing.goods-receipts.edit')->name('edit');
                 Route::put('/', 'update')->middleware('permission:purchasing.goods-receipts.edit')->name('update');
                 Route::post('/cancel', 'cancel')->middleware('permission:purchasing.goods-receipts.delete')->name('cancel');
@@ -85,6 +87,7 @@ Route::middleware('auth')->group(function () {
 
             Route::prefix('/{id}')->group(function () {
                 Route::get('/', 'show')->middleware('permission:purchasing.invoices.view')->name('show');
+                Route::get('/print', 'print')->middleware('permission:purchasing.invoices.view')->name('print');
                 Route::get('/edit', 'edit')->middleware('permission:purchasing.invoices.edit')->name('edit');
                 Route::put('/', 'update')->middleware('permission:purchasing.invoices.edit')->name('update');
                 Route::post('/cancel', 'cancel')->middleware('permission:purchasing.invoices.delete')->name('cancel');
@@ -101,6 +104,7 @@ Route::middleware('auth')->group(function () {
 
             Route::prefix('/{id}')->group(function () {
                 Route::get('/', 'show')->middleware('permission:sales.sales-orders.view')->name('show');
+                Route::get('/print', 'print')->middleware('permission:sales.sales-orders.view')->name('print');
                 Route::get('/edit', 'edit')->middleware('permission:sales.sales-orders.edit')->name('edit');
                 Route::put('/', 'update')->middleware('permission:sales.sales-orders.edit')->name('update');
                 Route::post('/open', 'open')->middleware('permission:sales.sales-orders.edit')->name('open');
@@ -116,6 +120,7 @@ Route::middleware('auth')->group(function () {
 
             Route::prefix('/{id}')->group(function () {
                 Route::get('/', 'show')->middleware('permission:sales.delivery-orders.view')->name('show');
+                Route::get('/print', 'print')->middleware('permission:sales.delivery-orders.view')->name('print');
                 Route::get('/edit', 'edit')->middleware('permission:sales.delivery-orders.edit')->name('edit');
                 Route::put('/', 'update')->middleware('permission:sales.delivery-orders.edit')->name('update');
                 Route::post('/cancel', 'cancel')->middleware('permission:sales.delivery-orders.delete')->name('cancel');
@@ -129,6 +134,7 @@ Route::middleware('auth')->group(function () {
 
             Route::prefix('/{id}')->group(function () {
                 Route::get('/', 'show')->middleware('permission:sales.invoices.view')->name('show');
+                Route::get('/print', 'print')->middleware('permission:sales.invoices.view')->name('print');
                 Route::get('/edit', 'edit')->middleware('permission:sales.invoices.edit')->name('edit');
                 Route::put('/', 'update')->middleware('permission:sales.invoices.edit')->name('update');
                 Route::post('/cancel', 'cancel')->middleware('permission:sales.invoices.delete')->name('cancel');
@@ -206,6 +212,7 @@ Route::middleware('auth')->group(function () {
 
         Route::prefix('/{id}')->group(function () {
             Route::get('/', 'show')->middleware('permission:finances.expenses.view')->name('show');
+            Route::get('/print', 'print')->middleware('permission:finances.expenses.view')->name('print');
             Route::get('/edit', 'edit')->middleware('permission:finances.expenses.edit')->name('edit');
             Route::put('/', 'update')->middleware('permission:finances.expenses.edit')->name('update');
             Route::post('/cancel', 'cancel')->middleware('permission:finances.expenses.delete')->name('cancel');

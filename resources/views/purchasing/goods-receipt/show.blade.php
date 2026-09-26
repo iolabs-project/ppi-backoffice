@@ -29,7 +29,9 @@
                     <button class="btn btn-ghost" @click="handleCancel({{ $goodsReceipt->id }})"><x-misc.icon name="x"
                             :size="14" />Batal Penerimaan</button>
                 @endif
-                {{-- TODO: Add print button --}}
+                <a href="{{ route('purchasings.goods_receipts.print', $goodsReceipt->id) }}" target="_blank" rel="noopener" class="btn btn-ghost">
+                    <x-misc.icon name="print" :size="14" />Cetak
+                </a>
 
             </div>
         </div>

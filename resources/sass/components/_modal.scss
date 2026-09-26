@@ -53,7 +53,7 @@
   background: var(--bg);
 }
 
-@media (max-width: $bp-mobile) {
+@media screen and (max-width: $bp-mobile) {
   // Inline widths come from <x-misc.modal :width>; on a phone the box uses the screen width instead
   .modal-box {
     width: calc(100vw - 24px) !important;

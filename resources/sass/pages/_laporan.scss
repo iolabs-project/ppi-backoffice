@@ -4,7 +4,7 @@
   grid-template-columns: minmax(0, 1fr); // children follow the screen width instead of their widest table
   gap: 16px;
 
-  @media (max-width: $bp-mobile) { padding: 16px 16px 40px; }
+  @media screen and (max-width: $bp-mobile) { padding: 16px 16px 40px; }
 }
 
 .laporan-hd {
@@ -25,7 +25,7 @@
     color: var(--ink-3);
   }
 
-  @media (max-width: $bp-mobile) {
+  @media screen and (max-width: $bp-mobile) {
     flex: 1 1 100%;
 
     > span { min-width: 44px; }
@@ -44,7 +44,7 @@
   gap: 14px;
 
   // Assets above liabilities + equity: side by side the account names get cut off
-  @media (max-width: $bp-mobile) { grid-template-columns: minmax(0, 1fr); }
+  @media screen and (max-width: $bp-mobile) { grid-template-columns: minmax(0, 1fr); }
 }
 
 .neraca-side {
@@ -145,7 +145,7 @@
   align-items: start;
 
   // One column; the summary (net profit, margin) comes first, the detailed statement below
-  @media (max-width: $bp-tablet) {
+  @media screen and (max-width: $bp-tablet) {
     grid-template-columns: minmax(0, 1fr);
 
     .labarugi-summary { order: -1; }
@@ -272,7 +272,7 @@
 
 // Phone: one stacked block per journal entry instead of a 6-column table
 // (the date / number / description columns are empty on every line, so the amounts end up off-screen)
-@media (max-width: $bp-mobile) {
+@media screen and (max-width: $bp-mobile) {
   .tbl-scroll:has(> .tbl-journal) {
     overflow-x: visible;
     background: none;

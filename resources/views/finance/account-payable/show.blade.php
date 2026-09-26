@@ -33,10 +33,17 @@
                 <div class="order-sub">{{ $invoice->supplier->name }}</div>
             </div>
             <div class="order-actions">
-                <button class="btn btn-ghost" type="button">
-                    {{-- TODO: Implement print functionality --}}
-                    <x-misc.icon name="print" :size="14" />Print Invoice
-                </button>
+                @php
+                    // Hutang comes from a purchase invoice or an expense: print that source document
+                    [$printRoute, $printPermission] = $type === \App\Enums\PayablePaymentReferenceTypeEnum::EXPENSE->value
+                        ? ['expenses.print', 'finances.expenses.view']
+                        : ['purchasings.purchase_invoices.print', 'purchasing.invoices.view'];
+                @endphp
+                @can($printPermission)
+                    <a href="{{ route($printRoute, $invoice->id) }}" target="_blank" rel="noopener" class="btn btn-ghost">
+                        <x-misc.icon name="print" :size="14" />Cetak Tagihan
+                    </a>
+                @endcan
             </div>
 
         </div>

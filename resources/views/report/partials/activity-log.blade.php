@@ -13,8 +13,8 @@
                 <input type="date" class="filter-panel__input" x-model="filter.end_date"
                     x-on:change="page = 1; fetchData()" style="height:28px; font-size:12px;">
             </label>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="printAll()"><x-misc.icon name="print" :size="13" />Cetak</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
     </div>
     <div class="tbl-scroll">
@@ -116,6 +116,39 @@
     <script>
         function activityLogModule() {
             return {
+                // Print every row of the period, not only the current page
+                async printAll() {
+                    const previous = { page: this.page, perPage: this.perPage };
+                    this.page = 1;
+                    this.perPage = Math.max(Number(this.tableData.total) || 0, 1);
+                    await this.fetchData();
+                    await this.$nextTick();
+                    window.print();
+                    Object.assign(this, previous);
+                    await this.fetchData();
+                },
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const logs = await ExportUtils.fetchAllRows(route('reports.activity_log.datatable'), {
+                            start_date: this.filter.start_date,
+                            end_date: this.filter.end_date,
+                        });
+                        await ExportUtils.exportXlsx({
+                            filename: 'Log Aktivitas',
+                            title: 'Log Aktivitas',
+                            subtitle: ExportUtils.describeFilters({ from: this.filter.start_date, to: this.filter.end_date }),
+                            columns: [
+                                { header: 'Waktu', value: r => this.formatDateTime(r.created_at) },
+                                { header: 'No. Ref', value: r => r.subject?.number ?? '' },
+                                { header: 'Pengguna', value: r => r.causer?.username ?? '' },
+                                { header: 'Aktivitas', value: r => this.eventLabel(r.event) },
+                                { header: 'Deskripsi', value: r => r.description },
+                            ],
+                            rows: logs,
+                        });
+                    });
+                },
+
                 tableData: {
                     current_page: 1,
                     last_page: 1,

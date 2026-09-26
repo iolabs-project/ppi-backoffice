@@ -2,9 +2,11 @@ import './bootstrap';
 
 import * as NumberUtils from './utils/number';
 import * as FormValidation from './utils/form-validation';
+import * as ExportUtils from './utils/export';
 
 window.NumberUtils = NumberUtils;
 window.FormValidation = FormValidation;
+window.ExportUtils = ExportUtils;
 
 // Field-level feedback for every form: drop stale marks when something is submitted,
 // and mark the fields named in a 422 response

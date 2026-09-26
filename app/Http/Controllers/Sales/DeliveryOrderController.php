@@ -123,6 +123,18 @@ class DeliveryOrderController extends Controller
         return view('sales.delivery-order.show', $data);
     }
 
+    public function print(DeliveryOrderService $deliveryOrderService, int $id)
+    {
+        $deliveryOrder = $deliveryOrderService->fetchDeliveryOrderByID($id);
+        if (!$deliveryOrder) {
+            abort(404, 'Pengiriman tidak ditemukan.');
+        }
+        // The detail query only selects the customer's name; the printed document also shows the address
+        $deliveryOrder->load('customer');
+
+        return view('print.delivery-order', ['deliveryOrder' => $deliveryOrder]);
+    }
+
     public function update(DeliveryOrderFormRequest $request, DeliveryOrderService $deliveryOrderService, int $id)
     {
         try {

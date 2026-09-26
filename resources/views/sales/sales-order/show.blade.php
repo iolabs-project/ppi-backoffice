@@ -47,7 +47,9 @@
 
                 {{-- TODO: Add close button --}}
 
-                {{-- TODO: Add print button --}}
+                <a href="{{ route('sales.sales_orders.print', $salesOrder->id) }}" target="_blank" rel="noopener" class="btn btn-ghost">
+                    <x-misc.icon name="print" :size="14" />Cetak
+                </a>
             </div>
         </div>
 

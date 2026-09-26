@@ -103,6 +103,18 @@ class PurchaseOrderController extends Controller
         return view('purchasing.purchase-order.show', $data);
     }
 
+    public function print(int $id)
+    {
+        $purchaseOrder = $this->purchaseOrderService->fetchPurchaseOrderByID($id);
+        if (!$purchaseOrder) {
+            abort(404, 'Purchase Order tidak ditemukan.');
+        }
+        // The detail query only selects the supplier's name; the printed document also shows the address
+        $purchaseOrder->load('supplier');
+
+        return view('print.purchase-order', ['purchaseOrder' => $purchaseOrder]);
+    }
+
     public function edit(int $id)
     {
         $purchaseOrder = $this->purchaseOrderService->fetchPurchaseOrderByID($id);

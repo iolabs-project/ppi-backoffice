@@ -45,6 +45,32 @@
                     };
                 },
 
+                // Same filters as the table, every page, as an Excel file
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const rows = await ExportUtils.fetchAllRows(route('finances.cash.datatable'), {
+                            status: this.filter,
+                            account_id: this.account.id,
+                        });
+                        await ExportUtils.exportXlsx({
+                            filename: 'Transaksi ' + this.account.name,
+                            title: 'Transaksi ' + this.account.name,
+                            subtitle: ExportUtils.describeFilters({
+                                status: this.filter === 'all' ? 'Semua' : this.statusChip(this.filter).label,
+                            }),
+                            columns: [
+                                { header: 'Tanggal', value: r => r.transaction_date },
+                                { header: 'Keterangan', value: r => r.description },
+                                { header: 'Tipe', value: r => ({ transfer: 'Transfer Dana', send: 'Kirim Dana', receive: 'Terima Dana' })[r.type] ?? r.type },
+                                { header: 'Akun', value: r => r.type === 'transfer' ? [r.from_account?.name, r.to_account?.name].filter(Boolean).join(' → ') : (r.type === 'send' ? r.from_account?.name : r.to_account?.name) },
+                                { header: 'Jumlah', value: r => r.total_amount, type: 'number' },
+                                { header: 'Status', value: r => this.statusChip(r.status).label }
+                            ],
+                            rows,
+                        });
+                    });
+                },
+
                 async fetchData() {
                     this.loading = true;
                     try {
@@ -214,7 +240,7 @@
         <div class="card table-card" style="overflow:hidden;">
             <div class="card-hd">
                 <div class="display card-hd-title">Transaksi</div>
-                <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+                <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
             </div>
             <div class="tbl-scroll">
                 <table class="tbl">
@@ -287,7 +313,9 @@
                                         </span>
                                     </td>
                                     <td x-on:click.stop>
-                                        <div x-data="{ open: false }" class="action-menu">
+                                        {{-- Only drafts have actions. Posted rows get "Lihat Detail" back once the
+                                             cash transaction detail pages (showSend/showReceive/showTransfer) exist. --}}
+                                        <div x-data="{ open: false }" class="action-menu" x-show="tx.status === '{{ $draft }}'">
                                             <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
                                                 x-on:click.stop="
                                                   let wasOpen = open;
@@ -343,16 +371,6 @@
                                                             </button>
                                                         @endif
                                                     </div>
-                                                </template>
-                                                <template x-if="tx.status === '{{ $posted }}'">
-                                                    <div>
-                                                        <a href="#" @click.stop class="action-menu__item">
-                                                            <x-misc.icon name="eye" :size="14"
-                                                                stroke="var(--ink-3)" />
-                                                            Lihat Detail
-                                                        </a>
-                                                    </div>
-    
                                                 </template>
                                             </div>
                                         </div>

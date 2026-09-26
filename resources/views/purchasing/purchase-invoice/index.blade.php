@@ -12,7 +12,7 @@
                 <div class="order-sub"><span x-text="tableData ? tableData.total : 0"></span> dokumen</div>
             </div>
             <div class="order-actions">
-                <button class="btn btn-ghost"><x-misc.icon name="download" :size="14" />Ekspor</button>
+                <button class="btn btn-ghost" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="14" />Ekspor</button>
                 @if (auth()->user()->can('purchasing.invoices.create'))
                     <button class="btn btn-primary" x-on:click="openPoPicker()"><x-misc.icon name="plus"
                             :size="15" />Tambah</button>
@@ -133,10 +133,8 @@
                                                         PO
                                                     </a>
                                                 @endif
-                                                <button class="action-menu__item" @click.stop>
-                                                    <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
-                                                    Tagihan
-                                                </button>
+                                                <a :href="route('purchasings.purchase_invoices.print', row.id)" target="_blank" rel="noopener" @click.stop
+                                                    class="action-menu__item"><x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak Tagihan</a>
                                                 @if (auth()->user()->can('purchasing.invoices.edit'))
                                                     <template x-if="row.status === '{{ $draft }}'">
                                                         <div>
@@ -334,6 +332,38 @@
 
                 async tableLoad() {
                     await this.fetchData();
+                },
+
+                // Same filters as the table, every page, as an Excel file
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const rows = await ExportUtils.fetchAllRows(route('purchasings.purchase_invoices.datatable'), {
+                            status: this.filter,
+                            search: this.search,
+                            start_date: this.dateFrom,
+                            end_date: this.dateTo,
+                        });
+                        await ExportUtils.exportXlsx({
+                            filename: 'Tagihan Pembelian',
+                            title: 'Tagihan Pembelian',
+                            subtitle: ExportUtils.describeFilters({
+                                status: this.filter === 'all' ? 'Semua' : this.statusChip(this.filter).label,
+                                from: this.dateFrom,
+                                to: this.dateTo,
+                                search: this.search,
+                            }),
+                            columns: [
+                                { header: 'No. Tagihan', value: r => r.number },
+                                { header: 'Tanggal', value: r => r.invoice_date },
+                                { header: 'Ref. PO', value: r => r.purchase_order?.number },
+                                { header: 'Supplier', value: r => r.supplier?.name },
+                                { header: 'Jatuh Tempo', value: r => r.due_date },
+                                { header: 'Total', value: r => r.total_amount, type: 'number' },
+                                { header: 'Status', value: r => this.statusChip(r.status).label }
+                            ],
+                            rows,
+                        });
+                    });
                 },
 
                 async fetchData() {

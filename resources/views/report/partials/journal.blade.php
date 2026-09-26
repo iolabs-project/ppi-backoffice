@@ -13,8 +13,8 @@
                 <input type="date" class="filter-panel__input" x-model="filter.end_date"
                     x-on:change="page = 1; fetchData()" style="height:28px; font-size:12px;">
             </label>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="printAll()"><x-misc.icon name="print" :size="13" />Cetak</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
     </div>
     <div class="tbl-scroll">
@@ -126,6 +126,49 @@
     <script>
         function journalModule() {
             return {
+                // Print every row of the period, not only the current page
+                async printAll() {
+                    const previous = { page: this.page, perPage: this.perPage };
+                    this.page = 1;
+                    this.perPage = Math.max(Number(this.tableData.total) || 0, 1);
+                    await this.fetchData();
+                    await this.$nextTick();
+                    window.print();
+                    Object.assign(this, previous);
+                    await this.fetchData();
+                },
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const journals = await ExportUtils.fetchAllRows(route('reports.journal.datatable'), {
+                            search: this.filter.search,
+                            start_date: this.filter.start_date,
+                            end_date: this.filter.end_date,
+                        });
+                        await ExportUtils.exportXlsx({
+                            filename: 'Jurnal Umum',
+                            title: 'Jurnal Umum',
+                            subtitle: ExportUtils.describeFilters({ from: this.filter.start_date, to: this.filter.end_date }),
+                            columns: [
+                                { header: 'Tanggal', value: r => r.date },
+                                { header: 'No. Jurnal', value: r => r.number },
+                                { header: 'Keterangan', value: r => r.description },
+                                { header: 'Akun', value: r => r.account },
+                                { header: 'Debit', value: r => r.debit, type: 'number' },
+                                { header: 'Kredit', value: r => r.credit, type: 'number' },
+                            ],
+                            // One row per journal line, with the journal's date/number/description on each
+                            rows: journals.flatMap(j => j.items.map(e => ({
+                                date: j.journal_date,
+                                number: j.number,
+                                description: j.description,
+                                account: e.account.name + (e.account.code ? ' (' + e.account.code + ')' : ''),
+                                debit: e.debit,
+                                credit: e.credit,
+                            }))),
+                        });
+                    });
+                },
+
                 tableData: {
                     current_page: 1,
                     last_page: 1,

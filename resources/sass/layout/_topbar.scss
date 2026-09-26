@@ -157,13 +157,13 @@
   cursor: pointer;
 }
 
-@media (max-width: $bp-tablet) {
+@media screen and (max-width: $bp-tablet) {
   .topbar__inner { padding: 12px 20px; }
   .topbar__clock-date { display: none; }
   .topbar__clock { padding-left: 32px; }
 }
 
-@media (max-width: $bp-mobile) {
+@media screen and (max-width: $bp-mobile) {
   .topbar__inner {
     padding: 10px 16px;
     gap: 12px;

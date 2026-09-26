@@ -43,7 +43,7 @@
   font-size: 11.5px;
 }
 
-@media (max-width: $bp-mobile) {
+@media screen and (max-width: $bp-mobile) {
   // Keep "Rp 320,000" on one line: smaller sparkline, slightly smaller figure
   .kpi-card__value {
     font-size: 24px;

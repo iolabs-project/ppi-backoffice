@@ -5,7 +5,7 @@
   grid-template-columns: minmax(0, 1fr); // children follow the screen width instead of their widest table
   gap: 16px;
 
-  @media (max-width: $bp-mobile) { padding: 16px 16px 40px; }
+  @media screen and (max-width: $bp-mobile) { padding: 16px 16px 40px; }
 }
 
 .order-hd {
@@ -444,7 +444,7 @@
 }
 
 // ============ Responsive ============
-@media (max-width: $bp-tablet) {
+@media screen and (max-width: $bp-tablet) {
   .order-form-grid-4,
   .order-form-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
@@ -461,7 +461,7 @@
   }
 }
 
-@media (max-width: $bp-mobile) {
+@media screen and (max-width: $bp-mobile) {
   .order-hd {
     flex-wrap: wrap;
     align-items: flex-start;

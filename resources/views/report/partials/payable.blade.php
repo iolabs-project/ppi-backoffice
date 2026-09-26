@@ -16,8 +16,8 @@
                 <input type="date" class="filter-panel__input" x-model="filter.end_date"
                     x-on:change="fetchData()" style="height:28px; font-size:12px;">
             </label>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="window.print()"><x-misc.icon name="print" :size="13" />Cetak</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
     </div>
     <div class="tbl-scroll">
@@ -68,6 +68,23 @@
     <script>
         function payableModule() {
             return {
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        await ExportUtils.exportXlsx({
+                            filename: 'Hutang Dagang',
+                            title: 'Hutang Dagang',
+                            subtitle: ExportUtils.describeFilters({ from: this.filter.start_date, to: this.filter.end_date }),
+                            columns: [
+                                { header: 'Klien', value: r => r.contact_name },
+                                { header: 'Ref', value: r => r.number },
+                                { header: 'Jatuh Tempo', value: r => r.due_date },
+                                { header: 'Jumlah', value: r => r.amount, type: 'number' },
+                            ],
+                            rows: [...this.tableData.invoices, { contact_name: 'Total', number: '', due_date: '', amount: this.tableData.total }],
+                        });
+                    });
+                },
+
                 tableData: {
                     invoices: [],
                     total: 0,

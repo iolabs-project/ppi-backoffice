@@ -4,7 +4,7 @@
   grid-template-columns: minmax(0, 1fr); // children follow the screen width instead of their widest table
   gap: 16px;
 
-  @media (max-width: $bp-mobile) { padding: 16px 16px 40px; }
+  @media screen and (max-width: $bp-mobile) { padding: 16px 16px 40px; }
 }
 
 // Total saldo hero card
@@ -170,7 +170,7 @@
 
 .stat-card--dark .stat-card__value { font-size: 26px; }
 
-@media (max-width: $bp-mobile) {
+@media screen and (max-width: $bp-mobile) {
   .stat-card { padding: 14px 16px; }
   .stat-card__value { font-size: 20px; }
   .stat-card--dark .stat-card__value { font-size: 22px; }

@@ -41,6 +41,8 @@
 
                 {{-- Page content --}}
                 <div class="erp-scroll">
+                    {{-- Only on paper (reports' "Cetak") --}}
+                    <div class="print-header">{{ config('company.letterhead.name') }}</div>
                     @yield('content')
                 </div>
 

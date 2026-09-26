@@ -13,8 +13,8 @@
                 <input type="date" class="filter-panel__input" x-model="filter.end_date"
                     x-on:change="fetchData()" style="height:28px; font-size:12px;">
             </label>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="window.print()"><x-misc.icon name="print" :size="13" />Cetak</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
     </div>
 <div class="card" style="overflow:hidden;">
@@ -53,6 +53,22 @@
     <script>
         function executiveModule() {
             return {
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        await ExportUtils.exportXlsx({
+                            filename: 'Laporan Eksekutif',
+                            title: 'Laporan Eksekutif',
+                            subtitle: ExportUtils.describeFilters({ from: this.filter.start_date, to: this.filter.end_date }),
+                            columns: [
+                                { header: 'Bagian', value: r => r.section },
+                                { header: 'Keterangan', value: r => r.label },
+                                { header: 'Nilai', value: r => r.value, type: 'auto' },
+                            ],
+                            rows: this.sections.flatMap(s => s.rows.map(r => ({ section: s.title, label: r.label, value: r.value }))),
+                        });
+                    });
+                },
+
                 tableData: {
                     cash: {
                         cash_in: 0,

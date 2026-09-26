@@ -32,6 +32,9 @@
                         </a>
                     @endif
                 @endif
+                <a href="{{ route('sales.delivery_orders.print', $deliveryOrder->id) }}" target="_blank" rel="noopener" class="btn btn-ghost">
+                    <x-misc.icon name="print" :size="14" />Cetak
+                </a>
             </div>
         </div>
 

@@ -232,7 +232,7 @@
 
 // Every .tbl sits in a .tbl-scroll. On smaller screens the table scrolls sideways inside its card
 // instead of stretching the page; cells keep one line so numbers, dates and codes stay readable.
-@media (max-width: $bp-tablet) {
+@media screen and (max-width: $bp-tablet) {
     .tbl-scroll {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -262,7 +262,7 @@
     }
 }
 
-@media (max-width: $bp-mobile) {
+@media screen and (max-width: $bp-mobile) {
     // Form-like tables (label | control): each row stacks, the control takes the full width
     .tbl-scroll:has(> .tbl--stack) {
         overflow-x: visible;
