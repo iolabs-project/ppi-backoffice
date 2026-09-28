@@ -198,6 +198,11 @@ class AccountPayableService
             throw ValidationException::withMessages(['amount' => 'Jumlah pembayaran melebihi sisa hutang.']);
         }
 
+        $balance = $this->cashService->fetchAccountBalance(accountID:$request->account_id);
+        if ($balance < $request->amount) {
+            throw ValidationException::withMessages(['amount' => 'Saldo tidak mencukupi.']);
+        }
+
         DB::transaction(function () use ($request, $invoice) {
             $payment = PayablePayment::create([
                 'company_id' => $invoice->company_id,

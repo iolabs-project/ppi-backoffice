@@ -401,4 +401,15 @@ class CashService
             );
         }
     }
+
+    public function fetchAccountBalance(int $accountID): float
+    {
+        return DB::table('journal_entry_items', 'jei')
+            ->join('journal_entries as je', 'je.id', '=', 'jei.journal_entry_id')
+            ->where('jei.account_id', $accountID)
+            ->where('je.status', JournalEntryStatusEnum::POSTED->value)
+            ->select(DB::raw('SUM(jei.debit) - SUM(jei.credit) as balance'))
+            ->first()
+            ->balance ?? 0;
+    }
 }
