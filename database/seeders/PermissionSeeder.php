@@ -147,6 +147,9 @@ class PermissionSeeder extends Seeder
                 ],
                 'journal' => [
                     'view'
+                ],
+                'activity-log' => [
+                    'view'
                 ]
             ]
         ];
