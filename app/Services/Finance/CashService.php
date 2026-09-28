@@ -367,10 +367,12 @@ class CashService
                 ];
             }
 
-            $journalItems[] = [
-                'account_id' => $taxAccountID,
-                'debit' => $taxAmount,
-            ];
+            if ($taxAmount > 0) {
+                $journalItems[] = [
+                    'account_id' => $taxAccountID,
+                    'debit' => $taxAmount,
+                ];
+            }
 
             $journalItems[] = [
                 'account_id' => $creditAccountID,
