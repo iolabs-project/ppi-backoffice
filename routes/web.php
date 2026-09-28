@@ -149,7 +149,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/payment-datatable', 'paymentDatatable')->middleware('permission:finances.payables.view')->name('payment_datatable');
             Route::get('/{id}', 'show')->middleware('permission:finances.payables.view')->name('show');
             Route::post('/{id}', 'store')->middleware('permission:finances.payables.create')->name('store');
-            Route::get('/{id}/edit', 'edit')->middleware('permission:finances.payables.edit')->name('edit');
         });
         Route::prefix('account-receivables')->name('account_receivables.')->controller(AccountReceivableController::class)->group(function () {
             Route::get('/', 'index')->middleware('permission:finances.receivables.view')->name('index');
@@ -157,13 +156,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/payment-datatable', 'paymentDatatable')->middleware('permission:finances.receivables.view')->name('payment_datatable');
             Route::get('/{id}', 'show')->middleware('permission:finances.receivables.view')->name('show');
             Route::post('/{id}', 'store')->middleware('permission:finances.receivables.create')->name('store');
-            Route::get('/{id}/edit', 'edit')->middleware('permission:finances.receivables.edit')->name('edit');
         });
         Route::prefix('cash')->name('cash.')->controller(CashController::class)->group(function () {
             Route::get('/', 'index')->middleware('permission:finances.cash-bank.view')->name('index');
             Route::get('/datatable', 'datatable')->middleware('permission:finances.cash-bank.view')->name('datatable');
-            Route::get('/create', 'create')->middleware('permission:finances.cash-bank.create')->name('create');
-            Route::post('/', 'store')->middleware('permission:finances.cash-bank.create')->name('store');
 
             Route::prefix('/{id}')->group(function () {
                 Route::get('/', 'show')->middleware('permission:finances.cash-bank.view')->name('show');
@@ -172,7 +168,6 @@ Route::middleware('auth')->group(function () {
                     Route::get('/create', 'createTransfer')->middleware('permission:finances.cash-bank.create')->name('create');
                     Route::post('/', 'storeTransfer')->middleware('permission:finances.cash-bank.create')->name('store');
                     Route::prefix('/{transfer}')->group(function () {
-                        Route::get('/', 'showTransfer')->middleware('permission:finances.cash-bank.view')->name('show');
                         Route::get('/edit', 'editTransfer')->middleware('permission:finances.cash-bank.edit')->name('edit');
                         Route::put('/', 'updateTransfer')->middleware('permission:finances.cash-bank.edit')->name('update');
                         Route::post('/cancel', 'cancelTransfer')->middleware('permission:finances.cash-bank.delete')->name('cancel');
@@ -183,7 +178,6 @@ Route::middleware('auth')->group(function () {
                     Route::get('/create', 'createSend')->middleware('permission:finances.cash-bank.create')->name('create');
                     Route::post('/', 'storeSend')->middleware('permission:finances.cash-bank.create')->name('store');
                     Route::prefix('/{send}')->group(function () {
-                        Route::get('/', 'showSend')->middleware('permission:finances.cash-bank.view')->name('show');
                         Route::get('/edit', 'editSend')->middleware('permission:finances.cash-bank.edit')->name('edit');
                         Route::put('/', 'updateSend')->middleware('permission:finances.cash-bank.edit')->name('update');
                         Route::post('/cancel', 'cancelSend')->middleware('permission:finances.cash-bank.delete')->name('cancel');
@@ -194,7 +188,6 @@ Route::middleware('auth')->group(function () {
                     Route::get('/create', 'createReceive')->middleware('permission:finances.cash-bank.create')->name('create');
                     Route::post('/', 'storeReceive')->middleware('permission:finances.cash-bank.create')->name('store');
                     Route::prefix('/{receive}')->group(function () {
-                        Route::get('/', 'showReceive')->middleware('permission:finances.cash-bank.view')->name('show');
                         Route::get('/edit', 'editReceive')->middleware('permission:finances.cash-bank.edit')->name('edit');
                         Route::put('/', 'updateReceive')->middleware('permission:finances.cash-bank.edit')->name('update');
                         Route::post('/cancel', 'cancelReceive')->middleware('permission:finances.cash-bank.delete')->name('cancel');
@@ -218,25 +211,6 @@ Route::middleware('auth')->group(function () {
             Route::post('/cancel', 'cancel')->middleware('permission:finances.expenses.delete')->name('cancel');
         });
     });
-
-    // Coming-soon placeholders
-    Route::get('/pengaturan', function () {
-        return view('coming-soon', [
-            'currentPage' => 'pengaturan',
-            'breadcrumb'  => [['label' => 'Pengaturan']],
-            'title'       => 'Pengaturan',
-            'description' => 'Konfigurasi sistem, pengguna, dan preferensi perusahaan.',
-        ]);
-    })->name('pengaturan.index');
-
-    Route::get('/bantuan', function () {
-        return view('coming-soon', [
-            'currentPage' => 'bantuan',
-            'breadcrumb'  => [['label' => 'Bantuan']],
-            'title'       => 'Pusat Bantuan',
-            'description' => 'Dokumentasi dan dukungan pengguna akan tersedia di sini.',
-        ]);
-    })->name('bantuan.index');
 
     Route::prefix('master')->name('master.')->group(function () {
         Route::get('/', [MasterController::class, 'index'])
@@ -340,7 +314,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/receivable/datatable', 'receivableDatatable')->middleware('permission:reports.receivable.view')->name('receivable.datatable');
         Route::get('/payable/datatable', 'payableDatatable')->middleware('permission:reports.payable.view')->name('payable.datatable');
         Route::get('/journal/datatable', 'journalDatatable')->middleware('permission:reports.journal.view')->name('journal.datatable');
-        Route::get('/general-ledger/datatable', 'generalLedgerDatatable')->middleware('permission:reports.journal.view')->name('general_ledger.datatable');
         Route::get('/activity-log/datatable', 'activityLogDatatable')->middleware('permission:reports.activity-log.view')->name('activity_log.datatable');
         Route::get('/{id}', 'show')->middleware('report.permission')->name('show');
     });
