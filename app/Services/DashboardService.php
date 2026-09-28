@@ -85,22 +85,22 @@ class DashboardService
             'pendapatan' => [
                 'value'    => $revenueCurrent,
                 'delta'    => $revenuePrev > 0 ? round(($revenueCurrent - $revenuePrev) / $revenuePrev * 100, 1) : 0,
-                'sparkline'=> $revenueSparkline,
+                'sparkline' => $revenueSparkline,
             ],
             'pengeluaran' => [
                 'value'    => $expenseCurrent,
                 'delta'    => $expensePrev > 0 ? round(($expenseCurrent - $expensePrev) / $expensePrev * 100, 1) : 0,
-                'sparkline'=> $expenseSparkline,
+                'sparkline' => $expenseSparkline,
             ],
             'laba' => [
                 'value'    => $netProfitCurrent,
                 'delta'    => $netProfitPrev != 0 ? round(($netProfitCurrent - $netProfitPrev) / abs($netProfitPrev) * 100, 1) : 0,
-                'sparkline'=> $profitSparkline,
+                'sparkline' => $profitSparkline,
             ],
             'kas' => [
                 'value'    => $cashBalance,
                 'delta'    => $cashBalancePrev != 0 ? round(($cashBalance - $cashBalancePrev) / abs($cashBalancePrev) * 100, 1) : 0,
-                'sparkline'=> $cashSparkline,
+                'sparkline' => $cashSparkline,
             ],
         ];
     }
@@ -130,7 +130,7 @@ class DashboardService
                 ->sum('total_amount');
 
             // Convert to millions for chart display
-            $months[] = [$label, round($sales / 1_000_000), round($purchases / 1_000_000)];
+            $months[] = [$label, round($sales), round($purchases)];
         }
 
         return $months;
@@ -218,7 +218,7 @@ class DashboardService
         $siList = SalesInvoice::where('company_id', $companyId)
             ->whereNotIn('status', [SalesInvoiceStatus::DRAFT->value, SalesInvoiceStatus::CANCELLED->value])
             ->orderBy('invoice_date', 'desc')
-            ->limit(5)  
+            ->limit(5)
             ->get(['id', 'number', 'invoice_date', 'total_amount', 'status'])
             ->map(fn($si) => [
                 'type'    => 'SI',
@@ -287,7 +287,7 @@ class DashboardService
                 'amount'   => $inv->remaining_amount,
                 'days'     => $inv->days_overdue,
                 'type'     => 'Piutang',
-                'url'      => route('finances.account_receivables.show',['id' => $inv->id, 'reference_type' => 'sales_invoice']),
+                'url'      => route('finances.account_receivables.show', ['id' => $inv->id, 'reference_type' => 'sales_invoice']),
             ]);
 
         $purchaseOverdue = PurchaseInvoice::where('purchase_invoices.company_id', $companyId)
