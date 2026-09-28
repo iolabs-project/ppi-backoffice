@@ -14,74 +14,76 @@
         </div>
     </div>
 
-    <table class="tbl">
-        <thead>
-            <tr>
-                <th>Batch</th>
-                <th style="text-align:right;">Qty</th>
-                <th>Satuan</th>
-                <th style="text-align:right;">HPP (FIFO)</th>
-                <th style="text-align:right;">Nilai</th>
-            </tr>
-        </thead>
-        <template x-if="loading">
-            <tbody>
+    <div class="tbl-scroll">
+        <table class="tbl">
+            <thead>
                 <tr>
-                    <td colspan="5" style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
-                        Memuat data...
-                    </td>
+                    <th>Batch</th>
+                    <th style="text-align:right;">Qty</th>
+                    <th>Satuan</th>
+                    <th style="text-align:right;">HPP (FIFO)</th>
+                    <th style="text-align:right;">Nilai</th>
                 </tr>
-            </tbody>
-        </template>
-        <template x-if="!loading && groupedBatches.length === 0">
-            <tbody>
-                <tr>
-                    <td colspan="5" style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
-                        Belum ada batch di gudang ini
-                    </td>
-                </tr>
-            </tbody>
-        </template>
-        <template x-if="!loading && groupedBatches.length > 0">
-            <template x-for="group in groupedBatches" :key="group.product.id">
+            </thead>
+            <template x-if="loading">
                 <tbody>
-                    <tr class="coa-group-row">
-                        <td colspan="5">
-                            <span x-text="group.product.name"></span>
-                            <span class="chip mono" style="font-size:11px; margin-left:6px;"
-                                x-text="group.product.code"></span>
+                    <tr>
+                        <td colspan="5" style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
+                            Memuat data...
                         </td>
                     </tr>
-                    <template x-for="b in group.batches" :key="b.id">
-                        <tr>
-                            {{-- <td x-text="b.batch_number"></td> --}}
-                            <td>
-                                    <a :href="route('master.products.batches.show', { id: b.product_id, batch_id: b.id })" class="btn btn-ghost btn-sm"  x-text="b.batch_number"></a>
-                                </td>
-                            <td style="text-align:right;">
-                                <span x-text="m(b.quantity)"></span>
-                                <div
-                                    style="margin-top:4px; height:4px; border-radius:99px; background:var(--line-2); overflow:hidden; min-width:80px;">
-                                    <div style="height:100%; border-radius:99px; background:var(--accent);"
-                                        :style="{
-                                            width: (b.initial_quantity > 0 ? Math.min(b.quantity / b.initial_quantity *
-                                                100,
-                                                100) : 0) + '%'
-                                        }">
-                                    </div>
-                                </div>
-                                <div style="font-size:10px; color:var(--ink-4); margin-top:2px;"
-                                    x-text="m(b.initial_quantity) + ' awal'"></div>
-                            </td>
-                            <td x-text="group.product.unit.symbol"></td>
-                            <td style="text-align:right;" x-text="m(b.unit_cost)"></td>
-                            <td style="text-align:right;" x-text="m(b.quantity * b.unit_cost)"></td>
-                        </tr>
-                    </template>
                 </tbody>
             </template>
-        </template>
-    </table>
+            <template x-if="!loading && groupedBatches.length === 0">
+                <tbody>
+                    <tr>
+                        <td colspan="5" style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
+                            Belum ada batch di gudang ini
+                        </td>
+                    </tr>
+                </tbody>
+            </template>
+            <template x-if="!loading && groupedBatches.length > 0">
+                <template x-for="group in groupedBatches" :key="group.product.id">
+                    <tbody>
+                        <tr class="coa-group-row">
+                            <td colspan="5">
+                                <span x-text="group.product.name"></span>
+                                <span class="chip mono" style="font-size:11px; margin-left:6px;"
+                                    x-text="group.product.code"></span>
+                            </td>
+                        </tr>
+                        <template x-for="b in group.batches" :key="b.id">
+                            <tr>
+                                {{-- <td x-text="b.batch_number"></td> --}}
+                                <td>
+                                        <a :href="route('master.products.batches.show', { id: b.product_id, batch_id: b.id })" class="btn btn-ghost btn-sm"  x-text="b.batch_number"></a>
+                                    </td>
+                                <td style="text-align:right;">
+                                    <span x-text="m(b.quantity)"></span>
+                                    <div
+                                        style="margin-top:4px; height:4px; border-radius:99px; background:var(--line-2); overflow:hidden; min-width:80px;">
+                                        <div style="height:100%; border-radius:99px; background:var(--accent);"
+                                            :style="{
+                                                width: (b.initial_quantity > 0 ? Math.min(b.quantity / b.initial_quantity *
+                                                    100,
+                                                    100) : 0) + '%'
+                                            }">
+                                        </div>
+                                    </div>
+                                    <div style="font-size:10px; color:var(--ink-4); margin-top:2px;"
+                                        x-text="m(b.initial_quantity) + ' awal'"></div>
+                                </td>
+                                <td x-text="group.product.unit.symbol"></td>
+                                <td style="text-align:right;" x-text="m(b.unit_cost)"></td>
+                                <td style="text-align:right;" x-text="m(b.quantity * b.unit_cost)"></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </template>
+            </template>
+        </table>
+    </div>
     <div class="table-pagination">
         <div class="pagination-actions">
             <div class="pagination-label">Per</div>

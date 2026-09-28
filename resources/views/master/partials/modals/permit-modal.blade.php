@@ -1,7 +1,7 @@
 {{-- Create Role Modal --}}
 <x-misc.modal title="Tambah Role Baru" show="modal === 'add_role'" close-handler="modal = null">
     <div class="form-body">
-        <x-misc.field label="Nama Role" :required="true">
+        <x-misc.field label="Nama Role" name="name" :required="true">
             <input class="input" x-model="form.name" placeholder="Contoh: Manajer Gudang" x-on:keydown.enter="handleCreate()" />
         </x-misc.field>
     </div>
@@ -16,7 +16,7 @@
 {{-- Edit Role Modal --}}
 <x-misc.modal title="Edit Nama Role" show="modal === 'edit_role'" close-handler="modal = null">
     <div class="form-body">
-        <x-misc.field label="Nama Role" :required="true">
+        <x-misc.field label="Nama Role" name="name" :required="true">
             <input class="input" x-model="form.name" x-on:keydown.enter="handleUpdate()" />
         </x-misc.field>
     </div>

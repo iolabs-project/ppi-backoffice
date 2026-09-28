@@ -1,19 +1,19 @@
 <x-misc.modal title="Form User" show="modal === 'add_user' || modal === 'edit_user'" close-handler="modal = null">
     <div class="form-body">
-        <x-misc.field label="Username" :required="true">
+        <x-misc.field label="Username" name="username" :required="true">
             <input class="input mono" x-model="form.username" placeholder="budi.santoso" />
         </x-misc.field>
         <template x-if="modal === 'add_user'">
             <div class="form-grid-2">
-                <x-misc.field label="Password" :required="true">
+                <x-misc.field label="Password" name="password" :required="true">
                     <input class="input" type="password" x-model="form.password" placeholder="••••••••" />
                 </x-misc.field>
-                <x-misc.field label="Konfirmasi Password" :required="true">
+                <x-misc.field label="Konfirmasi Password" name="password_confirmation" :required="true">
                     <input class="input" type="password" x-model="form.password_confirmation" placeholder="••••••••" />
                 </x-misc.field>
             </div>
         </template>
-        <x-misc.field label="Kontak / Karyawan">
+        <x-misc.field label="Kontak / Karyawan" name="contact_id">
             <select class="input" x-model="form.contact_id">
                 <option value="">— Tidak dihubungkan —</option>
                 <template x-for="k in contactOptions" :key="k.id">
@@ -21,7 +21,7 @@
                 </template>
             </select>
         </x-misc.field>
-        <x-misc.field label="Role" :required="true">
+        <x-misc.field label="Role" name="role_id" :required="true">
             <select class="input" x-model="form.role_id">
                 <option value="">— Pilih Role —</option>
                 <template x-for="r in userRoles" :key="r.id">

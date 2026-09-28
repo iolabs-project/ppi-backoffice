@@ -39,10 +39,15 @@
     penjualanActive: {{ $penjualanActive ? 'true' : 'false' }},
     pembelianActive: {{ $pembelianActive ? 'true' : 'false' }},
     financeActive: {{ $financeActive ? 'true' : 'false' }},
-    toggle(p) { this.openPanel = this.openPanel === p ? null : p; }
-}" style="display: contents;">
+    toggle(p) { this.openPanel = this.openPanel === p ? null : p; },
+    {{-- On mobile the rail is a drawer, opened from the menu button in the topbar --}}
+    navOpen: false,
+    closeAll() { this.openPanel = null; this.navOpen = false; }
+}" style="display: contents;"
+    @toggle-nav.window="navOpen = !navOpen; if (!navOpen) openPanel = null"
+    @keydown.escape.window="closeAll()">
 
-    <aside class="sidebar">
+    <aside class="sidebar" :class="{ 'sidebar--open': navOpen }">
         <div class="ppi-logo">PPI</div>
         <div class="sidebar__divider"></div>
 
@@ -116,14 +121,14 @@
 
     {{-- Backdrop --}}
     <div class="submenu-backdrop"
-         x-show="openPanel !== null"
+         x-show="openPanel !== null || navOpen"
          x-transition:enter="submenu-bd-anim"
          x-transition:enter-start="submenu-bd-start"
          x-transition:enter-end="submenu-bd-end"
          x-transition:leave="submenu-bd-anim"
          x-transition:leave-start="submenu-bd-end"
          x-transition:leave-end="submenu-bd-start"
-         @click="openPanel = null"
+         @click="closeAll()"
          x-cloak></div>
 
     @if ($penjualanSubmenus)

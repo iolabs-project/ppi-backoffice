@@ -44,6 +44,10 @@
                 },
 
                 async handleUpdate() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     Swal.fire({
                         title: 'Konfirmasi Perubahan Gudang',
                         text: 'Apakah anda yakin ingin memperbarui gudang dengan data yang telah diisi?',
@@ -139,7 +143,7 @@
         </div>
 
         {{-- Stat cards --}}
-        <div class="produk-stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="produk-stat-grid produk-stat-grid--3">
 
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 155); color:oklch(0.45 0.14 155);">

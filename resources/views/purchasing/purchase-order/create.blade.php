@@ -221,6 +221,11 @@
                 },
 
                 async submit(status) {
+                    // Drafts may be saved incomplete; required fields only apply when the document is finalized
+                    if (status !== 'draft' && !FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     let isValid = false;
                     if (status === 'draft') {
                         this.formData.status = 'draft';
@@ -304,7 +309,7 @@
             <div class="order-form-grid-4">
 
                 {{-- Supplier Dropdown --}}
-                <x-misc.field label="Supplier" :required="true">
+                <x-misc.field label="Supplier" name="supplier_id" :required="true">
                     <x-misc.select display="supplierSelected ? supplierSelected.name : 'Pilih Supplier'"
                         hasValue="supplierSelected" placeholder="Cari supplier...">
                         <template x-for="s in suppliers.filter(s => !q || s.name.toLowerCase().includes(q.toLowerCase()))"
@@ -324,7 +329,7 @@
                 </x-misc.field>
 
                 {{-- Nomor PO --}}
-                <x-misc.field label="Nomor PO" :required="true">
+                <x-misc.field label="Nomor PO" name="number" :required="true">
                     <div class="input mono input--readonly" style="display:flex; align-items:center;">
                         <span style="flex:1; font-weight:600;" x-text="formData.number"></span>
                         <span class="auto-tag">Auto</span>
@@ -332,17 +337,17 @@
                 </x-misc.field>
 
                 {{-- Tanggal --}}
-                <x-misc.field label="Tanggal" :required="true">
+                <x-misc.field label="Tanggal" name="order_date" :required="true">
                     <input type="date" class="input" x-model="formData.order_date" @change="handleOrderDateChange" />
                 </x-misc.field>
 
                 {{-- Jatuh Tempo --}}
-                <x-misc.field label="Jatuh Tempo" :required="true">
+                <x-misc.field label="Jatuh Tempo" name="due_date" :required="true">
                     <input type="date" class="input" x-model="formData.due_date" />
                 </x-misc.field>
 
                 {{-- Gudang Dropdown --}}
-                <x-misc.field label="Gudang" :required="true">
+                <x-misc.field label="Gudang" name="warehouse_id" :required="true">
                     <x-misc.select display="warehouseSelected ? warehouseSelected.name : 'Pilih Gudang'"
                         hasValue="warehouseSelected" placeholder="Cari gudang...">
                         <template x-for="g in warehouses.filter(g => !q || g.name.toLowerCase().includes(q.toLowerCase()))"
@@ -362,7 +367,7 @@
                 </x-misc.field>
 
                 {{-- Termin Pembayaran Dropdown --}}
-                <x-misc.field label="Termin Pembayaran" :required="true">
+                <x-misc.field label="Termin Pembayaran" name="payment_terms" :required="true">
                     <x-misc.select display="paymentTermSelected ? paymentTermSelected.name : 'Pilih Termin Pembayaran'"
                         hasValue="paymentTermSelected" placeholder="Cari termin...">
                         <template
@@ -380,7 +385,7 @@
                 </x-misc.field>
 
                 {{-- Nomor Referensi --}}
-                <x-misc.field label="Nomor Referensi">
+                <x-misc.field label="Nomor Referensi" name="reference_number">
                     <input class="input mono" placeholder="(opsional)" x-model="formData.reference_number" />
                 </x-misc.field>
 
@@ -409,7 +414,7 @@
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">
                 <div class="order-extras">
-                    <x-misc.field label="Catatan Internal">
+                    <x-misc.field label="Catatan Internal" name="note">
                         <textarea class="input" rows="2" placeholder="Tulis catatan untuk tim gudang/pengiriman…"
                             x-model="formData.note"></textarea>
                     </x-misc.field>

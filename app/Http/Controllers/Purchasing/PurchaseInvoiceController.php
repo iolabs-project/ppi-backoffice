@@ -79,6 +79,18 @@ class PurchaseInvoiceController extends Controller
         return view('purchasing.purchase-invoice.show', $data);
     }
 
+    public function print(PurchaseInvoiceService $purchaseInvoiceService, int $id)
+    {
+        $purchaseInvoice = $purchaseInvoiceService->fetchPurchaseInvoiceByID($id);
+        if (!$purchaseInvoice) {
+            abort(404, 'Tagihan pembelian tidak ditemukan.');
+        }
+        // The detail query only selects the supplier's name; the printed document also shows the address
+        $purchaseInvoice->load('supplier');
+
+        return view('print.purchase-invoice', ['purchaseInvoice' => $purchaseInvoice]);
+    }
+
     public function edit(int $id)
     {
         $purchaseInvoice = $this->purchaseInvoiceService->fetchPurchaseInvoiceByID($id);

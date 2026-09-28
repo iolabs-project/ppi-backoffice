@@ -7,7 +7,7 @@
     ['id'=>'profit-loss', 'label'=>'Laba Rugi', 'permission'=>'reports.profit-loss.view'],
     ['id'=>'executive', 'label'=>'Eksekutif', 'permission'=>'reports.executive.view'],
     ['id'=>'receivable', 'label'=>'Piutang', 'permission'=>'reports.receivable.view'],
-    ['id'=>'payable', 'label'=>'Utang', 'permission'=>'reports.payable.view'],
+    ['id'=>'payable', 'label'=>'Hutang', 'permission'=>'reports.payable.view'],
     ['id'=>'journal', 'label'=>'Jurnal Umum', 'permission'=>'reports.journal.view'],
     ['id'=>'activity-log', 'label'=>'Log Aktivitas', 'permission'=>'reports.activity-log.view'],
   ])->filter(fn (array $tab): bool => auth()->user()->can($tab['permission']))->values();

@@ -77,6 +77,11 @@
                 },
 
                 async submit(status) {
+                    // Drafts may be saved incomplete; required fields only apply when the document is finalized
+                    if (status !== 'draft' && !FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     let isValid = false;
                     if (status === 'draft') {
                         this.formData.status = 'draft';

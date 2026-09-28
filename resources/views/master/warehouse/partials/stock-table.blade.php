@@ -7,46 +7,48 @@
         </div>
     </div>
 
-    <table class="tbl">
-        <thead>
-            <tr>
-                <th>Nama Produk</th>
-                <th>Kode</th>
-                <th style="text-align:right;">Qty</th>
-                <th>Satuan</th>
-                <th style="text-align:right;">HPP (Average)</th>
-                <th style="text-align:right;">Nilai</th>
-            </tr>
-        </thead>
-        <tbody>
-            <template x-if="loading">
+    <div class="tbl-scroll">
+        <table class="tbl">
+            <thead>
                 <tr>
-                    <td colspan="6" style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
-                        Memuat data...
-                    </td>
+                    <th>Nama Produk</th>
+                    <th>Kode</th>
+                    <th style="text-align:right;">Qty</th>
+                    <th>Satuan</th>
+                    <th style="text-align:right;">HPP (Average)</th>
+                    <th style="text-align:right;">Nilai</th>
                 </tr>
-            </template>
-            <template x-if="!loading && tableData.data.length === 0">
-                <tr>
-                    <td colspan="6" style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
-                        Belum ada produk di gudang ini
-                    </td>
-                </tr>
-            </template>
-            <template x-if="!loading && tableData.data.length > 0">
-                <template x-for="stock in tableData.data" :key="stock.id">
+            </thead>
+            <tbody>
+                <template x-if="loading">
                     <tr>
-                        <td x-text="stock.product.name"></td>
-                        <td class="mono" x-text="stock.product.code"></td>
-                        <td style="text-align:right;" x-text="m(stock.quantity)"></td>
-                        <td x-text="stock.product.unit.name"></td>
-                        <td style="text-align:right;" x-text="m(stock.average_unit_cost)"></td>
-                        <td style="text-align:right;" x-text="m(stock.quantity * stock.average_unit_cost)"></td>
+                        <td colspan="6" style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
+                            Memuat data...
+                        </td>
                     </tr>
                 </template>
-            </template>
-        </tbody>
-    </table>
+                <template x-if="!loading && tableData.data.length === 0">
+                    <tr>
+                        <td colspan="6" style="text-align:center; color:var(--ink-4); padding:32px; font-size:13px;">
+                            Belum ada produk di gudang ini
+                        </td>
+                    </tr>
+                </template>
+                <template x-if="!loading && tableData.data.length > 0">
+                    <template x-for="stock in tableData.data" :key="stock.id">
+                        <tr>
+                            <td x-text="stock.product.name"></td>
+                            <td class="mono" x-text="stock.product.code"></td>
+                            <td style="text-align:right;" x-text="m(stock.quantity)"></td>
+                            <td x-text="stock.product.unit.name"></td>
+                            <td style="text-align:right;" x-text="m(stock.average_unit_cost)"></td>
+                            <td style="text-align:right;" x-text="m(stock.quantity * stock.average_unit_cost)"></td>
+                        </tr>
+                    </template>
+                </template>
+            </tbody>
+        </table>
+    </div>
     <div class="table-pagination">
         <div class="pagination-actions">
             <div class="pagination-label">Per</div>

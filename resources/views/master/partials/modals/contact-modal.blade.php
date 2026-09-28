@@ -4,10 +4,10 @@
         <div class="form-section">
             <div class="form-section-title">Profil Kontak</div>
             <div class="form-grid-2">
-                <x-misc.field label="Kode Kontak" :required="true">
+                <x-misc.field label="Kode Kontak" name="code" :required="true">
                     <input class="input mono" x-model="form.code" placeholder="cth. C-001" />
                 </x-misc.field>
-                <x-misc.field label="Nama" :required="true">
+                <x-misc.field label="Nama" name="name" :required="true">
                     <input class="input" x-model="form.name" placeholder="Nama perusahaan / individu" />
                 </x-misc.field>
             </div>
@@ -26,10 +26,10 @@
                 </label>
             </div>
             <div class="form-grid-2">
-                <x-misc.field label="Email">
+                <x-misc.field label="Email" name="email">
                     <input class="input" type="email" x-model="form.email" placeholder="kontak@perusahaan.com" />
                 </x-misc.field>
-                <x-misc.field label="Telepon">
+                <x-misc.field label="Telepon" name="phone">
                     <input class="input" x-model="form.phone" placeholder="08xx-xxxx-xxxx" />
                 </x-misc.field>
             </div>
@@ -37,7 +37,7 @@
 
         <div class="form-section">
             <div class="form-section-title">Alamat</div>
-            <x-misc.field label="Alamat">
+            <x-misc.field label="Alamat" name="address">
                 <textarea class="input" rows="2" x-model="form.address" placeholder="Alamat lengkap..."></textarea>
             </x-misc.field>
             <div class="form-grid-3">
@@ -56,7 +56,7 @@
         <div class="form-section">
             <div class="form-section-title">Biaya (Penjualan)</div>
             <div class="form-grid-2">
-                <x-misc.field label="Biaya Transportasi" :required="false">
+                <x-misc.field label="Biaya Transportasi" name="transportation_cost" :required="false">
                     <input class="input num" x-model="form.transportation_cost" x-mask:dynamic="$money($input, '.',',')" />
                 </x-misc.field>
             </div>

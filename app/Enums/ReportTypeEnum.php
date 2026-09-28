@@ -21,7 +21,7 @@ enum ReportTypeEnum: string
             self::PROFIT_LOSS => 'Laba Rugi',
             self::EXECUTIVE => 'Eksekutif',
             self::RECEIVABLE => 'Piutang Dagang',
-            self::PAYABLE => 'Utang Dagang',
+            self::PAYABLE => 'Hutang Dagang',
             self::JOURNAL => 'Jurnal Umum',
             self::ACTIVITY_LOG => 'Log Aktivitas',
         };

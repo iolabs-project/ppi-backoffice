@@ -3,14 +3,18 @@
     <div class="card-hd-2" style="margin-bottom:12px;">
         <div class="display card-hd-title">Arus Kas</div>
         <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
-            <label style="font-size:12px; color:var(--ink-3);">Dari</label>
-            <input type="date" class="filter-panel__input" x-model="filter.start_date"
-                x-on:change="fetchData()" style="height:28px; font-size:12px;">
-            <label style="font-size:12px; color:var(--ink-3);">Sampai</label>
-            <input type="date" class="filter-panel__input" x-model="filter.end_date"
-                x-on:change="fetchData()" style="height:28px; font-size:12px;">
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="print" :size="13" />Cetak</button>
-            <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+            <label class="report-date">
+                <span>Dari</span>
+                <input type="date" class="filter-panel__input" x-model="filter.start_date"
+                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            </label>
+            <label class="report-date">
+                <span>Sampai</span>
+                <input type="date" class="filter-panel__input" x-model="filter.end_date"
+                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
+            </label>
+            <button class="btn btn-ghost btn-sm" type="button" @click="window.print()"><x-misc.icon name="print" :size="13" />Cetak</button>
+            <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
     </div>
 <div class="card" style="overflow:hidden;">
@@ -82,6 +86,28 @@
     <script>
         function cashFlowModule() {
             return {
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const heading = (label) => ({ label: label.toUpperCase(), value: null });
+                        await ExportUtils.exportXlsx({
+                            filename: 'Arus Kas',
+                            title: 'Arus Kas',
+                            subtitle: ExportUtils.describeFilters({ from: this.filter.start_date, to: this.filter.end_date }),
+                            columns: [
+                                { header: 'Keterangan', value: r => r.label },
+                                { header: 'Jumlah', value: r => r.value, type: 'number' },
+                            ],
+                            rows: [
+                                heading('Aktivitas Operasional'), ...this.operatingRows,
+                                heading('Aktivitas Investasi'), ...this.investingRows,
+                                heading('Aktivitas Pendanaan'), ...this.financingRows,
+                                { label: 'Arus kas bersih', value: this.tableData.net_cash_flow },
+                                heading('Kas dan Setara Kas'), ...this.cashRows,
+                            ],
+                        });
+                    });
+                },
+
                 tableData: {
                     operating: {
                         lines: {},
@@ -222,7 +248,7 @@
                 },
 
                 formatAmount(value) {
-                    return Math.round(Number(value ?? 0)).toLocaleString('id-ID');
+                    return NumberUtils.formatNumericIntoMask(value);
                 },
 
                 async init() {

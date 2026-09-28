@@ -32,6 +32,38 @@
                     await this.fetchData();
                 },
 
+                // Same filters as the table, every page, as an Excel file
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const rows = await ExportUtils.fetchAllRows(route('expenses.datatable'), {
+                            status: this.filter,
+                            search: this.search,
+                            start_date: this.dateFrom,
+                            end_date: this.dateTo,
+                        });
+                        await ExportUtils.exportXlsx({
+                            filename: 'Biaya',
+                            title: 'Biaya',
+                            subtitle: ExportUtils.describeFilters({
+                                status: this.filter === 'all' ? 'Semua' : this.statusChip(this.filter).label,
+                                from: this.dateFrom,
+                                to: this.dateTo,
+                                search: this.search,
+                            }),
+                            columns: [
+                                { header: 'No. Biaya', value: r => r.number },
+                                { header: 'Tanggal', value: r => r.expense_date },
+                                { header: 'No. Ref', value: r => r.reference_number },
+                                { header: 'Penerima', value: r => r.contact?.name },
+                                { header: 'Sisa', value: r => r.remaining_amount, type: 'number' },
+                                { header: 'Total', value: r => r.total_amount, type: 'number' },
+                                { header: 'Status', value: r => this.statusChip(r.status).label }
+                            ],
+                            rows,
+                        });
+                    });
+                },
+
                 async fetchData() {
                     this.loading = true;
                     try {
@@ -229,7 +261,7 @@
                         @click="showFilters = !showFilters">
                         <x-misc.icon name="filter" :size="13" />Filter
                     </button>
-                    <button class="btn btn-ghost btn-sm">
+                    <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()">
                         <x-misc.icon name="download" :size="13" />Ekspor
                     </button>
                 </div>
@@ -251,107 +283,107 @@
                 </button>
             </div>
 
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th>No. Biaya</th>
-                        <th>Tanggal</th>
-                        <th>No. Ref</th>
-                        <th>Penerima</th>
-                        <th style="text-align:right;">Sisa</th>
-                        <th style="text-align:right;">Total</th>
-                        <th>Status</th>
-                        <th class="table-action-col">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-if="loading">
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <thead>
                         <tr>
-                            <td colspan="8" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Memuat data...
-                            </td>
+                            <th>No. Biaya</th>
+                            <th>Tanggal</th>
+                            <th>No. Ref</th>
+                            <th>Penerima</th>
+                            <th style="text-align:right;">Sisa</th>
+                            <th style="text-align:right;">Total</th>
+                            <th>Status</th>
+                            <th class="table-action-col">Aksi</th>
                         </tr>
-                    </template>
-
-                    <template x-if="!loading && tableData.data.length === 0">
-                        <tr>
-                            <td colspan="8" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Tidak ada data
-                            </td>
-                        </tr>
-                    </template>
-
-                    <template x-if="!loading">
-                        <template x-for="row in tableData.data" :key="row.id">
-                            <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
-                                @click="window.location = route('expenses.show', row.id)">
-                                <td class="mono" style="font-weight:600;" x-text="row.number"></td>
-                                <td style="color:var(--ink-3);" x-text="row.expense_date ?? '-'"></td>
-                                <td class="mono" style="font-weight:600;" x-text="row.reference_number"></td>
-                                <td style="font-weight:500;" x-text="row.contact?.name ?? '-'"></td>
-                                <td class="num" style="text-align:right;"
-                                    x-text="NumberUtils.formatNumericIntoMask(row.remaining_amount)"></td>
-                                <td class="num" style="text-align:right;"
-                                    x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
-                                {{-- <td><span class="mono" x-text="row.status"></span></td> --}}
-                                <td>
-                                    <span :class="statusChip(row.status).chip">
-                                        <span :class="statusChip(row.status).dot"></span>
-                                        <span x-text="statusChip(row.status).label"></span>
-                                    </span>
-                                </td>
-                                <td class="table-action-col">
-                                    <div x-data="{ open: false }" class="action-menu">
-                                        <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
-                                            x-on:click.stop="
-                                            let wasOpen = open;
-                                            $dispatch('close-menus');
-                                            if (!wasOpen) {
-                                                let r = $el.getBoundingClientRect();
-                                                $refs.panel.style.top = (r.bottom + 6) + 'px';
-                                                $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
-                                                open = true;
-                                            }
-                                        ">
-                                            <x-misc.icon name="more" :size="15" />
-                                        </button>
-                                        <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
-                                            x-on:click.away="open = false" class="action-menu__panel">
-                                            <button class="action-menu__item" @click.stop>
-                                                <x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak
-                                                Biaya
-                                            </button>
-                                            <template x-if="row.status === '{{ $draft }}' && @js(auth()->user()->can('finances.expenses.edit'))">
-                                                <div>
-                                                    <a :href="route('expenses.edit', row.id)" @click.stop
-                                                        class="action-menu__item">
-                                                        <x-misc.icon name="edit" :size="14"
-                                                            stroke="var(--ink-3)" />Edit
-                                                        Biaya
-                                                    </a>
-                                                </div>
-                                            </template>
-                                            <template
-                                                x-if="(row.status === '{{ $draft }}' || row.status === '{{ $open }}') && @js(auth()->user()->can('finances.expenses.delete'))">
-                                                <div>
-                                                    <div class="action-menu__divider"></div>
-                                                    <button class="action-menu__item action-menu__item--danger"
-                                                        @click.stop="handleCancel(row.id)">
-                                                        <x-misc.icon name="x" :size="14"
-                                                            stroke="currentColor" />Hapus
-                                                        Biaya
-                                                    </button>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </div>
+                    </thead>
+                    <tbody>
+                        <template x-if="loading">
+                            <tr>
+                                <td colspan="8" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Memuat data...
                                 </td>
                             </tr>
-
                         </template>
-                    </template>
-                </tbody>
-            </table>
+    
+                        <template x-if="!loading && tableData.data.length === 0">
+                            <tr>
+                                <td colspan="8" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        </template>
+    
+                        <template x-if="!loading">
+                            <template x-for="row in tableData.data" :key="row.id">
+                                <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
+                                    @click="window.location = route('expenses.show', row.id)">
+                                    <td class="mono" style="font-weight:600;" x-text="row.number"></td>
+                                    <td style="color:var(--ink-3);" x-text="row.expense_date ?? '-'"></td>
+                                    <td class="mono" style="font-weight:600;" x-text="row.reference_number"></td>
+                                    <td style="font-weight:500;" x-text="row.contact?.name ?? '-'"></td>
+                                    <td class="num" style="text-align:right;"
+                                        x-text="NumberUtils.formatNumericIntoMask(row.remaining_amount)"></td>
+                                    <td class="num" style="text-align:right;"
+                                        x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
+                                    {{-- <td><span class="mono" x-text="row.status"></span></td> --}}
+                                    <td>
+                                        <span :class="statusChip(row.status).chip">
+                                            <span :class="statusChip(row.status).dot"></span>
+                                            <span x-text="statusChip(row.status).label"></span>
+                                        </span>
+                                    </td>
+                                    <td class="table-action-col">
+                                        <div x-data="{ open: false }" class="action-menu">
+                                            <button class="btn btn-ghost btn-icon btn-sm btn--borderless"
+                                                x-on:click.stop="
+                                                let wasOpen = open;
+                                                $dispatch('close-menus');
+                                                if (!wasOpen) {
+                                                    let r = $el.getBoundingClientRect();
+                                                    $refs.panel.style.top = (r.bottom + 6) + 'px';
+                                                    $refs.panel.style.right = (window.innerWidth - r.right) + 'px';
+                                                    open = true;
+                                                }
+                                            ">
+                                                <x-misc.icon name="more" :size="15" />
+                                            </button>
+                                            <div x-ref="panel" x-show="open" x-cloak x-on:close-menus.window="open = false"
+                                                x-on:click.away="open = false" class="action-menu__panel">
+                                                <a :href="route('expenses.print', row.id)" target="_blank" rel="noopener" @click.stop
+                                                    class="action-menu__item"><x-misc.icon name="print" :size="14" stroke="var(--ink-3)" />Cetak Biaya</a>
+                                                <template x-if="row.status === '{{ $draft }}' && @js(auth()->user()->can('finances.expenses.edit'))">
+                                                    <div>
+                                                        <a :href="route('expenses.edit', row.id)" @click.stop
+                                                            class="action-menu__item">
+                                                            <x-misc.icon name="edit" :size="14"
+                                                                stroke="var(--ink-3)" />Edit
+                                                            Biaya
+                                                        </a>
+                                                    </div>
+                                                </template>
+                                                <template
+                                                    x-if="(row.status === '{{ $draft }}' || row.status === '{{ $open }}') && @js(auth()->user()->can('finances.expenses.delete'))">
+                                                    <div>
+                                                        <div class="action-menu__divider"></div>
+                                                        <button class="action-menu__item action-menu__item--danger"
+                                                            @click.stop="handleCancel(row.id)">
+                                                            <x-misc.icon name="x" :size="14"
+                                                                stroke="currentColor" />Hapus
+                                                            Biaya
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+    
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
 
             <div class="table-pagination">
                 <div class="pagination-actions">

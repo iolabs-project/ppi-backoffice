@@ -54,6 +54,37 @@
                     };
                 },
 
+                // Same filters as the table, every page, as an Excel file
+                exportXlsx() {
+                    return ExportUtils.runExport(async () => {
+                        const rows = await ExportUtils.fetchAllRows(route('finances.cash.datatable'), {
+                            status: this.filter,
+                            search: this.search,
+                            start_date: this.dateFrom,
+                            end_date: this.dateTo,
+                        });
+                        await ExportUtils.exportXlsx({
+                            filename: 'Transaksi Kas & Bank',
+                            title: 'Transaksi Kas & Bank',
+                            subtitle: ExportUtils.describeFilters({
+                                status: this.filter === 'all' ? 'Semua' : this.statusChip(this.filter).label,
+                                from: this.dateFrom,
+                                to: this.dateTo,
+                                search: this.search,
+                            }),
+                            columns: [
+                                { header: 'Tanggal', value: r => r.transaction_date },
+                                { header: 'Keterangan', value: r => r.description },
+                                { header: 'Tipe', value: r => ({ transfer: 'Transfer Dana', send: 'Kirim Dana', receive: 'Terima Dana' })[r.type] ?? r.type },
+                                { header: 'Akun', value: r => r.type === 'transfer' ? [r.from_account?.name, r.to_account?.name].filter(Boolean).join(' → ') : (r.type === 'send' ? r.from_account?.name : r.to_account?.name) },
+                                { header: 'Jumlah', value: r => r.total_amount, type: 'number' },
+                                { header: 'Status', value: r => this.statusChip(r.status).label }
+                            ],
+                            rows,
+                        });
+                    });
+                },
+
                 async fetchData() {
                     this.loading = true;
                     try {
@@ -109,6 +140,10 @@
                 },
 
                 async createAccount() {
+                    if (!FormValidation.validateRequired(this.$root)) {
+                        return;
+                    }
+                    
                     const result = await Swal.fire({
                         title: 'Konfirmasi Pembuatan Rekening',
                         text: 'Apakah anda yakin ingin membuat rekening baru dengan data yang telah diisi?',
@@ -255,7 +290,7 @@
                         @click="showFilters = !showFilters">
                         <x-misc.icon name="filter" :size="13" />Filter
                     </button>
-                    <button class="btn btn-ghost btn-sm"><x-misc.icon name="download" :size="13" />Ekspor</button>
+                    <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
                 </div>
             </div>
             <div class="filter-panel" x-show="showFilters" x-cloak style="border-radius:0; border-left:none; border-right:none;">
@@ -273,79 +308,81 @@
                     <x-misc.icon name="x" :size="12" />Reset
                 </button>
             </div>
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Keterangan</th>
-                        <th>Akun</th>
-                        <th>Ref</th>
-                        <th style="text-align:right;">Jumlah</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-if="loading">
+            <div class="tbl-scroll">
+                <table class="tbl">
+                    <thead>
                         <tr>
-                            <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Memuat data...
-                            </td>
+                            <th>Tanggal</th>
+                            <th>Keterangan</th>
+                            <th>Akun</th>
+                            <th>Ref</th>
+                            <th style="text-align:right;">Jumlah</th>
+                            <th>Status</th>
                         </tr>
-                    </template>
-
-                    <template x-if="!loading && tableData.data.length === 0">
-                        <tr>
-                            <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">
-                                Tidak ada data
-                            </td>
-                        </tr>
-                    </template>
-                    <template x-if="!loading && tableData.data.length > 0">
-                        <template x-for="tx in tableData.data" :key="tx.id">
+                    </thead>
+                    <tbody>
+                        <template x-if="loading">
                             <tr>
-                                <td style="color:var(--ink-3); white-space:nowrap;" x-text="tx.transaction_date"></td>
-                                <td style="font-weight:500;" x-text="tx.description"></td>
-                                <td>
-                                    <template x-if="tx.type === '{{ $transfer }}'">
-                                        <div style="display:flex; align-items:center; gap:4px;">
-                                            <span class="chip chip-info">
-                                                <span x-text="tx.from_account.name"></span>
-                                            </span>
-                                            <template x-if="tx.to_account">
-                                                <div style="display:flex; align-items:center; gap:4px;">
-                                                    <x-misc.icon name="arrow" :size="12" />
-                                                    <span class="chip chip-info">
-                                                        <span x-text="tx.to_account.name"></span>
-                                                    </span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </template>
-                                    <template x-if="tx.type === '{{ $send }}'">
-                                        <span class="chip chip-info">
-                                            <span x-text="tx.from_account.name"></span>
-                                        </span>
-                                    </template>
-                                    <template x-if="tx.type === '{{ $receive }}'">
-                                        <span class="chip chip-info">
-                                            <span x-text="tx.to_account.name"></span>
-                                        </span>
-                                    </template>
-                                </td>
-                                <td class="mono" style="font-size:11.5px; color:var(--ink-4);"></td>
-                                <td class="num" style="text-align:right; color:var(--ink-5); font-weight:400;"
-                                    x-text="m(tx.total_amount)"></td>
-                                <td>
-                                    <span :class="statusChip(tx.status).chip">
-                                        <span :class="statusChip(tx.status).dot"></span>
-                                        <span x-text="statusChip(tx.status).label"></span>
-                                    </span>
+                                <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Memuat data...
                                 </td>
                             </tr>
                         </template>
-                    </template>
-                </tbody>
-            </table>
+    
+                        <template x-if="!loading && tableData.data.length === 0">
+                            <tr>
+                                <td colspan="6" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="!loading && tableData.data.length > 0">
+                            <template x-for="tx in tableData.data" :key="tx.id">
+                                <tr>
+                                    <td style="color:var(--ink-3); white-space:nowrap;" x-text="tx.transaction_date"></td>
+                                    <td style="font-weight:500;" x-text="tx.description"></td>
+                                    <td>
+                                        <template x-if="tx.type === '{{ $transfer }}'">
+                                            <div style="display:flex; align-items:center; gap:4px;">
+                                                <span class="chip chip-info">
+                                                    <span x-text="tx.from_account.name"></span>
+                                                </span>
+                                                <template x-if="tx.to_account">
+                                                    <div style="display:flex; align-items:center; gap:4px;">
+                                                        <x-misc.icon name="arrow" :size="12" />
+                                                        <span class="chip chip-info">
+                                                            <span x-text="tx.to_account.name"></span>
+                                                        </span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template x-if="tx.type === '{{ $send }}'">
+                                            <span class="chip chip-info">
+                                                <span x-text="tx.from_account.name"></span>
+                                            </span>
+                                        </template>
+                                        <template x-if="tx.type === '{{ $receive }}'">
+                                            <span class="chip chip-info">
+                                                <span x-text="tx.to_account.name"></span>
+                                            </span>
+                                        </template>
+                                    </td>
+                                    <td class="mono" style="font-size:11.5px; color:var(--ink-4);"></td>
+                                    <td class="num" style="text-align:right; color:var(--ink-5); font-weight:400;"
+                                        x-text="m(tx.total_amount)"></td>
+                                    <td>
+                                        <span :class="statusChip(tx.status).chip">
+                                            <span :class="statusChip(tx.status).dot"></span>
+                                            <span x-text="statusChip(tx.status).label"></span>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
             <div class="table-pagination">
                 <div class="pagination-actions">
                     <div class="pagination-label">Per</div>

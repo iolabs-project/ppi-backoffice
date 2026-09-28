@@ -37,12 +37,12 @@
                             </button>
                             <template x-if="!g.deleted_at">
                                 <button class="action-menu__item action-menu__item--danger"
-                                    x-on:click="handleStatus(g.id)">
+                                    x-on:click="handleStatus(g)">
                                     <x-misc.icon name="trash" :size="14" /> Nonaktifkan
                                 </button>
                             </template>
                             <template x-if="g.deleted_at">
-                                <button class="action-menu__item" x-on:click="handleStatus(g.id)">
+                                <button class="action-menu__item" x-on:click="handleStatus(g)">
                                     <x-misc.icon name="refresh" :size="14" /> Aktifkan
                                 </button>
                             </template>

@@ -9,6 +9,11 @@
 <header class="topbar">
     <div class="topbar__inner">
 
+        {{-- Opens the sidebar drawer; only shown on mobile --}}
+        <button type="button" class="topbar__menu" x-data @click="$dispatch('toggle-nav')" aria-label="Buka menu">
+            <x-misc.icon name="menu" :size="20" />
+        </button>
+
         {{-- Breadcrumb --}}
         <div class="topbar__breadcrumb">
             @foreach ($breadcrumb as $i => $crumb)
@@ -40,7 +45,7 @@
 
             <div class="topbar__user">
                 <x-misc.avatar :name="$user['name']" />
-                <div style="line-height:1.1;">
+                <div class="topbar__user-text" style="line-height:1.1;">
                     <div class="topbar__user-name">{{ $user['name'] }}</div>
                     <div class="topbar__user-role">{{ $user['role'] }}</div>
                 </div>

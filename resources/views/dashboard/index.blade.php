@@ -9,7 +9,8 @@
         foreach ($monthly as $m) {
             $maxVal = max($maxVal, $m[1], $m[2]);
         }
-        $maxVal = $maxVal * 1.15 ?: 1;
+        // Chart values are in rupiah; an empty year still gets a readable axis (Rp 0 – Rp 1.0 Jt)
+        $maxVal = $maxVal * 1.15 ?: 1_000_000;
 
         $pipelineMax = max(array_column($pipeline, 'value')) ?: 1;
     @endphp
@@ -67,7 +68,7 @@
                     <div class="chart-hd">
                         <div>
                             <div class="chart-title display">Penjualan vs Pembelian</div>
-                            <div class="chart-sub">12 bulan terakhir · dalam Juta Rupiah</div>
+                            <div class="chart-sub">12 bulan terakhir</div>
                         </div>
                         <div class="chart-legend">
                             <span class="chart-legend-item">
@@ -84,7 +85,7 @@
                         <div class="bc__yaxis">
                             @foreach ([1, 0.75, 0.5, 0.25, 0] as $t)
                                 <div class="bc__yaxis-row" style="bottom:{{ $t * 100 }}%">
-                                    <span class="bc__yaxis-label mono">{{ fmt_rp_short($maxVal * $t * 1_000_000) }}</span>
+                                    <span class="bc__yaxis-label mono">{{ fmt_rp_short($maxVal * $t) }}</span>
                                     <span class="bc__yaxis-line"></span>
                                 </div>
                             @endforeach
@@ -100,9 +101,9 @@
                                     data-sales="{{ $d[1] }}" data-purchase="{{ $d[2] }}">
                                     <div class="bc__hover-label">
                                         <span class="bc__hover-label-val mono"
-                                            style="color:var(--accent)">{{ fmt_rp_short($d[1] * 1_000_000) }}</span>
+                                            style="color:var(--accent)">{{ fmt_rp_short($d[1]) }}</span>
                                         <span class="bc__hover-label-val mono"
-                                            style="color:var(--ink-3)">{{ fmt_rp_short($d[2] * 1_000_000) }}</span>
+                                            style="color:var(--ink-3)">{{ fmt_rp_short($d[2]) }}</span>
                                     </div>
                                     <div class="bc__bars-inner">
                                         <div class="bc__bar bc__bar--sales"
@@ -467,8 +468,9 @@
                         const valueEl = el.querySelector('[data-count-value]');
                         if (!valueEl) return;
 
+                        // Runs before the app.js module (NumberUtils) may be loaded; en-US gives the same 1,234 format
                         function formatRp(n) {
-                            return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+                            return 'Rp ' + Math.round(n).toLocaleString('en-US');
                         }
 
                         function step(now) {
@@ -503,11 +505,9 @@
                     let activeGroup = null;
                     let hideTimer = null;
 
+                    // The tooltip shows the exact amount; the axis and bar labels use the short rb / Jt form
                     function fmtRp(n) {
-                        if (n >= 1e9) return 'Rp ' + (n / 1e9).toFixed(1).replace(/\.0$/, '') + ' M';
-                        if (n >= 1e6) return 'Rp ' + (n / 1e6).toFixed(1).replace(/\.0$/, '') + ' jt';
-                        if (n >= 1e3) return 'Rp ' + (n / 1e3).toFixed(0) + ' rb';
-                        return 'Rp ' + n.toLocaleString('id-ID');
+                        return 'Rp ' + Math.round(n).toLocaleString('en-US');
                     }
 
                     function showTooltip(group) {
@@ -516,8 +516,8 @@
                         activeGroup = group;
 
                         const month = group.dataset.month;
-                        const sales = parseInt(group.dataset.sales) * 1e6;
-                        const purchase = parseInt(group.dataset.purchase) * 1e6;
+                        const sales = parseFloat(group.dataset.sales) || 0;
+                        const purchase = parseFloat(group.dataset.purchase) || 0;
                         const diff = sales - purchase;
 
                         tooltip.querySelector('[data-tooltip-head]').textContent = month;

@@ -168,155 +168,159 @@
     }
 </script>
 
-<table class="tbl">
-    <thead>
-        <tr>
-            <th style="width:48px;">#</th>
-            <th>Produk</th>
-            <th style="width:70px;">Satuan</th>
-            <th style="width:120px; text-align:right;">Qty Dipesan</th>
-            <th style="width:120px; text-align:right;">Qty Terkirim</th>
-            <th style="width:130px; text-align:right;">Qty Dikirim</th>
-            <th style="width:40px;"></th>
-        </tr>
-    </thead>
-    <template x-for="(item, index) in formData.details" :key="index">
-        <tbody>
+<div class="tbl-scroll">
+    <table class="tbl">
+        <thead>
             <tr>
-                <td class="mono" style="color:var(--ink-4);" x-text="String(index + 1).padStart(2, '0')"></td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div class="product-icon">
-                            <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
-                        </div>
-                        <div style="flex:1;">
-                            <x-misc.select display="item.product_id ? item.name : 'Pilih Produk'"
-                                hasValue="item.product_id" placeholder="Cari produk..." min-width="320px"
-                                height="32px">
-                                <template x-for="p in availableSOItems(q)" :key="p.id">
-                                    <div class="dropdown-item" @click="selectProduct(item, p);open=false;q=''">
-                                        <div style="flex:1; min-width:0;">
-                                            <div style="font-size:13px;" x-text="p.product_name"></div>
-                                            <div class="mono" style="font-size:11px; color:var(--ink-4);"
-                                                x-text="p.product_code"></div>
+                <th style="width:48px;">#</th>
+                <th>Produk</th>
+                <th style="width:70px;">Satuan</th>
+                <th style="width:120px; text-align:right;">Qty Dipesan</th>
+                <th style="width:120px; text-align:right;">Qty Terkirim</th>
+                <th style="width:130px; text-align:right;">Qty Dikirim</th>
+                <th style="width:40px;"></th>
+            </tr>
+        </thead>
+        <template x-for="(item, index) in formData.details" :key="index">
+            <tbody>
+                <tr>
+                    <td class="mono" style="color:var(--ink-4);" x-text="String(index + 1).padStart(2, '0')"></td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div class="product-icon">
+                                <x-misc.icon name="box" :size="16" stroke="var(--ink-3)" />
+                            </div>
+                            <div style="flex:1;">
+                                <x-misc.select display="item.product_id ? item.name : 'Pilih Produk'"
+                                    hasValue="item.product_id" placeholder="Cari produk..." min-width="320px"
+                                    height="32px">
+                                    <template x-for="p in availableSOItems(q)" :key="p.id">
+                                        <div class="dropdown-item" @click="selectProduct(item, p);open=false;q=''">
+                                            <div style="flex:1; min-width:0;">
+                                                <div style="font-size:13px;" x-text="p.product_name"></div>
+                                                <div class="mono" style="font-size:11px; color:var(--ink-4);"
+                                                    x-text="p.product_code"></div>
+                                            </div>
+                                            <span class="dropdown-item__sub" x-text="p.unit"></span>
                                         </div>
-                                        <span class="dropdown-item__sub" x-text="p.unit"></span>
-                                    </div>
-                                </template>
-                                <template x-if="availableSOItems(q).length === 0">
-                                    <div class="dropdown-empty">Tidak ditemukan</div>
-                                </template>
-                            </x-misc.select>
-                            <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
-                                x-text="item.code || '— belum dipilih'"></div>
+                                    </template>
+                                    <template x-if="availableSOItems(q).length === 0">
+                                        <div class="dropdown-empty">Tidak ditemukan</div>
+                                    </template>
+                                </x-misc.select>
+                                <div class="mono" style="font-size:11px; color:var(--ink-4); margin-top:3px;"
+                                    x-text="item.code || '— belum dipilih'"></div>
+                            </div>
                         </div>
-                    </div>
-                </td>
-                <td style="color:var(--ink-3);" x-text="item.unit || '—'"></td>
-                <td style="text-align: right"><span class="mono" style="font-weight:600"
-                        x-text="m(item.quantity_ordered)"></span>
-                </td>
-                <td style="text-align: right"><span class="mono" style="font-weight:600"
-                        x-text="m(item.quantity_previously_delivered)"></span>
-                </td>
-                <td style="text-align:right;">
-                    <span class="mono" style="font-weight:600;" x-text="m(batchTotal(item))"></span>
-                </td>
-                <td>
-                    <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
-                        :disabled="formData.details.length <= 1"
-                        :style="formData.details.length <= 1 ? 'opacity:0.25; cursor:not-allowed;' : ''"
-                        @click="deleteProduct(index)">
-                        <x-misc.icon name="trash" :size="14" stroke="var(--ink-4)" />
-                    </button>
-                </td>
-            </tr>
-            <tr x-show="item.product_id">
-                <td></td>
-                <td colspan="6">
-                    <div class="batch-panel">
-                        <div class="batch-panel__hd">
-                            <span>Batch Terpilih</span>
-                            <span class="mono"
-                                :class="batchTotal(item) > n(item.remaining_quantity) ? 'batch-panel__total--warn' :
-                                    'batch-panel__total--ok'"
-                                x-text="'Qty Dikirim: ' + m(batchTotal(item)) + ' / sisa pesanan ' + m(item.remaining_quantity) + ' ' + (item.unit || '')"></span>
-                        </div>
-                        <template x-if="item.batches.length === 0">
-                            <div class="batch-panel__empty">Belum ada batch dipilih.</div>
-                        </template>
-                        <table class="tbl tbl-tight" style="table-layout:fixed;" x-show="item.batches.length > 0">
-                            <thead>
-                                <tr>
-                                    <th style="width:36px;">#</th>
-                                    <th>Batch No.</th>
-                                    <th style="width:110px; text-align:right;">Qty Dikirim</th>
-                                    <th style="width:40px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template x-for="(b, bIndex) in item.batches" :key="b.product_batch_id">
-                                    <tr>
-                                        <td class="mono" style="color:var(--ink-4);"
-                                            x-text="String(bIndex + 1).padStart(2, '0')"></td>
-                                        <td class="mono" x-text="b.batch_number"></td>
-                                        <td class="num" style="text-align:right;" x-text="m(b.quantity)"></td>
-                                        <td>
-                                            <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
-                                                @click="removeBatch(item, bIndex)">
-                                                <x-misc.icon name="trash" :size="13" stroke="var(--ink-4)" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                        <button class="btn btn-ghost btn-sm" style="margin-top:8px;" @click="openBatchModal(index)">
-                            <x-misc.icon name="plus" :size="13" />Tambah Batch
+                    </td>
+                    <td style="color:var(--ink-3);" x-text="item.unit || '—'"></td>
+                    <td style="text-align: right"><span class="mono" style="font-weight:600"
+                            x-text="m(item.quantity_ordered)"></span>
+                    </td>
+                    <td style="text-align: right"><span class="mono" style="font-weight:600"
+                            x-text="m(item.quantity_previously_delivered)"></span>
+                    </td>
+                    <td style="text-align:right;">
+                        <span class="mono" style="font-weight:600;" x-text="m(batchTotal(item))"></span>
+                    </td>
+                    <td>
+                        <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                            :disabled="formData.details.length <= 1"
+                            :style="formData.details.length <= 1 ? 'opacity:0.25; cursor:not-allowed;' : ''"
+                            @click="deleteProduct(index)">
+                            <x-misc.icon name="trash" :size="14" stroke="var(--ink-4)" />
                         </button>
-                    </div>
+                    </td>
+                </tr>
+                <tr x-show="item.product_id">
+                    <td></td>
+                    <td colspan="6">
+                        <div class="batch-panel">
+                            <div class="batch-panel__hd">
+                                <span>Batch Terpilih</span>
+                                <span class="mono"
+                                    :class="batchTotal(item) > n(item.remaining_quantity) ? 'batch-panel__total--warn' :
+                                        'batch-panel__total--ok'"
+                                    x-text="'Qty Dikirim: ' + m(batchTotal(item)) + ' / sisa pesanan ' + m(item.remaining_quantity) + ' ' + (item.unit || '')"></span>
+                            </div>
+                            <template x-if="item.batches.length === 0">
+                                <div class="batch-panel__empty">Belum ada batch dipilih.</div>
+                            </template>
+                            <table class="tbl tbl-tight" style="table-layout:fixed;" x-show="item.batches.length > 0">
+                                <thead>
+                                    <tr>
+                                        <th style="width:36px;">#</th>
+                                        <th>Batch No.</th>
+                                        <th style="width:110px; text-align:right;">Qty Dikirim</th>
+                                        <th style="width:40px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(b, bIndex) in item.batches" :key="b.product_batch_id">
+                                        <tr>
+                                            <td class="mono" style="color:var(--ink-4);"
+                                                x-text="String(bIndex + 1).padStart(2, '0')"></td>
+                                            <td class="mono" x-text="b.batch_number"></td>
+                                            <td class="num" style="text-align:right;" x-text="m(b.quantity)"></td>
+                                            <td>
+                                                <button class="btn btn-ghost btn-icon btn-sm" style="border:none;"
+                                                    @click="removeBatch(item, bIndex)">
+                                                    <x-misc.icon name="trash" :size="13" stroke="var(--ink-4)" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <button class="btn btn-ghost btn-sm" style="margin-top:8px;" @click="openBatchModal(index)">
+                                <x-misc.icon name="plus" :size="13" />Tambah Batch
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </template>
+        <template x-if="formData.details.length === 0">
+            <tr>
+                <td colspan="6" style="text-align:center; color:var(--ink-4); padding:16px;">
+                    Belum ada produk yang ditambahkan. Klik tombol <strong>Tambah Produk</strong> untuk menambahkan produk.
                 </td>
             </tr>
-        </tbody>
-    </template>
-    <template x-if="formData.details.length === 0">
-        <tr>
-            <td colspan="6" style="text-align:center; color:var(--ink-4); padding:16px;">
-                Belum ada produk yang ditambahkan. Klik tombol <strong>Tambah Produk</strong> untuk menambahkan produk.
-            </td>
-        </tr>
-    </template>
-</table>
+        </template>
+    </table>
+</div>
 
 <x-misc.modal title="Pilih Batch" show="modal === 'add_batch'" close-handler="closeBatchModal()" :width="560">
     <template x-if="activeItem()">
         <div>
-            <table class="tbl tbl-tight" style="table-layout:fixed;">
-                <thead>
-                    <tr>
-                        <th style="width:32px;"></th>
-                        <th style="width:auto;">Batch No.</th>
-                        <th style="width:110px; text-align:right;">Tersedia</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="b in availableBatchesForItem(activeItem())" :key="b.id">
-                        <tr class="row-tap"
-                            @click="batchForm.product_batch_id = b.id; batchForm.quantity = remainingToShip(activeItem()) > 0 ? Math.min(b.remaining_available, remainingToShip(activeItem())) : b.remaining_available">
-                            <td><input type="radio" :checked="batchForm.product_batch_id === b.id" /></td>
-                            <td class="mono" x-text="b.batch_number"></td>
-                            <td class="num" style="text-align:right;" x-text="b.remaining_available"></td>
-                        </tr>
-                    </template>
-                    <template x-if="availableBatchesForItem(activeItem()).length === 0">
+            <div class="tbl-scroll">
+                <table class="tbl tbl-tight" style="table-layout:fixed;">
+                    <thead>
                         <tr>
-                            <td colspan="3" style="text-align:center; color:var(--ink-4); padding:16px;">
-                                Tidak ada batch tersedia untuk produk ini di gudang tersebut.
-                            </td>
+                            <th style="width:32px;"></th>
+                            <th style="width:auto;">Batch No.</th>
+                            <th style="width:110px; text-align:right;">Tersedia</th>
                         </tr>
-                    </template>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <template x-for="b in availableBatchesForItem(activeItem())" :key="b.id">
+                            <tr class="row-tap"
+                                @click="batchForm.product_batch_id = b.id; batchForm.quantity = remainingToShip(activeItem()) > 0 ? Math.min(b.remaining_available, remainingToShip(activeItem())) : b.remaining_available">
+                                <td><input type="radio" :checked="batchForm.product_batch_id === b.id" /></td>
+                                <td class="mono" x-text="b.batch_number"></td>
+                                <td class="num" style="text-align:right;" x-text="b.remaining_available"></td>
+                            </tr>
+                        </template>
+                        <template x-if="availableBatchesForItem(activeItem()).length === 0">
+                            <tr>
+                                <td colspan="3" style="text-align:center; color:var(--ink-4); padding:16px;">
+                                    Tidak ada batch tersedia untuk produk ini di gudang tersebut.
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
 
             <div style="margin-top:14px;">
                 <x-misc.field label="Quantity yang Dikirim">

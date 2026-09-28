@@ -102,6 +102,18 @@ class SalesOrderController extends Controller
         return view('sales.sales-order.show', $data);
     }
 
+    public function print(int $id)
+    {
+        $salesOrder = $this->salesOrderService->fetchSalesOrderByID($id);
+        if (!$salesOrder) {
+            abort(404, 'Pemesanan penjualan tidak ditemukan.');
+        }
+        // The detail query only selects the customer's name; the printed document also shows the address
+        $salesOrder->load('customer');
+
+        return view('print.sales-order', ['salesOrder' => $salesOrder]);
+    }
+
     public function edit(int $id)
     {
         $salesOrder = $this->salesOrderService->fetchSalesOrderByID($id);

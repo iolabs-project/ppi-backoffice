@@ -74,6 +74,18 @@ class ExpenseController extends Controller
         return view('finance.expense.show', $data);
     }
 
+    public function print(int $id)
+    {
+        $expense = $this->expenseService->fetchExpenseByID($id);
+        if (!$expense) {
+            abort(404, 'Biaya tidak ditemukan.');
+        }
+        // The detail query only selects the contact's name; the printed document also shows the address
+        $expense->load('contact');
+
+        return view('print.expense', ['expense' => $expense]);
+    }
+
     public function edit(int $id)
     {
         $expense = $this->expenseService->fetchExpenseByID($id);

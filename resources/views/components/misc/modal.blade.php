@@ -1,5 +1,7 @@
 @props(['title', 'show', 'width' => 560, 'closeHandler' => 'modal = null'])
+{{-- Every time the modal opens it starts without the previous attempt's field errors --}}
 <div x-show="{{ $show }}" x-cloak
+     x-effect="if (({{ $show }}) && window.FormValidation) FormValidation.clearErrors($el)"
      class="modal-overlay"
      x-on:click="{{ $closeHandler ?? 'modal=null' }}">
   <div x-on:click.stop class="modal-box" style="width:{{ $width }}px;">
