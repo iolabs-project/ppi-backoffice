@@ -100,6 +100,26 @@ if (!function_exists('abort_unless_draft')) {
     }
 }
 
+if (!function_exists('abort_unless_can_become')) {
+    /**
+     * Status changes only move forward: a cancelled/closed document cannot be reopened, and a
+     * document cannot be opened, closed or cancelled twice. Finished documents (receipts,
+     * deliveries) are final: cancelling one only reverses its journal, not the stock.
+     */
+    function abort_unless_can_become(?string $from, string $to, string $label): void
+    {
+        $allowedFrom = [
+            'open' => ['draft'],
+            'closed' => ['open'],
+            'cancelled' => ['draft', 'open'],
+        ][$to] ?? [];
+
+        if (!in_array($from, $allowedFrom, true)) {
+            abort(403, "{$label} berstatus {$from}, tidak dapat diubah menjadi {$to}.");
+        }
+    }
+}
+
 if (!function_exists('avatar_meta')) {
     function avatar_meta(string $name): array
     {

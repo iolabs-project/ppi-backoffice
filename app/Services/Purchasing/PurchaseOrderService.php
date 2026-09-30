@@ -312,6 +312,7 @@ class PurchaseOrderService
     public function changePurchaseOrderStatus(int $id, string $status): void
     {
         $purchaseOrder = PurchaseOrder::findOrFail($id);
+        abort_unless_can_become($purchaseOrder->status, $status, 'Purchase Order');
 
         DB::transaction(function () use ($purchaseOrder, $status) {
             if ($status === PurchaseOrderStatus::OPEN->value) {

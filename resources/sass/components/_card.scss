@@ -5,6 +5,16 @@
   box-shadow: var(--shadow-1);
 }
 
+// A row's action menu hangs below the row, so a card that clips its overflow cuts the menu off in
+// short lists. Let those cards overflow (!important beats the inline overflow:hidden on the card)
+// and round the table header corners ourselves instead of relying on the clip.
+.card:has(.action-menu) {
+  overflow: visible !important;
+
+  .tbl thead th:first-child { border-top-left-radius: calc(var(--r-card) - 1px); }
+  .tbl thead th:last-child { border-top-right-radius: calc(var(--r-card) - 1px); }
+}
+
 .card-hd {
   padding: 14px 22px;
   border-bottom: 1px solid var(--line);

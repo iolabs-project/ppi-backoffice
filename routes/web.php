@@ -315,6 +315,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/payable/datatable', 'payableDatatable')->middleware('permission:reports.payable.view')->name('payable.datatable');
         Route::get('/journal/datatable', 'journalDatatable')->middleware('permission:reports.journal.view')->name('journal.datatable');
         Route::get('/activity-log/datatable', 'activityLogDatatable')->middleware('permission:reports.activity-log.view')->name('activity_log.datatable');
-        Route::get('/{id}', 'show')->middleware('report.permission')->name('show');
+        // {id} is a report slug here, not a number (see Route::pattern in AppServiceProvider)
+        Route::get('/{id}', 'show')->where('id', '[a-z-]+')->middleware('report.permission')->name('show');
     });
 });

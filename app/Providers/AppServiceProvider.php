@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Every controller takes int $id; without this "/finances/cash/create" reaches show() as a string and 500s
+        Route::pattern('id', '[0-9]+');
+
         Gate::before(function ($user, string $ability) {
             return $user->hasRole('Super Admin') ? true : null;
         });

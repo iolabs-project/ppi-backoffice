@@ -327,6 +327,14 @@ class SalesOrderService
     public function changeSalesOrderStatus(int $id, string $status): void
     {
         $salesOrder = SalesOrder::findOrFail($id);
+        abort_unless_can_become($salesOrder->status, $status, 'Pemesanan penjualan');
+
+        // Drafts may keep a charge without an account, but the invoice copies charges into a NOT NULL account column
+        if ($status === SalesOrderStatus::OPEN->value && $salesOrder->charges()->whereNull('account_id')->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'charges' => 'Akun biaya (customer) belum dipilih. Lengkapi draft SO terlebih dahulu.',
+            ]);
+        }
         // $salesOrder->update(['status' => $status]);
         DB::transaction(function () use ($salesOrder, $status) {
             if ($status === SalesOrderStatus::CANCELLED->value && $salesOrder->status === SalesOrderStatus::OPEN->value) {

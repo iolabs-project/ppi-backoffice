@@ -297,6 +297,7 @@ class DeliveryOrderService
     public function changeDeliveryOrderStatus(int $id, string $status): void
     {
         $deliveryOrder = DeliveryOrder::findOrFail($id);
+        abort_unless_can_become($deliveryOrder->status, $status, 'Pengiriman barang');
         DB::transaction(function () use ($deliveryOrder, $status) {
             if ($status === DeliveryOrderStatus::CANCELLED->value && $deliveryOrder->status === DeliveryOrderStatus::FINISHED->value) {
                 $this->reverseDOJournal($deliveryOrder);

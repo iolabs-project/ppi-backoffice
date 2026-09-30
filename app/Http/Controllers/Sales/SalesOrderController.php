@@ -162,6 +162,8 @@ class SalesOrderController extends Controller
         try {
             $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::OPEN->value);
             return response()->json(['message' => 'Pemesanan Penjualan berhasil dibuka.']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => collect($e->errors())->flatten()->first(), 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@open: ' . $e->getMessage(), [
                 'exception' => $e,

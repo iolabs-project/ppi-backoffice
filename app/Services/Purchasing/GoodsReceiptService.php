@@ -316,6 +316,7 @@ class GoodsReceiptService
     public function changeGoodsReceiptStatus(int $id, string $status): void
     {
         $goodsReceipt = GoodsReceipt::findOrFail($id);
+        abort_unless_can_become($goodsReceipt->status, $status, 'Penerimaan barang');
         DB::transaction(function () use ($goodsReceipt, $status) {
             if ($status === GoodsReceiptStatus::CANCELLED->value && $goodsReceipt->status === GoodsReceiptStatus::FINISHED->value) {
                 $this->reverseGRJournal($goodsReceipt, 0);

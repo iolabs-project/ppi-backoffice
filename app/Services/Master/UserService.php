@@ -122,8 +122,7 @@ class UserService
     public function toggleUserStatus(int $id)
     {
         $user = User::findOrFail($id);
-        $user->update([
-            'deleted_at' => $user->deleted_at ? null : now(),
-        ]);
+        // deleted_at is not in User::$fillable, so update() would silently skip it
+        $user->forceFill(['deleted_at' => $user->deleted_at ? null : now()])->save();
     }
 }

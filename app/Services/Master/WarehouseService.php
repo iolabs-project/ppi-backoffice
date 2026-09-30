@@ -50,9 +50,9 @@ class WarehouseService
             'name',
             'address',
             'note',
+            'deleted_at',
         )
-        ->where('company_id', config('context.selected_company_id'))
-        ->whereNull('deleted_at');
+        ->where('company_id', config('context.selected_company_id'));
 
         if ($request->filled('search')) {
             $data->where(function ($query) use ($request) {
