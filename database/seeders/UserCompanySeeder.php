@@ -18,8 +18,18 @@ class UserCompanySeeder extends Seeder
             'name' => 'Putra Pangan Indonesia',
         ]);
 
+        $contact = \App\Models\Contact::create([
+            'name' => 'Randy',
+            'code' => 'EMP-001',
+            'company_id' => $companny->id,
+            'is_customer' => false,
+            'is_supplier' => false,
+            'is_employee' => true,
+        ]);
+
         $user = \App\Models\User::create([
             'username' => 'admin',
+            'contact_id' => $contact->id,
             'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
         ]);
 
@@ -30,17 +40,5 @@ class UserCompanySeeder extends Seeder
         ]);
 
         $user->assignRole(RoleEnum::SUPER_ADMIN->value);
-
-        $user2 = \App\Models\User::create([
-            'username' => 'admin2',
-            'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
-        ]);
-
-        \App\Models\UserCompany::create([
-            'user_id' => $user2->id,
-            'company_id' => $companny->id,
-        ]);
-
-        $user2->assignRole('Checker');
     }
 }

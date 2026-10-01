@@ -15,37 +15,6 @@ class ContactSeeder extends Seeder
     {
         DB::table('contacts')->insert([
             [
-                'id' => 1,
-                'company_id' => 1,
-                'code' => 'EMP-001',
-                'name' => 'Aldo Octavio Cahyadi',
-                'email' => 'aldo.cahyadi@example.com',
-                'phone' => '081234567890',
-                'address' => 'Jl. Contoh Alamat No. 123, Jakarta',
-                'transportation_cost' => 0,
-                'is_customer' => false,
-                'is_supplier' => false,
-                'is_employee' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-             [
-                'id' => 2,
-                'company_id' => 1,
-                'code' => 'EMP-002',
-                'name' => 'Albert Irgi',
-                'email' => 'albert.irgi@example.com',
-                'phone' => '081234567891',
-                'address' => 'Jl. Contoh Alamat No. 124, Jakarta',
-                'transportation_cost' => 0,
-                'is_customer' => false,
-                'is_supplier' => false,
-                'is_employee' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 3,
                 'company_id' => 1,
                 'code' => 'SUP-001',
                 'name' => 'PT. Supplier Contoh',
@@ -60,7 +29,6 @@ class ContactSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'id' => 4,
                 'company_id' => 1,
                 'code' => 'CUST-001',
                 'name' => 'PT. Customer Contoh',
@@ -75,7 +43,6 @@ class ContactSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'id' => 5,
                 'company_id' => 1,
                 'code' => 'CUST-002',
                 'name' => 'PT. Customer Contoh 2',
