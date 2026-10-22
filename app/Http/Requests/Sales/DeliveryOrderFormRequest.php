@@ -43,6 +43,7 @@ class DeliveryOrderFormRequest extends FormRequest
     {
         return [
             'reference_number' => 'nullable|string|max:50',
+            'warehouse_id' => 'required|exists:warehouses,id',
             'delivery_date' => 'required|date',
             'status' => 'required|in:' . DeliveryOrderStatus::DRAFT->value . ',' . DeliveryOrderStatus::FINISHED->value,
             'note' => 'nullable|string|max:1000',
@@ -53,6 +54,7 @@ class DeliveryOrderFormRequest extends FormRequest
     {
         return [
             'reference_number' => 'nullable|string|max:50',
+            'warehouse_id' => 'required|exists:warehouses,id',
             'delivery_date' => 'required|date',
             'status' => 'required|in:' . DeliveryOrderStatus::DRAFT->value . ',' . DeliveryOrderStatus::FINISHED->value,
             'note' => 'nullable|string|max:1000',

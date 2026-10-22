@@ -6,6 +6,7 @@ use App\Enums\DeliveryOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\DeliveryOrderFormRequest;
 use App\Services\Master\AccountService;
+use App\Services\Master\WarehouseService;
 use App\Services\Sales\DeliveryOrderService;
 use App\Services\Sales\SalesOrderService;
 use Illuminate\Http\Request;
@@ -65,7 +66,7 @@ class DeliveryOrderController extends Controller
         }
     }
 
-    public function edit(DeliveryOrderService $deliveryOrderService, SalesOrderService $salesOrderService, int $id)
+    public function edit(DeliveryOrderService $deliveryOrderService, SalesOrderService $salesOrderService, WarehouseService $warehouseService, int $id)
     {
         $deliveryOrder = $deliveryOrderService->fetchDeliveryOrderByID($id);
         if (!$deliveryOrder) {
@@ -76,14 +77,15 @@ class DeliveryOrderController extends Controller
         $companyID = config('context.selected_company_id');
 
         $remainingSOItems = $salesOrderService->fetchSOItemsForDeliveryOrder($deliveryOrder->sales_order_id);
+        // Batches from every warehouse: the form filters them by the chosen "Gudang Asal"
         $availableBatches = $this->inventoryService->fetchInventoryBatches(
             companyID: $deliveryOrder->company_id,
-            warehouseID: $deliveryOrder->warehouse_id,
             productIDs: $remainingSOItems->pluck('product_id')->unique()->values()->all(),
             onlyAvailable: true
         )->map(function ($batch) {
             return [
                 'id' => $batch['id'],
+                'warehouse_id' => $batch['warehouse_id'],
                 'product_id' => $batch['product_id'],
                 'batch_number' => $batch['batch_number'],
                 'available_quantity' => $batch['available_quantity'],
@@ -100,6 +102,7 @@ class DeliveryOrderController extends Controller
             'deliveryOrder' => $deliveryOrder,
             'remainingSOItems' => $remainingSOItems,
             'availableBatches' => $availableBatches,
+            'warehouses' => $warehouseService->fetchWarehouseData(),
             'accounts' => $this->accountService->fetchAccountData(companyID: $companyID),
         ];
         return view('sales.delivery-order.edit', $data);
