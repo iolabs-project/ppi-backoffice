@@ -14,6 +14,7 @@ use App\Models\DeliveryOrderItem;
 use App\Models\DeliveryOrderItemBatch;
 use App\Models\JournalEntry;
 use App\Models\SalesOrderItem;
+use App\Models\Warehouse;
 use App\Services\ExpenseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -109,7 +110,8 @@ class DeliveryOrderService
             'company_id' => $salesOrder->company_id,
             'sales_order_id' => $salesOrder->id,
             'customer_id' => $salesOrder->customer_id,
-            'warehouse_id' => $salesOrder->warehouse_id,
+            // The SO may leave the warehouse open; the DO form lets the user pick the actual source
+            'warehouse_id' => $salesOrder->warehouse_id ?? Warehouse::where('company_id', $salesOrder->company_id)->whereNull('deleted_at')->value('id'),
             'number' => $this->generateDONumber(),
             'delivery_date' => now(),
             'subtotal' => 0,
@@ -167,6 +169,7 @@ class DeliveryOrderService
             $totalAmount = $subtotal + $costsCollection->sum(fn($cost) => (float) ($cost['amount'] ?? 0));
 
             $header->update([
+                'warehouse_id' => $requestCollection->get('warehouse_id', $header->warehouse_id),
                 'reference_number' => $requestCollection->get('reference_number'),
                 'delivery_date' => $requestCollection->get('delivery_date'),
                 'status' => $requestCollection->get('status'),

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
+use App\Enums\PaymentTerm;
 use App\Enums\ExpenseStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -38,7 +40,7 @@ class ExpenseFormRequest extends FormRequest
             'contact_id' => 'nullable|exists:contacts,id',
             'expense_date' => 'required|date',
             'due_date' => 'nullable|date|after_or_equal:expense_date',
-            'payment_terms' => 'nullable|in:net_7,net_14,net_30,net_45',
+            'payment_terms' => ['nullable', Rule::enum(PaymentTerm::class)],
             'items' => 'nullable|array',
             'items.*.account_id' => 'required_with:items|exists:chart_of_accounts,id',
             'items.*.amount' => 'required_with:items|numeric|min:0.00',
@@ -54,7 +56,7 @@ class ExpenseFormRequest extends FormRequest
             'contact_id' => 'required|exists:contacts,id',
                     'expense_date' => 'required|date',
                     'due_date' => 'nullable|date|after_or_equal:expense_date',
-                    'payment_terms' => 'nullable|in:net_7,net_14,net_30,net_45',
+                    'payment_terms' => ['nullable', Rule::enum(PaymentTerm::class)],
                     'items' => 'required|array|min:1',
                     'items.*.account_id' => 'required_with:items|exists:chart_of_accounts,id',
                     'items.*.amount' => 'required_with:items|numeric|min:0.00',
@@ -73,7 +75,7 @@ class ExpenseFormRequest extends FormRequest
             'expense_date.date' => 'Tanggal biaya tidak valid.',
             'due_date.date' => 'Tanggal jatuh tempo tidak valid.',
             'due_date.after_or_equal' => 'Tanggal jatuh tempo harus sama atau setelah tanggal biaya.',
-            'payment_terms.in' => 'Syarat pembayaran tidak valid.',
+            'payment_terms.enum' => 'Syarat pembayaran tidak valid.',
             'items.required' => 'Item biaya wajib diisi.',
             'items.array' => 'Item biaya harus berupa array.',
             'items.*.account_id.required_with' => 'Akun untuk item biaya wajib diisi.',

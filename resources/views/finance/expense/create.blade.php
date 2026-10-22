@@ -82,7 +82,8 @@
                         const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
                         const expenseDate = new Date(this.formData.expense_date);
                         const dueDate = new Date(expenseDate.getTime() + days * 24 * 60 * 60 * 1000);
-                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                        // Manual term (days = null): keep the due date picked by the user
+                        if (this.paymentTermSelected.days !== null) this.formData.due_date = dueDate.toISOString().split('T')[0];
                     } else {
                         this.formData.payment_terms = null;
                         this.formData.due_date = null;
@@ -93,7 +94,8 @@
                         const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
                         const expenseDate = new Date(this.formData.expense_date);
                         const dueDate = new Date(expenseDate.getTime() + days * 24 * 60 * 60 * 1000);
-                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                        // Manual term (days = null): keep the due date picked by the user
+                        if (this.paymentTermSelected.days !== null) this.formData.due_date = dueDate.toISOString().split('T')[0];
                     }
                 },
 

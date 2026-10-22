@@ -151,9 +151,9 @@ class ContactService
             ]);
         }
 
-        Contact::create([
+        return Contact::create([
             'company_id' => config('context.selected_company_id'),
-            'code' => $request->code,
+            'code' => $request->filled('code') ? $request->code : $this->generateContactCode($request),
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
@@ -183,7 +183,7 @@ class ContactService
             ]);
         }
 
-        if ($contact->code !== $request->code) {
+        if ($request->filled('code') && $contact->code !== $request->code) {
             $checkExistingCode = Contact::where('company_id', config('context.selected_company_id'))
                 ->where('code', $request->code)
                 ->exists();
@@ -196,7 +196,7 @@ class ContactService
         }
 
         $contact->update([
-            'code' => $request->code,
+            'code' => $request->filled('code') ? $request->code : $contact->code,
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
@@ -212,6 +212,25 @@ class ContactService
             'is_employee' => $request->is_employee ?? false,
             'transportation_cost' => $request->input('transportation_cost', 0),
         ]);
+    }
+
+    // Next "CUST-001" / "SUP-001" / "EMP-001" style code, prefixed by the contact's first type
+    public function generateContactCode(Request $request): string
+    {
+        $prefix = match (true) {
+            (bool) $request->is_customer => 'CUST',
+            (bool) $request->is_supplier => 'SUP',
+            (bool) $request->is_employee => 'EMP',
+            default => 'CON',
+        };
+
+        $last = Contact::where('company_id', config('context.selected_company_id'))
+            ->where('code', 'like', $prefix . '-%')
+            ->pluck('code')
+            ->map(fn($code) => (int) substr($code, strlen($prefix) + 1))
+            ->max() ?? 0;
+
+        return $prefix . '-' . str_pad($last + 1, 3, '0', STR_PAD_LEFT);
     }
 
     public function toggleContactStatus(int $id)

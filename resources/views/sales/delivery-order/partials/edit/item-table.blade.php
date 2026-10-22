@@ -34,7 +34,8 @@
         },
 
         selectProduct(item, soItem) {
-            if (this.formData.details.some(d => d.sales_order_item_id === soItem.id)) {
+            // Re-picking the row's own product just re-runs the batch allocation
+            if (this.formData.details.some(d => d !== item && d.sales_order_item_id === soItem.id)) {
                 Toast.fire({
                     icon: 'error',
                     title: 'Produk tersebut sudah dipilih sebelumnya'
@@ -50,6 +51,11 @@
             item.quantity_ordered = soItem.quantity;
             item.quantity_previously_delivered = soItem.shipped_quantity;
             item.remaining_quantity = soItem.remaining_quantity;
+            this.autoAllocate(item);
+        },
+
+        // Fill the item's batches from the source warehouse's available stock, oldest batch first
+        autoAllocate(item) {
             item.batches = [];
 
             let remaining = this.n(item.remaining_quantity);
@@ -96,7 +102,7 @@
             }
 
             return availableBatches
-                .filter(b => b.product_id === item.product_id)
+                .filter(b => b.product_id === item.product_id && b.warehouse_id === this.formData.warehouse_id)
                 .map(b => {
                     const usedElsewhere = this.allocatedElsewhere(b.id, item);
                     const alreadyInItem = item.batches
@@ -314,7 +320,7 @@
                         <template x-if="availableBatchesForItem(activeItem()).length === 0">
                             <tr>
                                 <td colspan="3" style="text-align:center; color:var(--ink-4); padding:16px;">
-                                    Tidak ada batch tersedia untuk produk ini di gudang tersebut.
+                                    Tidak ada batch tersedia untuk produk ini di gudang tersebut. Coba ganti Gudang Asal.
                                 </td>
                             </tr>
                         </template>

@@ -24,7 +24,7 @@ test('sidebar only shows modules allowed by the user permissions', function () {
 
     expect($html)
         ->toContain('title="Penjualan"')
-        ->toContain('Sales Order')
+        ->toContain('Pemesanan Penjualan')
         ->not->toContain('title="Pembelian"')
         ->not->toContain('title="Finance"')
         ->not->toContain('title="Master Data"')

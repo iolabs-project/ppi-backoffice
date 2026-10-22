@@ -2,7 +2,6 @@
 @section('content')
     <script>
         const deliveryOrder = @json($deliveryOrder);
-        console.log(deliveryOrder);
         const remainingSOItems = @json($remainingSOItems);
         const availableBatches = @json($availableBatches);
 
@@ -15,8 +14,12 @@
                     quantity: null,
                 },
 
+                warehouses: @json($warehouses),
+                warehouseSelected: null,
+
                 formData: {
                     id: deliveryOrder.id || null,
+                    warehouse_id: deliveryOrder.warehouse_id,
                     reference_number: deliveryOrder.reference_number || null,
                     delivery_date: deliveryOrder.delivery_date ? deliveryOrder.delivery_date.substring(0, 10) : null,
                     note: deliveryOrder.note || null,
@@ -67,6 +70,24 @@
 
                 init() {
                     Object.assign(this, window.deliveryOrderTable);
+                    this.warehouseSelected = this.warehouses.find(g => g.id === this.formData.warehouse_id) || null;
+                },
+
+                // Available stock of this DO's products in a warehouse, to help pick where to ship from
+                warehouseStock(warehouseID) {
+                    return availableBatches
+                        .filter(b => b.warehouse_id === warehouseID)
+                        .reduce((sum, b) => sum + this.n(b.available_quantity), 0);
+                },
+
+                selectWarehouse(warehouse) {
+                    if (warehouse.id === this.formData.warehouse_id) {
+                        return;
+                    }
+                    this.warehouseSelected = warehouse;
+                    this.formData.warehouse_id = warehouse.id;
+                    // Batches belong to the old warehouse: re-allocate from the new one
+                    this.formData.details.filter(d => d.product_id).forEach(d => this.autoAllocate(d));
                 },
 
                 openBatchModal(index) {
@@ -236,12 +257,21 @@
                         <span class="auto-tag">Auto</span>
                     </div>
                 </x-misc.field>
-                <x-misc.field label="Gudang Asal" :required="true">
-                    <div class="input input--readonly" style="display:flex; align-items:center; gap:8px;">
-                        <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
-                        <span style="flex:1;">{{ $deliveryOrder->warehouse->name }}</span>
-                        <span class="auto-tag">Auto</span>
-                    </div>
+                <x-misc.field label="Gudang Asal" name="warehouse_id" :required="true">
+                    <x-misc.select display="warehouseSelected ? warehouseSelected.name : 'Pilih Gudang'"
+                        hasValue="warehouseSelected" placeholder="Cari gudang...">
+                        <template x-for="g in warehouses.filter(g => !q || g.name.toLowerCase().includes(q.toLowerCase()))"
+                            :key="g.id">
+                            <div class="dropdown-item" @click="selectWarehouse(g); open=false; q=''">
+                                <x-misc.icon name="building" :size="14" stroke="var(--ink-4)" />
+                                <span style="flex:1;" x-text="g.name"></span>
+                                <span class="dropdown-item__sub mono" x-text="'stok ' + m(warehouseStock(g.id))"></span>
+                            </div>
+                        </template>
+                        <template x-if="!warehouses.some(g => !q || g.name.toLowerCase().includes(q.toLowerCase()))">
+                            <div class="dropdown-empty">Tidak ditemukan</div>
+                        </template>
+                    </x-misc.select>
                 </x-misc.field>
                 <x-misc.field label="No. Pengiriman">
                     <div class="input mono input--readonly" style="display:flex; align-items:center;">

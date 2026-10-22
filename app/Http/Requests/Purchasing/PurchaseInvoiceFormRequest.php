@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Purchasing;
 
+use Illuminate\Validation\Rule;
+use App\Enums\PaymentTerm;
 use Illuminate\Contracts\Validation\ValidationRule;
 use App\Enums\PurchaseInvoiceStatus;
 use Illuminate\Foundation\Http\FormRequest;
@@ -51,7 +53,7 @@ class PurchaseInvoiceFormRequest extends FormRequest
             'invoice_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:invoice_date',
             'status' => 'required|in:open',
-            'payment_terms' => 'required|in:net_7,net_14,net_30,net_45',
+            'payment_terms' => ['required', Rule::enum(PaymentTerm::class)],
             'discount_amount' => 'nullable|numeric|min:0',
             'down_payment_amount' => 'nullable|numeric|min:0',
             'subtotal' => 'nullable|numeric|min:0',

@@ -79,6 +79,13 @@
                     this.formData.details.splice(index, 1);
                     this.recalculate();
                 },
+                async addCustomer(name) {
+                    const customer = await ContactUtils.quickAdd('customer', name);
+                    if (customer) {
+                        this.customers.push(customer);
+                        this.selectCustomer(customer);
+                    }
+                },
                 selectCustomer(customer) {
                     // console.log('Selected customer:', customer);
                     if (this.customerSelected && this.customerSelected.id === customer.id) {
@@ -184,7 +191,8 @@
                 },
                 handleWarehouseChange() {
                     if (this.warehouseSelected) {
-                        if (this.warehouseSelected.id !== this.formData.warehouse_id) {
+                        // Rows picked without a warehouse stay; switching between warehouses resets them
+                        if (this.formData.warehouse_id && this.warehouseSelected.id !== this.formData.warehouse_id) {
                             this.formData.details = [{
                                 product_id: null,
                                 name: null,
@@ -230,7 +238,8 @@
                         const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
                         const orderDate = new Date(this.formData.order_date);
                         const dueDate = new Date(orderDate.getTime() + days * 24 * 60 * 60 * 1000);
-                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                        // Manual term (days = null): keep the due date picked by the user
+                        if (this.paymentTermSelected.days !== null) this.formData.due_date = dueDate.toISOString().split('T')[0];
                     } else {
                         this.formData.payment_terms = null;
                         this.formData.due_date = null;
@@ -241,7 +250,8 @@
                         const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
                         const orderDate = new Date(this.formData.order_date);
                         const dueDate = new Date(orderDate.getTime() + days * 24 * 60 * 60 * 1000);
-                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                        // Manual term (days = null): keep the due date picked by the user
+                        if (this.paymentTermSelected.days !== null) this.formData.due_date = dueDate.toISOString().split('T')[0];
                     }
                 },
                 calculateDetailTotal(index) {
@@ -267,11 +277,25 @@
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
                 },
 
+                // `products` has one row per product per warehouse (with that warehouse's unit cost)
+                productsForWarehouse() {
+                    if (this.formData.warehouse_id) {
+                        return products.filter(p => p.warehouse_id === this.formData.warehouse_id);
+                    }
+                    // No warehouse yet (it is chosen per delivery): one row per product, at its highest unit cost
+                    // so the margin estimate stays conservative
+                    const byId = {};
+                    products.forEach(p => {
+                        if (!byId[p.id] || Number(p.average_unit_cost) > Number(byId[p.id].average_unit_cost)) {
+                            byId[p.id] = p;
+                        }
+                    });
+                    return Object.values(byId);
+                },
+
                 availableProducts(q) {
-                    let list = products.filter(p =>
-                        // If warehouse selected, only show products from that warehouse
-                        (this.formData.warehouse_id && p.warehouse_id === this.formData.warehouse_id) &&
-                        // Don't show products already added to details
+                    // Don't show products already added to details
+                    let list = this.productsForWarehouse().filter(p =>
                         !this.formData.details.some(d => d.product_id === p.id)
                     );
 
@@ -398,6 +422,13 @@
                         <template x-if="!customers.some(c => !q || c.name.toLowerCase().includes(q.toLowerCase()))">
                             <div class="dropdown-empty">Tidak ditemukan</div>
                         </template>
+                        @can('master.contacts.create')
+                            <div class="dropdown-item" style="color:var(--accent); font-weight:600;"
+                                @click="open=false; addCustomer(q); q=''">
+                                <x-misc.icon name="plus" :size="13" />
+                                <span x-text="q ? 'Tambah customer &quot;' + q + '&quot;' : 'Tambah customer baru'"></span>
+                            </div>
+                        @endcan
                     </x-misc.select>
                 </x-misc.field>
 
@@ -420,9 +451,13 @@
                 </x-misc.field>
 
                 {{-- Gudang Dropdown --}}
-                <x-misc.field label="Gudang" name="warehouse_id" :required="true">
-                    <x-misc.select display="warehouseSelected ? warehouseSelected.name : 'Pilih Gudang'"
+                <x-misc.field label="Gudang" name="warehouse_id">
+                    <x-misc.select display="warehouseSelected ? warehouseSelected.name : 'Semua Gudang'"
                         hasValue="warehouseSelected" placeholder="Cari gudang...">
+                        <div class="dropdown-item" x-show="!q"
+                            @click="warehouseSelected=null; handleWarehouseChange(); open=false; q=''">
+                            <span>Semua Gudang (pilih saat pengiriman)</span>
+                        </div>
                         <template x-for="g in warehouses.filter(g => !q || g.name.toLowerCase().includes(q.toLowerCase()))"
                             :key="g.id">
                             <div class="dropdown-item"

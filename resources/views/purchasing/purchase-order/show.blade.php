@@ -39,6 +39,12 @@
                     <button @click="handleCreatePurchaseInvoice({{ $purchaseOrder->id }})" class="btn btn-primary">
                         <x-misc.icon name="wallet" :size="14" />Buat Tagihan
                     </button>
+                @elseif (auth()->user()->can('purchasing.invoices.create') && $purchaseOrder->status === \App\Enums\PurchaseOrderStatus::OPEN->value)
+                    {{-- Bills are made from received goods: explain why the button is not available yet --}}
+                    <button class="btn btn-primary" disabled style="opacity:0.5; cursor:not-allowed;"
+                        title="Tagihan dibuat dari barang yang sudah diterima. Buat Penerimaan terlebih dahulu.">
+                        <x-misc.icon name="wallet" :size="14" />Buat Tagihan
+                    </button>
                 @endif
 
                 <a href="{{ route('purchasings.purchase_orders.print', $purchaseOrder->id) }}" target="_blank" rel="noopener" class="btn btn-ghost">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Purchasing;
 
+use App\Enums\PaymentTerm;
 use Illuminate\Contracts\Validation\ValidationRule;
 use App\Enums\PurchaseOrderStatus;
 use Illuminate\Foundation\Http\FormRequest;
@@ -68,7 +69,7 @@ class PurchaseOrderFormRequest extends FormRequest
             'reference_number' => 'nullable|string|max:50',
             'order_date' => 'required|date',
             'due_date' => 'nullable|date',
-            'payment_terms' => 'required|in:net_7,net_14,net_30,net_45',
+            'payment_terms' => ['required', Rule::enum(PaymentTerm::class)],
             'discount_percentage' => 'nullable|numeric|min:0',
             'discount_amount' => 'nullable|numeric|min:0',
             'tax_percentage' => 'nullable|numeric|min:0',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Sales;
 
+use App\Enums\PaymentTerm;
 use App\Enums\SalesOrderStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
@@ -58,7 +59,8 @@ class SalesOrderFormRequest extends FormRequest
     {
         return [
             'customer_id' => 'required|exists:contacts,id',
-            'warehouse_id' => 'required|exists:warehouses,id',
+            // Optional: goods may ship from any warehouse, chosen per delivery order
+            'warehouse_id' => 'nullable|exists:warehouses,id',
             'sales_person_id' => 'nullable|exists:contacts,id',
             'number' => [
                 'required',
@@ -69,7 +71,7 @@ class SalesOrderFormRequest extends FormRequest
             'reference_number' => 'nullable|string|max:50',
             'order_date' => 'required|date',
             'due_date' => 'nullable|date',
-            'payment_terms' => 'required|in:net_7,net_14,net_30,net_45',
+            'payment_terms' => ['required', Rule::enum(PaymentTerm::class)],
             'discount_percentage' => 'nullable|numeric|between:0,100',
             'tax_percentage' => 'nullable|numeric|between:0,100',
             'down_payment_amount' => 'nullable|numeric|min:0',

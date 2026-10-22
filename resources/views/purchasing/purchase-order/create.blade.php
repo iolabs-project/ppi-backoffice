@@ -66,7 +66,8 @@
                         const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
                         const orderDate = new Date(this.formData.order_date);
                         const dueDate = new Date(orderDate.getTime() + days * 24 * 60 * 60 * 1000);
-                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                        // Manual term (days = null): keep the due date picked by the user
+                        if (this.paymentTermSelected.days !== null) this.formData.due_date = dueDate.toISOString().split('T')[0];
                     } else {
                         this.formData.payment_terms = null;
                         this.formData.due_date = null;
@@ -77,7 +78,8 @@
                         const days = NumberUtils.parseMaskIntoNumeric(this.paymentTermSelected.days);
                         const orderDate = new Date(this.formData.order_date);
                         const dueDate = new Date(orderDate.getTime() + days * 24 * 60 * 60 * 1000);
-                        this.formData.due_date = dueDate.toISOString().split('T')[0];
+                        // Manual term (days = null): keep the due date picked by the user
+                        if (this.paymentTermSelected.days !== null) this.formData.due_date = dueDate.toISOString().split('T')[0];
                     }
                 },
 
@@ -164,6 +166,14 @@
 
                         d.unit_cost = Math.round(d.unit_cost);
                     });
+                },
+                async addSupplier(name) {
+                    const supplier = await ContactUtils.quickAdd('supplier', name);
+                    if (supplier) {
+                        this.suppliers.push(supplier);
+                        this.supplierSelected = supplier;
+                        this.formData.supplier_id = supplier.id;
+                    }
                 },
                 initials(name) {
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
@@ -325,6 +335,13 @@
                         <template x-if="!suppliers.some(s => !q || s.name.toLowerCase().includes(q.toLowerCase()))">
                             <div class="dropdown-empty">Tidak ditemukan</div>
                         </template>
+                        @can('master.contacts.create')
+                            <div class="dropdown-item" style="color:var(--accent); font-weight:600;"
+                                @click="open=false; addSupplier(q); q=''">
+                                <x-misc.icon name="plus" :size="13" />
+                                <span x-text="q ? 'Tambah supplier &quot;' + q + '&quot;' : 'Tambah supplier baru'"></span>
+                            </div>
+                        @endcan
                     </x-misc.select>
                 </x-misc.field>
 

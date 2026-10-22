@@ -6,6 +6,8 @@ use App\Enums\PaymentTerm;
 use App\Services\JournalService;
 use App\Enums\AccountSettingEnum;
 use App\Enums\SalesInvoiceStatus;
+use App\Enums\DeliveryOrderStatus;
+use App\Models\DeliveryOrder;
 use App\Models\AccountSetting;
 use App\Models\Company;
 use App\Models\JournalEntry;
@@ -105,11 +107,15 @@ class SalesInvoiceService
                 'sales_order_id' => $salesOrder->id,
                 'customer_id' => $salesOrder->customer_id,
                 'sales_person_id' => $salesOrder->sales_person_id,
-                'warehouse_id' => $salesOrder->warehouse_id,
+                // SO without a warehouse: use the one the goods actually shipped from (invoicing requires a finished DO)
+                'warehouse_id' => $salesOrder->warehouse_id ?? DeliveryOrder::where('sales_order_id', $salesOrder->id)
+                    ->where('status', DeliveryOrderStatus::FINISHED->value)
+                    ->latest('id')
+                    ->value('warehouse_id'),
                 'number' => $this->generateSINumber(),
                 'invoice_date' => now(),
                 'payment_terms' => $salesOrder->payment_terms,
-                'due_date' => now()->addDays(PaymentTerm::day($salesOrder->payment_terms)),
+                'due_date' => PaymentTerm::dueDate($salesOrder->payment_terms, now(), $salesOrder->due_date),
                 'status' => SalesInvoiceStatus::DRAFT->value,
                 'subtotal' => 0,
                 'discount_percentage' => $salesOrder->discount_percentage,

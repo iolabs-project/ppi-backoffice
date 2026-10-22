@@ -239,14 +239,16 @@ class ProductService
             ]);
         }
 
+        $batchPrefix = $request->filled('batch_prefix') ? $request->batch_prefix : $this->generateBatchPrefix($request->name);
+
         Product::create([
             'company_id' => config('context.selected_company_id'),
             'category_id' => $request->category_id,
             'unit_id' => $request->unit_id,
-            'code' => $request->code,
+            'code' => $request->filled('code') ? $request->code : $this->generateProductCode($batchPrefix),
             'name' => $request->name,
             'description' => $request->description,
-            'batch_prefix' => $request->batch_prefix,
+            'batch_prefix' => $batchPrefix,
         ]);
     }
 
@@ -254,7 +256,7 @@ class ProductService
     {
         $product = Product::findOrFail($id);
 
-        $checkExistingCode = Product::where('company_id', config('context.selected_company_id'))
+        $checkExistingCode = $request->filled('code') && Product::where('company_id', config('context.selected_company_id'))
             ->where('code', $request->code)
             ->where('id', '!=', $product->id)
             ->exists();
@@ -268,10 +270,10 @@ class ProductService
         $product->update([
             'category_id' => $request->category_id,
             'unit_id' => $request->unit_id,
-            'code' => $request->code,
+            'code' => $request->filled('code') ? $request->code : $product->code,
             'name' => $request->name,
             'description' => $request->description,
-            'batch_prefix' => $request->batch_prefix,
+            'batch_prefix' => $request->filled('batch_prefix') ? $request->batch_prefix : $product->batch_prefix,
         ]);
     }
 
@@ -328,6 +330,27 @@ class ProductService
             ->get();
 
         return $data;
+    }
+
+    // First letter + following consonants of the name, e.g. "Katul" → "KTL", "Gula" → "GLU" (mirrored in product-modal.blade.php)
+    public function generateBatchPrefix(string $name): string
+    {
+        $letters = preg_replace('/[^A-Z]/', '', strtoupper($name));
+        $rest = substr($letters, 1);
+
+        return substr(substr($letters, 0, 1) . preg_replace('/[AEIOU]/', '', $rest) . $rest, 0, 3) ?: 'PRD';
+    }
+
+    // Next "{PREFIX}-001" style code for the selected company
+    public function generateProductCode(string $prefix): string
+    {
+        $last = Product::where('company_id', config('context.selected_company_id'))
+            ->where('code', 'like', $prefix . '-%')
+            ->pluck('code')
+            ->map(fn($code) => (int) substr($code, strlen($prefix) + 1))
+            ->max() ?? 0;
+
+        return $prefix . '-' . str_pad($last + 1, 3, '0', STR_PAD_LEFT);
     }
 
     public function generateBatchNumber(int $productID, int $companyID): string
