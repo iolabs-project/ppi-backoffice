@@ -113,7 +113,7 @@ class PurchaseInvoiceService
             'number' => $this->generatePurchaseInvoiceNumber(),
             'invoice_date' => now(),
             'payment_terms' => $purchaseOrder->payment_terms,
-            'due_date' => now()->addDays(PaymentTerm::day($purchaseOrder->payment_terms)),
+            'due_date' => PaymentTerm::dueDate($purchaseOrder->payment_terms, now(), $purchaseOrder->due_date),
             'status' => PurchaseInvoiceStatus::DRAFT->value,
             'subtotal' => 0,
             'discount_percentage' => $purchaseOrder->discount_percentage,
