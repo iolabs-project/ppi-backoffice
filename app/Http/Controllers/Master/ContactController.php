@@ -36,10 +36,11 @@ class ContactController extends Controller
     public function store(ContactFormRequest $request)
     {
         try {
-            $this->contactService->storeContact($request);
+            $contact = $this->contactService->storeContact($request);
 
             return response()->json([
                 'message' => 'Kontak berhasil dibuat',
+                'data' => $contact->only(['id', 'code', 'name', 'transportation_cost']),
             ]);
         } catch (\Exception $e) {
             Log::error('Error ContactController@store: ' . $e->getMessage(), [

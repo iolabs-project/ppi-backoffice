@@ -25,7 +25,7 @@ class ContactFormRequest extends FormRequest
     {
          return [
             'code' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('contacts', 'code')

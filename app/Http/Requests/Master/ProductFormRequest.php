@@ -25,7 +25,7 @@ class ProductFormRequest extends FormRequest
     {
         return [
             'code' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('products', 'code')
@@ -38,7 +38,7 @@ class ProductFormRequest extends FormRequest
                 'max:255',
             ],
             'batch_prefix' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
             ],
