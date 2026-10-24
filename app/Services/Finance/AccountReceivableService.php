@@ -6,7 +6,7 @@ use App\Enums\AccountSettingEnum;
 use App\Enums\CashTransactionStatusEnum;
 use App\Enums\CashTransactionTypeEnum;
 use App\Enums\ReceivablePaymentReferenceTypeEnum;
-use App\Models\Company;
+use App\Services\NumberingService;
 use App\Services\JournalService;
 use App\Services\Finance\CashService;
 use App\Enums\SalesInvoiceStatus;
@@ -29,16 +29,7 @@ class AccountReceivableService
     }
     public function generateARNumber()
     {
-        $prefix = 'AR';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = ReceivablePayment::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('account_receivable', ReceivablePayment::class);
     }
 
     public function fetchInvoiceByID(int $id, string $type)
@@ -142,17 +133,22 @@ class AccountReceivableService
 
     public function storePayment(Request $request, int $id)
     {
-        if ($request->reference_type === ReceivablePaymentReferenceTypeEnum::SALES_INVOICE->value) {
-            $invoice = SalesInvoice::findOrFail($id);
-        } else {
+        if ($request->reference_type !== ReceivablePaymentReferenceTypeEnum::SALES_INVOICE->value) {
             throw ValidationException::withMessages(['error' => 'Tipe referensi tidak valid.']);
         }
 
-        if ($request->amount > $invoice->remaining_amount) {
-            throw ValidationException::withMessages(['amount' => 'Jumlah pembayaran melebihi sisa piutang.']);
-        }
+        DB::transaction(function () use ($request, $id) {
+            // Lock the invoice so two submits can't both pass the remaining-amount check
+            $invoice = SalesInvoice::lockForUpdate()->findOrFail($id);
 
-        DB::transaction(function () use ($request, $invoice) {
+            if (!in_array($invoice->status, [SalesInvoiceStatus::OPEN->value, SalesInvoiceStatus::PARTIAL->value], true)) {
+                throw ValidationException::withMessages(['amount' => 'Pembayaran hanya dapat dicatat untuk tagihan yang berstatus Open atau Partial.']);
+            }
+
+            if ($request->amount > $invoice->remaining_amount) {
+                throw ValidationException::withMessages(['amount' => 'Jumlah pembayaran melebihi sisa piutang.']);
+            }
+
             $payment = ReceivablePayment::create([
                 'company_id' => $invoice->company_id,
                 'reference_id' => $invoice->id,

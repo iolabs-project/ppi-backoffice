@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Services\ErpDataService;
 use App\Services\InventoryService;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class ProductController extends Controller
 {
@@ -26,6 +28,8 @@ class ProductController extends Controller
             $data = $this->productService->fetchProductTableData($request);
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Master/ProductController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -44,6 +48,8 @@ class ProductController extends Controller
             $data = $this->productService->fetchProductTransactionTableData(request: $request, companyID: config('context.selected_company_id'));
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Master/ProductController@transactionDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -63,6 +69,8 @@ class ProductController extends Controller
             return response()->json([
                 'message' => 'Produk berhasil dibuat',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ProductController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -102,6 +110,8 @@ class ProductController extends Controller
             return response()->json([
                 'message' => 'Produk berhasil diperbarui',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ProductController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -122,6 +132,8 @@ class ProductController extends Controller
             return response()->json([
                 'message' => 'Status produk berhasil diperbarui',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ProductController@status: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -141,6 +153,8 @@ class ProductController extends Controller
             return response()->json([
                 'data' => $data,
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ProductController@options: ' . $e->getMessage(), [
                 'exception' => $e,

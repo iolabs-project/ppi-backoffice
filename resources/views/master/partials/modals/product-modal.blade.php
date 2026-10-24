@@ -2,9 +2,10 @@
     <div class="form-body">
         <div class="form-grid-2">
             <x-misc.field label="Kode Produk" name="code">
-                <input class="input mono" x-model="form.code"
-                    :placeholder="(form.batch_prefix || 'PREFIX') + '-001 (otomatis)'" />
-                <span class="field__hint">Kosongkan untuk dibuat otomatis.</span>
+                <input class="input mono" x-model="form.code" :readonly="form.has_batches"
+                    placeholder="Otomatis (cth. {{ config('numbering.master.prefixes.product') }}-001)" />
+                <span class="field__hint"
+                    x-text="form.has_batches ? 'Terkunci karena produk sudah memiliki batch.' : 'Kosongkan untuk dibuat otomatis.'"></span>
             </x-misc.field>
             <x-misc.field label="Kategori" name="category_id" :required="true">
                 <select class="input" x-model="form.category_id">
@@ -16,9 +17,7 @@
             </x-misc.field>
         </div>
         <x-misc.field label="Nama Produk" name="name" :required="true">
-            {{-- Same rule as ProductService::generateBatchPrefix: first letter + following consonants --}}
-            <input class="input" x-model="form.name" placeholder="Nama lengkap produk"
-                x-on:input="if (modal === 'add_product') { const l = (form.name || '').toUpperCase().replace(/[^A-Z]/g, ''), r = l.slice(1); form.batch_prefix = (l.slice(0, 1) + r.replace(/[AEIOU]/g, '') + r).slice(0, 3); }" />
+            <input class="input" x-model="form.name" placeholder="Nama lengkap produk" />
         </x-misc.field>
         <x-misc.field label="Deskripsi" name="description">
             <textarea class="input" rows="2" x-model="form.description" placeholder="Deskripsi singkat..."></textarea>
@@ -32,9 +31,10 @@
                     </template>
                 </select>
             </x-misc.field>
-            <x-misc.field label="Prefix Batch" name="batch_prefix">
-                <input class="input mono" x-model="form.batch_prefix" placeholder="Otomatis dari nama" />
-                <span class="field__hint">Format nomor batch: <span x-text="(form.batch_prefix || 'PREFIX') + '-0001'"></span></span>
+            <x-misc.field label="Format Nomor Batch" name="batch_format">
+                <div class="input input--readonly mono" style="display:flex; align-items:center;"
+                    x-text="(form.code || '{{ config('numbering.master.prefixes.product') }}-XXX') + '-YYMMDD-{{ str_pad('1', config('numbering.batch.padding'), '0', STR_PAD_LEFT) }}'"></div>
+                <span class="field__hint">Dibuat otomatis saat penerimaan barang.</span>
             </x-misc.field>
         </div>
     </div>

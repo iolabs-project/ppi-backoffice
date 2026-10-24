@@ -3,15 +3,18 @@
 namespace App\Services\Purchasing;
 
 use App\Enums\AccountSettingEnum;
+use App\Services\NumberingService;
 use App\Services\Finance\CashService;
 use App\Enums\CashTransactionStatusEnum;
 use App\Enums\CashTransactionTypeEnum;
 use App\Enums\GoodsReceiptStatus;
 use App\Services\JournalService;
+use App\Enums\PurchaseInvoiceStatus;
 use App\Enums\PurchaseOrderStatus;
 use App\Models\AccountSetting;
-use App\Models\Company;
+use App\Models\CashTransaction;
 use App\Models\JournalEntry;
+use App\Models\PurchaseInvoice;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderCost;
 use App\Models\PurchaseOrderItem;
@@ -19,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class PurchaseOrderService
 {
@@ -32,16 +36,7 @@ class PurchaseOrderService
     // Purchase Order
     public function generatePONumber(): string
     {
-        $prefix = 'PO';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = PurchaseOrder::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('purchase_order', PurchaseOrder::class);
     }
 
     public function fetchPurchaseOrderTableData(Request $request)
@@ -314,11 +309,53 @@ class PurchaseOrderService
         $purchaseOrder = PurchaseOrder::findOrFail($id);
         abort_unless_can_become($purchaseOrder->status, $status, 'Purchase Order');
 
-        DB::transaction(function () use ($purchaseOrder, $status) {
-            if ($status === PurchaseOrderStatus::OPEN->value) {
-                if ($purchaseOrder->down_payment_amount > 0 && $purchaseOrder->down_payment_account_id) {
-                    $this->reversePOJournal($purchaseOrder);
-                }
+        $wasOpen = $purchaseOrder->status === PurchaseOrderStatus::OPEN->value;
+        $hasDownPayment = $purchaseOrder->down_payment_amount > 0 && $purchaseOrder->down_payment_account_id;
+
+        // Opening from the list skips the form, so check the draft is complete here
+        if ($status === PurchaseOrderStatus::OPEN->value) {
+            $errors = [];
+            if (!$purchaseOrder->supplier_id) {
+                $errors['supplier_id'] = 'Supplier belum dipilih. Lengkapi draft PO terlebih dahulu.';
+            }
+            if (!$purchaseOrder->warehouse_id) {
+                $errors['warehouse_id'] = 'Gudang belum dipilih. Lengkapi draft PO terlebih dahulu.';
+            }
+            if (!$purchaseOrder->items()->exists()) {
+                $errors['details'] = 'PO belum memiliki produk. Lengkapi draft PO terlebih dahulu.';
+            }
+            if ($errors) {
+                throw ValidationException::withMessages($errors);
+            }
+        }
+
+        if ($status === PurchaseOrderStatus::CANCELLED->value && $wasOpen) {
+            $hasGoodsReceipts = $purchaseOrder->goodsReceipts()
+                ->where('status', '!=', GoodsReceiptStatus::CANCELLED->value)
+                ->exists();
+            $hasInvoices = PurchaseInvoice::where('purchase_order_id', $purchaseOrder->id)
+                ->where('status', '!=', PurchaseInvoiceStatus::CANCELLED->value)
+                ->exists();
+
+            if ($hasGoodsReceipts || $hasInvoices) {
+                throw ValidationException::withMessages([
+                    'status' => 'PO tidak dapat dibatalkan karena sudah memiliki penerimaan barang atau tagihan.',
+                ]);
+            }
+        }
+
+        DB::transaction(function () use ($purchaseOrder, $status, $wasOpen, $hasDownPayment) {
+            if ($status === PurchaseOrderStatus::OPEN->value && $hasDownPayment) {
+                $this->postCashTransaction($purchaseOrder);
+                $this->postPOJournal($purchaseOrder);
+            }
+
+            if ($status === PurchaseOrderStatus::CANCELLED->value && $wasOpen && $hasDownPayment) {
+                $this->reversePOJournal($purchaseOrder);
+                // The down payment cash row never posted its own journal (the PO journal covers it), so just mark it cancelled
+                CashTransaction::where('reference_type', PurchaseOrder::class)
+                    ->where('reference_id', $purchaseOrder->id)
+                    ->update(['status' => CashTransactionStatusEnum::CANCELLED->value]);
             }
 
             $purchaseOrder->update(['status' => $status]);
@@ -327,7 +364,7 @@ class PurchaseOrderService
 
     public function fetchPOItemsForGoodsReceipt(int $id): Collection
     {
-        $query = PurchaseOrderItem::with(['product:id,code,name,unit_id,batch_prefix', 'product.unit:id,name,symbol'])
+        $query = PurchaseOrderItem::with(['product:id,code,name,unit_id', 'product.unit:id,name,symbol'])
             ->where('purchase_order_id', $id)
             ->orderBy('id', 'asc');
 
@@ -337,7 +374,6 @@ class PurchaseOrderService
                 'product_id' => $item->product_id,
                 'product_code' => $item->product->code,
                 'product_name' => $item->product->name,
-                'product_batch_prefix' => $item->product->batch_prefix,
                 'quantity' => $item->quantity,
                 'received_quantity' => $item->received_quantity,
                 'remaining_quantity' => $item->quantity - $item->received_quantity,

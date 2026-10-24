@@ -25,7 +25,7 @@ class SalesInvoiceFormRequest extends FormRequest
      */
     public function rules(): array
     {
-        if ($this->routeIs('sales.delivery_orders.store')) {
+        if ($this->routeIs('sales.sales_invoices.store')) {
             return [
                 'sales_order_id' => 'required|exists:sales_orders,id',
             ];
@@ -37,7 +37,9 @@ class SalesInvoiceFormRequest extends FormRequest
             return $this->openRules();
         }
 
-        return [];
+        return [
+            'status' => 'required|in:' . SalesInvoiceStatus::DRAFT->value . ',' . SalesInvoiceStatus::OPEN->value,
+        ];
     }
 
     private function draftRules(): array

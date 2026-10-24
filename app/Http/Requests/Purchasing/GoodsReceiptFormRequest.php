@@ -24,7 +24,7 @@ class GoodsReceiptFormRequest extends FormRequest
     public function rules(): array
     {
         // if store route
-        if ($this->routeIs('purchasing.goods_receipts.store')) {
+        if ($this->routeIs('purchasings.goods_receipts.store')) {
             return [
                 'purchase_order_id' => 'required|exists:purchase_orders,id',
             ];
@@ -36,7 +36,9 @@ class GoodsReceiptFormRequest extends FormRequest
             return $this->finishedRules();
         }
 
-        return [];
+        return [
+            'status' => 'required|in:draft,finished',
+        ];
     }
 
     private function draftRules(): array
@@ -61,7 +63,6 @@ class GoodsReceiptFormRequest extends FormRequest
             'details' => 'required|array|min:1',
             'details.*.purchase_order_item_id' => 'required|exists:purchase_order_items,id',
             'details.*.product_id' => 'required|exists:products,id',
-            'details.*.batch_number' => 'required|string|max:50',
             'details.*.received_quantity' => 'required|numeric|min:0',
             'details.*.expected_quantity' => 'nullable|numeric|min:0',
             'details.*.unit_price' => 'required|numeric|min:0',
@@ -81,11 +82,13 @@ class GoodsReceiptFormRequest extends FormRequest
             'purchase_order_id.exists' => 'Purchase order tidak ditemukan.',
             'receipt_date.required' => 'Tanggal penerimaan harus diisi.',
             'details.required' => 'Detail penerimaan harus diisi.',
+            'details.min' => 'Minimal satu produk harus diterima.',
+            'status.required' => 'Status penerimaan harus diisi.',
+            'status.in' => 'Status penerimaan tidak valid.',
             'details.*.purchase_order_item_id.required' => 'Item purchase order harus dipilih.',
             'details.*.purchase_order_item_id.exists' => 'Item purchase order tidak ditemukan.',
             'details.*.product_id.required' => 'Produk harus dipilih.',
             'details.*.product_id.exists' => 'Produk tidak ditemukan.',
-            'details.*.batch_number.required' => 'Nomor batch harus diisi.',
             'details.*.received_quantity.required' => 'Kuantitas diterima harus diisi.',
             'details.*.received_quantity.numeric' => 'Kuantitas diterima harus berupa angka.',
             'details.*.received_quantity.min' => 'Kuantitas diterima tidak boleh kurang dari 0.',

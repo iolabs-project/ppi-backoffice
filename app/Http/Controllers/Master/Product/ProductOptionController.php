@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ProductBatchStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class ProductOptionController extends Controller
 {
@@ -55,6 +57,8 @@ class ProductOptionController extends Controller
                 ]);
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ProductOptionController@batches: ' . $e->getMessage(), [
                 'exception' => $e,

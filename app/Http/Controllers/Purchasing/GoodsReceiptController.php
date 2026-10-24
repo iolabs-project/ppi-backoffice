@@ -12,6 +12,7 @@ use App\Services\Purchasing\PurchaseOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class GoodsReceiptController extends Controller
 {
@@ -53,6 +54,8 @@ class GoodsReceiptController extends Controller
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error GoodsReceiptController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -112,7 +115,7 @@ class GoodsReceiptController extends Controller
         return view('purchasing.goods-receipt.edit', $data);
     }
 
-    public function update(Request $request, GoodsReceiptService $goodsReceiptService, int $id)
+    public function update(GoodsReceiptFormRequest $request, GoodsReceiptService $goodsReceiptService, int $id)
     {
         try {
             $goodsReceiptService->updateGoodsReceipt($request, $id);
@@ -124,6 +127,8 @@ class GoodsReceiptController extends Controller
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error GoodsReceiptController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -139,6 +144,8 @@ class GoodsReceiptController extends Controller
         try {
             $goodsReceiptService->changeGoodsReceiptStatus($id, GoodsReceiptStatus::CANCELLED->value);
             return response()->json(['message' => 'Penerimaan barang berhasil dibatalkan.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error GoodsReceiptController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,

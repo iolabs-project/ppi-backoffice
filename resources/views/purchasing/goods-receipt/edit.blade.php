@@ -28,7 +28,6 @@
                         product_id: item.product_id,
                         code: item.product.code,
                         name: item.product.name,
-                        batch_prefix: item.product.batch_prefix,
                         unit: item.product.unit.symbol,
                         remaining_quantity: item.purchase_order_item.quantity - item.purchase_order_item
                             .received_quantity,
@@ -54,7 +53,6 @@
                         name: null,
                         code: null,
                         unit: null,
-                        batch_prefix: null,
                         expected_quantity: null,
                         received_quantity: null,
                         shrinkage_quantity: null,
@@ -96,8 +94,6 @@
                     item.discount_percentage = poItem.discount_percentage;
                     item.discount_amount = poItem.discount_amount;
 
-                    item.batch_prefix = poItem.product_batch_prefix;
-
                     this.recalc();
                 },
 
@@ -122,11 +118,13 @@
                     return list;
                 },
 
-                batchNumberPlaceholder(prefix) {
-                    if (!prefix) {
+                // Preview of NumberingService::batchNumber: {product code}-{YYMMDD}-{counter}
+                batchNumberPlaceholder(code) {
+                    if (!code) {
                         return '-';
                     }
-                    return `${prefix}-XXXX`;
+                    const date = (this.formData.receipt_date || '').slice(0, 10).replace(/-/g, '').slice(2);
+                    return `${code}-${date || 'YYMMDD'}-XX`;
                 },
 
                 recalc() {
@@ -340,6 +338,14 @@
                 },
 
                 async submitFinish() {
+                    if (this.formData.details.length === 0) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Minimal satu produk harus diterima sebelum menyelesaikan penerimaan.'
+                        });
+                        return;
+                    }
+
                     if (!FormValidation.validateRequired(this.$root)) {
                         return;
                     }
@@ -547,7 +553,7 @@
                                     <div class="input input--readonly"
                                         style="display:flex; align-items:center; justify-content:space-between; gap:8px; height:32px;">
                                         <span class="mono" style="flex:1; min-width:0; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
-                                            x-text="batchNumberPlaceholder(item.batch_prefix)"></span>
+                                            x-text="batchNumberPlaceholder(item.code)"></span>
                                         <span class="auto-tag">Auto</span>
                                     </div>
                                 </td>

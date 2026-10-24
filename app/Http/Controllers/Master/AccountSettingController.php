@@ -9,6 +9,8 @@ use App\Services\Master\AccountSettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class AccountSettingController extends Controller
 {
@@ -20,6 +22,8 @@ class AccountSettingController extends Controller
             return response()->json([
                 'message' => 'Pengaturan akun berhasil disimpan',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error AccountSettingController@update: ' . $e->getMessage(), [
                 'exception' => $e,

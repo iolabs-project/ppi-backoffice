@@ -3,13 +3,13 @@
 namespace App\Services\Purchasing;
 
 use App\Enums\AccountSettingEnum;
+use App\Services\NumberingService;
 use App\Services\ExpenseService;
 use App\Services\JournalService;
 use App\Services\InventoryService;
 use App\Enums\GoodsReceiptStatus;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Models\AccountSetting;
-use App\Models\Company;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptCost;
 use App\Models\GoodsReceiptItem;
@@ -40,16 +40,7 @@ class GoodsReceiptService
     }
     public function generateGoodsReceiptNumber(): string
     {
-        $prefix = 'GR';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = GoodsReceipt::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('goods_receipt', GoodsReceipt::class);
     }
     public function fetchGoodsReceiptTableData(Request $request)
     {
@@ -106,27 +97,45 @@ class GoodsReceiptService
     public function storeGoodsReceipt(Request $request): GoodsReceipt
     {
         $purchaseOrder =  $this->purchaseOrderService->fetchPurchaseOrderByID($request->purchase_order_id);
-        $goodsReceipt = GoodsReceipt::create([
-            'company_id' => $purchaseOrder->company_id,
-            'purchase_order_id' => $purchaseOrder->id,
-            'supplier_id' => $purchaseOrder->supplier_id,
-            'warehouse_id' => $purchaseOrder->warehouse_id,
-            'number' => $this->generateGoodsReceiptNumber(),
-            'receipt_date' => now(),
-            'status' => GoodsReceiptStatus::DRAFT->value,
-            'subtotal' => 0,
-            'total_amount' => 0,
-            'created_by' => Auth::id(),
-        ]);
 
-        return $goodsReceipt;
+        // Start the draft with every PO item that still has quantity left, fully received by default
+        $detailsCollection = $this->purchaseOrderService->fetchPOItemsForGoodsReceipt($purchaseOrder->id)
+            ->filter(fn($item) => $item['remaining_quantity'] > 0)
+            ->map(fn($item) => [
+                'purchase_order_item_id' => $item['id'],
+                'product_id' => $item['product_id'],
+                'expected_quantity' => $item['remaining_quantity'],
+                'received_quantity' => $item['remaining_quantity'],
+                'unit_price' => $item['unit_price'],
+                'discount_percentage' => $item['discount_percentage'],
+            ])
+            ->values();
+
+        return DB::transaction(function () use ($purchaseOrder, $detailsCollection) {
+            $goodsReceipt = GoodsReceipt::create([
+                'company_id' => $purchaseOrder->company_id,
+                'purchase_order_id' => $purchaseOrder->id,
+                'supplier_id' => $purchaseOrder->supplier_id,
+                'warehouse_id' => $purchaseOrder->warehouse_id,
+                'number' => $this->generateGoodsReceiptNumber(),
+                'receipt_date' => now(),
+                'status' => GoodsReceiptStatus::DRAFT->value,
+                'subtotal' => $detailsCollection->sum(fn($item) => $item['received_quantity'] * $item['unit_price'] * (1 - ($item['discount_percentage'] ?? 0) / 100)),
+                'total_amount' => 0,
+                'created_by' => Auth::id(),
+            ]);
+
+            $this->saveDraftGoodsReceipt($goodsReceipt, $detailsCollection, collect());
+
+            return $goodsReceipt;
+        });
     }
 
     public function fetchGoodsReceiptByID(int $id): ?GoodsReceipt
     {
         return GoodsReceipt::with([
             'items',
-            'items.product:id,code,name,unit_id,batch_prefix',
+            'items.product:id,code,name,unit_id',
             'items.product.unit:id,name,symbol',
             'items.purchaseOrderItem:id,quantity,received_quantity,discount_percentage,discount_amount,unit_price,total_amount',
             'costs:id,goods_receipt_id,account_id,description,amount,is_inventory_cost',
@@ -274,7 +283,7 @@ class GoodsReceiptService
                 'goods_receipt_id' => $goodsReceipt->id,
                 'purchase_order_item_id' => $item['purchase_order_item_id'],
                 'product_id' => $item['product_id'],
-                'batch_number' => $this->productService->generateBatchNumber($item['product_id'], $goodsReceipt->company_id),
+                'batch_number' => $this->productService->generateBatchNumber($item['product_id'], $goodsReceipt->company_id, $goodsReceipt->receipt_date),
                 'expected_quantity' => $expectedQty,
                 'shrinkage_quantity' => $expectedQty - $qty,
                 'received_quantity' => $qty,

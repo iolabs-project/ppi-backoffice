@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 use App\Services\Finance\AccountReceivableService;
 use App\Services\Sales\SalesInvoiceService;
 use App\Services\Master\AccountService;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class AccountReceivableController extends Controller
 {
@@ -41,6 +42,8 @@ class AccountReceivableController extends Controller
         try {
             $data = $this->accountReceivableService->fetchARTableData($request);
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error AccountReceivableController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -56,6 +59,8 @@ class AccountReceivableController extends Controller
         try {
             $data = $this->accountReceivableService->fetchPaymentTableData($request);
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error AccountReceivableController@paymentDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -86,6 +91,8 @@ class AccountReceivableController extends Controller
             return response()->json(['redirect' => route('finances.account_receivables.show', ['id' => $id, 'reference_type' => $request->reference_type]), 'message' => 'Pembayaran berhasil ditambahkan.']);
         } catch (ValidationException $e) {
             return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Finance/AccountReceivableController@store: ' . $e->getMessage(), [
                 'exception' => $e,

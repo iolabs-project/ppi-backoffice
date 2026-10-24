@@ -14,6 +14,8 @@ use App\Services\Sales\SalesOrderService;
 use App\Services\Master\WarehouseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class SalesOrderController extends Controller
 {
@@ -74,6 +76,8 @@ class SalesOrderController extends Controller
         try {
             $this->salesOrderService->storeSalesOrder($request);
             return response()->json(['redirect' => route('sales.sales_orders.index'), 'message' => 'Pemesanan penjualan berhasil dibuat.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -147,6 +151,8 @@ class SalesOrderController extends Controller
         try {
             $this->salesOrderService->updateSalesOrder($request, $id);
             return response()->json(['redirect' => route('sales.sales_orders.index'), 'message' => 'Pemesanan penjualan berhasil diperbarui.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -164,6 +170,8 @@ class SalesOrderController extends Controller
             return response()->json(['message' => 'Pemesanan Penjualan berhasil dibuka.']);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['message' => collect($e->errors())->flatten()->first(), 'errors' => $e->errors()], 422);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@open: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -179,6 +187,8 @@ class SalesOrderController extends Controller
         try {
             $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::CLOSED->value);
             return response()->json(['message' => 'Pemesanan Penjualan berhasil ditutup.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@close: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -194,6 +204,8 @@ class SalesOrderController extends Controller
         try {
             $this->salesOrderService->changeSalesOrderStatus($id, SalesOrderStatus::CANCELLED->value);
             return response()->json(['message' => 'Pemesanan Penjualan berhasil dibatalkan.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,

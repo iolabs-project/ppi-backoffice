@@ -3,8 +3,8 @@
                 <x-misc.field label="Nama Gudang" name="name" :required="true">
                     <input class="input" x-model="form.name" placeholder="Gudang Bekasi, dll." />
                 </x-misc.field>
-                <x-misc.field label="Kode Gudang" name="code" :required="true">
-                    <input class="input mono" x-model="form.code" placeholder="GDG-xxx" />
+                <x-misc.field label="Kode Gudang" name="code">
+                    <input class="input mono" x-model="form.code" placeholder="Otomatis (cth. {{ config('numbering.master.prefixes.warehouse') }}-001)" />
                 </x-misc.field>
                 <x-misc.field label="Alamat" name="address">
                     <textarea class="input" rows="2" x-model="form.address" placeholder="Alamat gudang..."></textarea>

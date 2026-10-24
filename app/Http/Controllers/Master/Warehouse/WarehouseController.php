@@ -8,6 +8,8 @@ use App\Services\InventoryService;
 use App\Services\Master\WarehouseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class WarehouseController extends Controller
 {
@@ -24,6 +26,8 @@ class WarehouseController extends Controller
             $data = $this->warehouseService->fetchWarehouseTableData($request);
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Master/WarehouseController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -47,6 +51,8 @@ class WarehouseController extends Controller
             );
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Master/WarehouseController@datatableStock: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -71,6 +77,8 @@ class WarehouseController extends Controller
             );
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Master/WarehouseController@datatableBatch: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -91,6 +99,8 @@ class WarehouseController extends Controller
             return response()->json([
                 'message' => 'Gudang berhasil dibuat',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error WarehouseController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -124,6 +134,8 @@ class WarehouseController extends Controller
             return response()->json([
                 'message' => 'Gudang berhasil diperbarui',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error WarehouseController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -144,6 +156,8 @@ class WarehouseController extends Controller
             return response()->json([
                 'message' => 'Status gudang berhasil diperbarui',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error WarehouseController@status: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -163,6 +177,8 @@ class WarehouseController extends Controller
             return response()->json([
                 'data' => $data,
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error WarehouseController@options: ' . $e->getMessage(), [
                 'exception' => $e,

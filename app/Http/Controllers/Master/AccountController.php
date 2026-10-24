@@ -8,6 +8,8 @@ use App\Services\Master\AccountService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class AccountController extends Controller
 {
@@ -17,6 +19,8 @@ class AccountController extends Controller
             $data = $accountService->fetchAccountTableData($request);
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Master/AccountController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -37,6 +41,8 @@ class AccountController extends Controller
             return response()->json([
                 'message' => 'Akun berhasil dibuat',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error AccountController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -57,6 +63,8 @@ class AccountController extends Controller
             return response()->json([
                 'message' => 'Akun berhasil diperbarui',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error AccountController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -77,6 +85,8 @@ class AccountController extends Controller
             return response()->json([
                 'message' => 'Status akun berhasil diperbarui',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error AccountController@status: ' . $e->getMessage(), [
                 'exception' => $e,

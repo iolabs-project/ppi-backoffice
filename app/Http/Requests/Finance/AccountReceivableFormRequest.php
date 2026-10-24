@@ -30,7 +30,7 @@ class AccountReceivableFormRequest extends FormRequest
             'reference_number' => ['nullable', 'string', 'max:50'],
             'reference_id' => ['required', 'integer'],
             'reference_type' => ['required', new Enum(ReceivablePaymentReferenceTypeEnum::class)],
-            'amount' => ['required', 'numeric', 'min:0'],
+            'amount' => ['required', 'numeric', 'gt:0'],
             'note' => ['nullable', 'string'],
         ];
     }
@@ -48,7 +48,7 @@ class AccountReceivableFormRequest extends FormRequest
             'reference_number.max' => 'Nomor referensi tidak boleh lebih dari 50 karakter.',
             'amount.required' => 'Jumlah pembayaran harus diisi.',
             'amount.numeric' => 'Jumlah pembayaran harus berupa angka.',
-            'amount.min' => 'Jumlah pembayaran tidak boleh kurang dari 0.',
+            'amount.gt' => 'Jumlah pembayaran harus lebih dari 0.',
             'note.string' => 'Catatan harus berupa string.',
         ];
     }

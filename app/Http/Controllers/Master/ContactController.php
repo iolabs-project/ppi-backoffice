@@ -7,6 +7,8 @@ use App\Http\Requests\Master\ContactFormRequest;
 use App\Services\Master\ContactService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class ContactController extends Controller
 {
@@ -21,6 +23,8 @@ class ContactController extends Controller
             $data = $this->contactService->fetchContactTableData($request);
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Master/ContactController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -42,6 +46,8 @@ class ContactController extends Controller
                 'message' => 'Kontak berhasil dibuat',
                 'data' => $contact->only(['id', 'code', 'name', 'transportation_cost']),
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ContactController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -75,6 +81,8 @@ class ContactController extends Controller
             return response()->json([
                 'message' => 'Kontak berhasil diperbarui',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ContactController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -95,6 +103,8 @@ class ContactController extends Controller
             return response()->json([
                 'message' => 'Status kontak berhasil diperbarui',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ContactController@status: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -114,6 +124,8 @@ class ContactController extends Controller
             return response()->json([
                 'data' => $data,
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ContactController@options: ' . $e->getMessage(), [
                 'exception' => $e,

@@ -237,7 +237,7 @@
                         description: null,
                         category_id: null,
                         unit_id: null,
-                        batch_prefix: null,
+                        has_batches: false,
                     };
                     this.modal = 'add_product';
                 },
@@ -250,7 +250,7 @@
                         description: product.description,
                         category_id: product.category_id,
                         unit_id: product.unit_id,
-                        batch_prefix: product.batch_prefix,
+                        has_batches: !!product.has_batches,
                     };
                     this.modal = 'edit_product';
                 },

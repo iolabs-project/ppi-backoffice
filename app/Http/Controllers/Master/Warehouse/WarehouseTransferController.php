@@ -9,6 +9,7 @@ use App\Services\Master\WarehouseService;
 use App\Services\Master\WarehouseTransferService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class WarehouseTransferController extends Controller
 {
@@ -47,6 +48,8 @@ class WarehouseTransferController extends Controller
             $warehouseTransferService->storeWarehouseTransfer($request, $id);
 
             return response()->json(['message' => 'Transfer gudang berhasil dibuat.', 'redirect' => route('master.warehouses.show', $id)]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error WarehouseTransferController@store: ' . $e->getMessage(), [
                 'exception' => $e,

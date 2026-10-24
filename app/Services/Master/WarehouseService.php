@@ -3,6 +3,7 @@
 namespace App\Services\Master;
 
 use App\Models\Warehouse;
+use App\Services\NumberingService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -86,8 +87,10 @@ class WarehouseService
 
     public function storeWarehouse(Request $request)
     {
+        $code = $request->filled('code') ? $request->code : $this->generateWarehouseCode();
+
         $checkExistingCode = Warehouse::where('company_id', config('context.selected_company_id'))
-            ->where('code', $request->code)
+            ->where('code', $code)
             ->exists();
 
         if ($checkExistingCode) {
@@ -108,7 +111,7 @@ class WarehouseService
 
         Warehouse::create([
             'company_id' => config('context.selected_company_id'),
-            'code' => $request->code,
+            'code' => $code,
             'name' => $request->name,
             'address' => $request->address,
             'note' => $request->note,
@@ -127,7 +130,7 @@ class WarehouseService
             ]);
         }
 
-        $checkExistingCode = Warehouse::where('company_id', config('context.selected_company_id'))
+        $checkExistingCode = $request->filled('code') && Warehouse::where('company_id', config('context.selected_company_id'))
             ->where('code', $request->code)
             ->where('id', '!=', $id)
             ->exists();
@@ -150,11 +153,17 @@ class WarehouseService
         }
 
         $warehouse->update([
-            'code' => $request->code,
+            'code' => $request->filled('code') ? $request->code : $warehouse->code,
             'name' => $request->name,
             'address' => $request->address,
             'note' => $request->note,
         ]);
+    }
+
+    // Next "WH-001" style code for the selected company
+    public function generateWarehouseCode(): string
+    {
+        return app(NumberingService::class)->masterCode('warehouse', Warehouse::class);
     }
 
     public function toggleWarehouseStatus(int $id)

@@ -5,7 +5,7 @@
             <div class="form-section-title">Profil Kontak</div>
             <div class="form-grid-2">
                 <x-misc.field label="Kode Kontak" name="code">
-                    <input class="input mono" x-model="form.code" placeholder="Otomatis (cth. CUST-001)" />
+                    <input class="input mono" x-model="form.code" placeholder="Otomatis (cth. {{ config('numbering.master.prefixes.contact') }}-001)" />
                 </x-misc.field>
                 <x-misc.field label="Nama" name="name" :required="true">
                     <input class="input" x-model="form.name" placeholder="Nama perusahaan / individu" />

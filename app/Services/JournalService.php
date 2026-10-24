@@ -6,7 +6,6 @@ use App\Enums\AccountCategoryEnum;
 use App\Enums\JournalEntryStatusEnum;
 use Illuminate\Validation\ValidationException;
 
-use App\Models\Company;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryItem;
 use Illuminate\Support\Facades\Auth;
@@ -97,15 +96,6 @@ class JournalService
 
     public function generateJournalNumber(): string
     {
-        $prefix = 'JNL';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = JournalEntry::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('journal', JournalEntry::class);
     }
 }

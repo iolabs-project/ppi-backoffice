@@ -25,7 +25,7 @@ class WarehouseFormRequest extends FormRequest
     {
          return [
             'code' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('warehouses', 'code')

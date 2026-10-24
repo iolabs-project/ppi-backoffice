@@ -8,6 +8,8 @@ use App\Services\Master\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class UserController extends Controller
 {
@@ -17,6 +19,8 @@ class UserController extends Controller
             $data = $userService->fetchUserTableData($request);
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Master/UserController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -37,6 +41,8 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'User berhasil dibuat',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error UserController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -57,6 +63,8 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'User berhasil diperbarui',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error UserController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -77,6 +85,8 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'Password user berhasil diperbarui',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error UserController@password: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -97,6 +107,8 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'Status user berhasil diperbarui',
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error UserController@status: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -117,6 +129,8 @@ class UserController extends Controller
             return response()->json([
                 'data' => $data,
             ]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error UserController@options: ' . $e->getMessage(), [
                 'exception' => $e,

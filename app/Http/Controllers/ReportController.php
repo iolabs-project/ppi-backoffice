@@ -7,6 +7,8 @@ use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Services\ReportService;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class ReportController extends Controller
 {
@@ -45,6 +47,8 @@ class ReportController extends Controller
             $data = $this->reportService->fetchProfitLossTableData($request, config('context.selected_company_id'));
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ReportController@profitLossDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -63,6 +67,8 @@ class ReportController extends Controller
             $data = $this->reportService->fetchBalanceSheetData($request, config('context.selected_company_id'));
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ReportController@balanceSheetDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -81,6 +87,8 @@ class ReportController extends Controller
             $data = $this->reportService->fetchCashFlowData($request, config('context.selected_company_id'));
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ReportController@cashFlowDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -99,6 +107,8 @@ class ReportController extends Controller
             $data = $this->reportService->fetchExecutiveSummaryData($request, config('context.selected_company_id'));
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ReportController@executiveDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -117,6 +127,8 @@ class ReportController extends Controller
             $data = $this->reportService->fetchReceivableReportData($request, config('context.selected_company_id'));
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ReportController@receivableDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -135,6 +147,8 @@ class ReportController extends Controller
             $data = $this->reportService->fetchPayableReportData($request, config('context.selected_company_id'));
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ReportController@payableDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -153,6 +167,8 @@ class ReportController extends Controller
             $data = $this->reportService->fetchJournalTableData($request, config('context.selected_company_id'));
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ReportController@journalDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -171,6 +187,8 @@ class ReportController extends Controller
             $data = $this->activityLogService->fetchTableData($request);
 
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error ReportController@activityLogDatatable: ' . $e->getMessage(), [
                 'exception' => $e,

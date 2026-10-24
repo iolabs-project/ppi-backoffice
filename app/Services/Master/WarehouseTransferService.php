@@ -2,7 +2,6 @@
 
 namespace App\Services\Master;
 
-use App\Models\Company;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use App\Models\WarehouseTransfer;
 use App\Models\WarehouseTransferItem;
+use App\Services\NumberingService;
 use App\Services\InventoryService;
 
 class WarehouseTransferService
@@ -23,16 +23,7 @@ class WarehouseTransferService
 
     public function generateNumber(): string
     {
-        $prefix = 'WT';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = WarehouseTransfer::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('warehouse_transfer', WarehouseTransfer::class);
     }
 
     public function storeWarehouseTransfer(Request $request, int $fromWarehouseID): void

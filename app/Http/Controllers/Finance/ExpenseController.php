@@ -10,6 +10,8 @@ use App\Http\Requests\ExpenseFormRequest;
 use App\Services\ExpenseService;
 use App\Services\Master\AccountService;
 use App\Services\Master\ContactService;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class ExpenseController extends Controller
 {
@@ -59,6 +61,8 @@ class ExpenseController extends Controller
         try {
             $this->expenseService->storeExpense($request);
             return response()->json(['redirect' => route('expenses.index'), 'message' => 'Biaya berhasil dibuat.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             return response()->json(['error' => 'Terjadi kesalahan saat menyimpan data.'], 500);
         }
@@ -111,6 +115,8 @@ class ExpenseController extends Controller
         try {
             $this->expenseService->updateExpense($request, $id);
             return response()->json(['redirect' => route('expenses.index'), 'message' => 'Biaya berhasil diperbarui.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             return response()->json(['error' => 'Terjadi kesalahan saat memperbarui data.'], 500);
         }
@@ -121,6 +127,8 @@ class ExpenseController extends Controller
         try {
             $this->expenseService->cancelExpense($id);
             return response()->json(['message' => 'Biaya berhasil dibatalkan.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             return response()->json(['error' => 'Terjadi kesalahan saat membatalkan biaya.'], 500);
         }

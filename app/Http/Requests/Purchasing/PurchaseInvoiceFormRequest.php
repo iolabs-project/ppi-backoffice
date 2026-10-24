@@ -26,7 +26,7 @@ class PurchaseInvoiceFormRequest extends FormRequest
     public function rules(): array
     {
         // if store route
-        if ($this->routeIs('purchasing.purchase_invoices.store')) {
+        if ($this->routeIs('purchasings.purchase_invoices.store')) {
             return [
                 'purchase_order_id' => 'required|exists:purchase_orders,id',
             ];
@@ -38,12 +38,16 @@ class PurchaseInvoiceFormRequest extends FormRequest
             return $this->openRules();
         }
 
-        return [];
+        return [
+            'status' => 'required|in:' . PurchaseInvoiceStatus::DRAFT->value . ',' . PurchaseInvoiceStatus::OPEN->value,
+        ];
     }
 
     private function draftRules()
     {
-        return [];
+        return [
+            'status' => 'required|in:' . PurchaseInvoiceStatus::DRAFT->value,
+        ];
     }
 
     private function openRules()

@@ -6,6 +6,7 @@ use App\Models\InventoryTransaction;
 use App\Models\Product;
 use App\Models\ProductBatch;
 use App\Models\ProductCategory;
+use App\Services\NumberingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -135,6 +136,7 @@ class ProductService
                 'deleted_at',
                 'batch_prefix'
             )
+            ->withExists('batches as has_batches')
             ->where('company_id', config('context.selected_company_id'));
 
         if ($request->filled('search')) {
@@ -239,13 +241,13 @@ class ProductService
             ]);
         }
 
-        $batchPrefix = $request->filled('batch_prefix') ? $request->batch_prefix : $this->generateBatchPrefix($request->name);
+        $batchPrefix = $this->generateBatchPrefix($request->name);
 
         Product::create([
             'company_id' => config('context.selected_company_id'),
             'category_id' => $request->category_id,
             'unit_id' => $request->unit_id,
-            'code' => $request->filled('code') ? $request->code : $this->generateProductCode($batchPrefix),
+            'code' => $request->filled('code') ? $request->code : $this->generateProductCode(),
             'name' => $request->name,
             'description' => $request->description,
             'batch_prefix' => $batchPrefix,
@@ -267,13 +269,19 @@ class ProductService
             ]);
         }
 
+        // Batch numbers start with the product code, so it is fixed once a batch exists
+        if ($request->filled('code') && $request->code !== $product->code && $product->batches()->exists()) {
+            throw ValidationException::withMessages([
+                'code' => 'Kode produk tidak dapat diubah karena sudah memiliki batch.',
+            ]);
+        }
+
         $product->update([
             'category_id' => $request->category_id,
             'unit_id' => $request->unit_id,
             'code' => $request->filled('code') ? $request->code : $product->code,
             'name' => $request->name,
             'description' => $request->description,
-            'batch_prefix' => $request->filled('batch_prefix') ? $request->batch_prefix : $product->batch_prefix,
         ]);
     }
 
@@ -332,48 +340,25 @@ class ProductService
         return $data;
     }
 
-    // First letter + following consonants of the name, e.g. "Katul" → "KTL", "Gula" → "GLU" (mirrored in product-modal.blade.php)
+    // First letter + following consonants of the name, e.g. "Katul" → "KTL", "Gula" → "GLU"
     public function generateBatchPrefix(string $name): string
     {
-        $letters = preg_replace('/[^A-Z]/', '', strtoupper($name));
-        $rest = substr($letters, 1);
-
-        return substr(substr($letters, 0, 1) . preg_replace('/[AEIOU]/', '', $rest) . $rest, 0, 3) ?: 'PRD';
+        return app(NumberingService::class)->batchPrefix($name);
     }
 
-    // Next "{PREFIX}-001" style code for the selected company
-    public function generateProductCode(string $prefix): string
+    // Next "PRD-001" style code for the selected company
+    public function generateProductCode(): string
     {
-        $last = Product::where('company_id', config('context.selected_company_id'))
-            ->where('code', 'like', $prefix . '-%')
-            ->pluck('code')
-            ->map(fn($code) => (int) substr($code, strlen($prefix) + 1))
-            ->max() ?? 0;
-
-        return $prefix . '-' . str_pad($last + 1, 3, '0', STR_PAD_LEFT);
+        return app(NumberingService::class)->masterCode('product', Product::class);
     }
 
-    public function generateBatchNumber(int $productID, int $companyID): string
+    // Next "{PRODUCT CODE}-{YYMMDD}-01" batch number, counted per product per receipt date
+    public function generateBatchNumber(int $productID, int $companyID, $date = null): string
     {
         $product = Product::where('id', $productID)
             ->where('company_id', $companyID)
             ->firstOrFail();
 
-        $prefix = $product->batch_prefix . '-';
-        $lastBatch = DB::table('product_batches')
-            ->where('company_id', $companyID)
-            ->where('product_id', $productID)
-            ->where('batch_number', 'like', $prefix . '%')
-            ->orderBy('batch_number', 'desc')
-            ->first();
-
-        if ($lastBatch) {
-            $lastBatchNumber = (int) substr($lastBatch->batch_number, strrpos($lastBatch->batch_number, '-') + 1);
-            $newBatchNumber = $lastBatchNumber + 1;
-        } else {
-            $newBatchNumber = 1;
-        }
-
-        return $prefix . str_pad($newBatchNumber, 4, '0', STR_PAD_LEFT);
+        return app(NumberingService::class)->batchNumber($product->code, $productID, $companyID, $date);
     }
 }

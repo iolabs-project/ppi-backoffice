@@ -12,6 +12,7 @@ use App\Services\Sales\SalesInvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class SalesInvoiceController extends Controller
 {
@@ -53,6 +54,8 @@ class SalesInvoiceController extends Controller
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error SalesInvoiceController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -129,6 +132,8 @@ class SalesInvoiceController extends Controller
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error SalesInvoiceController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -144,6 +149,8 @@ class SalesInvoiceController extends Controller
         try {
             $this->salesInvoiceService->cancelSalesInvoice($id);
             return response()->json(['message' => 'Tagihan Penjualan berhasil dibatalkan.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error SalesInvoiceController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,

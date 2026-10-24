@@ -15,6 +15,7 @@ use App\Http\Requests\Finance\CashReceiveFormRequest;
 use App\Http\Requests\Finance\CashSendFormRequest;
 use App\Http\Requests\Finance\CashTransferFormRequest;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class CashController extends Controller
 {
@@ -43,6 +44,8 @@ class CashController extends Controller
         try {
             $data = $this->cashService->fetchTransactionTableData($request);
             return response()->json($data);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error CashController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -86,6 +89,8 @@ class CashController extends Controller
             return response()->json(['redirect' => route('finances.cash.show', $request->input('from_account_id')), 'message' => 'Transaksi kas berhasil ditambahkan.']);
         } catch (ValidationException $e) {
             return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@storeTransfer: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -120,6 +125,8 @@ class CashController extends Controller
             return response()->json(['redirect' => route('finances.cash.show', $request->input('from_account_id')), 'message' => 'Transaksi kas berhasil diperbarui.']);
         } catch (ValidationException $e) {
             return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@updateTransfer: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -135,6 +142,8 @@ class CashController extends Controller
         try {
             $this->cashService->cancelTransaction(id: $transfer, companyID: config('context.selected_company_id'));
             return response()->json(['redirect' => route('finances.cash.show', $id), 'message' => 'Transaksi kas berhasil dibatalkan.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@cancelTransfer: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -167,6 +176,8 @@ class CashController extends Controller
             return response()->json(['redirect' => route('finances.cash.show', $request->input('to_account_id')), 'message' => 'Transaksi kas berhasil ditambahkan.']);
         } catch (ValidationException $e) {
             return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@storeReceive: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -202,6 +213,8 @@ class CashController extends Controller
             return response()->json(['redirect' => route('finances.cash.show', $request->input('to_account_id')), 'message' => 'Transaksi kas berhasil diperbarui.']);
         } catch (ValidationException $e) {
             return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@updateReceive: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -217,6 +230,8 @@ class CashController extends Controller
         try {
             $this->cashService->cancelTransaction(id: $receive, companyID: config('context.selected_company_id'));
             return response()->json(['redirect' => route('finances.cash.show', $id), 'message' => 'Transaksi kas berhasil dibatalkan.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@cancelReceive: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -249,6 +264,8 @@ class CashController extends Controller
             return response()->json(['redirect' => route('finances.cash.show', $request->input('from_account_id')), 'message' => 'Transaksi kas berhasil ditambahkan.']);
         } catch (ValidationException $e) {
             return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@storeSend: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -284,6 +301,8 @@ class CashController extends Controller
             return response()->json(['redirect' => route('finances.cash.show', $request->input('from_account_id')), 'message' => 'Transaksi kas berhasil diperbarui.']);
         } catch (ValidationException $e) {
             return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@updateSend: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -299,6 +318,8 @@ class CashController extends Controller
         try {
             $this->cashService->cancelTransaction(id: $receive, companyID: config('context.selected_company_id'));
             return response()->json(['redirect' => route('finances.cash.show', $id), 'message' => 'Transaksi kas berhasil dibatalkan.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@cancelSend: ' . $e->getMessage(), [
                 'exception' => $e,

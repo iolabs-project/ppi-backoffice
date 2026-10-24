@@ -5,7 +5,6 @@ use App\Models\AccountSetting;
 use App\Enums\AccountSettingEnum;
 use App\Enums\ExpenseStatus;
 use App\Enums\PaymentTerm;
-use App\Models\Company;
 use App\Models\DeliveryOrder;
 use App\Models\Expense;
 use App\Models\ExpenseItem;
@@ -26,16 +25,7 @@ class ExpenseService
     }
     public function generateNumber(): string
     {
-        $prefix = 'EXP';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = Expense::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('expense', Expense::class);
     }
 
     public function fecthExpenseSummaryThisMonth(int $companyID)
@@ -378,14 +368,24 @@ class ExpenseService
 
         $journalItems = [];
 
+        // The header discount lowers each expense line in proportion to its amount; the last line takes the rounding rest
+        $discountLeft = (float) $expense->discount_amount;
+        $itemsTotal = (float) $expense->items->sum('amount');
+        $lastIndex = $expense->items->count() - 1;
 
-        foreach ($expense->items as $item) {
+        foreach ($expense->items->values() as $index => $item) {
+            $itemDiscount = $index === $lastIndex
+                ? $discountLeft
+                : ($itemsTotal > 0 ? round($expense->discount_amount * $item->amount / $itemsTotal, 2) : 0);
+            $discountLeft -= $itemDiscount;
+            $amount = $item->amount - $itemDiscount;
+
             $journalItems[] = [
                 'account_id' => $item->account_id,
-                'debit' => $item->amount,
+                'debit' => $amount,
                 'description' => $item->description ?? null,
             ];
-            $payableAmount += $item->amount;
+            $payableAmount += $amount;
         }
 
         if ($taxAmount > 0) {

@@ -3,6 +3,7 @@
 namespace App\Services\Master;
 
 use App\Models\Contact;
+use App\Services\NumberingService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -153,7 +154,7 @@ class ContactService
 
         return Contact::create([
             'company_id' => config('context.selected_company_id'),
-            'code' => $request->filled('code') ? $request->code : $this->generateContactCode($request),
+            'code' => $request->filled('code') ? $request->code : $this->generateContactCode(),
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
@@ -214,23 +215,10 @@ class ContactService
         ]);
     }
 
-    // Next "CUST-001" / "SUP-001" / "EMP-001" style code, prefixed by the contact's first type
-    public function generateContactCode(Request $request): string
+    // Next "C-001" style code for the selected company
+    public function generateContactCode(): string
     {
-        $prefix = match (true) {
-            (bool) $request->is_customer => 'CUST',
-            (bool) $request->is_supplier => 'SUP',
-            (bool) $request->is_employee => 'EMP',
-            default => 'CON',
-        };
-
-        $last = Contact::where('company_id', config('context.selected_company_id'))
-            ->where('code', 'like', $prefix . '-%')
-            ->pluck('code')
-            ->map(fn($code) => (int) substr($code, strlen($prefix) + 1))
-            ->max() ?? 0;
-
-        return $prefix . '-' . str_pad($last + 1, 3, '0', STR_PAD_LEFT);
+        return app(NumberingService::class)->masterCode('contact', Contact::class);
     }
 
     public function toggleContactStatus(int $id)

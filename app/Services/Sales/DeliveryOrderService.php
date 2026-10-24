@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Services\Sales;
+use App\Services\NumberingService;
 use App\Services\InventoryService;
-use App\Models\Company;
 use App\Services\JournalService;
 use App\Enums\AccountSettingEnum;
 use App\Enums\DeliveryOrderStatus;
+use App\Enums\SalesInvoiceStatus;
 use App\Enums\SalesOrderStatus;
 use App\Models\AccountSetting;
 use App\Models\DeliveryOrder;
@@ -13,6 +14,7 @@ use App\Models\DeliveryOrderCost;
 use App\Models\DeliveryOrderItem;
 use App\Models\DeliveryOrderItemBatch;
 use App\Models\JournalEntry;
+use App\Models\SalesInvoiceItem;
 use App\Models\SalesOrderItem;
 use App\Models\Warehouse;
 use App\Services\ExpenseService;
@@ -37,16 +39,7 @@ class DeliveryOrderService
     }
     public function generateDONumber(): string
     {
-        $prefix = 'DO';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = DeliveryOrder::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('delivery_order', DeliveryOrder::class);
     }
 
     public function fetchDeliveryOrderTableData(Request $request)
@@ -319,7 +312,10 @@ class DeliveryOrderService
             ->orderBy('id', 'asc')
             ->get();
 
-        return $items->map(function ($item) {
+        $invoicedQuantities = $this->fetchInvoicedQuantities($items->pluck('id')->all());
+
+        // Only what was delivered and not yet billed on another non-draft invoice can be invoiced
+        return $items->map(function ($item) use ($invoicedQuantities) {
             return [
                 'id' => $item->id,
                 'sales_order_item_id' => $item->sales_order_item_id,
@@ -328,12 +324,28 @@ class DeliveryOrderService
                 'product_name' => $item->product->name,
                 'unit_id' => $item->product->unit_id,
                 'unit_symbol' => $item->product->unit->symbol,
-                'quantity' => $item->quantity,
+                'delivered_quantity' => $item->quantity,
+                'quantity' => $item->quantity - ($invoicedQuantities[$item->id] ?? 0),
                 'unit_price' => $item->salesOrderItem->unit_price,
                 'discount_percentage' => $item->salesOrderItem->discount_percentage,
                 'discount_amount' => $item->salesOrderItem->discount_amount,
             ];
-        });
+        })->filter(fn($item) => $item['quantity'] > 0)->values();
+    }
+
+    // Quantity already billed per delivery order item on open, partial or paid invoices
+    public function fetchInvoicedQuantities(array $deliveryOrderItemIDs, ?int $excludeSalesInvoiceID = null): array
+    {
+        return SalesInvoiceItem::whereIn('delivery_order_item_id', $deliveryOrderItemIDs)
+            ->whereHas('salesInvoice', function ($query) use ($excludeSalesInvoiceID) {
+                $query->whereNotIn('status', [SalesInvoiceStatus::DRAFT->value, SalesInvoiceStatus::CANCELLED->value])
+                    ->when($excludeSalesInvoiceID, fn($q) => $q->where('id', '!=', $excludeSalesInvoiceID));
+            })
+            ->groupBy('delivery_order_item_id')
+            ->selectRaw('delivery_order_item_id, SUM(quantity) as quantity')
+            ->pluck('quantity', 'delivery_order_item_id')
+            ->map(fn($quantity) => (float) $quantity)
+            ->all();
     }
 
     private function postDOJournal(DeliveryOrder $deliveryOrder): void

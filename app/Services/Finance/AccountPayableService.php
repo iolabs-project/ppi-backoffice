@@ -5,12 +5,12 @@ namespace App\Services\Finance;
 use App\Enums\AccountSettingEnum;
 use App\Enums\CashTransactionStatusEnum;
 use App\Enums\CashTransactionTypeEnum;
+use App\Services\NumberingService;
 use App\Services\JournalService;
 use App\Enums\ExpenseStatus;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Enums\PayablePaymentReferenceTypeEnum;
 use App\Models\AccountSetting;
-use App\Models\Company;
 use App\Models\Expense;
 use App\Models\PayablePayment;
 use App\Models\PurchaseInvoice;
@@ -30,16 +30,7 @@ class AccountPayableService
     }
     public function generateAPNumber()
     {
-        $prefix = 'AP';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = PayablePayment::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('account_payable', PayablePayment::class);
     }
 
     public function fetchInvoiceByID(int $id, string $type)
@@ -187,23 +178,32 @@ class AccountPayableService
     public function storePayment(Request $request, int $id)
     {
         if ($request->reference_type === PayablePaymentReferenceTypeEnum::PURCHASE_INVOICE->value) {
-            $invoice = PurchaseInvoice::findOrFail($id);
+            $model = PurchaseInvoice::class;
+            $payableStatuses = [PurchaseInvoiceStatus::OPEN->value, PurchaseInvoiceStatus::PARTIAL->value];
         } elseif ($request->reference_type === PayablePaymentReferenceTypeEnum::EXPENSE->value) {
-            $invoice = Expense::findOrFail($id);
+            $model = Expense::class;
+            $payableStatuses = [ExpenseStatus::OPEN->value, ExpenseStatus::PARTIAL->value];
         } else {
             throw ValidationException::withMessages(['error' => 'Tipe referensi tidak valid.']);
         }
 
-        if ($request->amount > $invoice->remaining_amount) {
-            throw ValidationException::withMessages(['amount' => 'Jumlah pembayaran melebihi sisa hutang.']);
-        }
+        DB::transaction(function () use ($request, $id, $model, $payableStatuses) {
+            // Lock the invoice so two submits can't both pass the remaining-amount check
+            $invoice = $model::lockForUpdate()->findOrFail($id);
 
-        $balance = $this->cashService->fetchAccountBalance(accountID:$request->account_id);
-        if ($balance < $request->amount) {
-            throw ValidationException::withMessages(['amount' => 'Saldo tidak mencukupi.']);
-        }
+            if (!in_array($invoice->status, $payableStatuses, true)) {
+                throw ValidationException::withMessages(['amount' => 'Pembayaran hanya dapat dicatat untuk tagihan yang berstatus Open atau Partial.']);
+            }
 
-        DB::transaction(function () use ($request, $invoice) {
+            if ($request->amount > $invoice->remaining_amount) {
+                throw ValidationException::withMessages(['amount' => 'Jumlah pembayaran melebihi sisa hutang.']);
+            }
+
+            $balance = $this->cashService->fetchAccountBalance(accountID: $request->account_id);
+            if ($balance < $request->amount) {
+                throw ValidationException::withMessages(['amount' => 'Saldo tidak mencukupi.']);
+            }
+
             $payment = PayablePayment::create([
                 'company_id' => $invoice->company_id,
                 'reference_id' => $invoice->id,

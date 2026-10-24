@@ -3,13 +3,14 @@
 namespace App\Services\Sales;
 
 use App\Enums\PaymentTerm;
+use App\Services\NumberingService;
 use App\Services\JournalService;
 use App\Enums\AccountSettingEnum;
 use App\Enums\SalesInvoiceStatus;
 use App\Enums\DeliveryOrderStatus;
 use App\Models\DeliveryOrder;
+use App\Models\DeliveryOrderItem;
 use App\Models\AccountSetting;
-use App\Models\Company;
 use App\Models\JournalEntry;
 use App\Models\SalesInvoice;
 use App\Models\SalesInvoiceCharge;
@@ -17,6 +18,7 @@ use App\Models\SalesInvoiceItem;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
@@ -35,16 +37,7 @@ class SalesInvoiceService
 
     public function generateSINumber(): string
     {
-        $prefix = 'SI';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = SalesInvoice::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('sales_invoice', SalesInvoice::class);
     }
 
     public function fetchSalesInvoiceTableData(Request $request)
@@ -153,6 +146,11 @@ class SalesInvoiceService
                 (1 - (($detail['discount_percentage'] ?? 0) / 100));
         });
         $chargesTotal = $chargesCollection->sum('amount');
+
+        if ($request->status === SalesInvoiceStatus::OPEN->value) {
+            $this->validateInvoiceableQuantities($detailsCollection, $salesInvoice->id);
+        }
+
         $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
         $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
 
@@ -267,6 +265,28 @@ class SalesInvoiceService
             ->find($id);
     }
 
+    // Each delivery item can only be billed up to what was delivered minus what other invoices already billed
+    private function validateInvoiceableQuantities(Collection $detailsCollection, int $salesInvoiceID): void
+    {
+        $deliveryOrderItemIDs = $detailsCollection->pluck('delivery_order_item_id')->filter()->all();
+        $deliveredQuantities = DeliveryOrderItem::whereIn('id', $deliveryOrderItemIDs)->pluck('quantity', 'id');
+        $invoicedQuantities = app(DeliveryOrderService::class)->fetchInvoicedQuantities($deliveryOrderItemIDs, $salesInvoiceID);
+
+        $errors = [];
+        foreach ($detailsCollection->groupBy('delivery_order_item_id') as $deliveryOrderItemID => $details) {
+            $remaining = (float) ($deliveredQuantities[$deliveryOrderItemID] ?? 0) - ($invoicedQuantities[$deliveryOrderItemID] ?? 0);
+            $quantity = $details->sum('quantity');
+
+            if ($quantity > $remaining + 0.00001) {
+                $errors['details'][] = 'Kuantitas ' . ($details->first()['name'] ?? 'produk') . ' melebihi sisa yang belum ditagih (' . (float) $remaining . ').';
+            }
+        }
+
+        if ($errors) {
+            throw ValidationException::withMessages($errors);
+        }
+    }
+
     public function cancelSalesInvoice(int $id): void
     {
         $salesInvoice = SalesInvoice::findOrFail($id);
@@ -286,17 +306,22 @@ class SalesInvoiceService
                 'status' => "Tagihan ini tidak dapat dibatalkan.",
             ]);
         }
-        DB::transaction(function () use ($salesInvoice) {
-            foreach ($salesInvoice->items as $item) {
-                SalesOrderItem::where('id', $item->sales_order_item_id)
-                    ->decrement('invoiced_quantity', $item->quantity);
-            }
-            if ($salesInvoice->status === SalesInvoiceStatus::OPEN->value) {
+        DB::transaction(function () use ($salesInvoice, $isDraft) {
+            // Only an open invoice added to the SO counters and posted a journal, so only it gets reversed
+            if (!$isDraft) {
+                foreach ($salesInvoice->items as $item) {
+                    SalesOrderItem::where('id', $item->sales_order_item_id)
+                        ->decrement('invoiced_quantity', $item->quantity);
+                }
+                SalesOrder::where('id', $salesInvoice->sales_order_id)
+                    ->increment('down_payment_remaining_amount', $salesInvoice->down_payment_amount);
                 $this->reverseSIJournal($salesInvoice);
             }
-            $salesInvoice->update(['status' => SalesInvoiceStatus::CANCELLED->value]);
-            SalesOrder::where('id', $salesInvoice->sales_order_id)
-                ->increment('down_payment_remaining_amount', $salesInvoice->down_payment_amount);
+
+            $salesInvoice->update([
+                'status' => SalesInvoiceStatus::CANCELLED->value,
+                'remaining_amount' => 0,
+            ]);
         });
     }
 

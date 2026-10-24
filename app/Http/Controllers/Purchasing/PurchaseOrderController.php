@@ -15,6 +15,8 @@ use App\Services\Purchasing\PurchaseOrderService;
 use App\Services\Master\WarehouseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class PurchaseOrderController extends Controller
 {
@@ -75,6 +77,8 @@ class PurchaseOrderController extends Controller
         try {
             $this->purchaseOrderService->storePurchaseOrder($request);
             return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Purchase Order berhasil dibuat.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -148,6 +152,8 @@ class PurchaseOrderController extends Controller
         try {
             $this->purchaseOrderService->updatePurchaseOrder($request, $id);
             return response()->json(['redirect' => route('purchasings.purchase_orders.index'), 'message' => 'Pemesanan pembelian berhasil diperbarui.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -163,6 +169,8 @@ class PurchaseOrderController extends Controller
         try {
             $this->purchaseOrderService->changePurchaseOrderStatus($id, PurchaseOrderStatus::OPEN->value);
             return response()->json(['message' => 'Status Pemesanan pembelian berhasil diubah menjadi "Open"']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@open: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -178,6 +186,8 @@ class PurchaseOrderController extends Controller
         try {
             $this->purchaseOrderService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CLOSED->value);
             return response()->json(['message' => 'Status Pemesanan pembelian berhasil diubah menjadi "Closed"']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@close: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -193,6 +203,8 @@ class PurchaseOrderController extends Controller
         try {
             $this->purchaseOrderService->changePurchaseOrderStatus($id, PurchaseOrderStatus::CANCELLED->value);
             return response()->json(['message' => 'Status Pemesanan pembelian berhasil diubah menjadi "Cancelled"']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,

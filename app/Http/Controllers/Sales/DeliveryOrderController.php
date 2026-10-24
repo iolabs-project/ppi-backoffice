@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use App\Services\InventoryService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class DeliveryOrderController extends Controller
 {
@@ -56,6 +57,8 @@ class DeliveryOrderController extends Controller
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error DeliveryOrderController@store: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -150,6 +153,8 @@ class DeliveryOrderController extends Controller
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error DeliveryOrderController@update: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -165,6 +170,8 @@ class DeliveryOrderController extends Controller
         try {
             $deliveryOrderService->changeDeliveryOrderStatus($id, DeliveryOrderStatus::CANCELLED->value);
             return response()->json(['message' => 'Pengiriman Barang berhasil dibatalkan.']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error DeliveryOrderController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,

@@ -7,6 +7,8 @@ use App\Services\Master\RoleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class RoleController extends Controller
 {
@@ -20,6 +22,8 @@ class RoleController extends Controller
             ]);
 
             return response()->json($roles);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('RoleController@index: ' . $e->getMessage());
             return response()->json(['message' => 'Terjadi kesalahan saat mengambil data role'], 500);
@@ -36,6 +40,8 @@ class RoleController extends Controller
             $roleService->storeRole($request);
 
             return response()->json(['message' => 'Role berhasil dibuat']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('RoleController@store: ' . $e->getMessage());
             return response()->json(['message' => 'Terjadi kesalahan saat membuat role'], 500);
@@ -52,6 +58,8 @@ class RoleController extends Controller
             $roleService->updateRole($request, $id);
 
             return response()->json(['message' => 'Role berhasil diperbarui']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('RoleController@update: ' . $e->getMessage());
             return response()->json(['message' => 'Terjadi kesalahan saat memperbarui role'], 500);
@@ -69,6 +77,8 @@ class RoleController extends Controller
             $roleService->updatePermit($request, $id);
 
             return response()->json(['message' => 'Hak akses berhasil diperbarui']);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('RoleController@updatePermissions: ' . $e->getMessage());
             return response()->json(['message' => 'Terjadi kesalahan saat memperbarui hak akses'], 500);

@@ -14,6 +14,7 @@ use App\Services\Finance\AccountPayableService;
 use App\Services\Purchasing\PurchaseInvoiceService;
 use App\Services\ExpenseService;
 use App\Services\Master\AccountService;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class AccountPayableController extends Controller
 {
@@ -41,6 +42,8 @@ class AccountPayableController extends Controller
         try {
             $data = $this->accountPayableService->fetchAPTableData($request);
             return response()->json($data);
+         } catch (ValidationException | HttpExceptionInterface $e) {
+             throw $e;
          } catch (\Exception $e) {
             Log::error('Error AccountPayableController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -56,6 +59,8 @@ class AccountPayableController extends Controller
         try {
             $data = $this->accountPayableService->fetchPaymentTableData($request);
             return response()->json($data);
+         } catch (ValidationException | HttpExceptionInterface $e) {
+             throw $e;
          } catch (\Exception $e) {
             Log::error('Error AccountPayableController@paymentDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -86,6 +91,8 @@ class AccountPayableController extends Controller
             return response()->json(['redirect' => route('finances.account_payables.show', ['id' => $id, 'reference_type' => $request->reference_type]), 'message' => 'Pembayaran berhasil ditambahkan.']);
         } catch (ValidationException $e) {
             return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error Finance/AccountPayableController@store: ' . $e->getMessage(), [
                 'exception' => $e,

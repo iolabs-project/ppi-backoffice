@@ -2,6 +2,7 @@
 
 namespace App\Services\Sales;
 
+use App\Services\NumberingService;
 use App\Services\Finance\CashService;
 use App\Enums\AccountSettingEnum;
 use App\Enums\CashTransactionStatusEnum;
@@ -9,7 +10,6 @@ use App\Enums\CashTransactionTypeEnum;
 use App\Enums\DeliveryOrderStatus;
 use App\Enums\SalesOrderStatus;
 use App\Models\AccountSetting;
-use App\Models\Company;
 use App\Models\JournalEntry;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderCharge;
@@ -32,16 +32,7 @@ class SalesOrderService
     }
     public function generateSONumber(): string
     {
-        $prefix = 'SO';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = SalesOrder::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('sales_order', SalesOrder::class);
     }
 
     public function fetchSalesOrderTableData(Request $request)

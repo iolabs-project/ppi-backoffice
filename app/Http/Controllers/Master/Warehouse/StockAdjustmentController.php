@@ -8,6 +8,7 @@ use App\Services\Master\WarehouseService;
 use App\Services\Master\StockAdjustmentService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class StockAdjustmentController extends Controller
 {
@@ -40,6 +41,8 @@ class StockAdjustmentController extends Controller
             $stockAdjustmentService->storeStockAdjustment($request, $id);
 
             return response()->json(['message' => 'Penyesuaian stok berhasil dibuat.', 'redirect' => route('master.warehouses.show', $id)]);
+        } catch (ValidationException | HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error StockAdjustmentController@store: ' . $e->getMessage(), [
                 'exception' => $e,

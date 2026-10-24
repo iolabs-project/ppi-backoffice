@@ -11,9 +11,9 @@ use App\Enums\AccountSettingEnum;
 use App\Enums\CashTransactionStatusEnum;
 use App\Enums\CashTransactionTypeEnum;
 use App\Models\CashTransactionItem;
+use App\Services\NumberingService;
 use App\Services\JournalService;
 use App\Models\AccountSetting;
-use App\Models\Company;
 use App\Models\JournalEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,16 +30,7 @@ class CashService
 
     public function generateNumber(int $companyID)
     {
-        $prefix = 'CASH';
-        $companyCode = Company::select('code')->where('id', $companyID)->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = CashTransaction::whereYear('created_at', date('Y'))
-            ->where('company_id', $companyID)
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('cash', CashTransaction::class, $companyID);
     }
 
     public function fetchActiveAccountData(int $companyID, bool $includeBalance = true, array $excludeAccountIDs = [])

@@ -2,6 +2,7 @@
 
 namespace App\Services\Purchasing;
 
+use App\Services\NumberingService;
 use App\Services\JournalService;
 use App\Services\InventoryService;
 
@@ -9,7 +10,6 @@ use App\Enums\AccountSettingEnum;
 use App\Enums\PaymentTerm;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Models\AccountSetting;
-use App\Models\Company;
 use App\Models\JournalEntry;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceCost;
@@ -37,18 +37,7 @@ class PurchaseInvoiceService
     }
     public function generatePurchaseInvoiceNumber(): string
     {
-        $prefix = 'PI';
-        $companyCode = Company::select('code')->where('id', config('context.selected_company_id'))->first()->code ?? 'XXX';
-        $datePart = date('Y');
-
-        $counter = PurchaseInvoice::whereYear('created_at', date('Y'))
-            ->where('company_id', config('context.selected_company_id'))
-            ->count() + 1;
-        $counter = str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-
-
-        return "{$prefix}-{$companyCode}-{$datePart}-{$counter}";
+        return app(NumberingService::class)->document('purchase_invoice', PurchaseInvoice::class);
     }
 
     public function fetchPurchaseInvoiceTableData(Request $request)
@@ -294,18 +283,22 @@ class PurchaseInvoiceService
                 'status' => "Tagihan ini tidak dapat dibatalkan.",
             ]);
         }
-        DB::transaction(function () use ($purchaseInvoice) {
-            foreach ($purchaseInvoice->items as $item) {
-                PurchaseOrderItem::where('id', $item->purchase_order_item_id)
-                    ->decrement('invoiced_quantity', $item->quantity);
-            }
-            $purchaseInvoice->update(['status' => PurchaseInvoiceStatus::CANCELLED->value]);
-            PurchaseOrder::where('id', $purchaseInvoice->purchase_order_id)
-                ->increment('down_payment_remaining_amount', $purchaseInvoice->down_payment_amount);
-
-            if ($purchaseInvoice->status === PurchaseInvoiceStatus::OPEN->value) {
+        DB::transaction(function () use ($purchaseInvoice, $isDraft) {
+            // Only an open invoice added to the PO counters and posted a journal, so only it gets reversed
+            if (!$isDraft) {
+                foreach ($purchaseInvoice->items as $item) {
+                    PurchaseOrderItem::where('id', $item->purchase_order_item_id)
+                        ->decrement('invoiced_quantity', $item->quantity);
+                }
+                PurchaseOrder::where('id', $purchaseInvoice->purchase_order_id)
+                    ->increment('down_payment_remaining_amount', $purchaseInvoice->down_payment_amount);
                 $this->reversePIJournal($purchaseInvoice);
             }
+
+            $purchaseInvoice->update([
+                'status' => PurchaseInvoiceStatus::CANCELLED->value,
+                'remaining_amount' => 0,
+            ]);
         });
     }
 
