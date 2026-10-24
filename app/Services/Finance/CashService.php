@@ -122,8 +122,11 @@ class CashService
         }
 
         if ($request->filled('account_id')) {
-            $query->where('from_account_id', $request->input('account_id'))
-                ->orWhere('to_account_id', $request->input('account_id'));
+            // Grouped so the OR doesn't escape the status and date filters above
+            $query->where(function ($query) use ($request) {
+                $query->where('from_account_id', $request->input('account_id'))
+                    ->orWhere('to_account_id', $request->input('account_id'));
+            });
         }
 
         $query = $query->orderBy('transaction_date', 'desc')->paginate($request->input('per_page', 10));

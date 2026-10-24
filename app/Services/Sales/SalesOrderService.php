@@ -25,6 +25,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use App\Services\DocumentTotals;
 
 class SalesOrderService
 {
@@ -160,15 +161,10 @@ class SalesOrderService
             $chargesCollection = collect($request->input('charges', []));
             $totalChargeAmount = $chargesCollection->sum('amount');
             $subtotal = $detailsCollection->sum(function ($item) {
-                return (($item['quantity'] ?? 0))
-                    *
-                    (($item['unit_price'] ?? 0))
-
-                    *
-                    (1 - (($item['discount_percentage'] ?? 0) / 100));
+                return DocumentTotals::lineTotal($item['quantity'] ?? 0, $item['unit_price'] ?? 0, $item['discount_percentage'] ?? 0);
             });
-            $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
-            $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
+            $discountAmount = DocumentTotals::percentOf($subtotal, $request->discount_percentage);
+            $taxAmount = DocumentTotals::percentOf($subtotal - $discountAmount, $request->tax_percentage);
 
             $form =  SalesOrder::create(
                 [
@@ -208,8 +204,8 @@ class SalesOrderService
                     'unit_price' => $detail['unit_price'],
                     'subtotal' => $detail['quantity'] * $detail['unit_price'],
                     'discount_percentage' => $detail['discount_percentage'],
-                    'discount_amount' => $detail['quantity'] * $detail['unit_price'] * ($detail['discount_percentage'] / 100),
-                    'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] / 100)),
+                    'discount_amount' => DocumentTotals::lineDiscount($detail['quantity'], $detail['unit_price'], $detail['discount_percentage'] ?? 0),
+                    'total_amount' => DocumentTotals::lineTotal($detail['quantity'], $detail['unit_price'], $detail['discount_percentage'] ?? 0),
                 ]);
             }
 
@@ -250,15 +246,11 @@ class SalesOrderService
             $chargesCollection = collect($request->input('charges', []));
             $totalChargeAmount = $chargesCollection->sum('amount');
             $subtotal = $detailsCollection->sum(function ($detail) {
-                return (($detail['quantity'] ?? 0))
-                    *
-                    (($detail['unit_price'] ?? 0))
-                    *
-                    (1 - (($detail['discount_percentage'] ?? 0) / 100));
+                return DocumentTotals::lineTotal($detail['quantity'] ?? 0, $detail['unit_price'] ?? 0, $detail['discount_percentage'] ?? 0);
             });
 
-            $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
-            $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
+            $discountAmount = DocumentTotals::percentOf($subtotal, $request->discount_percentage);
+            $taxAmount = DocumentTotals::percentOf($subtotal - $discountAmount, $request->tax_percentage);
 
             $salesOrder->update([
                 'customer_id' => $request->customer_id,
@@ -301,8 +293,8 @@ class SalesOrderService
                     'unit_price' => $detail['unit_price'],
                     'subtotal' => $detail['quantity'] * $detail['unit_price'],
                     'discount_percentage' => $detail['discount_percentage'] ?? 0,
-                    'discount_amount' => $detail['quantity'] * $detail['unit_price'] * (($detail['discount_percentage'] ?? 0) / 100),
-                    'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
+                    'discount_amount' => DocumentTotals::lineDiscount($detail['quantity'], $detail['unit_price'], $detail['discount_percentage'] ?? 0),
+                    'total_amount' => DocumentTotals::lineTotal($detail['quantity'], $detail['unit_price'], $detail['discount_percentage'] ?? 0),
                 ]);
             }
 

@@ -115,10 +115,13 @@ class WarehouseController extends Controller
 
     public function show(int $id)
     {
+        $warehouse = $this->warehouseService->fetchWarehouseById($id);
+        abort_if(!$warehouse, 404, 'Gudang tidak ditemukan.');
+
         $data = [
             'currentPage'          => 'master',
             'breadcrumb'           => [['label' => 'Master Gudang']],
-            'warehouse' => $this->warehouseService->fetchWarehouseById($id),
+            'warehouse' => $warehouse,
             'products' => $this->inventoryService->fetchInventoryStock(companyID: config('context.selected_company_id'), warehouseID: $id),
             'batches' => $this->inventoryService->fetchInventoryBatches(companyID: config('context.selected_company_id'), warehouseID: $id),
         ];

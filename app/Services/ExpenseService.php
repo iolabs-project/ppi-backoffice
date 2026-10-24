@@ -155,9 +155,9 @@ class ExpenseService
                 $subtotal += $itemData['amount'] ?? 0;
             }
             $discountPercentage = $request->input('discount_percentage', 0);
-            $discountAmount = ($discountPercentage / 100) * $subtotal;
+            $discountAmount = DocumentTotals::percentOf($subtotal, $discountPercentage);
             $taxPercentage = $request->input('tax_percentage', 0);
-            $taxAmount = ($taxPercentage / 100) * ($subtotal - $discountAmount);
+            $taxAmount = DocumentTotals::percentOf($subtotal - $discountAmount, $taxPercentage);
 
             $chargeAmount = 0;
             foreach ($request->input('costs', []) as $chargeData) {
@@ -291,9 +291,9 @@ class ExpenseService
                 $subtotal += $itemData['amount'] ?? 0;
             }
             $discountPercentage = $request->input('discount_percentage', 0);
-            $discountAmount = ($discountPercentage / 100) * $subtotal;
+            $discountAmount = DocumentTotals::percentOf($subtotal, $discountPercentage);
             $taxPercentage = $request->input('tax_percentage', 0);
-            $taxAmount = ($taxPercentage / 100) * ($subtotal - $discountAmount);
+            $taxAmount = DocumentTotals::percentOf($subtotal - $discountAmount, $taxPercentage);
 
             $chargeAmount = 0;
             foreach ($request->input('costs', []) as $chargeData) {

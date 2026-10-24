@@ -62,6 +62,8 @@ class ContactController extends Controller
     public function show(int $id)
     {
         $contact = $this->contactService->fetchContactById($id);
+        abort_if(!$contact, 404, 'Kontak tidak ditemukan.');
+
         $data = [
             'currentPage'      => 'master',
             'breadcrumb'       => [

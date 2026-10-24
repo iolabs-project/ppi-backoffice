@@ -156,7 +156,7 @@
                     const d = this.formData.details[index];
                     d.subtotal = this.n(d.quantity) * this.n(d.unit_price);
 
-                    d.discount_amount = this.n(d.subtotal) * (this.n(d.discount_percentage) / 100);
+                    d.discount_amount = Math.round(this.n(d.subtotal) * (this.n(d.discount_percentage) / 100));
                     d.total_amount = d.subtotal - this.n(d.discount_amount);
                     // this.recalculate();
                 },

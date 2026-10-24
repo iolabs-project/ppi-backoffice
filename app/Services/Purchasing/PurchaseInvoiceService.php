@@ -24,6 +24,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use App\Services\DocumentTotals;
 
 class PurchaseInvoiceService
 {
@@ -133,17 +134,13 @@ class PurchaseInvoiceService
             $detailsCollection = collect($request->input('details', []));
             $costCollection = collect($request->input('costs', []));
             $subtotal = $detailsCollection->sum(function ($detail) {
-                return (($detail['quantity'] ?? 0))
-                    *
-                    (($detail['unit_price'] ?? 0))
-                    *
-                    (1 - (($detail['discount_percentage'] ?? 0) / 100));
+                return DocumentTotals::lineTotal($detail['quantity'] ?? 0, $detail['unit_price'] ?? 0, $detail['discount_percentage'] ?? 0);
             });
             $costAmount = $costCollection->sum(function ($cost) {
                 return $cost['amount'] ?? 0;
             });
-            $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
-            $taxAmount = ($subtotal - $discountAmount) * ($request->tax_percentage ?? 0) / 100;
+            $discountAmount = DocumentTotals::percentOf($subtotal, $request->discount_percentage);
+            $taxAmount = DocumentTotals::percentOf($subtotal - $discountAmount, $request->tax_percentage);
             $downpaymentAmount = $request->input('down_payment_amount', 0);
             $inventoryValue = $subtotal - $discountAmount;
 
@@ -205,8 +202,8 @@ class PurchaseInvoiceService
                     'unit_price' => $detail['unit_price'],
                     'subtotal' => $detail['quantity'] * $detail['unit_price'],
                     'discount_percentage' => $detail['discount_percentage'] ?? 0,
-                    'discount_amount' => $detail['quantity'] * $detail['unit_price'] * (($detail['discount_percentage'] ?? 0) / 100),
-                    'total_amount' => $detail['quantity'] * $detail['unit_price'] * (1 - ($detail['discount_percentage'] ?? 0) / 100),
+                    'discount_amount' => DocumentTotals::lineDiscount($detail['quantity'], $detail['unit_price'], $detail['discount_percentage'] ?? 0),
+                    'total_amount' => DocumentTotals::lineTotal($detail['quantity'], $detail['unit_price'], $detail['discount_percentage'] ?? 0),
                 ]);
                 $piItems->push($item);
 

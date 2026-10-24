@@ -30,8 +30,8 @@ class JournalService
 
             $totalDebit = array_sum(array_column($items, 'debit'));
             $totalCredit = array_sum(array_column($items, 'credit'));
-            // dd($totalDebit, $totalCredit, $items);
-            if ($totalDebit !== $totalCredit) {
+            // Amounts are floats added in different orders, so compare to the cent instead of exactly
+            if (abs($totalDebit - $totalCredit) >= 0.01) {
                 throw ValidationException::withMessages(['error' => 'Total debit dan kredit tidak seimbang.']);
             }   
 
@@ -68,6 +68,14 @@ class JournalService
 
         if ($originalEntry->status === 'cancelled') {
             throw ValidationException::withMessages(['error' => 'Tidak dapat membalikkan jurnal yang sudah dibatalkan.']);
+        }
+
+        // A reversal entry points back at the original, so one existing means it was already reversed
+        $alreadyReversed = JournalEntry::where('reference_type', JournalEntry::class)
+            ->where('reference_id', $originalEntry->id)
+            ->exists();
+        if ($alreadyReversed) {
+            throw ValidationException::withMessages(['error' => 'Jurnal ini sudah dibalik sebelumnya.']);
         }
 
         DB::transaction(function () use ($originalEntry, $date, $description) {

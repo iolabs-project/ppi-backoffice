@@ -2,6 +2,7 @@
 
 namespace App\Services\Sales;
 use App\Services\NumberingService;
+use App\Services\DocumentTotals;
 use App\Services\InventoryService;
 use App\Services\JournalService;
 use App\Enums\AccountSettingEnum;
@@ -164,7 +165,17 @@ class DeliveryOrderService
         $costsCollection = collect($request->input('costs', []));
 
         DB::transaction(function () use ($requestCollection, $detailsCollection, $costsCollection, $header) {
-            $subtotal = $detailsCollection->sum(fn($item) => (float) ($item['quantity'] ?? 0) * (float) ($item['unit_price'] ?? 0));
+            // The delivery form sends no prices, so value the goods at the SO item price and discount
+            $salesOrderItems = SalesOrderItem::whereIn('id', $detailsCollection->pluck('sales_order_item_id')->filter())
+                ->get(['id', 'unit_price', 'discount_percentage'])
+                ->keyBy('id');
+            $subtotal = $detailsCollection->sum(function ($item) use ($salesOrderItems) {
+                $salesOrderItem = $salesOrderItems->get($item['sales_order_item_id'] ?? null);
+
+                return $salesOrderItem
+                    ? DocumentTotals::lineTotal($item['quantity'] ?? 0, $salesOrderItem->unit_price, $salesOrderItem->discount_percentage)
+                    : 0;
+            });
             $totalAmount = $subtotal + $costsCollection->sum(fn($cost) => (float) ($cost['amount'] ?? 0));
 
             $header->update([

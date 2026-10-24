@@ -267,6 +267,8 @@
                 calculateDetailTotal(index) {
                     const d = this.formData.details[index];
                     d.subtotal = this.n(d.quantity) * this.n(d.unit_price);
+                    // Recompute so a quantity or price change after setting the discount % doesn't keep a stale amount
+                    d.discount_amount = Math.round((this.n(d.discount_percentage) / 100) * d.subtotal);
                     d.total_amount = d.subtotal - this.n(d.discount_amount);
                     this.recalculate();
                 },

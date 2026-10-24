@@ -4,6 +4,7 @@ namespace App\Services\Purchasing;
 
 use App\Enums\AccountSettingEnum;
 use App\Services\NumberingService;
+use App\Services\DocumentTotals;
 use App\Services\ExpenseService;
 use App\Services\JournalService;
 use App\Services\InventoryService;
@@ -126,7 +127,7 @@ class GoodsReceiptService
                 'number' => $this->generateGoodsReceiptNumber(),
                 'receipt_date' => now(),
                 'status' => GoodsReceiptStatus::DRAFT->value,
-                'subtotal' => $detailsCollection->sum(fn($item) => $item['received_quantity'] * $item['unit_price'] * (1 - ($item['discount_percentage'] ?? 0) / 100)),
+                'subtotal' => $detailsCollection->sum(fn($item) => DocumentTotals::lineTotal($item['received_quantity'], $item['unit_price'], $item['discount_percentage'] ?? 0)),
                 'total_amount' => 0,
                 'created_by' => Auth::id(),
             ]);
@@ -180,12 +181,7 @@ class GoodsReceiptService
 
         DB::transaction(function () use ($request, $requestCollection, $detailsCollection, $costsCollection, $header) {
             $subtotal = $detailsCollection->sum(function ($item) {
-                return (($item['received_quantity'] ?? 0))
-                    *
-                    (($item['unit_price'] ?? 0))
-
-                    *
-                    (1 - (($item['discount_percentage'] ?? 0) / 100));
+                return DocumentTotals::lineTotal($item['received_quantity'] ?? 0, $item['unit_price'] ?? 0, $item['discount_percentage'] ?? 0);
             });
             $header->update([
                 'reference_number' => $requestCollection->get('reference_number', null),
@@ -217,7 +213,7 @@ class GoodsReceiptService
             $expectedQty = (float) ($item['expected_quantity'] ?? 0);
             $unitPrice = (float) ($item['unit_price'] ?? 0);
             $discountPercentage = (float) ($item['discount_percentage'] ?? 0);
-            $discountAmount = $receivedQty * $unitPrice * ($discountPercentage / 100);
+            $discountAmount = DocumentTotals::lineDiscount($receivedQty, $unitPrice, $discountPercentage);
             GoodsReceiptItem::create([
                 'goods_receipt_id' => $goodsReceipt->id,
                 'purchase_order_item_id' => $item['purchase_order_item_id'],
@@ -255,7 +251,7 @@ class GoodsReceiptService
         });
         $totalSubtotal = $detailsCollection->sum(function ($item) {
             $subtotal = $item['received_quantity'] * $item['unit_price'];
-            $discountAmount = $subtotal * ($item['discount_percentage'] / 100);
+            $discountAmount = DocumentTotals::percentOf($subtotal, $item['discount_percentage'] ?? 0);
             return $subtotal - $discountAmount;
         });
 
@@ -280,7 +276,7 @@ class GoodsReceiptService
             $unitDiscountPercentage = (float) ($item['discount_percentage'] ?? 0);
             $unitPrice = (float) ($item['unit_price'] ?? 0);
             $subtotal = $qty * $unitPrice;
-            $unitDiscountAmount = $subtotal * ($unitDiscountPercentage / 100);
+            $unitDiscountAmount = DocumentTotals::percentOf($subtotal, $unitDiscountPercentage);
 
             if ($qty <= 0) {
                 $unitCost = 0;
