@@ -99,6 +99,12 @@ class DeliveryOrderService
     public function storeDeliveryOrder(Request $request): DeliveryOrder
     {
         $salesOrder =  $this->salesOrderService->fetchSalesOrderByID($request->sales_order_id);
+        if ($salesOrder->status !== SalesOrderStatus::OPEN->value) {
+            throw ValidationException::withMessages([
+                'sales_order_id' => 'Pengiriman hanya dapat dibuat dari pemesanan penjualan yang berstatus Open.',
+            ]);
+        }
+
         $deliveryOrder = DeliveryOrder::create([
             'company_id' => $salesOrder->company_id,
             'sales_order_id' => $salesOrder->id,
@@ -187,6 +193,10 @@ class DeliveryOrderService
     private function draftDeliveryOrder(DeliveryOrder $deliveryOrder, Collection $detailsCollection, Collection $costsCollection): void
     {
         foreach ($detailsCollection as $detail) {
+            // Rows the user added but never picked a product for are left out instead of failing the insert
+            if (empty($detail['sales_order_item_id'])) {
+                continue;
+            }
             $item = DeliveryOrderItem::create([
                 'delivery_order_id' => $deliveryOrder->id,
                 'sales_order_item_id' => $detail['sales_order_item_id'],
@@ -222,6 +232,10 @@ class DeliveryOrderService
     private function finalizeDeliveryOrder(DeliveryOrder $deliveryOrder, Collection $detailsCollection, Collection $costsCollection): void
     {
         foreach ($detailsCollection as $detail) {
+            // Rows the user added but never picked a product for are left out instead of failing the insert
+            if (empty($detail['sales_order_item_id'])) {
+                continue;
+            }
             $quantity = (float) ($detail['quantity'] ?? 0);
             $batches = collect($detail['batches'] ?? []);
             $batchTotal = $batches->sum(fn($b) => (float) ($b['quantity'] ?? 0));

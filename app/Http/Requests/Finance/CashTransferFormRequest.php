@@ -28,8 +28,9 @@ class CashTransferFormRequest extends FormRequest
             } else if ($this->input('status') === CashTransactionStatusEnum::POSTED->value) {
                 return $this->postedRules();
             }
+        // Any other status would skip validation and be saved as-is
         return [
-            
+            'status' => 'required|in:' . CashTransactionStatusEnum::DRAFT->value . ',' . CashTransactionStatusEnum::POSTED->value,
         ];
     }
 
@@ -47,7 +48,7 @@ class CashTransferFormRequest extends FormRequest
     private function postedRules(): array
     {
         return [
-            'to_account_id' => ['required', 'exists:chart_of_accounts,id'],
+            'to_account_id' => ['required', 'exists:chart_of_accounts,id', 'different:from_account_id'],
             'from_account_id' => ['required', 'exists:chart_of_accounts,id'],
             'transaction_date' => ['required', 'date'],
             'description' => ['nullable', 'string'],
@@ -60,6 +61,7 @@ class CashTransferFormRequest extends FormRequest
     {
         return [
             'to_account_id.required' => 'Akun tujuan harus diisi.',
+            'to_account_id.different' => 'Akun tujuan harus berbeda dengan akun asal.',
             'from_account_id.required' => 'Akun asal harus diisi.',
             'transaction_date.required' => 'Tanggal transaksi harus diisi.',
             'subtotal.required' => 'Total harus diisi.',

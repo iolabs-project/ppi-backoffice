@@ -29,8 +29,9 @@ class CashSendFormRequest extends FormRequest
             } else if ($this->input('status') === CashTransactionStatusEnum::POSTED->value) {
                 return $this->postedRules();
             }
+        // Any other status would skip validation and be saved as-is
         return [
-            
+            'status' => 'required|in:' . CashTransactionStatusEnum::DRAFT->value . ',' . CashTransactionStatusEnum::POSTED->value,
         ];
     }
 

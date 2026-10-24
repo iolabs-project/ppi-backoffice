@@ -8,9 +8,13 @@ use App\Enums\AccountSettingEnum;
 use App\Enums\CashTransactionStatusEnum;
 use App\Enums\CashTransactionTypeEnum;
 use App\Enums\DeliveryOrderStatus;
+use App\Enums\SalesInvoiceStatus;
 use App\Enums\SalesOrderStatus;
 use App\Models\AccountSetting;
+use App\Models\CashTransaction;
+use App\Models\DeliveryOrder;
 use App\Models\JournalEntry;
+use App\Models\SalesInvoice;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderCharge;
 use App\Models\SalesOrderCost;
@@ -20,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class SalesOrderService
 {
@@ -192,6 +197,10 @@ class SalesOrderService
             );
 
             foreach ($request->details as $detail) {
+                // Rows the user added but never picked a product for are left out instead of failing the insert
+                if (empty($detail['product_id'])) {
+                    continue;
+                }
                 SalesOrderItem::create([
                     'sales_order_id' => $form->id,
                     'product_id' => $detail['product_id'],
@@ -254,6 +263,7 @@ class SalesOrderService
             $salesOrder->update([
                 'customer_id' => $request->customer_id,
                 'warehouse_id' => $request->warehouse_id,
+                'sales_person_id' => $request->sales_person_id,
                 'number' => $request->number,
                 'reference_number' => $request->reference_number,
                 'order_date' => $request->order_date,
@@ -264,6 +274,8 @@ class SalesOrderService
                 'tax_amount' => $taxAmount,
                 'subtotal' => $subtotal,
                 'down_payment_amount' => $request->down_payment_amount,
+                // Still a draft, so nothing has been used yet
+                'down_payment_remaining_amount' => $request->down_payment_amount,
                 'down_payment_account_id' => $request->down_payment_account_id,
                 'total_amount' => $subtotal - $request->down_payment_amount - $discountAmount + $taxAmount + $totalChargeAmount,
                 'note' => $request->note,
@@ -278,6 +290,10 @@ class SalesOrderService
 
             // Create new items
             foreach ($request->details as $detail) {
+                // Rows the user added but never picked a product for are left out instead of failing the insert
+                if (empty($detail['product_id'])) {
+                    continue;
+                }
                 SalesOrderItem::create([
                     'sales_order_id' => $salesOrder->id,
                     'product_id' => $detail['product_id'],
@@ -309,8 +325,10 @@ class SalesOrderService
             }
 
             if ($salesOrder->status === SalesOrderStatus::OPEN->value) {
-                $this->postCashTransaction($salesOrder);
-                $this->postSOJournal($salesOrder);
+                if ($salesOrder->down_payment_account_id && $salesOrder->down_payment_amount > 0) {
+                    $this->postCashTransaction($salesOrder);
+                    $this->postSOJournal($salesOrder);
+                }
             }
         });
     }
@@ -322,14 +340,55 @@ class SalesOrderService
 
         // Drafts may keep a charge without an account, but the invoice copies charges into a NOT NULL account column
         if ($status === SalesOrderStatus::OPEN->value && $salesOrder->charges()->whereNull('account_id')->exists()) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'charges' => 'Akun biaya (customer) belum dipilih. Lengkapi draft SO terlebih dahulu.',
             ]);
         }
-        // $salesOrder->update(['status' => $status]);
-        DB::transaction(function () use ($salesOrder, $status) {
-            if ($status === SalesOrderStatus::CANCELLED->value && $salesOrder->status === SalesOrderStatus::OPEN->value) {
+
+        $wasOpen = $salesOrder->status === SalesOrderStatus::OPEN->value;
+        $hasDownPayment = $salesOrder->down_payment_amount > 0 && $salesOrder->down_payment_account_id;
+
+        // Opening from the list skips the form, so check the draft is complete here
+        if ($status === SalesOrderStatus::OPEN->value) {
+            $errors = [];
+            if (!$salesOrder->customer_id) {
+                $errors['customer_id'] = 'Customer belum dipilih. Lengkapi draft SO terlebih dahulu.';
+            }
+            if (!$salesOrder->items()->exists()) {
+                $errors['details'] = 'SO belum memiliki produk. Lengkapi draft SO terlebih dahulu.';
+            }
+            if ($errors) {
+                throw ValidationException::withMessages($errors);
+            }
+        }
+
+        if ($status === SalesOrderStatus::CANCELLED->value && $wasOpen) {
+            $hasDeliveries = DeliveryOrder::where('sales_order_id', $salesOrder->id)
+                ->where('status', '!=', DeliveryOrderStatus::CANCELLED->value)
+                ->exists();
+            $hasInvoices = SalesInvoice::where('sales_order_id', $salesOrder->id)
+                ->where('status', '!=', SalesInvoiceStatus::CANCELLED->value)
+                ->exists();
+
+            if ($hasDeliveries || $hasInvoices) {
+                throw ValidationException::withMessages([
+                    'status' => 'SO tidak dapat dibatalkan karena sudah memiliki pengiriman atau tagihan.',
+                ]);
+            }
+        }
+
+        DB::transaction(function () use ($salesOrder, $status, $wasOpen, $hasDownPayment) {
+            if ($status === SalesOrderStatus::OPEN->value && $hasDownPayment) {
+                $this->postCashTransaction($salesOrder);
+                $this->postSOJournal($salesOrder);
+            }
+
+            if ($status === SalesOrderStatus::CANCELLED->value && $wasOpen) {
                 $this->reverseSOJournal($salesOrder);
+                // The down payment cash row never posted its own journal (the SO journal covers it), so just mark it cancelled
+                CashTransaction::where('reference_type', SalesOrder::class)
+                    ->where('reference_id', $salesOrder->id)
+                    ->update(['status' => CashTransactionStatusEnum::CANCELLED->value]);
             }
 
             $salesOrder->update(['status' => $status]);

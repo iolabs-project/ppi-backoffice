@@ -28,8 +28,9 @@ class CashReceiveFormRequest extends FormRequest
             } else if ($this->input('status') === CashTransactionStatusEnum::POSTED->value) {
                 return $this->postedRules();
             }
+        // Any other status would skip validation and be saved as-is
         return [
-            
+            'status' => 'required|in:' . CashTransactionStatusEnum::DRAFT->value . ',' . CashTransactionStatusEnum::POSTED->value,
         ];
     }
 
@@ -57,6 +58,8 @@ class CashReceiveFormRequest extends FormRequest
             'items' => ['required', 'array', 'min:1'],
             'items.*.account_id' => ['required_with:items.*.amount', 'exists:chart_of_accounts,id'],
             'items.*.amount' => ['required_with:items.*.account_id', 'numeric', 'min:0.01'],
+            // Receiving has no extra costs; they would raise the total without reaching the journal
+            'costs' => ['prohibited'],
             
         ];
     }

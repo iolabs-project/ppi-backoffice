@@ -103,7 +103,7 @@ class StockAdjustmentService
             $amount = ($stockAdjustmentItem->counted_quantity - $stockAdjustmentItem->system_quantity) * $stockAdjustmentItem->unit_cost;
 
             $this->journalService->post(
-                date: null,
+                date: $stockAdjustment->adjustment_date?->format('Y-m-d H:i:s'),
                 referenceType: StockAdjustment::class,
                 referenceID: $stockAdjustment->id,
                 description: 'Penyesuaian Stock # ' . $stockAdjustment->number,
@@ -130,7 +130,7 @@ class StockAdjustmentService
             $amount = ($stockAdjustmentItem->system_quantity - $stockAdjustmentItem->counted_quantity) * $stockAdjustmentItem->unit_cost;
 
             $this->journalService->post(
-                date: null,
+                date: $stockAdjustment->adjustment_date?->format('Y-m-d H:i:s'),
                 referenceType: StockAdjustment::class,
                 referenceID: $stockAdjustment->id,
                 description: 'Penyesuaian Stock # ' . $stockAdjustment->number,

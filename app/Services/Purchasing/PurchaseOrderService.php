@@ -192,6 +192,10 @@ class PurchaseOrderService
             );
 
             foreach ($request->details as $detail) {
+                // Rows the user added but never picked a product for are left out instead of failing the insert
+                if (empty($detail['product_id'])) {
+                    continue;
+                }
                 PurchaseOrderItem::create([
                     'purchase_order_id' => $form->id,
                     'product_id' => $detail['product_id'],
@@ -270,6 +274,10 @@ class PurchaseOrderService
 
             // Create new items
             foreach ($request->details as $detail) {
+                // Rows the user added but never picked a product for are left out instead of failing the insert
+                if (empty($detail['product_id'])) {
+                    continue;
+                }
                 PurchaseOrderItem::create([
                     'purchase_order_id' => $purchaseOrder->id,
                     'product_id' => $detail['product_id'],

@@ -9,7 +9,9 @@ use App\Services\InventoryService;
 use App\Enums\AccountSettingEnum;
 use App\Enums\PaymentTerm;
 use App\Enums\PurchaseInvoiceStatus;
+use App\Enums\PurchaseOrderStatus;
 use App\Models\AccountSetting;
+use App\Models\GoodsReceiptItem;
 use App\Models\JournalEntry;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceCost;
@@ -18,6 +20,7 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Services\Purchasing\GoodsReceiptService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
@@ -94,6 +97,12 @@ class PurchaseInvoiceService
     public function storePurchaseInvoice(Request $request): PurchaseInvoice
     {
         $purchaseOrder = $this->purchaseOrderService->fetchPurchaseOrderByID($request->purchase_order_id);
+        if (!in_array($purchaseOrder->status, [PurchaseOrderStatus::OPEN->value, PurchaseOrderStatus::CLOSED->value], true)) {
+            throw ValidationException::withMessages([
+                'purchase_order_id' => 'Tagihan hanya dapat dibuat dari pemesanan pembelian yang berstatus Open atau Closed.',
+            ]);
+        }
+
         $invoice = PurchaseInvoice::create([
             'company_id' => $purchaseOrder->company_id,
             'purchase_order_id' => $purchaseOrder->id,
@@ -138,6 +147,10 @@ class PurchaseInvoiceService
             $downpaymentAmount = $request->input('down_payment_amount', 0);
             $inventoryValue = $subtotal - $discountAmount;
 
+            if ($request->status === PurchaseInvoiceStatus::OPEN->value) {
+                $this->validateOpenInvoice($purchaseInvoice, $detailsCollection, (float) $downpaymentAmount);
+            }
+
             $purchaseInvoice->update([
                 'supplier_id' => $request->supplier_id,
                 'warehouse_id' => $request->warehouse_id,
@@ -179,6 +192,10 @@ class PurchaseInvoiceService
             // Create new items
             $piItems = collect();
             foreach ($request->details as $detail) {
+                // Rows the user added but never picked a product for are left out instead of failing the insert
+                if (empty($detail['goods_receipt_item_id'])) {
+                    continue;
+                }
                 $item = PurchaseInvoiceItem::create([
                     'purchase_invoice_id' => $purchaseInvoice->id,
                     'goods_receipt_item_id' => $detail['goods_receipt_item_id'],
@@ -217,6 +234,38 @@ class PurchaseInvoiceService
                 $this->postPIJournal($purchaseInvoice);
             }
         });
+    }
+
+    // Billed quantity can't exceed what was received minus other invoices, and the down payment can't exceed what the PO has left
+    private function validateOpenInvoice(PurchaseInvoice $purchaseInvoice, Collection $detailsCollection, float $downPaymentAmount): void
+    {
+        $errors = [];
+        $goodsReceiptItemIDs = $detailsCollection->pluck('goods_receipt_item_id')->filter()->all();
+        $receivedQuantities = GoodsReceiptItem::whereIn('id', $goodsReceiptItemIDs)->pluck('received_quantity', 'id');
+        $invoicedQuantities = PurchaseInvoiceItem::whereIn('goods_receipt_item_id', $goodsReceiptItemIDs)
+            ->whereHas('purchaseInvoice', function ($query) use ($purchaseInvoice) {
+                $query->whereNotIn('status', [PurchaseInvoiceStatus::DRAFT->value, PurchaseInvoiceStatus::CANCELLED->value])
+                    ->where('id', '!=', $purchaseInvoice->id);
+            })
+            ->groupBy('goods_receipt_item_id')
+            ->selectRaw('goods_receipt_item_id, SUM(quantity) as quantity')
+            ->pluck('quantity', 'goods_receipt_item_id');
+
+        foreach ($detailsCollection->filter(fn($detail) => !empty($detail['goods_receipt_item_id']))->groupBy('goods_receipt_item_id') as $goodsReceiptItemID => $details) {
+            $remaining = (float) ($receivedQuantities[$goodsReceiptItemID] ?? 0) - (float) ($invoicedQuantities[$goodsReceiptItemID] ?? 0);
+            if ($details->sum('quantity') > $remaining + 0.00001) {
+                $errors['details'][] = 'Kuantitas ' . ($details->first()['name'] ?? 'produk') . ' melebihi sisa yang belum ditagih (' . (float) $remaining . ').';
+            }
+        }
+
+        $downPaymentRemaining = (float) PurchaseOrder::where('id', $purchaseInvoice->purchase_order_id)->value('down_payment_remaining_amount');
+        if ($downPaymentAmount > $downPaymentRemaining + 0.00001) {
+            $errors['down_payment_amount'] = 'Uang muka yang dipakai melebihi sisa uang muka PO (' . $downPaymentRemaining . ').';
+        }
+
+        if ($errors) {
+            throw ValidationException::withMessages($errors);
+        }
     }
 
     public function fetchPurchaseInvoiceByID(int $id): ?PurchaseInvoice

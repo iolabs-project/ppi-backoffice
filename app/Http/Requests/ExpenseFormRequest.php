@@ -31,7 +31,10 @@ class ExpenseFormRequest extends FormRequest
             return $this->openRules();
         }
 
-        return [];
+        // Any other status would skip validation and be saved as-is
+        return [
+            'status' => 'required|in:' . ExpenseStatus::DRAFT->value . ',' . ExpenseStatus::OPEN->value,
+        ];
     }
 
     private function draftRules(): array

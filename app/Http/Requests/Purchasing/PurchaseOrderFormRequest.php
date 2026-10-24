@@ -31,7 +31,10 @@ class PurchaseOrderFormRequest extends FormRequest
             return $this->openRules();
         }
 
-        return [];
+        // Any other status would skip validation and be saved as-is
+        return [
+            'status' => 'required|in:' . PurchaseOrderStatus::DRAFT->value . ',' . PurchaseOrderStatus::OPEN->value,
+        ];
     }
 
     private function draftRules(): array
@@ -82,9 +85,9 @@ class PurchaseOrderFormRequest extends FormRequest
             'status' => 'required|in:draft,open',
             'details' => 'required|array|min:1',
             'details.*.product_id' => 'required|exists:products,id',
-            'details.*.quantity' => 'required|numeric|min:1',
+            'details.*.quantity' => 'required|numeric|gt:0',
             'details.*.unit_price' => 'required|numeric|min:0',
-            'details.*.discount_percentage' => 'nullable|numeric|min:0',
+            'details.*.discount_percentage' => 'nullable|numeric|min:0|max:100',
             'details.*.discount_amount' => 'nullable|numeric|min:0',
             'costs' => 'nullable|array',
             'costs.*.account_id' => 'required_with:costs.*.amount|exists:chart_of_accounts,id',
@@ -107,7 +110,7 @@ class PurchaseOrderFormRequest extends FormRequest
             'details.required' => 'Daftar item tidak boleh kosong.',
             'details.*.product_id.required' => 'Produk harus dipilih untuk setiap item.',
             'details.*.quantity.required' => 'Kuantitas harus diisi untuk setiap item.',
-            'details.*.quantity.min' => 'Kuantitas harus lebih besar dari 0 untuk setiap item.',
+            'details.*.quantity.gt' => 'Kuantitas harus lebih besar dari 0 untuk setiap item.',
             'details.*.unit_price.required' => 'Harga satuan harus diisi untuk setiap item.',
             'details.*.unit_price.min' => 'Harga satuan harus lebih besar dari 0 untuk setiap item.',
             'costs.*.account_id.required_with' => 'Akun harus dipilih jika jumlah biaya diisi.',

@@ -8,6 +8,7 @@ use App\Services\JournalService;
 use App\Enums\AccountSettingEnum;
 use App\Enums\SalesInvoiceStatus;
 use App\Enums\DeliveryOrderStatus;
+use App\Enums\SalesOrderStatus;
 use App\Models\DeliveryOrder;
 use App\Models\DeliveryOrderItem;
 use App\Models\AccountSetting;
@@ -94,6 +95,12 @@ class SalesInvoiceService
     public function storeSalesInvoice(Request $request): SalesInvoice
     {
         $salesOrder =  $this->salesOrderService->fetchSalesOrderByID($request->sales_order_id);
+        if (!in_array($salesOrder->status, [SalesOrderStatus::OPEN->value, SalesOrderStatus::CLOSED->value], true)) {
+            throw ValidationException::withMessages([
+                'sales_order_id' => 'Tagihan hanya dapat dibuat dari pemesanan penjualan yang berstatus Open atau Closed.',
+            ]);
+        }
+
         return DB::transaction(function () use ($salesOrder) {
             $invoice =  SalesInvoice::create([
                 'company_id' => $salesOrder->company_id,
@@ -149,6 +156,13 @@ class SalesInvoiceService
 
         if ($request->status === SalesInvoiceStatus::OPEN->value) {
             $this->validateInvoiceableQuantities($detailsCollection, $salesInvoice->id);
+
+            $downPaymentRemaining = (float) SalesOrder::where('id', $salesInvoice->sales_order_id)->value('down_payment_remaining_amount');
+            if ((float) $request->down_payment_amount > $downPaymentRemaining + 0.00001) {
+                throw ValidationException::withMessages([
+                    'down_payment_amount' => 'Uang muka yang dipakai melebihi sisa uang muka SO (' . $downPaymentRemaining . ').',
+                ]);
+            }
         }
 
         $discountAmount = $subtotal * ($request->discount_percentage ?? 0) / 100;
@@ -180,6 +194,10 @@ class SalesInvoiceService
             SalesInvoiceCharge::where('sales_invoice_id', $salesInvoice->id)->delete();
 
             foreach ($request->details as $detail) {
+                // Rows the user added but never picked a product for are left out instead of failing the insert
+                if (empty($detail['delivery_order_item_id'])) {
+                    continue;
+                }
                 SalesInvoiceItem::create([
                     'sales_invoice_id' => $salesInvoice->id,
                     'delivery_order_item_id' => $detail['delivery_order_item_id'],

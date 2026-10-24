@@ -67,7 +67,7 @@ class PurchaseInvoiceFormRequest extends FormRequest
             'details.*.goods_receipt_item_id' => 'required|exists:goods_receipt_items,id',
             'details.*.purchase_order_item_id' => 'required|exists:purchase_order_items,id',
             'details.*.product_id' => 'required|exists:products,id',
-            'details.*.quantity' => 'required|numeric|min:0',
+            'details.*.quantity' => 'required|numeric|gt:0',
             'details.*.unit_price' => 'required|numeric|min:0',
             'details.*.discount_percentage' => 'nullable|numeric|min:0|max:100',
             'costs' => 'nullable|array',

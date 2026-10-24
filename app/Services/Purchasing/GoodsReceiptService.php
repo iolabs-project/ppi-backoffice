@@ -8,6 +8,7 @@ use App\Services\ExpenseService;
 use App\Services\JournalService;
 use App\Services\InventoryService;
 use App\Enums\GoodsReceiptStatus;
+use App\Enums\PurchaseOrderStatus;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Models\AccountSetting;
 use App\Models\GoodsReceipt;
@@ -97,6 +98,11 @@ class GoodsReceiptService
     public function storeGoodsReceipt(Request $request): GoodsReceipt
     {
         $purchaseOrder =  $this->purchaseOrderService->fetchPurchaseOrderByID($request->purchase_order_id);
+        if ($purchaseOrder->status !== PurchaseOrderStatus::OPEN->value) {
+            throw ValidationException::withMessages([
+                'purchase_order_id' => 'Penerimaan barang hanya dapat dibuat dari pemesanan pembelian yang berstatus Open.',
+            ]);
+        }
 
         // Start the draft with every PO item that still has quantity left, fully received by default
         $detailsCollection = $this->purchaseOrderService->fetchPOItemsForGoodsReceipt($purchaseOrder->id)
@@ -203,6 +209,10 @@ class GoodsReceiptService
     {
 
         foreach ($detailsCollection as $item) {
+            // Rows the user added but never picked a product for are left out instead of failing the insert
+            if (empty($item['purchase_order_item_id'])) {
+                continue;
+            }
             $receivedQty = (float) ($item['received_quantity'] ?? 0);
             $expectedQty = (float) ($item['expected_quantity'] ?? 0);
             $unitPrice = (float) ($item['unit_price'] ?? 0);
@@ -261,6 +271,10 @@ class GoodsReceiptService
 
         $journalAmount = 0;
         foreach ($detailsCollection as $item) {
+            // Rows the user added but never picked a product for are left out instead of failing the insert
+            if (empty($item['purchase_order_item_id'])) {
+                continue;
+            }
             $expectedQty = (float) ($item['expected_quantity'] ?? 0);
             $qty = (float) ($item['received_quantity'] ?? 0);
             $unitDiscountPercentage = (float) ($item['discount_percentage'] ?? 0);

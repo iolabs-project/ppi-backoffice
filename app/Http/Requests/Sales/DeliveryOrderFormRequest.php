@@ -36,7 +36,10 @@ class DeliveryOrderFormRequest extends FormRequest
             return $this->finishedRules();
         }
 
-        return [];
+        // Any other status would skip validation and be saved as-is
+        return [
+            'status' => 'required|in:' . DeliveryOrderStatus::DRAFT->value . ',' . DeliveryOrderStatus::FINISHED->value,
+        ];
     }
 
     private function draftRules(): array
