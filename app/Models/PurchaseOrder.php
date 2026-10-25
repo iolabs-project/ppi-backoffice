@@ -2,33 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsModelActivity;
 use Illuminate\Database\Eloquent\Model;
 use App\Enums\PurchaseOrderStatus;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 
 class PurchaseOrder extends Model
 {
-    use LogsActivity;
+    use LogsModelActivity;
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->useLogName('visible')
-            ->setDescriptionForEvent(function (string $eventName) {
-                $event = match ($eventName) {
-                    'created' => 'dibuat',
-                    'updated' => 'diperbarui',
-                    'deleted' => 'dihapus',
-                    default => $eventName,
-                };
-                return "Pesanan pembelian {$event}";
-            })
-            ->logAll()
-            ->logOnlyDirty();
-    }
+    protected string $activityLogName = 'visible';
+
+    protected string $activityLogSubject = 'Pesanan pembelian';
 
     protected $fillable = [
         'company_id',

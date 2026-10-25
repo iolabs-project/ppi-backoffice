@@ -2,33 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsModelActivity;
 use App\Enums\SalesOrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 
 class SalesOrder extends Model
 {
-    use LogsActivity;
+    use LogsModelActivity;
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->useLogName('visible')
-            ->setDescriptionForEvent(function (string $eventName) {
-                $event = match ($eventName) {
-                    'created' => 'dibuat',
-                    'updated' => 'diperbarui',
-                    'deleted' => 'dihapus',
-                    default => $eventName,
-                };
-                return "Pesanan penjualan {$event}";
-            })
-            ->logAll()
-            ->logOnlyDirty();
-    }
+    protected string $activityLogName = 'visible';
+
+    protected string $activityLogSubject = 'Pesanan penjualan';
 
     protected $fillable = [
         'company_id',

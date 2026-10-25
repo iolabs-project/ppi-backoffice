@@ -2,30 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsModelActivity;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 
 class StockAdjustmentItem extends Model
 {
-    use LogsActivity;
+    use LogsModelActivity;
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->useLogName('non_visible')
-            ->setDescriptionForEvent(function (string $eventName) {
-                $event = match ($eventName) {
-                    'created' => 'dibuat',
-                    'updated' => 'diperbarui',
-                    'deleted' => 'dihapus',
-                    default => $eventName,
-                };
-                return "Item penyesuaian stok {$event}";
-            })
-            ->logAll()
-            ->logOnlyDirty();
-    }
+    protected string $activityLogName = 'non_visible';
+
+    protected string $activityLogSubject = 'Item penyesuaian stok';
 
     protected $fillable = [
         'stock_adjustment_id',

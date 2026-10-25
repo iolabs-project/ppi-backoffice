@@ -3,35 +3,21 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\LogsModelActivity;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
-use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles, LogsActivity;
+    use HasFactory, Notifiable, HasRoles, LogsModelActivity;
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->useLogName('non_visible')
-            ->setDescriptionForEvent(function (string $eventName) {
-                $event = match ($eventName) {
-                    'created' => 'dibuat',
-                    'updated' => 'diperbarui',
-                    'deleted' => 'dihapus',
-                    default => $eventName,
-                };
-                return "Pengguna {$event}";
-            })
-            ->logAll()
-            ->logOnlyDirty();
-    }
+    protected string $activityLogName = 'non_visible';
+
+    protected string $activityLogSubject = 'Pengguna';
 
     /**
      * The attributes that are mass assignable.

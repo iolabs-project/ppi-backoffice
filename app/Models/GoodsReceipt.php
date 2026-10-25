@@ -2,30 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsModelActivity;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 
 class GoodsReceipt extends Model
 {
-    use LogsActivity;
+    use LogsModelActivity;
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->useLogName('visible')
-            ->setDescriptionForEvent(function (string $eventName) {
-                $event = match ($eventName) {
-                    'created' => 'dibuat',
-                    'updated' => 'diperbarui',
-                    'deleted' => 'dihapus',
-                    default => $eventName,
-                };
-                return "Penerimaan barang {$event}";
-            })
-            ->logAll()
-            ->logOnlyDirty();
-    }
+    protected string $activityLogName = 'visible';
+
+    protected string $activityLogSubject = 'Penerimaan barang';
     protected $fillable = [
         'company_id',
         'purchase_order_id',
