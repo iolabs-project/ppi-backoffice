@@ -20,13 +20,18 @@
                     <x-misc.status-badge :status="$salesOrder->status" />
                 </div>
                 <div class="order-sub">
-                    Dibuat {{ $salesOrder->created_at->format('d M Y') }} oleh <span
+                    Dibuat {{ $salesOrder->created_at->translatedFormat('d M Y') }} oleh <span
                         style="font-weight:600;">{{ $salesOrder->creator->username }}</span>
                 </div>
             </div>
             <div class="order-actions">
 
                 {{-- TODO: Add edit button --}}
+
+                @if (auth()->user()->can('sales.sales-orders.edit') && $salesOrder->status === $open)
+                    <button class="btn btn-ghost" @click="handleClose({{ $salesOrder->id }})"><x-misc.icon name="lock"
+                            :size="14" />Tutup SO</button>
+                @endif
 
                 @if (auth()->user()->can('sales.sales-orders.delete') && $salesOrder->is_cancellable)
                     <button class="btn btn-ghost" @click="handleCancel({{ $salesOrder->id }})"><x-misc.icon name="x"
@@ -159,7 +164,7 @@
                                         <td class="mono" style="color:var(--ink-4);">
                                             {{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
                                         <td>{{ $charge->description ?: '—' }}</td>
-                                        <td>{{ $charge->account->code }} - {{ $charge->account->name }}</td>
+                                        <td>{{ $charge->account ? $charge->account->code . ' - ' . $charge->account->name : '—' }}</td>
                                         <td class="num" style="text-align:right; font-weight:600;">
                                             {{ number_format($charge->amount, 2) }}</td>
                                     </tr>
@@ -196,7 +201,7 @@
                                         <td class="mono" style="color:var(--ink-4);">
                                             {{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
                                         <td>{{ $cost->description ?: '—' }}</td>
-                                        <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
+                                        <td>{{ $cost->account ? $cost->account->code . ' - ' . $cost->account->name : '—' }}</td>
                                         <td class="num" style="text-align:right; font-weight:600;">
                                             {{ number_format($cost->amount, 2) }}</td>
                                     </tr>
@@ -250,6 +255,44 @@
     <script>
         function detailPage() {
             return {
+                async handleClose(id) {
+                    const result = await Swal.fire({
+                        title: 'Apakah Anda yakin ingin menutup SO ini?',
+                        text: 'Sisa barang yang belum dikirim tidak akan diproses lagi.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, tutup',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    });
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    try {
+                        const response = await axios.post(route('sales.sales_orders.close', id));
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message
+                        });
+                        window.location.reload();
+                    } catch (error) {
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'error',
+                            title: error.response?.data?.message ?? 'Terjadi kesalahan saat menutup SO. Silakan coba lagi.'
+                        });
+                    }
+                },
+
                 async handleCancel(id) {
                     Swal.fire({
                         title: 'Apakah Anda yakin ingin membatalkan SO ini?',
@@ -275,7 +318,7 @@
                                     icon: 'success',
                                     title: response.data.message
                                 });
-                                await this.fetchData();
+                                window.location.reload();
                             } catch (error) {
                                 Swal.close();
                                 let message = 'Terjadi kesalahan saat membatalkan SO. Silakan coba lagi.';

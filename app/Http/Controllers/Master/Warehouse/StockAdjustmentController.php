@@ -46,7 +46,7 @@ class StockAdjustmentController extends Controller
         } catch (\Exception $e) {
             Log::error('Error StockAdjustmentController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat penyesuaian stok. Silakan coba lagi.'], 500);

@@ -6,9 +6,12 @@ use App\Enums\CashTransactionTypeEnum;
 use App\Enums\CashTransactionStatusEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\Concerns\LimitsAmounts;
 
 class CashFormRequest extends FormRequest
 {
+    use LimitsAmounts;
+
     /**
      * Determine if the user is authorized to make this request.
      */

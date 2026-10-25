@@ -98,7 +98,7 @@ class PurchaseOrderService
             $query->where('order_date', '<=', $request->input('end_date'));
         }
 
-        $query = $query->orderBy('order_date', 'desc')->paginate($request->input('per_page', 10));
+        $query = $query->orderBy('order_date', 'desc')->orderBy('id', 'desc')->paginate($request->input('per_page', 10));
         return $query;
     }
 

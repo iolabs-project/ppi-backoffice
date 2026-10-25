@@ -37,7 +37,7 @@ class ProductCategoryController extends Controller
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Error ProductCategoryController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -64,7 +64,7 @@ class ProductCategoryController extends Controller
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Error ProductCategoryController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([

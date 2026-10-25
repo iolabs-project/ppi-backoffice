@@ -50,7 +50,7 @@ class SalesInvoiceController extends Controller
         } catch (ValidationException $e) {
             Log::error('Error SalesInvoiceController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
@@ -59,7 +59,7 @@ class SalesInvoiceController extends Controller
         } catch (\Exception $e) {
             Log::error('Error SalesInvoiceController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat tagihan penjualan. Silakan coba lagi.'], 500);
@@ -128,7 +128,7 @@ class SalesInvoiceController extends Controller
         } catch (ValidationException $e) {
             Log::error('Error SalesInvoiceController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
@@ -137,7 +137,7 @@ class SalesInvoiceController extends Controller
         } catch (\Exception $e) {
             Log::error('Error SalesInvoiceController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Tagihan Penjualan. Silakan coba lagi.'], 500);

@@ -5,9 +5,12 @@ namespace App\Http\Requests\Purchasing;
 use Illuminate\Contracts\Validation\ValidationRule;
 use App\Enums\GoodsReceiptStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\Concerns\LimitsAmounts;
 
 class GoodsReceiptFormRequest extends FormRequest
 {
+    use LimitsAmounts;
+
     /**
      * Determine if the user is authorized to make this request.
      */

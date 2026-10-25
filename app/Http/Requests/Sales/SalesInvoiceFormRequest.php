@@ -7,9 +7,12 @@ use App\Enums\PaymentTerm;
 use Illuminate\Contracts\Validation\ValidationRule;
 use App\Enums\SalesInvoiceStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\Concerns\LimitsAmounts;
 
 class SalesInvoiceFormRequest extends FormRequest
 {
+    use LimitsAmounts;
+
     /**
      * Determine if the user is authorized to make this request.
      */

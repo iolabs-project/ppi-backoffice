@@ -24,7 +24,7 @@ class AccountController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Master/AccountController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -46,7 +46,7 @@ class AccountController extends Controller
         } catch (\Exception $e) {
             Log::error('Error AccountController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -68,7 +68,7 @@ class AccountController extends Controller
         } catch (\Exception $e) {
             Log::error('Error AccountController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -90,7 +90,7 @@ class AccountController extends Controller
         } catch (\Exception $e) {
             Log::error('Error AccountController@status: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([

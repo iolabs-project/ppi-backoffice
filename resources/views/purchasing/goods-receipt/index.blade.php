@@ -92,10 +92,10 @@
                                 <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
                                     @click="window.location = route('purchasings.goods_receipts.show', row.id)">
                                     <td class="mono" style="font-weight:600;" x-text="row.number"></td>
-                                    <td style="color:var(--ink-3);" x-text="row.receipt_date ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="DateUtils.formatDate(row.receipt_date)"></td>
                                     <td class="mono" style="font-weight:600;" x-text="row.purchase_order.number"></td>
-                                    <td style="font-weight:500;" x-text="row.supplier.name ?? '-'"></td>
-                                    <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
+                                    <td style="font-weight:500;" x-text="row.supplier?.name ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="row.warehouse?.name ?? '-'"></td>
                                     <td class="num" style="text-align:right;" x-text="m(row.total_received_quantity)"></td>
                                     <td class="num" style="text-align:right;" x-text="m(row.total_shrinkage_quantity)"></td>
                                     <td>

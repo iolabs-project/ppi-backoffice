@@ -93,7 +93,7 @@ class DeliveryOrderService
             $query->where('delivery_date', '<=', $request->input('end_date'));
         }
 
-        $query = $query->orderBy('delivery_date', 'desc')->paginate($request->input('per_page', 10));
+        $query = $query->orderBy('delivery_date', 'desc')->orderBy('id', 'desc')->paginate($request->input('per_page', 10));
         return $query;
     }
 

@@ -19,15 +19,9 @@ export function formatNumericIntoMask(value, decimalPlaces = 2) {
         return (0).toFixed(decimalPlaces);
     }
 
-    const negative = num < 0;
-
-    const [integerPart, decimalPart] = Math.abs(num)
-        .toFixed(decimalPlaces)
-        .split(".");
-
-    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-    return negative
-        ? `-${formattedInteger}${decimalPlaces > 0 ? `.${decimalPart}` : ""}`
-        : `${formattedInteger}${decimalPlaces > 0 ? `.${decimalPart}` : ""}`;
+    // toFixed() switches to exponent notation from 1e21, Intl never does
+    return new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: decimalPlaces,
+        maximumFractionDigits: decimalPlaces,
+    }).format(num);
 }

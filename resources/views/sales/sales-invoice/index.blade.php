@@ -93,10 +93,10 @@
                                 <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
                                     @click="row.status === '{{ $draft }}' ? window.location = route('sales.sales_invoices.edit', row.id) : null">
                                     <td class="mono" style="font-weight:600;" x-text="row.number"></td>
-                                    <td style="color:var(--ink-3);" x-text="row.invoice_date ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="DateUtils.formatDate(row.invoice_date)"></td>
                                     <td class="mono" style="font-weight:600;" x-text="row.sales_order.number"></td>
-                                    <td style="font-weight:500;" x-text="row.customer.name ?? '-'"></td>
-                                    <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
+                                    <td style="font-weight:500;" x-text="row.customer?.name ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="DateUtils.formatDate(row.due_date)"></td>
                                     <td class="num" style="text-align:right;"
                                         x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
                                     <td>

@@ -52,7 +52,7 @@ class PurchaseInvoiceController extends Controller
         } catch (ValidationException $e) {
             Log::error('Error PurchaseInvoiceController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
@@ -61,7 +61,7 @@ class PurchaseInvoiceController extends Controller
         } catch (\Exception $e) {
             Log::error('Error PurchaseInvoiceController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat tagihan pembelian. Silakan coba lagi.'], 500);
@@ -126,7 +126,7 @@ class PurchaseInvoiceController extends Controller
         } catch (ValidationException $e) {
             Log::error('Error PurchaseInvoiceController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
@@ -135,7 +135,7 @@ class PurchaseInvoiceController extends Controller
         } catch (\Exception $e) {
             Log::error('Error PurchaseInvoiceController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Tagihan Pembelian. Silakan coba lagi.'], 500);

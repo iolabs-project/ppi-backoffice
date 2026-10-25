@@ -33,7 +33,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Master/ProductController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -53,7 +53,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Master/ProductController@transactionDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -74,7 +74,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ProductController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -115,7 +115,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ProductController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -158,7 +158,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ProductController@options: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([

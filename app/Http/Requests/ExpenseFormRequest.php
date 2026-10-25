@@ -7,9 +7,12 @@ use App\Enums\PaymentTerm;
 use App\Enums\ExpenseStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\Concerns\LimitsAmounts;
 
 class ExpenseFormRequest extends FormRequest
 {
+    use LimitsAmounts;
+
     /**
      * Determine if the user is authorized to make this request.
      */

@@ -103,7 +103,7 @@ class SalesOrderService
             $query->invoicable();
         }
 
-        $query = $query->orderBy('order_date', 'desc')->paginate($request->input('per_page', 10));
+        $query = $query->orderBy('order_date', 'desc')->orderBy('id', 'desc')->paginate($request->input('per_page', 10));
         return $query;
     }
 

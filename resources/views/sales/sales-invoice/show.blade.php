@@ -15,7 +15,7 @@
                     <x-misc.status-badge :status="$salesInvoice->status" />
                 </div>
                 <div class="order-sub">
-                    Dibuat {{ $salesInvoice->created_at->format('d M Y') }} oleh <span
+                    Dibuat {{ $salesInvoice->created_at->translatedFormat('d M Y') }} oleh <span
                         style="font-weight:600;">{{ $salesInvoice->creator->username }}</span>
                 </div>
             </div>
@@ -140,7 +140,7 @@
                                         <td class="mono" style="color:var(--ink-4);">
                                             {{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
                                         <td>{{ $charge->description ?: '—' }}</td>
-                                        <td>{{ $charge->account->code }} - {{ $charge->account->name }}</td>
+                                        <td>{{ $charge->account ? $charge->account->code . ' - ' . $charge->account->name : '—' }}</td>
                                         <td class="num" style="text-align:right; font-weight:600;">
                                             {{ number_format($charge->amount, 2) }}</td>
                                     </tr>
@@ -197,7 +197,7 @@
             return {
                 async handleCancel(id) {
                     Swal.fire({
-                        title: 'Apakah Anda yakin ingin membatalkan SO ini?',
+                        title: 'Apakah Anda yakin ingin membatalkan Tagihan Penjualan ini?',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Ya, batalkan',
@@ -214,16 +214,16 @@
                             });
                             try {
                                 const response = await axios.post(route(
-                                    'sales.sales_orders.cancel', id));
+                                    'sales.sales_invoices.cancel', id));
                                 Swal.close();
                                 Toast.fire({
                                     icon: 'success',
                                     title: response.data.message
                                 });
-                                await this.fetchData();
+                                window.location.reload();
                             } catch (error) {
                                 Swal.close();
-                                let message = 'Terjadi kesalahan saat membatalkan SO. Silakan coba lagi.';
+                                let message = 'Terjadi kesalahan saat membatalkan Tagihan Penjualan. Silakan coba lagi.';
                                 if (error.response?.data?.message) {
                                     message = error.response.data.message;
                                 }

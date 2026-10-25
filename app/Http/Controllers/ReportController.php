@@ -52,7 +52,7 @@ class ReportController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ReportController@profitLossDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -72,7 +72,7 @@ class ReportController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ReportController@balanceSheetDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -92,7 +92,7 @@ class ReportController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ReportController@cashFlowDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -112,7 +112,7 @@ class ReportController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ReportController@executiveDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -132,7 +132,7 @@ class ReportController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ReportController@receivableDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -152,7 +152,7 @@ class ReportController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ReportController@payableDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -172,7 +172,7 @@ class ReportController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ReportController@journalDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -192,7 +192,7 @@ class ReportController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ReportController@activityLogDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([

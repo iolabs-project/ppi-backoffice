@@ -274,7 +274,7 @@
                         <template x-if="!loading && tableData.data.length > 0">
                             <template x-for="tx in tableData.data" :key="tx.id">
                                 <tr>
-                                    <td style="color:var(--ink-3); white-space:nowrap;" x-text="tx.transaction_date"></td>
+                                    <td style="color:var(--ink-3); white-space:nowrap;" x-text="DateUtils.formatDate(tx.transaction_date)"></td>
                                     <td style="font-weight:500;" x-text="tx.description"></td>
                                     <td>
                                         <template x-if="tx.type === '{{ $transfer }}'">
@@ -303,9 +303,11 @@
                                             </span>
                                         </template>
                                     </td>
-                                    <td class="mono" style="font-size:11.5px; color:var(--ink-4);"></td>
-                                    <td class="num" style="text-align:right; color:var(--ink-5); font-weight:400;"
-                                        x-text="m(tx.total_amount)"></td>
+                                    <td class="mono" style="font-size:11.5px; color:var(--ink-4);" x-text="tx.number"></td>
+                                    {{-- Money into the account being viewed is +, money out of it is − --}}
+                                    <td class="num" style="text-align:right; font-weight:600;"
+                                        :style="tx.to_account_id == {{ $account->id }} ? 'color:var(--ok);' : 'color:var(--bad);'"
+                                        x-text="(tx.to_account_id == {{ $account->id }} ? '+' : '−') + m(tx.total_amount)"></td>
                                     <td>
                                         <span :class="statusChip(tx.status).chip">
                                             <span :class="statusChip(tx.status).dot"></span>
@@ -361,10 +363,24 @@
     
                                                             </div>
                                                         </template>
+                                                        <template x-if="tx.type === '{{ $send }}' && @js(auth()->user()->can('finances.cash-bank.edit'))">
+                                                            <div>
+                                                                <a :href="route('finances.cash.send.edit', {
+                                                                    id: '{{ $account->id }}',
+                                                                    send: tx.id
+                                                                })"
+                                                                    @click.stop class="action-menu__item">
+                                                                    <x-misc.icon name="edit" :size="14"
+                                                                        stroke="var(--ink-3)" />
+                                                                    Edit Transaksi
+                                                                </a>
+    
+                                                            </div>
+                                                        </template>
                                                         @if (auth()->user()->can('finances.cash-bank.delete'))
                                                             <div class="action-menu__divider"></div>
                                                             <button class="action-menu__item action-menu__item--danger"
-                                                                @click.stop="cancel(tx.from_account.id, tx.id, tx.type)">
+                                                                @click.stop="cancel('{{ $account->id }}', tx.id, tx.type)">
                                                                 <x-misc.icon name="trash" :size="14"
                                                                     stroke="currentColor" />Batalkan
                                                                 Transaksi

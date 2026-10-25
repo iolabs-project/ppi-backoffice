@@ -31,7 +31,7 @@ class WarehouseController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Master/WarehouseController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -56,7 +56,7 @@ class WarehouseController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Master/WarehouseController@datatableStock: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -82,7 +82,7 @@ class WarehouseController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Master/WarehouseController@datatableBatch: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -104,7 +104,7 @@ class WarehouseController extends Controller
         } catch (\Exception $e) {
             Log::error('Error WarehouseController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -142,7 +142,7 @@ class WarehouseController extends Controller
         } catch (\Exception $e) {
             Log::error('Error WarehouseController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -164,7 +164,7 @@ class WarehouseController extends Controller
         } catch (\Exception $e) {
             Log::error('Error WarehouseController@status: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -185,7 +185,7 @@ class WarehouseController extends Controller
         } catch (\Exception $e) {
             Log::error('Error WarehouseController@options: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([

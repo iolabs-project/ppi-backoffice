@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PayablePaymentReferenceTypeEnum;
 use App\Models\Concerns\LogsModelActivity;
 use Illuminate\Database\Eloquent\Model;
 
@@ -73,5 +74,11 @@ class Expense extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(PayablePayment::class, 'reference_id')
+            ->where('reference_type', PayablePaymentReferenceTypeEnum::EXPENSE->value);
     }
 }

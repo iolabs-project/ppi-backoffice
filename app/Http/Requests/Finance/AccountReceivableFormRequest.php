@@ -6,8 +6,11 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 use App\Enums\ReceivablePaymentReferenceTypeEnum;
+use App\Http\Requests\Concerns\LimitsAmounts;
 class AccountReceivableFormRequest extends FormRequest
 {
+    use LimitsAmounts;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -32,12 +35,14 @@ class AccountReceivableFormRequest extends FormRequest
             'reference_type' => ['required', new Enum(ReceivablePaymentReferenceTypeEnum::class)],
             'amount' => ['required', 'numeric', 'gt:0'],
             'note' => ['nullable', 'string'],
+            'idempotency_key' => ['required', 'string', 'max:64'],
         ];
     }
 
     public function messages(): array
     {
         return [
+            'idempotency_key.required' => 'Form pembayaran sudah kedaluwarsa. Muat ulang halaman lalu coba lagi.',
             'account_id.required' => 'Akun kas & bank harus diisi.',
             'account_id.exists' => 'Akun kas & bank tidak ditemukan.',
             'payment_date.required' => 'Tanggal pembayaran harus diisi.',

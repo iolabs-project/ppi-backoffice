@@ -57,11 +57,11 @@
                         </div>
                         <div>
                             <div class="label" style="font-size:11px;">Tanggal Invoice</div>
-                            <div>{{ $invoice->invoice_date->format('d M Y') }}</div>
+                            <div>{{ $invoice->invoice_date->translatedFormat('d M Y') }}</div>
                         </div>
                         <div>
                             <div class="label" style="font-size:11px;">Jatuh Tempo</div>
-                            <div>{{ $invoice->due_date->format('d M Y') }}</div>
+                            <div>{{ $invoice->due_date->translatedFormat('d M Y') }}</div>
                         </div>
                         <div>
                             <div class="label" style="font-size:11px;">Catatan</div>
@@ -264,6 +264,7 @@
                     this.form.reference_number = '';
                     this.form.amount = '';
                     this.form.note = '';
+                    this.form.idempotency_key = Date.now().toString(36) + Math.random().toString(36).slice(2);
                     this.modalOpen = true;
                 },
 
@@ -277,6 +278,7 @@
                 },
 
                 async submit() {
+                    if (this.saving) return;
                     if (!FormValidation.validateRequired(this.$root)) {
                         return;
                     }
@@ -314,8 +316,10 @@
                         reference_type: this.form.reference_type,
                         amount: amount,
                         note: this.form.note,
+                        idempotency_key: this.form.idempotency_key,
                     };
 
+                    this.saving = true;
                     Swal.fire({
                         title: 'Memproses penyimpanan pembayaran...',
                         allowOutsideClick: false,
@@ -356,6 +360,8 @@
                             html: html
                         });
 
+                    } finally {
+                        this.saving = false;
                     }
                 },
             };

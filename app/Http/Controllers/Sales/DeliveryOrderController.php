@@ -53,7 +53,7 @@ class DeliveryOrderController extends Controller
         } catch (ValidationException $e) {
             Log::error('Error DeliveryOrderController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
@@ -62,7 +62,7 @@ class DeliveryOrderController extends Controller
         } catch (\Exception $e) {
             Log::error('Error DeliveryOrderController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat pengiriman. Silakan coba lagi.'], 500);
@@ -149,7 +149,7 @@ class DeliveryOrderController extends Controller
         } catch (ValidationException $e) {
             Log::error('Error DeliveryOrderController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
@@ -158,7 +158,7 @@ class DeliveryOrderController extends Controller
         } catch (\Exception $e) {
             Log::error('Error DeliveryOrderController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Pengiriman Barang. Silakan coba lagi.'], 500);
@@ -175,7 +175,7 @@ class DeliveryOrderController extends Controller
         } catch (\Exception $e) {
             Log::error('Error DeliveryOrderController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan Pengiriman Barang. Silakan coba lagi.'], 500);

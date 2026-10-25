@@ -5,9 +5,12 @@ namespace App\Http\Requests\Master;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\Concerns\LimitsAmounts;
 
 class ContactFormRequest extends FormRequest
 {
+    use LimitsAmounts;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -46,6 +49,7 @@ class ContactFormRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:20',
+                'regex:/^[0-9+\-\s()]+$/',
             ],
             'email' => [
                 'nullable',
@@ -55,6 +59,12 @@ class ContactFormRequest extends FormRequest
             'is_customer' => [
                 'required',
                 'boolean',
+                // A contact without any type never shows up as a customer, vendor or employee option
+                function ($attribute, $value, $fail) {
+                    if (!$this->boolean('is_customer') && !$this->boolean('is_supplier') && !$this->boolean('is_employee')) {
+                        $fail('Pilih minimal satu tipe kontak: Customer, Vendor, atau Karyawan.');
+                    }
+                },
             ],
             'is_supplier' => [
                 'required',
@@ -85,6 +95,7 @@ class ContactFormRequest extends FormRequest
             'name.max' => 'Nama kontak tidak boleh lebih dari 255 karakter.',
 
             'address.string' => 'Alamat kontak harus berupa string.',
+            'phone.regex' => 'Nomor telepon hanya boleh berisi angka, spasi, +, -, dan tanda kurung.',
             'address.max' => 'Alamat kontak tidak boleh lebih dari 255 karakter.',
 
             'phone.string' => 'Nomor telepon harus berupa string.',

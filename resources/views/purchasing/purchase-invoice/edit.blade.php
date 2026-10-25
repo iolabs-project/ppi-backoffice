@@ -391,7 +391,20 @@
                     if (!FormValidation.validateRequired(this.$root)) {
                         return;
                     }
-                    
+
+                    const confirmation = await Swal.fire({
+                        title: 'Apakah Anda yakin ingin membuka tagihan ini?',
+                        text: 'Setelah tagihan dibuka, tagihan tidak dapat diperbarui lagi.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, buka',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    });
+                    if (!confirmation.isConfirmed) {
+                        return;
+                    }
+
                     this.isSubmitting = true;
 
                     let body = {

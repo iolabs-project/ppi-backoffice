@@ -180,7 +180,7 @@
         <div class="produk-stat-grid produk-stat-grid--3">
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 220); color:oklch(0.45 0.14 220);">
-                    {{ 0 }}
+                    {{ $activity['transactionsThisMonth'] }}
                 </div>
                 <div class="produk-stat__label">Transaksi</div>
                 <div class="produk-stat__unit">Tercatat bulan ini</div>
@@ -188,18 +188,18 @@
 
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:var(--bad-bg); color:var(--bad);">
-                    {{ fmt_rp_short(0) }}
+                    {{ fmt_rp_short($activity['payable']) }}
                 </div>
                 <div class="produk-stat__label">Hutang (Anda)</div>
-                <div class="produk-stat__unit">Outstanding bulan ini</div>
+                <div class="produk-stat__unit">Sisa tagihan yang belum dibayar</div>
             </div>
 
             <div class="card produk-stat">
                 <div class="produk-stat__badge" style="background:oklch(0.92 0.06 155); color:oklch(0.45 0.14 155);">
-                    {{ fmt_rp_short(0) }}
+                    {{ fmt_rp_short($activity['receivable']) }}
                 </div>
                 <div class="produk-stat__label">Hutang (Kontak)</div>
-                <div class="produk-stat__unit">Outstanding bulan ini</div>
+                <div class="produk-stat__unit">Sisa piutang yang belum diterima</div>
             </div>
 
 
@@ -228,7 +228,22 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {{-- TODO: implement contact transaction datatable --}}
+                                @forelse ($activity['history'] as $doc)
+                                    <tr style="cursor:pointer;" onclick="window.location='{{ route($doc->route, $doc->id) }}'">
+                                        <td style="color:var(--ink-3); white-space:nowrap;">
+                                            {{ \Illuminate\Support\Carbon::parse($doc->document_date)->format('d/m/Y') }}</td>
+                                        <td class="mono" style="font-weight:600;">{{ $doc->number }}</td>
+                                        <td>{{ $doc->type }}</td>
+                                        <td><x-misc.status-badge :status="$doc->status" /></td>
+                                        <td class="num" style="text-align:right;">{{ $doc->total_amount === null ? '—' : number_format($doc->total_amount, 2) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                            Belum ada transaksi dengan kontak ini
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -248,7 +263,7 @@
                                 <span class="chip chip-accent">Karyawan</span>
                             @endif
                             @if ($isSupplier)
-                                <span class="chip chip-accent">Supplier</span>
+                                <span class="chip chip-accent">Vendor</span>
                             @endif
                             @if ($isCustomer)
                                 <span class="chip chip-accent">Customer</span>

@@ -505,6 +505,14 @@ class ReportService
             ->where('journal_entries.status', JournalEntryStatusEnum::POSTED->value)
             ->whereDate('journal_entries.journal_date', '>=', $startDate)
             ->whereDate('journal_entries.journal_date', '<=', $endDate)
+            // A transfer between two cash/bank accounts moves no money in or out of the company
+            ->whereExists(function ($query) {
+                $query->selectRaw(1)
+                    ->from('journal_entry_items as other_items')
+                    ->join('chart_of_accounts as other_accounts', 'other_items.account_id', '=', 'other_accounts.id')
+                    ->whereColumn('other_items.journal_entry_id', 'journal_entries.id')
+                    ->where('other_accounts.category_id', '!=', AccountCategoryEnum::CASH_BANK->value);
+            })
             ->selectRaw('SUM(journal_entry_items.debit) as cash_in, SUM(journal_entry_items.credit) as cash_out')
             ->first();
 

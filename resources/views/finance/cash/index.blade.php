@@ -339,7 +339,7 @@
                         <template x-if="!loading && tableData.data.length > 0">
                             <template x-for="tx in tableData.data" :key="tx.id">
                                 <tr>
-                                    <td style="color:var(--ink-3); white-space:nowrap;" x-text="tx.transaction_date"></td>
+                                    <td style="color:var(--ink-3); white-space:nowrap;" x-text="DateUtils.formatDate(tx.transaction_date)"></td>
                                     <td style="font-weight:500;" x-text="tx.description"></td>
                                     <td>
                                         <template x-if="tx.type === '{{ $transfer }}'">

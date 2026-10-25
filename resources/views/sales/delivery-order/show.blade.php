@@ -16,7 +16,7 @@
                     <x-misc.status-badge :status="$deliveryOrder->status" />
                 </div>
                 <div class="order-sub">
-                    Dibuat {{ $deliveryOrder->created_at->format('d M Y') }} oleh <span
+                    Dibuat {{ $deliveryOrder->created_at->translatedFormat('d M Y') }} oleh <span
                         style="font-weight:600;">{{ $deliveryOrder->creator->username }}</span>
                 </div>
             </div>
@@ -119,7 +119,7 @@
                                 <tr>
                                     <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</td>
                                     <td>{{ $cost->description ?: '—' }}</td>
-                                    <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
+                                    <td>{{ $cost->account ? $cost->account->code . ' - ' . $cost->account->name : '—' }}</td>
                                     <td class="num" style="text-align:right; font-weight:600;">{{ number_format($cost->amount, 2) }}</td>
                                 </tr>
                             @endforeach

@@ -82,7 +82,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat Purchase Order. Silakan coba lagi.'], 500);
@@ -157,7 +157,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             Log::error('Error PurchaseOrderController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Pemesanan pembelian. Silakan coba lagi.'], 500);

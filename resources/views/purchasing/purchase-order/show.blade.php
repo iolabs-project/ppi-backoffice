@@ -17,12 +17,17 @@
                     <x-misc.status-badge :status="$purchaseOrder->status" />
                 </div>
                 <div class="order-sub">
-                    Dibuat {{ $purchaseOrder->created_at->format('d M Y') }} oleh <span
+                    Dibuat {{ $purchaseOrder->created_at->translatedFormat('d M Y') }} oleh <span
                         style="font-weight:600;">{{ $purchaseOrder->creator->username }}</span>
                 </div>
             </div>
             <div class="order-actions">
                 {{-- TODO: Add edit button --}}
+
+                @if (auth()->user()->can('purchasing.purchase-orders.edit') && $purchaseOrder->status === $open)
+                    <button class="btn btn-ghost" @click="handleClose({{ $purchaseOrder->id }})"><x-misc.icon name="lock"
+                            :size="14" />Tutup PO</button>
+                @endif
 
                 @if (auth()->user()->can('purchasing.purchase-orders.delete') && $purchaseOrder->is_cancellable)
                     <button class="btn btn-ghost" @click="handleCancel({{ $purchaseOrder->id }})"><x-misc.icon
@@ -54,7 +59,7 @@
         </div>
 
         <div class="card order-meta">
-            @foreach ([['Vendor', $purchaseOrder->supplier->name, true], ['Tanggal PO', $purchaseOrder->order_date->format('d/m/Y'), false], ['Jatuh Tempo', $purchaseOrder->due_date->format('d/m/Y'), false], ['Gudang Tujuan', $purchaseOrder->warehouse->name, false]] as [$lbl, $val, $av])
+            @foreach ([['Vendor', $purchaseOrder->supplier?->name ?? '—', (bool) $purchaseOrder->supplier], ['Tanggal PO', $purchaseOrder->order_date->format('d/m/Y'), false], ['Jatuh Tempo', $purchaseOrder->due_date?->format('d/m/Y') ?? '—', false], ['Gudang Tujuan', $purchaseOrder->warehouse?->name ?? '—', false]] as [$lbl, $val, $av])
                 <div>
                     <div class="label order-meta__label">{{ $lbl }}</div>
                     <div class="order-meta__value">
@@ -161,7 +166,7 @@
                                     <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}
                                     </td>
                                     <td>{{ $cost->description ?: '—' }}</td>
-                                    <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
+                                    <td>{{ $cost->account ? $cost->account->code . ' - ' . $cost->account->name : '—' }}</td>
                                     <td>{{ \App\Enums\BilledBy::from($cost->billed_by)->label() }}</td>
                                     <td style="text-align:center;">{{ $cost->is_inventory_cost ? 'Ya' : 'Tidak' }}</td>
                                     <td class="num" style="text-align:right; font-weight:600;">
@@ -208,6 +213,44 @@
             return {
                 m(v) {
                     return NumberUtils.formatNumericIntoMask(v);
+                },
+
+                async handleClose(id) {
+                    const result = await Swal.fire({
+                        title: 'Apakah Anda yakin ingin menutup PO ini?',
+                        text: 'Sisa barang yang belum diterima tidak akan diproses lagi.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, tutup',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    });
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    try {
+                        const response = await axios.post(route('purchasings.purchase_orders.close', id));
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message
+                        });
+                        window.location.reload();
+                    } catch (error) {
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'error',
+                            title: error.response?.data?.message ?? 'Terjadi kesalahan saat menutup PO. Silakan coba lagi.'
+                        });
+                    }
                 },
 
                 async handleCancel(id) {
