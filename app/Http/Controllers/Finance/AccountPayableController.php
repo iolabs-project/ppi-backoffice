@@ -47,7 +47,7 @@ class AccountPayableController extends Controller
          } catch (\Exception $e) {
             Log::error('Error AccountPayableController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba mengambil data Hutang. Silakan coba lagi.'], 500);
@@ -64,7 +64,7 @@ class AccountPayableController extends Controller
          } catch (\Exception $e) {
             Log::error('Error AccountPayableController@paymentDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba mengambil data pembayaran Hutang. Silakan coba lagi.'], 500);
@@ -96,7 +96,7 @@ class AccountPayableController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Finance/AccountPayableController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba menambahkan pembayaran. Silakan coba lagi.'], 500);

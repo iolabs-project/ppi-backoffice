@@ -33,7 +33,7 @@ class AccountPayableService
         return app(NumberingService::class)->document('account_payable', PayablePayment::class);
     }
 
-    public function fetchInvoiceByID(int $id, string $type)
+    public function fetchInvoiceByID(int $id, ?string $type)
     {
         if ($type === 'purchase_invoice') {
             return PurchaseInvoice::with(['supplier:id,name,code'])
@@ -67,7 +67,8 @@ class AccountPayableService
             $expense->supplier = $expense->contact; // Map contact to supplier relationship
             return $expense;
         } else {
-            throw ValidationException::withMessages(['error' => 'Tipe referensi tidak valid.']);
+            // Only reached from a page URL, so an unknown type is a page that doesn't exist
+            abort(404, 'Tipe referensi tidak valid.');
         }
     }
 
@@ -170,7 +171,7 @@ class AccountPayableService
             });
         }
 
-        $query = $query->orderBy('payment_date', 'desc')->paginate($request->input('per_page', 10));
+        $query = $query->orderBy('payment_date', 'desc')->orderBy('id', 'desc')->paginate($request->input('per_page', 10));
 
         return $query;
     }
@@ -187,7 +188,8 @@ class AccountPayableService
             throw ValidationException::withMessages(['error' => 'Tipe referensi tidak valid.']);
         }
 
-        DB::transaction(function () use ($request, $id, $model, $payableStatuses) {
+        // The token is issued when the payment form opens, so a double-click or retry is recorded once
+        run_once('payment:' . $request->input('idempotency_key'), fn () => DB::transaction(function () use ($request, $id, $model, $payableStatuses) {
             // Lock the invoice so two submits can't both pass the remaining-amount check
             $invoice = $model::lockForUpdate()->findOrFail($id);
 
@@ -232,7 +234,7 @@ class AccountPayableService
 
             $this->postCashTransaction($payment);
             $this->postPaymentJournal($payment);
-        });
+        }), 'Pembayaran ini sudah tercatat.');
     }
 
     private function postPaymentJournal(PayablePayment $payment)

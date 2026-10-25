@@ -319,7 +319,7 @@
                                 <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
                                     @click="window.location = route('expenses.show', row.id)">
                                     <td class="mono" style="font-weight:600;" x-text="row.number"></td>
-                                    <td style="color:var(--ink-3);" x-text="row.expense_date ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="DateUtils.formatDate(row.expense_date)"></td>
                                     <td class="mono" style="font-weight:600;" x-text="row.reference_number"></td>
                                     <td style="font-weight:500;" x-text="row.contact?.name ?? '-'"></td>
                                     <td class="num" style="text-align:right;"

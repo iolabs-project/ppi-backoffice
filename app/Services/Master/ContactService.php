@@ -5,6 +5,7 @@ namespace App\Services\Master;
 use App\Models\Contact;
 use App\Services\NumberingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ContactService
@@ -138,6 +139,51 @@ class ContactService
         return Contact::where('company_id', config('context.selected_company_id'))
             ->where('id', $id)
             ->first();
+    }
+
+    /**
+     * Documents this contact appears on (newest first) and what is still owed either way.
+     */
+    public function fetchContactActivity(int $id): array
+    {
+        $companyID = config('context.selected_company_id');
+        $documents = [
+            // table, contact column, date column, label, detail route (a goods receipt has no amount of its own)
+            ['purchase_orders', 'supplier_id', 'order_date', 'Purchase Order', 'purchasings.purchase_orders.show'],
+            ['goods_receipts', 'supplier_id', 'receipt_date', 'Penerimaan Barang', 'purchasings.goods_receipts.show'],
+            ['purchase_invoices', 'supplier_id', 'invoice_date', 'Tagihan Pembelian', 'purchasings.purchase_invoices.show'],
+            ['sales_orders', 'customer_id', 'order_date', 'Sales Order', 'sales.sales_orders.show'],
+            ['delivery_orders', 'customer_id', 'delivery_date', 'Pengiriman', 'sales.delivery_orders.show'],
+            ['sales_invoices', 'customer_id', 'invoice_date', 'Tagihan Penjualan', 'sales.sales_invoices.show'],
+            ['expenses', 'contact_id', 'expense_date', 'Biaya', 'expenses.show'],
+        ];
+
+        $union = null;
+        foreach ($documents as [$table, $contactColumn, $dateColumn, $label, $route]) {
+            $query = DB::table($table)
+                ->where('company_id', $companyID)
+                ->where($contactColumn, $id)
+                ->selectRaw("id, number, status, " . ($table === 'goods_receipts' ? 'NULL' : 'total_amount') . " as total_amount, {$dateColumn} as document_date, ? as type, ? as route", [$label, $route]);
+            $union = $union ? $union->unionAll($query) : $query;
+        }
+        $all = DB::query()->fromSub($union, 'documents');
+
+        $outstanding = fn (string $table, string $contactColumn) => (float) DB::table($table)
+            ->where('company_id', $companyID)
+            ->where($contactColumn, $id)
+            ->whereIn('status', ['open', 'partial'])
+            ->sum('remaining_amount');
+
+        return [
+            'history' => (clone $all)->orderByDesc('document_date')->orderByDesc('id')->limit(20)->get(),
+            'transactionsThisMonth' => (clone $all)
+                ->where('status', '!=', 'cancelled')
+                ->whereBetween('document_date', [now()->startOfMonth(), now()->endOfMonth()])
+                ->count(),
+            // What the company still owes this contact, and what the contact still owes the company
+            'payable' => $outstanding('purchase_invoices', 'supplier_id') + $outstanding('expenses', 'contact_id'),
+            'receivable' => $outstanding('sales_invoices', 'customer_id'),
+        ];
     }
 
     public function storeContact(Request $request)

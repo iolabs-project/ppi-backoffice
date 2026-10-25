@@ -32,7 +32,7 @@ class AccountReceivableService
         return app(NumberingService::class)->document('account_receivable', ReceivablePayment::class);
     }
 
-    public function fetchInvoiceByID(int $id, string $type)
+    public function fetchInvoiceByID(int $id, ?string $type)
     {
         if ($type === 'sales_invoice') {
             return SalesInvoice::with(['customer:id,name,code'])
@@ -48,7 +48,8 @@ class AccountReceivableService
                 )
                 ->findOrFail($id);
         } else {
-            throw ValidationException::withMessages(['error' => 'Tipe referensi tidak valid.']);
+            // Only reached from a page URL, so an unknown type is a page that doesn't exist
+            abort(404, 'Tipe referensi tidak valid.');
         }
     }
 
@@ -92,7 +93,7 @@ class AccountReceivableService
         }
 
 
-        $query = $query->orderBy('sales_invoices.invoice_date', 'desc')->paginate($request->input('per_page', 10));
+        $query = $query->orderBy('sales_invoices.invoice_date', 'desc')->orderBy('sales_invoices.id', 'desc')->paginate($request->input('per_page', 10));
 
         return $query;
     }
@@ -137,7 +138,8 @@ class AccountReceivableService
             throw ValidationException::withMessages(['error' => 'Tipe referensi tidak valid.']);
         }
 
-        DB::transaction(function () use ($request, $id) {
+        // The token is issued when the payment form opens, so a double-click or retry is recorded once
+        run_once('payment:' . $request->input('idempotency_key'), fn () => DB::transaction(function () use ($request, $id) {
             // Lock the invoice so two submits can't both pass the remaining-amount check
             $invoice = SalesInvoice::lockForUpdate()->findOrFail($id);
 
@@ -177,7 +179,7 @@ class AccountReceivableService
 
             $this->postCashTransaction($payment);
             $this->postPaymentJournal($payment);
-        });
+        }), 'Pembayaran ini sudah tercatat.');
     }
 
     private function postPaymentJournal(ReceivablePayment $payment)

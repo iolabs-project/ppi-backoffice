@@ -97,8 +97,8 @@
                                         x-text="(tableData.current_page - 1) * tableData.per_page + i + 1"></td>
                                     <td class="mono" style="font-weight:600;" x-text="row.number"></td>
                                     <td style="font-weight:500;" x-text="row.contact_name ?? '-'"></td>
-                                    <td style="color:var(--ink-3);" x-text="row.invoice_date ?? '-'"></td>
-                                    <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="DateUtils.formatDate(row.invoice_date)"></td>
+                                    <td style="color:var(--ink-3);" x-text="DateUtils.formatDate(row.due_date)"></td>
                                     <td class="num" style="text-align:right;"
                                         x-text="NumberUtils.formatNumericIntoMask(row.total_amount)"></td>
                                     <td class="num" style="text-align:right; font-weight:600;"

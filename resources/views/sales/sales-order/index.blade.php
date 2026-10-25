@@ -98,10 +98,10 @@
                                 <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
                                     @click="window.location = route('sales.sales_orders.show', row.id)">
                                     <td class="mono" style="font-weight:600;" x-text="row.number"></td>
-                                    <td style="color:var(--ink-3);" x-text="row.order_date ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="DateUtils.formatDate(row.order_date)"></td>
                                     <td style="font-weight:500;" x-text="row.customer?.name ?? '-'"></td>
                                     <td style="color:var(--ink-3);" x-text="row.warehouse?.name ?? '-'"></td>
-                                    <td style="color:var(--ink-3);" x-text="row.due_date ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="DateUtils.formatDate(row.due_date)"></td>
                                     <td style="min-width:100px;">
                                         <template
                                             x-if="row.status === '{{ $draft }}' || row.status === '{{ $cancelled }}'">
@@ -211,6 +211,19 @@
                                                     </template>
                                                 @endif
                                                 {{-- TODO: Add close button --}}
+                                                @if (auth()->user()->can('sales.sales-orders.edit'))
+                                                    <template x-if="row.status === '{{ $draft }}'">
+                                                        <button class="action-menu__item" @click.stop="handleStatus(row.id, 'open')">
+                                                            <x-misc.icon name="check" :size="14" stroke="var(--ink-3)" />Buka SO
+                                                        </button>
+                                                    </template>
+                                                    <template x-if="row.status === '{{ $open }}'">
+                                                        <button class="action-menu__item" @click.stop="handleStatus(row.id, 'close')">
+                                                            <x-misc.icon name="lock" :size="14" stroke="var(--ink-3)" />Tutup SO
+                                                        </button>
+                                                    </template>
+                                                @endif
+
                                                 @if (auth()->user()->can('sales.sales-orders.delete'))
                                                     <template x-if="row.is_cancellable">
                                                         <div>
@@ -411,46 +424,43 @@
                     return NumberUtils.formatNumericIntoMask(v);
                 },
 
-                async handleOpen(id) {
-                    Swal.fire({
-                        title: 'Apakah Anda yakin ingin membuka SO ini?',
+                async handleStatus(id, action) {
+                    const verb = action === 'close' ? 'menutup' : 'membuka';
+                    const result = await Swal.fire({
+                        title: `Apakah Anda yakin ingin ${verb} SO ini?`,
+                        text: action === 'close' ? 'Sisa barang yang belum dikirim tidak akan diproses lagi.' : undefined,
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonText: 'Ya, buka',
+                        confirmButtonText: action === 'close' ? 'Ya, tutup' : 'Ya, buka',
                         cancelButtonText: 'Batal',
                         reverseButtons: true,
-                    }).then(async (result) => {
-                        if (result.isConfirmed) {
-                            Swal.fire({
-                                title: 'Memproses...',
-                                allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                }
-                            });
-                            try {
-                                const response = await axios.post(route(
-                                    'sales.sales_orders.open', id));
-                                Swal.close();
-                                Toast.fire({
-                                    icon: 'success',
-                                    title: response.data.message
-                                });
-                                await this.fetchData();
-                            } catch (error) {
-                                Swal.close();
-                                let message = 'Terjadi kesalahan saat membuka SO. Silakan coba lagi.';
-                                if (error.response?.data?.message) {
-                                    message = error.response.data.message;
-                                }
-                                Toast.fire({
-                                    icon: 'error',
-                                    title: message
-                                });
-                            }
+                    });
+                    if (!result.isConfirmed) {
+                        return;
+                    }
 
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
                         }
-                    })
+                    });
+                    try {
+                        const response = await axios.post(route('sales.sales_orders.' + action, id));
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message
+                        });
+                        await this.fetchData();
+                    } catch (error) {
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'error',
+                            title: error.response?.data?.message ?? `Terjadi kesalahan saat ${verb} SO. Silakan coba lagi.`
+                        });
+                    }
                 },
 
                 async handleCancel(id) {

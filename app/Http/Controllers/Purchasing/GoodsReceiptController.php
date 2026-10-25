@@ -50,7 +50,7 @@ class GoodsReceiptController extends Controller
         } catch (ValidationException $e) {
             Log::error('Error GoodsReceiptController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
@@ -59,7 +59,7 @@ class GoodsReceiptController extends Controller
         } catch (\Exception $e) {
             Log::error('Error GoodsReceiptController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat penerimaan barang. Silakan coba lagi.'], 500);
@@ -123,7 +123,7 @@ class GoodsReceiptController extends Controller
         } catch (ValidationException $e) {
             Log::error('Error GoodsReceiptController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
@@ -132,7 +132,7 @@ class GoodsReceiptController extends Controller
         } catch (\Exception $e) {
             Log::error('Error GoodsReceiptController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui penerimaan barang. Silakan coba lagi.'], 500);
@@ -149,7 +149,7 @@ class GoodsReceiptController extends Controller
         } catch (\Exception $e) {
             Log::error('Error GoodsReceiptController@cancel: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membatalkan penerimaan barang. Silakan coba lagi.'], 500);

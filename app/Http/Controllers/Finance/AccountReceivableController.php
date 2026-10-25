@@ -47,7 +47,7 @@ class AccountReceivableController extends Controller
         } catch (\Exception $e) {
             Log::error('Error AccountReceivableController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba mengambil data Piutang. Silakan coba lagi.'], 500);
@@ -64,7 +64,7 @@ class AccountReceivableController extends Controller
         } catch (\Exception $e) {
             Log::error('Error AccountReceivableController@paymentDatatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba mengambil data pembayaran Piutang. Silakan coba lagi.'], 500);
@@ -96,7 +96,7 @@ class AccountReceivableController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Finance/AccountReceivableController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba menambahkan pembayaran. Silakan coba lagi.'], 500);

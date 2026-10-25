@@ -3,12 +3,15 @@
 namespace App\Http\Requests\Finance;
 
 use App\Enums\CashTransactionStatusEnum;
+use App\Http\Requests\Concerns\LimitsAmounts;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CashSendFormRequest extends FormRequest
 {
+    use LimitsAmounts;
+
     /**
      * Determine if the user is authorized to make this request.
      */

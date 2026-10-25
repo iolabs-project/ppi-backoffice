@@ -19,7 +19,7 @@ class COASeeder extends Seeder
             3 => 'Persediaan',
             4 => 'Aktiva Lancar Lainnya',
             5 => 'Aktiva Tetap',
-            6 => 'Depresiasi & Armortisasi',
+            6 => 'Depresiasi & Amortisasi',
             7 => 'Aktiva Lainnya',
             8 => 'Akun Hutang',
             9 => 'Kewajiban Lancar Lainnya',

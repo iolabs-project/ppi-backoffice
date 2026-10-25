@@ -93,10 +93,10 @@
                                 <tr class="row-tap" x-show="filter === 'all' || filter === row.status"
                                     @click="window.location = route('sales.delivery_orders.show', row.id)">
                                     <td class="mono" style="font-weight:600;" x-text="row.number"></td>
-                                    <td style="color:var(--ink-3);" x-text="row.delivery_date ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="DateUtils.formatDate(row.delivery_date)"></td>
                                     <td class="mono" style="font-weight:600;" x-text="row.sales_order.number"></td>
-                                    <td style="font-weight:500;" x-text="row.customer.name ?? '-'"></td>
-                                    <td style="color:var(--ink-3);" x-text="row.warehouse.name ?? '-'"></td>
+                                    <td style="font-weight:500;" x-text="row.customer?.name ?? '-'"></td>
+                                    <td style="color:var(--ink-3);" x-text="row.warehouse?.name ?? '-'"></td>
                                     <td class="num" style="text-align:right;" x-text="m(row.total_shipped_quantity)"></td>
                                     <td>
                                         <span :class="statusChip(row.status).chip">

@@ -27,7 +27,7 @@ class AccountSettingController extends Controller
         } catch (\Exception $e) {
             Log::error('Error AccountSettingController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([

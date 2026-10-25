@@ -56,7 +56,8 @@ class ExpenseService
             'contact',
             'items.account',
             'costs.account',
-            'creator'
+            'creator',
+            'payments.account',
         ])
             ->select(
                 'id',
@@ -76,7 +77,8 @@ class ExpenseService
                 'total_amount',
                 'remaining_amount',
                 'note',
-                'created_by'
+                'created_by',
+                'created_at'
             )
             ->find($id);
     }
@@ -117,7 +119,7 @@ class ExpenseService
             $query->where('expense_date', '<=', $request->input('end_date'));
         }
 
-        $query = $query->orderBy('expense_date', 'desc')->paginate($request->input('per_page', 10));
+        $query = $query->orderBy('expense_date', 'desc')->orderBy('id', 'desc')->paginate($request->input('per_page', 10));
         return $query;
     }
 

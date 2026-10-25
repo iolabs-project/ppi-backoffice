@@ -28,7 +28,7 @@ class ContactController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Master/ContactController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -51,7 +51,7 @@ class ContactController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ContactController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -71,6 +71,7 @@ class ContactController extends Controller
                 ['label' => $contact->name],
             ],
             'contact'          => $contact,
+            'activity'         => $this->contactService->fetchContactActivity($id),
         ];
 
         return view('master.contact.show', $data);
@@ -88,7 +89,7 @@ class ContactController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ContactController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -110,7 +111,7 @@ class ContactController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ContactController@status: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -131,7 +132,7 @@ class ContactController extends Controller
         } catch (\Exception $e) {
             Log::error('Error ContactController@options: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([

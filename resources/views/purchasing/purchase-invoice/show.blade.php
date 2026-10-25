@@ -17,7 +17,7 @@
                     <x-misc.status-badge :status="$purchaseInvoice->status" />
                 </div>
                 <div class="order-sub">
-                    Dibuat {{ $purchaseInvoice->created_at->format('d M Y') }} oleh <span
+                    Dibuat {{ $purchaseInvoice->created_at->translatedFormat('d M Y') }} oleh <span
                         style="font-weight:600;">{{ $purchaseInvoice->creator->username }}</span>
                 </div>
             </div>
@@ -35,7 +35,7 @@
         </div>
 
         <div class="card order-meta">
-            @foreach ([['Vendor', $purchaseInvoice->supplier->name, true], ['Tanggal PO', $purchaseInvoice->invoice_date->format('d/m/Y'), false], ['Jatuh Tempo', $purchaseInvoice->due_date->format('d/m/Y'), false], ['Gudang Tujuan', $purchaseInvoice->warehouse->name, false]] as [$lbl, $val, $av])
+            @foreach ([['Vendor', $purchaseInvoice->supplier?->name ?? '—', (bool) $purchaseInvoice->supplier], ['Tanggal Tagihan', $purchaseInvoice->invoice_date->format('d/m/Y'), false], ['Jatuh Tempo', $purchaseInvoice->due_date?->format('d/m/Y') ?? '—', false], ['Gudang Tujuan', $purchaseInvoice->warehouse?->name ?? '—', false]] as [$lbl, $val, $av])
                 <div>
                     <div class="label order-meta__label">{{ $lbl }}</div>
                     <div class="order-meta__value">
@@ -143,7 +143,7 @@
                                     <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}
                                     </td>
                                     <td>{{ $cost->description ?: '—' }}</td>
-                                    <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
+                                    <td>{{ $cost->account ? $cost->account->code . ' - ' . $cost->account->name : '—' }}</td>
                                     <td style="text-align:center;">{{ $cost->is_inventory_cost ? 'Ya' : 'Tidak' }}</td>
                                     <td class="num" style="text-align:right; font-weight:600;">
                                         {{ number_format($cost->amount, 2) }}</td>
@@ -219,7 +219,7 @@
                                     icon: 'success',
                                     title: response.data.message
                                 });
-                                await this.fetchData();
+                                window.location.reload();
                             } catch (error) {
                                 Swal.close();
                                 let message =

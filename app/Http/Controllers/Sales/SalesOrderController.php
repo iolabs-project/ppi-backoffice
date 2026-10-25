@@ -81,7 +81,7 @@ class SalesOrderController extends Controller
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba membuat Pemesanan penjualan. Silakan coba lagi.'], 500);
@@ -156,7 +156,7 @@ class SalesOrderController extends Controller
         } catch (\Exception $e) {
             Log::error('Error SalesOrderController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui Pemesanan Penjualan. Silakan coba lagi.'], 500);

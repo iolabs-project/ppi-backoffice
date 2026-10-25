@@ -117,7 +117,7 @@ class DashboardService
             $date = $now->copy()->subMonths($i);
             $start = $date->copy()->startOfMonth()->format('Y-m-d');
             $end = $date->copy()->endOfMonth()->format('Y-m-d');
-            $label = $date->format('M');
+            $label = $date->translatedFormat('M');
 
             $sales = SalesInvoice::where('company_id', $companyId)
                 ->whereNotIn('status', [SalesInvoiceStatus::DRAFT->value, SalesInvoiceStatus::CANCELLED->value])

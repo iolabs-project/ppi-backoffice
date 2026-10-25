@@ -71,7 +71,7 @@ class CashService
             ->where('category_id', AccountCategoryEnum::CASH_BANK->value)
             ->where('id', $accountID)
             ->whereNull('deleted_at')
-            ->first();
+            ->firstOrFail();
 
         $balanceQuery = DB::table('journal_entry_items', 'jei')
             ->join('journal_entries as je', 'je.id', '=', 'jei.journal_entry_id')
@@ -129,7 +129,7 @@ class CashService
             });
         }
 
-        $query = $query->orderBy('transaction_date', 'desc')->paginate($request->input('per_page', 10));
+        $query = $query->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->paginate($request->input('per_page', 10));
         return $query;
     }
 
@@ -270,6 +270,14 @@ class CashService
 
     private function postCashJournal(CashTransaction $transaction)
     {
+        if (in_array($transaction->type, [CashTransactionTypeEnum::TRANSFER->value, CashTransactionTypeEnum::SEND->value], true)) {
+            // Lock the source account so two concurrent posts can't both pass the balance check
+            ChartOfAccount::whereKey($transaction->from_account_id)->lockForUpdate()->first();
+            if ($this->fetchAccountBalance($transaction->from_account_id) < $transaction->total_amount) {
+                throw ValidationException::withMessages(['from_account_id' => 'Saldo tidak mencukupi.']);
+            }
+        }
+
         if ($transaction->type === CashTransactionTypeEnum::TRANSFER->value) {
 
             $journalItems = [

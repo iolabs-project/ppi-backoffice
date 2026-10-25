@@ -137,3 +137,23 @@ if (!function_exists('avatar_meta')) {
         ];
     }
 }
+
+if (!function_exists('run_once')) {
+    /**
+     * Runs $callback at most once per key (e.g. a token issued when a form opens), so a
+     * double-click or network retry can't record the same thing twice. A failed run frees the key.
+     */
+    function run_once(string $key, Closure $callback, string $message = 'Permintaan ini sudah diproses.'): mixed
+    {
+        if (!\Illuminate\Support\Facades\Cache::add('run_once:' . $key, true, now()->addDay())) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['error' => $message]);
+        }
+
+        try {
+            return $callback();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Cache::forget('run_once:' . $key);
+            throw $e;
+        }
+    }
+}

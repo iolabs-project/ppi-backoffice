@@ -70,10 +70,15 @@ class ExpenseController extends Controller
 
     public function show(int $id)
     {
+        $expense = $this->expenseService->fetchExpenseByID($id);
+        if (!$expense) {
+            abort(404, 'Biaya tidak ditemukan.');
+        }
+
         $data = [
             'currentPage'    => 'biaya',
-            'breadcrumb'     => [['label' => 'Biaya', 'url' => route('expenses.index')], ['label' => 'Detail']],
-            'expense' => $this->expenseService->fetchExpenseByID($id),
+            'breadcrumb'     => [['label' => 'Biaya', 'url' => route('expenses.index')], ['label' => $expense->number]],
+            'expense' => $expense,
         ];
         return view('finance.expense.show', $data);
     }

@@ -89,7 +89,7 @@ class SalesInvoiceService
             $query->where('invoice_date', '<=', $request->input('end_date'));
         }
 
-        $query = $query->orderBy('invoice_date', 'desc')->paginate($request->input('per_page', 10));
+        $query = $query->orderBy('invoice_date', 'desc')->orderBy('id', 'desc')->paginate($request->input('per_page', 10));
         return $query;
     }
 

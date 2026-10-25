@@ -36,18 +36,18 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('login.post') }}" class="auth-form">
+                <form method="POST" action="{{ route('login.post') }}" class="auth-form" @submit.prevent="login">
                     @csrf
 
                     <div class="auth-field">
                         <label for="username" class="label">Username</label>
-                        <input type="text" x-model="username" class="input" placeholder="username" />
+                        <input type="text" id="username" x-model="username" class="input" autocomplete="username" placeholder="username" />
                     </div>
 
                     <div class="auth-field">
                         <label for="password" class="label">Password</label>
                         <div class="auth-pass-wrap" x-data="{ showPassword: false }">
-                            <input :type="showPassword ? 'text' : 'password'" x-model="password" class="input"
+                            <input :type="showPassword ? 'text' : 'password'" id="password" x-model="password" class="input" autocomplete="current-password"
                                 placeholder="••••••••" />
                             <button type="button" class="auth-pass-toggle" @click="showPassword = !showPassword"
                                 tabindex="-1">
@@ -58,12 +58,12 @@
 
                     <div class="auth-row">
                         <label class="auth-remember">
-                            <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }} />
+                            <input type="checkbox" name="remember" x-model="remember" />
                             <span>Ingat saya</span>
                         </label>
                     </div>
 
-                    <button type="button" class="btn btn-primary auth-submit" @click="login" :disabled="loading">
+                    <button type="submit" class="btn btn-primary auth-submit" :disabled="loading">
                         <span x-show="!loading">Masuk</span>
                         <span x-show="loading">Memproses...</span>
                     </button>
@@ -85,6 +85,7 @@
             return {
                 username: '',
                 password: '',
+                remember: false,
                 loading: false,
                 showPassword: false,
 
@@ -111,6 +112,7 @@
                             route('login.post'), {
                                 username: this.username,
                                 password: this.password,
+                                remember: this.remember,
                             }
                         );
 

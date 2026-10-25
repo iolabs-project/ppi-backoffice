@@ -49,7 +49,7 @@ class CashController extends Controller
         } catch (\Exception $e) {
             Log::error('Error CashController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba mengambil data transaksi kas dan bank. Silakan coba lagi.'], 500);
@@ -94,7 +94,7 @@ class CashController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@storeTransfer: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba menambahkan transaksi kas. Silakan coba lagi.'], 500);
@@ -130,7 +130,7 @@ class CashController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@updateTransfer: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui transaksi kas. Silakan coba lagi.'], 500);
@@ -181,7 +181,7 @@ class CashController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@storeReceive: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba menambahkan transaksi kas. Silakan coba lagi.'], 500);
@@ -218,7 +218,7 @@ class CashController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@updateReceive: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui transaksi kas. Silakan coba lagi.'], 500);
@@ -269,7 +269,7 @@ class CashController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@storeSend: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba menambahkan transaksi kas. Silakan coba lagi.'], 500);
@@ -306,7 +306,7 @@ class CashController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Finance/CashController@updateSend: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba memperbarui transaksi kas. Silakan coba lagi.'], 500);

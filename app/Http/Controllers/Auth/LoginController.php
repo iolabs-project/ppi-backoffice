@@ -28,7 +28,8 @@ class LoginController extends Controller
                 'password' => ['required'],
             ]);
 
-            if (!Auth::attempt($credentials)) {
+            // deleted_at marks a deactivated user, who must not be able to log in
+            if (!Auth::attempt($credentials + ['deleted_at' => null], $request->boolean('remember'))) {
                 throw ValidationException::withMessages([
                     'auth' => ['Username atau password salah.']
                 ]);
@@ -39,7 +40,7 @@ class LoginController extends Controller
         } catch (ValidationException $e) {
             Log::error('Error LoginController@login: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['errors' => $e->errors()], 422);
@@ -48,7 +49,7 @@ class LoginController extends Controller
         } catch (\Exception $e) {
             Log::error('Error LoginController@login: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba login. Silakan coba lagi.'], 500);

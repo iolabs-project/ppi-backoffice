@@ -185,7 +185,7 @@
                             </div>
                             <div class="dash-activity__meta">
                                 <div class="dash-activity__amount num">{{ fmt_rp($act['amount']) }}</div>
-                                <div class="dash-activity__date">{{ $act['date']->format('d M Y') }}</div>
+                                <div class="dash-activity__date">{{ $act['date']->translatedFormat('d M Y') }}</div>
                             </div>
                             <x-misc.status-badge :status="$act['status']" />
                         </a>

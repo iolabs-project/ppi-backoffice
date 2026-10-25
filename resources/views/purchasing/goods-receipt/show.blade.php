@@ -17,7 +17,7 @@
                     <x-misc.status-badge :status="$goodsReceipt->status" />
                 </div>
                 <div class="order-sub">
-                    Dibuat {{ $goodsReceipt->created_at->format('d M Y') }} oleh <span
+                    Dibuat {{ $goodsReceipt->created_at->translatedFormat('d M Y') }} oleh <span
                         style="font-weight:600;">{{ $goodsReceipt->creator->username }}</span>
                 </div>
             </div>
@@ -144,7 +144,7 @@
                                     <td class="mono" style="color:var(--ink-4);">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}
                                     </td>
                                     <td>{{ $cost->description ?: '—' }}</td>
-                                    <td>{{ $cost->account->code }} - {{ $cost->account->name }}</td>
+                                    <td>{{ $cost->account ? $cost->account->code . ' - ' . $cost->account->name : '—' }}</td>
                                     <td style="text-align:center;">{{ $cost->is_inventory_cost ? 'Ya' : 'Tidak' }}</td>
                                     <td class="num" style="text-align:right; font-weight:600;">
                                         {{ number_format($cost->amount, 2) }}</td>
@@ -214,7 +214,7 @@
                                     icon: 'success',
                                     title: response.data.message
                                 });
-                                await this.fetchData();
+                                window.location.reload();
                             } catch (error) {
                                 Swal.close();
                                 let message =

@@ -309,7 +309,7 @@
         <div class="card" style="overflow:visible;">
             <div class="order-items-split">
                 <div class="order-extras">
-                    <x-misc.field label="Catatan Penerimaan" name="note">
+                    <x-misc.field label="Catatan Pengiriman" name="note">
                         <textarea class="input" rows="2"
                             placeholder="Catat kondisi barang, kekurangan, atau informasi penting lainnya..." x-model="formData.note"></textarea>
                     </x-misc.field>

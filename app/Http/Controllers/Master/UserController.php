@@ -24,7 +24,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             Log::error('Error Master/UserController@datatable: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -46,7 +46,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             Log::error('Error UserController@store: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -68,7 +68,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             Log::error('Error UserController@update: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -90,7 +90,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             Log::error('Error UserController@password: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -112,7 +112,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             Log::error('Error UserController@status: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
@@ -134,7 +134,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             Log::error('Error UserController@options: ' . $e->getMessage(), [
                 'exception' => $e,
-                'request' => $request->all(),
+                'request' => $this->loggableRequest($request),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             return response()->json([

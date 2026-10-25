@@ -225,7 +225,7 @@
 
                 {{-- Supplier/Contact Dropdown --}}
                 <x-misc.field label="Supplier / Kontak" name="contact_id" :required="true">
-                    <x-misc.select display="contactSelected ? contactSelected.name : 'Pilih supplier / kontak (opsional)'"
+                    <x-misc.select display="contactSelected ? contactSelected.name : 'Pilih supplier / kontak'"
                         hasValue="contactSelected" placeholder="Cari kontak...">
                         <template x-for="c in contacts.filter(c => !q || c.name.toLowerCase().includes(q.toLowerCase()))"
                             :key="c.id">
