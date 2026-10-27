@@ -25,27 +25,21 @@ if (!function_exists('fmt_num')) {
     }
 }
 
-// Printed documents follow the invoice the customer receives (Indonesian notation: 1.405.710)
+// Printed documents use the same notation as the screens: 1,250,000.00
 
 if (!function_exists('fmt_doc')) {
-    /** Amount on a printed document, e.g. 189981000 → "189.981.000". */
+    /** Amount on a printed document, e.g. 189981000 → "189,981,000.00". */
     function fmt_doc(int|float|string|null $n): string
     {
-        return number_format(round((float) $n), 0, ',', '.');
+        return number_format((float) $n, 2);
     }
 }
 
 if (!function_exists('fmt_doc_qty')) {
-    /** Quantity on a printed document: whole numbers without decimals, otherwise up to 2 ("12,5"). */
+    /** Quantity on a printed document, e.g. 12.5 → "12.50". */
     function fmt_doc_qty(int|float|string|null $n): string
     {
-        $n = (float) $n;
-        if (fmod($n, 1.0) === 0.0) {
-            return number_format($n, 0, ',', '.');
-        }
-
-        // Trim only the decimal part: "12,50" → "12,5"
-        return rtrim(rtrim(number_format($n, 2, ',', '.'), '0'), ',');
+        return number_format((float) $n, 2);
     }
 }
 

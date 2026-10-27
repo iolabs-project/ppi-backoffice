@@ -10,7 +10,7 @@
             ['label' => 'Subtotal', 'value' => 'Rp ' . fmt_doc($subtotal)],
             $discount > 0 ? ['label' => 'Diskon', 'value' => '(Rp ' . fmt_doc($discount) . ')'] : null,
             $tax > 0 ? ['label' => 'Pajak ' . fmt_doc_percent($expense->tax_percentage), 'value' => 'Rp ' . fmt_doc($tax)] : null,
-            abs($other) >= 0.5 ? ['label' => 'Biaya Tambahan', 'value' => 'Rp ' . fmt_doc($other)] : null,
+            abs($other) >= 0.01 ? ['label' => 'Biaya Tambahan', 'value' => 'Rp ' . fmt_doc($other)] : null,
             ['label' => 'Total', 'value' => 'Rp ' . fmt_doc($expense->total_amount), 'emphasis' => true],
             ['label' => 'Sisa Tagihan', 'value' => 'Rp ' . fmt_doc($expense->remaining_amount)],
         ]));

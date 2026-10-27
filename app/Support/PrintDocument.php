@@ -62,7 +62,7 @@ class PrintDocument
         if ($tax > 0) {
             $rows[] = ['label' => 'Pajak ' . fmt_doc_percent($doc->tax_percentage), 'value' => 'Rp ' . fmt_doc($tax)];
         }
-        if (abs($other) >= 0.5) {
+        if (abs($other) >= 0.01) {
             $rows[] = ['label' => 'Biaya Tambahan', 'value' => 'Rp ' . fmt_doc($other)];
         }
         if ($downPayment > 0) {
