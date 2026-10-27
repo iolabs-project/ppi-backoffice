@@ -1,588 +1,610 @@
-# Graph Report - ppi-backoffice  (2026-10-25)
+# Graph Report - ppi-backoffice  (2026-10-27)
 
 ## Corpus Check
-- cluster-only mode — file stats not available
+- 369 files · ~156,219 words
+- Verdict: corpus is large enough that graph structure adds value.
+- Unclassified: 51 file(s) not represented in the graph (top: .scss 29, (none) 17, .graphify-bak 1)
 
 ## Summary
-- 2229 nodes · 4146 edges · 286 communities (77 shown, 209 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 282 edges (avg confidence: 0.85)
+- 2169 nodes · 4115 edges · 279 communities (89 shown, 190 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 137 edges (avg confidence: 0.92)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `87cfc97c`
+- Built from commit: `099ef1e9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- Community 0
-- Community 1
-- Community 3
-- Community 4
-- Community 5
-- Community 6
-- Community 7
-- Community 8
-- Community 9
-- Community 10
-- Community 11
-- Community 12
-- Community 13
-- Community 15
-- Community 16
-- Community 17
-- Community 18
-- Community 19
-- Community 20
-- Community 21
-- Community 22
-- Community 23
-- Community 24
-- Community 25
-- Community 26
-- Community 27
-- Community 28
-- Community 30
-- Community 31
-- Community 32
-- Community 33
-- Community 34
-- Community 35
-- Community 36
-- Community 37
-- Community 38
-- Community 39
-- Community 40
-- Community 41
-- Community 42
-- Community 43
-- Community 44
-- Community 45
-- Community 47
-- Community 48
-- Community 49
-- Community 50
-- Community 51
-- Community 53
-- Community 54
-- Community 55
-- Community 56
-- Community 57
-- Community 58
-- Community 59
-- Community 60
-- Community 61
-- Community 62
-- Community 63
-- Community 64
-- Community 65
-- Community 66
-- Community 67
-- Community 68
-- Community 69
-- Community 72
-- Community 73
-- Community 74
-- Community 75
-- Community 76
-- Community 77
-- Community 78
-- Community 79
-- Community 80
-- Community 81
-- Community 82
-- Community 83
-- Community 84
-- Community 85
-- Community 86
-- Community 87
-- Community 88
-- Community 90
-- Community 91
-- Community 92
-- Community 93
-- Community 94
-- Community 95
-- Community 96
-- Community 97
-- Community 98
-- Community 99
-- Community 100
-- Community 101
-- Community 102
-- Community 103
-- Community 104
-- Community 105
-- Community 106
-- Community 107
-- Community 108
-- Community 109
-- Community 110
-- Community 111
-- Community 112
-- Community 113
-- Community 114
-- Community 115
-- Community 116
-- Community 117
-- Community 118
-- Community 119
-- Community 120
-- Community 121
-- Community 122
-- Community 123
-- Community 124
-- Community 125
-- Community 127
-- Community 128
-- Community 129
-- Community 130
-- Community 131
-- Community 132
-- Community 133
-- Community 134
-- Community 135
-- Community 137
-- Community 140
-- Community 141
-- Community 142
-- Community 143
-- Community 144
-- Community 145
-- Community 146
-- Community 148
-- Community 149
-- Community 150
-- Community 151
-- Community 152
-- Community 153
-- Community 154
-- Community 155
-- Community 156
-- Community 157
-- Community 158
-- Community 159
-- Community 160
-- Community 161
-- Community 162
-- Community 163
-- Community 164
-- Community 165
-- Community 166
-- Community 167
-- Community 168
-- Community 170
-- Community 171
-- Community 172
-- Community 173
-- Community 174
-- Community 175
-- Community 176
-- Community 177
-- Community 178
-- Community 179
-- Community 180
-- Community 181
-- Community 182
-- Community 183
-- Community 184
-- Community 185
-- Community 187
-- Community 188
-- Community 189
-- Community 190
-- Community 191
-- Community 192
-- Community 193
-- Community 194
-- Community 195
-- Community 196
-- Community 197
-- Community 198
-- Community 199
-- Community 200
-- Community 201
-- Community 202
-- Community 203
-- Community 204
-- Community 205
-- Community 206
-- Community 207
-- Community 208
-- Community 209
-- Community 210
-- Community 211
-- Community 212
-- Community 213
-- Community 214
-- Community 215
-- Community 216
-- Community 217
-- Community 218
-- Community 219
-- Community 220
-- Community 221
-- Community 222
-- Community 223
-- Community 224
-- Community 225
-- Community 226
+- package.json
+- Illuminate\Http\Request
+- web.php
+- PurchaseInvoiceService
+- ProductService
+- Controller
+- Illuminate\Foundation\Http\FormRequest
+- AccountSettingEnum
+- helpers.php
+- CashController
+- InventoryService
+- JournalService
+- UserService
+- SalesOrderService.php
+- ReportService.php
+- WarehouseService
+- Illuminate\Database\Schema\Blueprint
+- ErpDataService
+- Illuminate\Database\Eloquent\Model
+- LogsModelActivity
+- SalesInvoiceStatus
+- Illuminate\Support\Facades\DB
+- AccountReceivableService.php
+- StockAdjustmentService.php
+- SalesOrderService
+- PurchaseOrderService
+- CashService.php
+- Sales Module Context
+- DeliveryOrderService
+- InventoryService.php
+- GoodsReceiptService
+- Expense
+- GoodsReceiptService.php
+- AccountReceivableController
+- WarehouseController
+- SalesOrderController
+- ContactService
+- PurchaseInvoiceService.php
+- Spatie\Permission\Models\Permission
+- PaymentTerm
+- AccountService
+- DeliveryOrder
+- GoodsReceipt
+- PurchaseOrder
+- SalesInvoice
+- QaFixesTest.php
+- DeliveryOrderService.php
+- ExpenseStatus
+- ReportTypeEnum
+- ExpenseService
+- bootstrap/app.php
+- User
+- PurchaseOrderService.php
+- UserFactory.php
+- Illuminate\Database\Migrations\Migration
+- AccountPayableStatusEnum
+- AccountReceivableStatusEnum
+- Expense Module Context
+- ExpenseFormRequest
+- ProductOptionController.php
+- RoleService
+- WarehouseTransferService.php
+- SalesInvoiceService.php
+- Illuminate\Support\Facades\Schema
+- OrderStatusGuardTest.php
+- BilledBy
+- PurchaseOrderStatus
+- ProductController
+- FormRequestRulesTest.php
+- AccountPayableService.php
+- PurchaseInvoiceStatus
+- DashboardService.php
+- ActivityLogEventEnum
+- CashTransactionTypeEnum
+- DeliveryOrderStatus
+- GoodsReceiptStatus
+- Purchasing Module Context
+- form-validation.js
+- UserPasswordChangeTest.php
+- TotalsAndJournalTest.php
+- CashTransactionStatusEnum
+- abort_unless_can_become
+- README.md
+- CashFormRequest
+- export.js
+- WarehouseTransfer
+- composer.json
+- require-dev
+- scripts
+- MasterController.php
+- SalesOrderFormRequest
+- DeliveryOrderItem
+- UserService.php
+- devDependencies
+- UserFormRequest
+- AppServiceProvider.php
+- require
+- GoodsReceiptFormRequest
+- ContactController
+- CashReceiveFormRequest
+- CashSendFormRequest
+- CashTransferFormRequest
+- ActivityLogTest.php
+- PurchaseOrderFormRequest
+- ProductCategoryController.php
+- LimitsAmounts.php
+- ProductStock
+- config
+- 2026_07_06_065924_create_sales_orders_table.php
+- 2026_07_06_114637_create_delivery_orders_table.php
+- Cost & Charge Handling
+- RoleEnum
+- PurchaseInvoiceFormRequest
+- 2026_07_27_125404_create_expenses_table.php
+- StockAdjustmentFormRequest
+- 2026_06_23_073413_create_product_batches_table.php
+- Cost Handling
+- ExpenseService.php
+- Database Schema (Migrations)
+- Validation Rules
+- Routes (`routes/web.php`)
+- 2026_06_22_121951_create_companies_table.php
+- 2026_06_23_073840_create_inventory_transactions_table.php
+- 2026_07_09_033233_create_account_mappings_table.php
+- scripts
+- NumberingService.php
+- psr-4
+- 0001_01_01_000000_create_users_table.php
+- 2026_06_23_090155_create_purchase_orders_table.php
+- 2026_06_27_082234_create_goods_receipts_table.php
+- 2026_06_29_124854_create_purchase_invoices_table.php
+- CLAUDE.md
+- 2026_08_09_011515_create_cash_transactions_table.php
+- DashboardDummySeeder.php
+- logging.php
+- sanctum.php
+- 0001_01_01_000001_create_cache_table.php
+- 2026_06_27_201437_add_goods_receipt_item_id_column_to_product_batches_table.php
+- 2026_07_08_064724_add_contact_id_column_to_users_table.php
+- 2026_07_08_085520_create_journal_entries_table.php
+- 2026_08_29_201935_create_stock_adjustments_table.php
+- 2026_10_22_000000_change_payment_terms_to_string.php
+- console.php
+- InvoiceCancelAndPaymentTest.php
+- JournalEntry
+- 2026_06_22_123311_create_user_companies_table.php
+- 2026_06_22_123430_create_chart_of_accounts_table.php
+- 2026_06_23_072233_create_units_table.php
+- 2026_06_23_072523_create_product_categories_table.php
+- 2026_06_23_073116_create_products_table.php
+- 2026_06_23_074424_create_contacts_table.php
+- 2026_07_28_112509_create_account_settings_table.php
+- 2026_08_04_143434_create_payable_payments_table.php
+- 2026_08_04_143524_create_receivable_payments_table.php
+- warehouse/show.blade.php
+- purchase-order/create.blade.php
+- expense/create.blade.php
+- expense/edit.blade.php
+- delivery-order/edit.blade.php
+- sales-order/create.blade.php
+- sales-order/edit.blade.php
+- artisan
+- autoload-dev
+- extra
+- finance.account-payable.partials.payment-modal
+- finance.account-receivable.partials.payment-modal
+- finance.cash.partials.account-modal
+- Illuminate\Foundation\Testing\TestCase
+- receive/create.blade.php
+- receive/edit.blade.php
+- send/create.blade.php
+- send/edit.blade.php
+- transfer/create.blade.php
+- transfer/edit.blade.php
+- goods-receipt/edit.blade.php
+- purchase-invoice/edit.blade.php
+- purchase-order/edit.blade.php
+- sales-invoice/edit.blade.php
+- master.partials.modals.account-modal
+- master.partials.modals.contact-modal
+- master.partials.modals.permit-modal
+- master.partials.modals.product-modal
+- master.partials.modals.user-modal
+- master.partials.modals.warehouse-modal
 
 ## God Nodes (most connected - your core abstractions)
-1. `Controller` - 52 edges
-2. `InventoryService` - 44 edges
-3. `AccountService` - 44 edges
-4. `JournalService` - 40 edges
-5. `ProductService` - 40 edges
-6. `AccountSettingEnum` - 40 edges
-7. `GoodsReceiptService` - 33 edges
-8. `DeliveryOrderService` - 29 edges
-9. `CashService` - 29 edges
-10. `AccountCategoryEnum` - 28 edges
+1. `LogsModelActivity` - 87 edges
+2. `Controller` - 53 edges
+3. `AccountService` - 45 edges
+4. `InventoryService` - 44 edges
+5. `User` - 42 edges
+6. `JournalService` - 41 edges
+7. `SalesInvoice` - 40 edges
+8. `ProductService` - 40 edges
+9. `JournalEntry` - 38 edges
+10. `PaymentTerm` - 37 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `{closure#2}()` --calls--> `abort_unless_can_become()`  [INFERRED]
-  tests/Feature/StatusTransitionTest.php → app/helpers.php
-- `actingUserWithEditPermission()` --references--> `User`  [EXTRACTED]
-  tests/Feature/UserPasswordChangeTest.php → app/Models/User.php
-- `{closure#5}()` --calls--> `abort_unless_draft()`  [INFERRED]
-  app/Services/Purchasing/PurchaseInvoiceService.php → app/helpers.php
-- `{closure#9}()` --calls--> `abort_unless_draft()`  [INFERRED]
-  app/Services/Purchasing/PurchaseOrderService.php → app/helpers.php
-- `{closure#8}()` --calls--> `abort_unless_draft()`  [INFERRED]
-  app/Services/Sales/SalesOrderService.php → app/helpers.php
+- `Enum (`app/Enums/`)` --references--> `ExpenseStatus`  [INFERRED]
+  context/expense.md → app/Enums/ExpenseStatus.php
+- `Legacy/Alternative Routes (`PembelianController`)` --references--> `ErpDataService`  [INFERRED]
+  context/purchasing.md → app/Services/ErpDataService.php
+- `Legacy/Alternative Routes (`PembelianController`)` --references--> `ErpDataService`  [INFERRED]
+  context/sales.md → app/Services/ErpDataService.php
+- `Enums (`app/Enums/`)` --references--> `DeliveryOrderStatus`  [INFERRED]
+  context/sales.md → app/Enums/DeliveryOrderStatus.php
+- `Enums (`app/Enums/`)` --references--> `PaymentTerm`  [INFERRED]
+  context/purchasing.md → app/Enums/PaymentTerm.php
 
 ## Import Cycles
 - None detected.
 
-## Communities (286 total, 209 thin omitted)
+## Communities (279 total, 190 thin omitted)
 
-### Community 0 - "Community 0"
-Cohesion: 0.05
-Nodes (40): dependencies, sweetalert2@^11.26.25, xlsx@https://cdn.sheetjs.com/xlsx-0.20.3/x..., devDependencies, axios@^1.18.0, concurrently@^9.0.1, laravel-vite-plugin@^2.0.0, sass-embedded@^1.99.0 (+32 more)
-
-### Community 1 - "Community 1"
-Cohesion: 0.07
-Nodes (5): ReportController, ActivityLogService, ReportService, GET /user(), POST /logout()
-
-### Community 3 - "Community 3"
-Cohesion: 0.07
-Nodes (11): {closure#1}(), PurchaseInvoiceStatus, CANCELLED, DRAFT, OPEN, PAID, PARTIAL, PurchaseInvoiceController (+3 more)
-
-### Community 4 - "Community 4"
-Cohesion: 0.09
-Nodes (5): ProductBatchController, ProductCategoryController, ProductController, ProductFormRequest, ProductService
-
-### Community 5 - "Community 5"
+### Community 0 - "package.json"
 Cohesion: 0.12
-Nodes (8): LoginController, Controller, DashboardController, AccountSettingController, ContactController, MasterController, WarehouseTransferController, AccountSettingService
+Nodes (15): dependencies, sweetalert2, xlsx, private, $schema, type, axios, concurrently (+7 more)
 
-### Community 6 - "Community 6"
-Cohesion: 0.11
-Nodes (4): AccountFormRequest, AccountSettingFormRequest, StockAdjustmentFormRequest, WarehouseTransferFormRequest
-
-### Community 7 - "Community 7"
-Cohesion: 0.07
-Nodes (23): AccountSettingEnum, ACCOUNT_PAYABLE, ACCOUNT_RECEIVABLE, BANK, CASH, COGS, GRNI, INPUT_TAX (+15 more)
-
-### Community 8 - "Community 8"
-Cohesion: 0.09
-Nodes (7): abort_unless_can_become(), fmt_doc(), fmt_doc_percent(), fmt_doc_qty(), {closure#1}(), PrintDocument, {closure#2}()
-
-### Community 10 - "Community 10"
-Cohesion: 0.12
-Nodes (5): ExpenseService, InventoryService, JournalService, {closure#1}(), StockAdjustmentService
-
-### Community 11 - "Community 11"
-Cohesion: 0.11
-Nodes (14): DocumentTotals, {closure#10}(), {closure#13}(), {closure#8}(), {closure#5}(), {closure#10}(), {closure#12}(), {closure#6}() (+6 more)
-
-### Community 12 - "Community 12"
-Cohesion: 0.12
-Nodes (3): UserController, UserFormRequest, UserService
-
-### Community 13 - "Community 13"
-Cohesion: 0.09
-Nodes (5): SalesOrder, {closure#10}(), {closure#6}(), {closure#7}(), {closure#8}()
-
-### Community 15 - "Community 15"
-Cohesion: 0.11
-Nodes (4): StockAdjustmentController, WarehouseController, WarehouseFormRequest, WarehouseService
-
-### Community 16 - "Community 16"
-Cohesion: 0.12
-Nodes (13): {closure#1}(), {closure#2}(), {closure#3}(), {closure#1}(), {closure#2}(), {closure#1}(), {closure#2}(), {closure#3}() (+5 more)
-
-### Community 18 - "Community 18"
-Cohesion: 0.11
-Nodes (7): AccountCategory, AccountMapping, ChartOfAccount, Company, ProductCategory, Unit, UserCompany
-
-### Community 19 - "Community 19"
+### Community 1 - "Illuminate\Http\Request"
 Cohesion: 0.10
-Nodes (4): Contact, JournalEntryItem, ProductTransaction, PurchaseOrderItem
+Nodes (9): App\Http\Controllers\API\Master\ContactController, ReportController, ActivityLogService, ReportService, Illuminate\Http\Request, Illuminate\Support\Facades\Auth, Illuminate\Support\Facades\Route, GET /user() (+1 more)
 
-### Community 20 - "Community 20"
+### Community 4 - "ProductService"
+Cohesion: 0.05
+Nodes (7): ProductBatchController, InventoryTransaction, Product, ProductCategory, ProductService, NumberingService, {closure#4}()
+
+### Community 5 - "Controller"
+Cohesion: 0.22
+Nodes (7): AccountCategoryEnum, LoginController, Controller, AccountSettingController, Illuminate\Support\Facades\Log, Illuminate\Validation\ValidationException, Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+
+### Community 6 - "Illuminate\Foundation\Http\FormRequest"
+Cohesion: 0.19
+Nodes (6): LimitsAmounts, Illuminate\Contracts\Validation\ValidationRule, Illuminate\Foundation\Http\FormRequest, Illuminate\Validation\Rule, Illuminate\Validation\Rules\Enum, Override
+
+### Community 8 - "helpers.php"
+Cohesion: 0.12
+Nodes (5): fmt_doc(), fmt_doc_percent(), fmt_doc_qty(), {closure#1}(), PrintDocument
+
+### Community 13 - "SalesOrderService.php"
+Cohesion: 0.07
+Nodes (8): SalesOrder, SalesOrderCharge, SalesOrderCost, {closure#10}(), {closure#6}(), {closure#7}(), {closure#8}(), {closure#9}()
+
+### Community 15 - "WarehouseService"
+Cohesion: 0.11
+Nodes (5): StockAdjustmentController, WarehouseTransferController, WarehouseTransferFormRequest, Warehouse, WarehouseService
+
+### Community 16 - "Illuminate\Database\Schema\Blueprint"
+Cohesion: 0.12
+Nodes (14): {closure#1}(), {closure#2}(), {closure#3}(), {closure#1}(), {closure#2}(), {closure#3}(), {closure#1}(), {closure#2}() (+6 more)
+
+### Community 18 - "Illuminate\Database\Eloquent\Model"
 Cohesion: 0.14
-Nodes (3): SalesInvoiceController, SalesInvoiceFormRequest, SalesInvoiceService
+Nodes (8): AccountMapping, ProductBatch, Unit, 1. Purchase Order (PO), 2. Goods Receipt (GR), 3. Purchase Invoice (PI), Business Flow, Illuminate\Database\Eloquent\Model
 
-### Community 21 - "Community 21"
-Cohesion: 0.15
-Nodes (6): AccountSettingSeeder, COASeeder, ContactSeeder, DatabaseSeeder, InventorySeeder, UserCompanySeeder
+### Community 19 - "LogsModelActivity"
+Cohesion: 0.17
+Nodes (5): LogsModelActivity, ProductTransaction, StockAdjustmentItem, Spatie\Activitylog\Models\Concerns\LogsActivity, Spatie\Activitylog\Support\LogOptions
 
-### Community 22 - "Community 22"
+### Community 20 - "SalesInvoiceStatus"
+Cohesion: 0.11
+Nodes (4): {closure#1}(), SalesInvoiceStatus, SalesInvoiceController, SalesInvoiceFormRequest
+
+### Community 21 - "Illuminate\Support\Facades\DB"
+Cohesion: 0.17
+Nodes (9): {closure#1}(), AccountSettingSeeder, COASeeder, ContactSeeder, DatabaseSeeder, InventorySeeder, Illuminate\Database\Console\Seeds\WithoutModelEvents, Illuminate\Database\Seeder (+1 more)
+
+### Community 22 - "AccountReceivableService.php"
+Cohesion: 0.11
+Nodes (5): ReceivablePaymentReferenceTypeEnum, ReceivablePayment, AccountReceivableService, {closure#5}(), {closure#6}()
+
+### Community 23 - "StockAdjustmentService.php"
 Cohesion: 0.13
-Nodes (4): AccountReceivableController, ReceivablePayment, AccountReceivableService, {closure#4}()
+Nodes (5): {closure#10}(), ProductBatchStock, StockAdjustment, {closure#1}(), StockAdjustmentService
 
-### Community 23 - "Community 23"
+### Community 24 - "SalesOrderService"
 Cohesion: 0.09
-Nodes (3): AccountSetting, StockAdjustment, StockAdjustmentItem
+Nodes (9): SalesOrderItem, {closure#9}(), SalesInvoiceService, SalesOrderService, Delivery Order, Delivery Order (`DeliveryOrderService`), Key Service Methods, Sales Invoice (`SalesInvoiceService`) (+1 more)
 
-### Community 26 - "Community 26"
-Cohesion: 0.11
-Nodes (3): CashTransaction, {closure#6}(), {closure#7}()
-
-### Community 27 - "Community 27"
-Cohesion: 0.11
-Nodes (18): AccountCategoryEnum, ACCOUNT_PAYABLE, ACCOUNT_RECEIVABLE, ACCUMULATED_DEPRECIATION_AMORTIZATION, CASH_BANK, COST_OF_GOODS_SOLD, CREDIT_CARD, EQUITY (+10 more)
-
-### Community 31 - "Community 31"
-Cohesion: 0.16
-Nodes (6): Expense, {closure#2}(), {closure#3}(), {closure#4}(), {closure#5}(), {closure#6}()
-
-### Community 33 - "Community 33"
-Cohesion: 0.17
-Nodes (3): AccountPayableController, AccountPayableFormRequest, AccountPayableService
-
-### Community 38 - "Community 38"
-Cohesion: 0.17
-Nodes (3): PermissionService, PermissionSeeder, RoleSeeder
-
-### Community 39 - "Community 39"
-Cohesion: 0.17
-Nodes (10): {closure#1}(), {closure#2}(), PaymentTerm, CASH, COD, CUSTOM, NET_14, NET_30 (+2 more)
-
-### Community 45 - "Community 45"
+### Community 25 - "PurchaseOrderService"
 Cohesion: 0.14
-Nodes (3): SalesInvoice, {closure#5}(), {closure#9}()
+Nodes (3): PurchaseOrderController, PurchaseOrderService, Purchase Order (`PurchaseOrderService`)
 
-### Community 47 - "Community 47"
-Cohesion: 0.18
-Nodes (7): {closure#1}(), ExpenseStatus, CANCELLED, DRAFT, OPEN, PAID, PARTIAL
+### Community 26 - "CashService.php"
+Cohesion: 0.08
+Nodes (5): CashTransaction, CashTransactionCost, CashTransactionItem, {closure#6}(), {closure#7}()
 
-### Community 48 - "Community 48"
-Cohesion: 0.15
-Nodes (9): ReportTypeEnum, ACTIVITY_LOG, BALANCE_SHEET, CASH_FLOW, EXECUTIVE, JOURNAL, PAYABLE, PROFIT_LOSS (+1 more)
+### Community 27 - "Sales Module Context"
+Cohesion: 0.07
+Nodes (28): 1. Sales Order (SO), 3. Sales Invoice (SI), Business Flow, Configuration, Context Config (`config/context.php`), Database Schema (Migrations), Delivery Order Update (non-draft), Delivery Orders (+20 more)
 
-### Community 50 - "Community 50"
-Cohesion: 0.23
-Nodes (3): ReportPermissionMiddleware, {closure#1}(), {closure#2}()
+### Community 28 - "DeliveryOrderService"
+Cohesion: 0.14
+Nodes (6): DeliveryOrderController, DeliveryOrderFormRequest, DeliveryOrderService, Controllers (`app/Http/Controllers/Sales/`), Module Structure, Services (`app/Services/Sales/`)
 
-### Community 54 - "Community 54"
-Cohesion: 0.15
-Nodes (3): {closure#1}(), {closure#1}(), {closure#1}()
+### Community 29 - "InventoryService.php"
+Cohesion: 0.09
+Nodes (3): InventoryTransactionTypeEnum, {closure#12}(), {closure#9}()
 
-### Community 55 - "Community 55"
-Cohesion: 0.20
-Nodes (7): AccountPayableStatusEnum, CANCELLED, DRAFT, OPEN, PAID, PARTIAL, {closure#1}()
+### Community 32 - "GoodsReceiptService.php"
+Cohesion: 0.07
+Nodes (11): DocumentTotals, {closure#10}(), {closure#13}(), {closure#8}(), {closure#7}(), {closure#6}(), Goods Receipt, Purchase Invoice (+3 more)
 
-### Community 56 - "Community 56"
-Cohesion: 0.20
-Nodes (7): AccountReceivableStatusEnum, CANCELLED, DRAFT, OPEN, PAID, PARTIAL, {closure#1}()
+### Community 33 - "AccountReceivableController"
+Cohesion: 0.09
+Nodes (14): AccountPayableController, AccountReceivableController, Controllers (`app/Http/Controllers/Finance/`), Database Schema, Key Conventions, Models (`app/Models/`), Module Structure, Overview (+6 more)
 
-### Community 57 - "Community 57"
-Cohesion: 0.20
-Nodes (7): {closure#1}(), SalesInvoiceStatus, CANCELLED, DRAFT, OPEN, PAID, PARTIAL
+### Community 35 - "SalesOrderController"
+Cohesion: 0.14
+Nodes (3): {closure#1}(), SalesOrderStatus, SalesOrderController
 
-### Community 63 - "Community 63"
+### Community 37 - "PurchaseInvoiceService.php"
+Cohesion: 0.07
+Nodes (7): PurchaseInvoice, PurchaseInvoiceCost, PurchaseInvoiceItem, {closure#11}(), {closure#5}(), {closure#6}(), Models (`app/Models/`)
+
+### Community 38 - "Spatie\Permission\Models\Permission"
 Cohesion: 0.17
-Nodes (3): {closure#1}(), {closure#1}(), {closure#1}()
+Nodes (7): PermissionService, PermissionSeeder, RoleSeeder, Spatie\Permission\DefaultTeamResolver, Spatie\Permission\Models\Permission, Spatie\Permission\Models\Role, Spatie\Permission\PermissionRegistrar
 
-### Community 64 - "Community 64"
+### Community 39 - "PaymentTerm"
+Cohesion: 0.23
+Nodes (4): {closure#1}(), {closure#2}(), PaymentTerm, Key Dependencies
+
+### Community 40 - "AccountService"
+Cohesion: 0.10
+Nodes (6): AccountController, AccountFormRequest, AccountCategory, ChartOfAccount, AccountService, Enums (`app/Enums/`)
+
+### Community 42 - "GoodsReceipt"
+Cohesion: 0.08
+Nodes (8): GoodsReceipt, GoodsReceiptCost, GoodsReceiptItem, {closure#15}(), {closure#7}(), {closure#9}(), Goods Receipt (`GoodsReceiptService`), Inventory Integration (Goods Receipt Finalize)
+
+### Community 43 - "PurchaseOrder"
+Cohesion: 0.09
+Nodes (3): PurchaseOrder, Illuminate\Database\Eloquent\Attributes\Scope, Illuminate\Database\Eloquent\Builder
+
+### Community 44 - "SalesInvoice"
+Cohesion: 0.14
+Nodes (3): DashboardController, SalesInvoice, DashboardService
+
+### Community 45 - "QaFixesTest.php"
+Cohesion: 0.13
+Nodes (8): Closure, run_once(), cashBasics(), {closure#13}(), {closure#2}(), {closure#4}(), {closure#6}(), {closure#8}()
+
+### Community 49 - "ExpenseService"
+Cohesion: 0.11
+Nodes (6): ExpenseController, ExpenseService, Controller (`app/Http/Controllers/`), Enum (`app/Enums/`), Module Structure, Service (`app/Services/`)
+
+### Community 50 - "bootstrap/app.php"
+Cohesion: 0.18
+Nodes (10): EnsureUserIsActive, ReportPermissionMiddleware, {closure#1}(), {closure#2}(), Closure, Illuminate\Foundation\Application, Illuminate\Foundation\Configuration\Exceptions, Illuminate\Foundation\Configuration\Middleware (+2 more)
+
+### Community 51 - "User"
+Cohesion: 0.15
+Nodes (12): User, get, Illuminate\Database\Eloquent\Factories\HasFactory, Illuminate\Foundation\Auth\User, Illuminate\Foundation\Testing\RefreshDatabase, Illuminate\Notifications\Notifiable, Illuminate\Support\Facades\Blade, Spatie\Permission\Traits\HasRoles (+4 more)
+
+### Community 52 - "PurchaseOrderService.php"
+Cohesion: 0.10
+Nodes (6): PurchaseOrderCost, PurchaseOrderItem, {closure#10}(), {closure#12}(), {closure#6}(), {closure#9}()
+
+### Community 53 - "UserFactory.php"
+Cohesion: 0.20
+Nodes (5): UserFactory, Illuminate\Database\Eloquent\Factories\Factory, Illuminate\Support\Str, Pdo\Mysql, static
+
+### Community 54 - "Illuminate\Database\Migrations\Migration"
+Cohesion: 0.12
+Nodes (4): {closure#1}(), {closure#1}(), {closure#1}(), Illuminate\Database\Migrations\Migration
+
+### Community 57 - "Expense Module Context"
+Cohesion: 0.13
+Nodes (13): Amount Calculation, Auto-Creation from Other Modules, Database Schema, Draft status (`store` / `update`), Expense Module Context, From Goods Receipt (`storeExpenseFromGoodsReceipt`), Number Generation, Open status (`store` / `update`) (+5 more)
+
+### Community 60 - "RoleService"
 Cohesion: 0.21
+Nodes (3): RoleController, Collection, RoleService
+
+### Community 61 - "WarehouseTransferService.php"
+Cohesion: 0.22
+Nodes (3): WarehouseTransferItem, {closure#1}(), WarehouseTransferService
+
+### Community 62 - "SalesInvoiceService.php"
+Cohesion: 0.09
+Nodes (6): AccountSetting, SalesInvoiceCharge, SalesInvoiceItem, {closure#5}(), {closure#6}(), {closure#7}()
+
+### Community 63 - "Illuminate\Support\Facades\Schema"
+Cohesion: 0.15
+Nodes (5): {closure#1}(), {closure#1}(), {closure#1}(), {closure#2}(), Illuminate\Support\Facades\Schema
+
+### Community 64 - "OrderStatusGuardTest.php"
+Cohesion: 0.31
 Nodes (4): {closure#5}(), {closure#7}(), {closure#9}(), orderBasics()
 
-### Community 65 - "Community 65"
-Cohesion: 0.24
-Nodes (6): BilledBy, INTERNAL, SUPPLIER, THIRD_PARTY, {closure#1}(), {closure#2}()
+### Community 65 - "BilledBy"
+Cohesion: 0.27
+Nodes (3): BilledBy, {closure#1}(), {closure#2}()
 
-### Community 66 - "Community 66"
-Cohesion: 0.22
-Nodes (6): {closure#1}(), PurchaseOrderStatus, CANCELLED, CLOSED, DRAFT, OPEN
+### Community 68 - "FormRequestRulesTest.php"
+Cohesion: 0.14
+Nodes (5): AccountPayableFormRequest, AccountReceivableFormRequest, {closure#2}(), {closure#3}(), rulesForRoute()
 
-### Community 67 - "Community 67"
-Cohesion: 0.22
-Nodes (6): {closure#1}(), SalesOrderStatus, CANCELLED, CLOSED, DRAFT, OPEN
+### Community 69 - "AccountPayableService.php"
+Cohesion: 0.10
+Nodes (5): PayablePaymentReferenceTypeEnum, PayablePayment, AccountPayableService, {closure#6}(), {closure#7}()
 
-### Community 68 - "Community 68"
-Cohesion: 0.22
-Nodes (4): AccountReceivableFormRequest, {closure#2}(), {closure#3}(), rulesForRoute()
-
-### Community 72 - "Community 72"
+### Community 70 - "PurchaseInvoiceStatus"
 Cohesion: 0.20
-Nodes (7): ActivityLogEventEnum, CANCELLED, CLOSED, DRAFTED, FINISHED, OPENED, POSTED
+Nodes (6): {closure#1}(), PurchaseInvoiceStatus, Business Logic, Invoice Status Affected, Payment Number Generation, Store Payment Flow
 
-### Community 73 - "Community 73"
-Cohesion: 0.24
-Nodes (5): CashTransactionTypeEnum, RECEIVE, SEND, TRANSFER, {closure#1}()
+### Community 75 - "GoodsReceiptStatus"
+Cohesion: 0.22
+Nodes (6): {closure#1}(), GoodsReceiptStatus, Controllers (`app/Http/Controllers/Purchasing/`), Enums (`app/Enums/`), Module Structure, Services (`app/Services/Purchasing/`)
 
-### Community 74 - "Community 74"
-Cohesion: 0.24
-Nodes (5): {closure#1}(), DeliveryOrderStatus, CANCELLED, DRAFT, FINISHED
+### Community 76 - "Purchasing Module Context"
+Cohesion: 0.18
+Nodes (10): Configuration, Context Config (`config/context.php`), Dependencies, Key Business Rules, Key Service Methods, Legacy/Alternative Routes (`PembelianController`), Overview, Purchase Invoice (`PurchasingService`) (+2 more)
 
-### Community 75 - "Community 75"
-Cohesion: 0.24
-Nodes (5): {closure#1}(), GoodsReceiptStatus, CANCELLED, DRAFT, FINISHED
+### Community 77 - "form-validation.js"
+Cohesion: 0.42
+Nodes (10): clearErrors(), escapeHtml(), isEmpty(), isVisible(), markField(), recheckRequired(), showServerErrors(), unmarkField() (+2 more)
 
-### Community 76 - "Community 76"
-Cohesion: 0.20
-Nodes (9): InventoryTransactionTypeEnum, ADJUSTMENT_MINUS, ADJUSTMENT_PLUS, COST_ADJUSTMENT, OPENING, PURCHASE, SALE, TRANSFER_IN (+1 more)
-
-### Community 77 - "Community 77"
-Cohesion: 0.20
-Nodes (3): PayablePaymentReferenceTypeEnum, EXPENSE, PURCHASE_INVOICE
-
-### Community 78 - "Community 78"
+### Community 78 - "UserPasswordChangeTest.php"
 Cohesion: 0.36
-Nodes (8): actingUserWithEditPermission(), {closure#1}(), {closure#2}(), {closure#3}(), {closure#4}(), {closure#5}(), {closure#6}(), {closure#7}()
+Nodes (9): put, actingUserWithEditPermission(), {closure#1}(), {closure#2}(), {closure#3}(), {closure#4}(), {closure#5}(), {closure#6}() (+1 more)
 
-### Community 79 - "Community 79"
-Cohesion: 0.29
-Nodes (5): {closure#3}(), {closure#4}(), {closure#6}(), {closure#8}(), journalBasics()
+### Community 79 - "TotalsAndJournalTest.php"
+Cohesion: 0.25
+Nodes (6): {closure#2}(), {closure#3}(), {closure#4}(), {closure#6}(), {closure#8}(), journalBasics()
 
-### Community 80 - "Community 80"
-Cohesion: 0.28
-Nodes (5): CashTransactionStatusEnum, CANCELLED, DRAFT, POSTED, {closure#1}()
+### Community 81 - "abort_unless_can_become"
+Cohesion: 0.20
+Nodes (3): abort_unless_can_become(), Symfony\Component\HttpKernel\Exception\HttpException, {closure#2}()
 
-### Community 81 - "Community 81"
-Cohesion: 0.28
-Nodes (5): {closure#1}(), JournalEntryStatusEnum, CANCELLED, DRAFT, POSTED
-
-### Community 82 - "Community 82"
+### Community 82 - "README.md"
 Cohesion: 0.22
-Nodes (4): {closure#10}(), ProductBatchStock, {closure#12}(), {closure#9}()
+Nodes (8): About Laravel, Code of Conduct, Contributing, Laravel Sponsors, Learning Laravel, License, Premium Partners, Security Vulnerabilities
 
-### Community 86 - "Community 86"
+### Community 84 - "export.js"
+Cohesion: 0.28
+Nodes (4): xlsx, exportXlsx(), today(), toNumber()
+
+### Community 86 - "composer.json"
 Cohesion: 0.22
 Nodes (8): description, keywords, license, minimum-stability, name, prefer-stable, $schema, type
 
-### Community 87 - "Community 87"
+### Community 87 - "require-dev"
 Cohesion: 0.22
 Nodes (9): require-dev, fakerphp/faker, laravel/pail, laravel/pint, laravel/sail, mockery/mockery, nunomaduro/collision, pestphp/pest (+1 more)
 
-### Community 88 - "Community 88"
+### Community 88 - "scripts"
 Cohesion: 0.22
 Nodes (9): scripts, dev, post-autoload-dump, post-create-project-cmd, post-root-package-install, post-update-cmd, pre-package-uninstall, setup (+1 more)
 
-### Community 97 - "Community 97"
+### Community 92 - "DeliveryOrderItem"
+Cohesion: 0.15
+Nodes (6): DeliveryOrderCost, DeliveryOrderItem, DeliveryOrderItemBatch, {closure#5}(), 2. Delivery Order (DO), Models (`app/Models/`)
+
+### Community 93 - "UserService.php"
+Cohesion: 0.32
+Nodes (3): UserCompany, {closure#4}(), {closure#5}()
+
+### Community 94 - "devDependencies"
+Cohesion: 0.25
+Nodes (8): devDependencies, axios, concurrently, laravel-vite-plugin, sass-embedded, tailwindcss, @tailwindcss/vite, vite
+
+### Community 96 - "AppServiceProvider.php"
+Cohesion: 0.29
+Nodes (3): AppServiceProvider, Illuminate\Support\Facades\Gate, Illuminate\Support\ServiceProvider
+
+### Community 97 - "require"
 Cohesion: 0.25
 Nodes (8): require, laravel/framework, laravel/sanctum, laravel/tinker, php, spatie/laravel-activitylog, spatie/laravel-permission, tightenco/ziggy
 
-### Community 98 - "Community 98"
-Cohesion: 0.39
-Nodes (5): {closure#2}(), {closure#3}(), {closure#4}(), {closure#5}(), goodsReceiptErrors()
+### Community 98 - "GoodsReceiptFormRequest"
+Cohesion: 0.22
+Nodes (7): GoodsReceiptFormRequest, Illuminate\Support\Facades\Validator, {closure#2}(), {closure#3}(), {closure#4}(), {closure#5}(), goodsReceiptErrors()
 
-### Community 108 - "Community 108"
+### Community 103 - "ActivityLogTest.php"
+Cohesion: 0.33
+Nodes (4): Company, Illuminate\Support\Facades\Hash, {closure#1}(), {closure#2}()
+
+### Community 108 - "config"
 Cohesion: 0.29
 Nodes (7): pestphp/pest-plugin, php-http/discovery, config, allow-plugins, optimize-autoloader, preferred-install, sort-packages
 
-### Community 109 - "Community 109"
+### Community 109 - "2026_07_06_065924_create_sales_orders_table.php"
 Cohesion: 0.29
 Nodes (4): {closure#1}(), {closure#2}(), {closure#3}(), {closure#4}()
 
-### Community 110 - "Community 110"
+### Community 110 - "2026_07_06_114637_create_delivery_orders_table.php"
 Cohesion: 0.29
 Nodes (4): {closure#1}(), {closure#2}(), {closure#3}(), {closure#4}()
 
-### Community 112 - "Community 112"
+### Community 111 - "Cost & Charge Handling"
 Cohesion: 0.33
-Nodes (4): RoleEnum, ACCOUNTING, ADMIN, SUPER_ADMIN
+Nodes (5): Charge Fields, Cost/Charge Flow, Cost & Charge Handling, Cost Fields, Key Behaviors
 
-### Community 127 - "Community 127"
+### Community 114 - "2026_07_27_125404_create_expenses_table.php"
+Cohesion: 0.33
+Nodes (3): {closure#1}(), {closure#2}(), {closure#3}()
+
+### Community 117 - "Cost Handling"
+Cohesion: 0.50
+Nodes (4): Cost Fields, Cost Flow, Cost Handling, Key Behaviors
+
+### Community 118 - "ExpenseService.php"
+Cohesion: 0.19
+Nodes (7): ExpenseCost, ExpenseItem, {closure#2}(), {closure#3}(), {closure#4}(), {closure#5}(), Models (`app/Models/`)
+
+### Community 119 - "Database Schema (Migrations)"
+Cohesion: 0.50
+Nodes (4): Database Schema (Migrations), Goods Receipts, Purchase Invoices, Purchase Orders
+
+### Community 120 - "Validation Rules"
+Cohesion: 0.50
+Nodes (4): Goods Receipt Update (non-draft), Purchase Invoice Update (non-draft), Purchase Order Store/Update, Validation Rules
+
+### Community 121 - "Routes (`routes/web.php`)"
+Cohesion: 0.50
+Nodes (4): Goods Receipts (`purchasings.goods_receipts.*`), Purchase Invoices (`purchasings.purchase_invoices.*`), Purchase Orders (`purchasings.purchase_orders.*`), Routes (`routes/web.php`)
+
+### Community 125 - "scripts"
+Cohesion: 0.67
+Nodes (3): scripts, build, dev
+
+### Community 127 - "psr-4"
 Cohesion: 0.33
 Nodes (6): autoload, files, psr-4, App\\, Database\\Factories\\, Database\\Seeders\\
 
-### Community 128 - "Community 128"
+### Community 128 - "0001_01_01_000000_create_users_table.php"
 Cohesion: 0.33
 Nodes (3): {closure#1}(), {closure#2}(), {closure#3}()
 
-### Community 129 - "Community 129"
+### Community 129 - "2026_06_23_090155_create_purchase_orders_table.php"
 Cohesion: 0.33
 Nodes (3): {closure#1}(), {closure#2}(), {closure#3}()
 
-### Community 130 - "Community 130"
+### Community 130 - "2026_06_27_082234_create_goods_receipts_table.php"
 Cohesion: 0.33
 Nodes (3): {closure#1}(), {closure#2}(), {closure#3}()
 
-### Community 131 - "Community 131"
+### Community 131 - "2026_06_29_124854_create_purchase_invoices_table.php"
 Cohesion: 0.33
 Nodes (3): {closure#1}(), {closure#2}(), {closure#3}()
 
-### Community 132 - "Community 132"
+### Community 133 - "2026_08_09_011515_create_cash_transactions_table.php"
 Cohesion: 0.33
 Nodes (3): {closure#1}(), {closure#2}(), {closure#3}()
 
-### Community 133 - "Community 133"
-Cohesion: 0.33
-Nodes (3): {closure#1}(), {closure#2}(), {closure#3}()
+### Community 138 - "logging.php"
+Cohesion: 0.40
+Nodes (4): Monolog\Handler\NullHandler, Monolog\Handler\StreamHandler, Monolog\Handler\SyslogUdpHandler, Monolog\Processor\PsrLogMessageProcessor
 
-### Community 148 - "Community 148"
-Cohesion: 0.60
-Nodes (3): {closure#1}(), {closure#2}(), salesInvoiceFixture()
+### Community 139 - "sanctum.php"
+Cohesion: 0.40
+Nodes (4): Illuminate\Cookie\Middleware\EncryptCookies, Illuminate\Foundation\Http\Middleware\ValidateCsrfToken, Laravel\Sanctum\Http\Middleware\AuthenticateSession, Laravel\Sanctum\Sanctum
 
-### Community 161 - "Community 161"
-Cohesion: 0.50
-Nodes (3): master.warehouse.partials.batch-table, master.warehouse.partials.stock-table, layouts.app
+### Community 148 - "InvoiceCancelAndPaymentTest.php"
+Cohesion: 0.31
+Nodes (7): {closure#1}(), {closure#2}(), {closure#5}(), {closure#7}(), paymentAccounts(), paymentRequest(), salesInvoiceFixture()
 
-### Community 162 - "Community 162"
-Cohesion: 0.50
-Nodes (3): purchasing.purchase-order.partials.create.item-table, layouts.app, purchasing.partials.additional-cost-table
+### Community 149 - "JournalEntry"
+Cohesion: 0.18
+Nodes (4): JournalEntry, JournalEntryItem, {closure#1}(), {closure#2}()
 
-### Community 163 - "Community 163"
-Cohesion: 0.50
-Nodes (3): finance.expense.partials.cost-table, finance.expense.partials.item-table, layouts.app
-
-### Community 164 - "Community 164"
-Cohesion: 0.50
-Nodes (3): finance.expense.partials.cost-table, finance.expense.partials.item-table, layouts.app
-
-### Community 165 - "Community 165"
-Cohesion: 0.50
-Nodes (3): layouts.app, sales.partials.additional-cost-table, sales.delivery-order.partials.edit.item-table
-
-### Community 166 - "Community 166"
-Cohesion: 0.50
-Nodes (3): layouts.app, sales.partials.additional-charge-table, sales.partials.additional-cost-table
-
-### Community 167 - "Community 167"
-Cohesion: 0.50
-Nodes (3): layouts.app, sales.partials.additional-charge-table, sales.partials.additional-cost-table
-
-### Community 170 - "Community 170"
+### Community 170 - "autoload-dev"
 Cohesion: 0.67
 Nodes (3): autoload-dev, psr-4, Tests\\
 
-### Community 171 - "Community 171"
+### Community 171 - "extra"
 Cohesion: 0.67
 Nodes (3): extra, laravel, dont-discover
 
 ## Knowledge Gaps
-- **212 isolated node(s):** `ACCOUNTING`, `ADMIN`, `SUPER_ADMIN`, `master.warehouse.partials.batch-table`, `master.warehouse.partials.stock-table` (+207 more)
-  These have ≤1 connection - possible missing edges. (Counts symbols only; 1009 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **209 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **157 isolated node(s):** `$schema`, `name`, `type`, `description`, `keywords` (+152 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 977 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **190 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Expense` connect `Community 31` to `Community 71`, `Community 77`, `Community 49`, `Community 18`, `Community 19`, `Community 24`?**
-  _High betweenness centrality (0.027) - this node is a cross-community bridge._
-- **What connects `ACCOUNTING`, `ADMIN`, `SUPER_ADMIN` to the rest of the system?**
-  _212 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.053246753246753244 - nodes in this community are weakly interconnected._
-- **Why does `ErpDataService` connect `Community 17` to `Community 40`, `Community 4`, `Community 5`?**
-  _High betweenness centrality (0.023) - this node is a cross-community bridge._
-- **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.07329462989840348 - nodes in this community are weakly interconnected._
-- **Why does `PurchaseOrder` connect `Community 43` to `Community 37`, `Community 70`, `Community 71`, `Community 11`, `Community 18`, `Community 19`, `Community 52`, `Community 25`?**
-  _High betweenness centrality (0.022) - this node is a cross-community bridge._
-- **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.045454545454545456 - nodes in this community are weakly interconnected._
+- **Why does `InventoryService` connect `InventoryService` to `GoodsReceiptService.php`, `WarehouseController`, `ProductController`, `PurchaseInvoiceService`, `Controller`, `PurchaseInvoiceService.php`, `JournalService`, `ProductStock`, `DeliveryOrderService.php`, `WarehouseService`, `DeliveryOrderItem`, `ExpenseService`, `WarehouseTransferService.php`, `StockAdjustmentService.php`, `SalesOrderService`, `DeliveryOrderService`, `InventoryService.php`, `GoodsReceiptService`?**
+  _High betweenness centrality (0.037) - this node is a cross-community bridge._
+- **Why does `LogsModelActivity` connect `LogsModelActivity` to `ProductService`, `SalesOrderService.php`, `WarehouseService`, `JournalEntry`, `AccountReceivableService.php`, `StockAdjustmentService.php`, `SalesOrderService`, `CashService.php`, `Expense`, `ContactService`, `PurchaseInvoiceService.php`, `AccountService`, `DeliveryOrder`, `GoodsReceipt`, `PurchaseOrder`, `SalesInvoice`, `User`, `PurchaseOrderService.php`, `WarehouseTransferService.php`, `SalesInvoiceService.php`, `AccountPayableService.php`, `DeliveryOrderStatus`, `WarehouseTransfer`, `DeliveryOrderItem`, `ProductStock`, `ExpenseService.php`?**
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
+- **Why does `PurchaseInvoice` connect `PurchaseInvoiceService.php` to `AccountReceivableController`, `PurchaseInvoiceService`, `AccountPayableService.php`, `DashboardService.php`, `InventoryService`, `SalesInvoice`, `ReportService.php`, `abort_unless_can_become`, `Illuminate\Database\Eloquent\Model`, `LogsModelActivity`, `PurchaseOrderService.php`, `InventoryService.php`?**
+  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+- **What connects `$schema`, `name`, `type` to the rest of the system?**
+  _157 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `package.json` be split into smaller, more focused modules?**
+  _Cohesion score 0.12418300653594772 - nodes in this community are weakly interconnected._
+- **Should `Illuminate\Http\Request` be split into smaller, more focused modules?**
+  _Cohesion score 0.09672830725462304 - nodes in this community are weakly interconnected._
+- **Should `web.php` be split into smaller, more focused modules?**
+  _Cohesion score 0.044444444444444446 - nodes in this community are weakly interconnected._

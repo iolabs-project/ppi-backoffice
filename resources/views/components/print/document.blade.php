@@ -8,7 +8,7 @@
     'parties' => [],            // [['heading' => ..., 'name' => ..., 'lines' => [...]], ...]
     'columns' => [],            // [['label' => 'Produk', 'align' => 'left|center|right'], ...]
     'rows' => [],               // [['Katul', '', '33.330', ...], ...]
-    'totals' => [],             // [['label' => 'Total', 'value' => 'Rp 1.000', 'emphasis' => true], ...]
+    'totals' => [],             // [['label' => 'Total', 'value' => 'Rp 1,000.00', 'emphasis' => true], ...]
     'amountInWords' => null,    // number → "Terbilang ... Rupiah"
     'note' => null,
     'signatures' => [],         // [['caption' => 'Dengan Hormat,', 'name' => ..., 'role' => 'Jabatan'], ...]
