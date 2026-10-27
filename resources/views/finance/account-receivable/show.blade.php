@@ -11,6 +11,7 @@
         $canPay = $invoice->remaining_amount > 0 && in_array($invoice->status, [$open, $partial]);
         $paidAmount = $invoice->total_amount - $invoice->remaining_amount;
         $paymentMethodLabels = ['cash' => 'Cash', 'bank_transfer' => 'Bank Transfer', 'credit_card' => 'Credit Card'];
+        $canVoid = auth()->user()->can('finances.receivables.delete');
     @endphp
     <div x-data="paymentModule()" x-init="init()" class="order-page">
         <div class="order-hd order-hd--start">
@@ -76,7 +77,7 @@
                     </div>
                     <div style="display:flex; justify-content:space-between; padding:6px 0;">
                         <span style="color:var(--ink-3);">Jumlah Dibayar</span>
-                        <span class="num" style="font-weight:600; color:var(--good);" x-text="m(tableData.data.reduce((sum, p) => sum + p.amount, 0))"></span>
+                        <span class="num" style="font-weight:600; color:var(--good);" x-text="m(paidTotal())"></span>
                     </div>
                     <div
                         style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;">
@@ -108,19 +109,22 @@
                             <th>No. Referensi</th>
                             <th style="text-align:right;">Jumlah</th>
                             <th>Catatan</th>
+                            @if ($canVoid)
+                                <th></th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
                         <template x-if="tableLoading">
                             <tr>
-                                <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                <td colspan="{{ $canVoid ? 8 : 7 }}" style="text-align:center; color:var(--ink-3); padding:20px;">
                                     Memuat data...
                                 </td>
                             </tr>
                         </template>
                         <template x-if="!tableLoading && tableData.data.length === 0">
                             <tr>
-                                <td colspan="7" style="text-align:center; color:var(--ink-3); padding:20px;">
+                                <td colspan="{{ $canVoid ? 8 : 7 }}" style="text-align:center; color:var(--ink-3); padding:20px;">
                                     Tidak ada data
                                 </td>
                             </tr>
@@ -129,16 +133,26 @@
                             <template x-for="(payment, index) in tableData.data" :key="payment.id">
                                 <tr>
                                     <td x-text="index + 1"></td>
-                                    <td class="mono" style="font-weight:600;" x-text="payment.number"></td>
+                                    <td class="mono" style="font-weight:600; white-space:nowrap;">
+                                        <span x-text="payment.number"></span>
+                                        <span class="chip chip-bad" x-show="payment.voided_at"><span class="chip-dot dot-bad"></span>Void</span>
+                                    </td>
                                     <td style="color:var(--ink-3);"
                                         x-text="new Date(payment.payment_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })">
                                     </td>
                                     <td x-text="paymentMethod(payment.payment_method)"></td>
                                     <td class="mono" style="font-size:11.5px; color:var(--ink-4);"
                                         x-text="payment.reference_number || '—'"></td>
-                                    <td class="num" style="text-align:right; font-weight:600;" x-text="m(payment.amount)">
+                                    <td class="num" style="text-align:right; font-weight:600;" x-text="m(payment.amount)"
+                                        :style="payment.voided_at ? { textDecoration: 'line-through', color: 'var(--ink-4)' } : {}">
                                     </td>
                                     <td style="color:var(--ink-3);" x-text="payment.note || '—'"></td>
+                                    @if ($canVoid)
+                                        <td style="text-align:right;">
+                                            <button type="button" class="btn btn-ghost btn-sm" x-show="!payment.voided_at"
+                                                @click="handleVoid(payment)">Void</button>
+                                        </td>
+                                    @endif
                                 </tr>
                             </template>
                         </template>
@@ -147,8 +161,11 @@
                         <tr>
                             <td colspan="5" style="text-align:right; font-weight:700;">Total Dibayar</td>
                             <td class="num" style="text-align:right; font-weight:700;"
-                                x-text="m(tableData.data.reduce((sum, p) => sum + p.amount, 0))"></td>
+                                x-text="m(paidTotal())"></td>
                             <td></td>
+                            @if ($canVoid)
+                                <td></td>
+                            @endif
                         </tr>
                     </tfoot>
                     {{-- @if ($invoice->payments->isNotEmpty())
@@ -240,7 +257,7 @@
                 },
 
                 outstandingAmount() {
-                    return this.invoiceData.total_amount - this.tableData.data.reduce((sum, p) => sum + p.amount, 0);
+                    return this.invoiceData.total_amount - this.paidTotal();
                 },
 
                 canPay() {
@@ -266,6 +283,44 @@
                     this.form.note = '';
                     this.form.idempotency_key = Date.now().toString(36) + Math.random().toString(36).slice(2);
                     this.modalOpen = true;
+                },
+
+                // Voided payments stay in the history but no longer count as paid
+                paidTotal() {
+                    return this.tableData.data.filter(p => !p.voided_at).reduce((sum, p) => sum + p.amount, 0);
+                },
+
+                async handleVoid(payment) {
+                    const result = await Swal.fire({
+                        title: `Void pembayaran ${payment.number}?`,
+                        text: 'Jurnal pembayaran dibalik, transaksi kasnya dibatalkan, dan sisa piutang bertambah kembali.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, void',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                    });
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    try {
+                        await axios.post(route('finances.account_receivables.void', payment.id));
+                        window.location.reload();
+                    } catch (error) {
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'error',
+                            title: error.response?.data?.message ?? 'Terjadi kesalahan saat void pembayaran. Silakan coba lagi.'
+                        });
+                    }
                 },
 
                 paymentMethod(method) {

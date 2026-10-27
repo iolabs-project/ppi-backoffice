@@ -147,6 +147,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'index')->middleware('permission:finances.payables.view')->name('index');
             Route::get('/datatable', 'datatable')->middleware('permission:finances.payables.view')->name('datatable');
             Route::get('/payment-datatable', 'paymentDatatable')->middleware('permission:finances.payables.view')->name('payment_datatable');
+            Route::post('/payments/{payment}/void', 'void')->middleware('permission:finances.payables.delete')->name('void');
             Route::get('/{id}', 'show')->middleware('permission:finances.payables.view')->name('show');
             Route::post('/{id}', 'store')->middleware('permission:finances.payables.create')->name('store');
         });
@@ -154,6 +155,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'index')->middleware('permission:finances.receivables.view')->name('index');
             Route::get('/datatable', 'datatable')->middleware('permission:finances.receivables.view')->name('datatable');
             Route::get('/payment-datatable', 'paymentDatatable')->middleware('permission:finances.receivables.view')->name('payment_datatable');
+            Route::post('/payments/{payment}/void', 'void')->middleware('permission:finances.receivables.delete')->name('void');
             Route::get('/{id}', 'show')->middleware('permission:finances.receivables.view')->name('show');
             Route::post('/{id}', 'store')->middleware('permission:finances.receivables.create')->name('store');
         });

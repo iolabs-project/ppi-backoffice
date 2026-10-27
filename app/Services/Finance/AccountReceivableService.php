@@ -11,6 +11,8 @@ use App\Services\JournalService;
 use App\Services\Finance\CashService;
 use App\Enums\SalesInvoiceStatus;
 use App\Models\AccountSetting;
+use App\Models\CashTransaction;
+use App\Models\JournalEntry;
 use App\Models\ReceivablePayment;
 use App\Models\SalesInvoice;
 use Illuminate\Http\Request;
@@ -114,6 +116,7 @@ class AccountReceivableService
                 'reference_number',
                 'amount',
                 'note',
+                'voided_at',
                 'created_by'
             );
 
@@ -180,6 +183,48 @@ class AccountReceivableService
             $this->postCashTransaction($payment);
             $this->postPaymentJournal($payment);
         }), 'Pembayaran ini sudah tercatat.');
+    }
+
+    public function voidPayment(int $paymentID)
+    {
+        DB::transaction(function () use ($paymentID) {
+            $payment = ReceivablePayment::lockForUpdate()->findOrFail($paymentID);
+            if ($payment->voided_at) {
+                throw ValidationException::withMessages(['error' => 'Pembayaran ini sudah di-void.']);
+            }
+
+            $invoice = SalesInvoice::lockForUpdate()->findOrFail($payment->reference_id);
+            if (!in_array($invoice->status, [SalesInvoiceStatus::PARTIAL->value, SalesInvoiceStatus::PAID->value], true)) {
+                throw ValidationException::withMessages(['error' => 'Pembayaran hanya dapat di-void untuk tagihan yang berstatus Partial atau Paid.']);
+            }
+
+            // Voiding a receipt takes the money back out, so the account must still hold it
+            if ($this->cashService->fetchAccountBalance($payment->account_id) < $payment->amount) {
+                throw ValidationException::withMessages(['error' => 'Saldo akun kas tidak mencukupi untuk void pembayaran ini.']);
+            }
+
+            $invoice->remaining_amount = min($invoice->total_amount, round($invoice->remaining_amount + $payment->amount, 4));
+            $invoice->status = $invoice->remaining_amount < $invoice->total_amount ? SalesInvoiceStatus::PARTIAL->value : SalesInvoiceStatus::OPEN->value;
+            $invoice->save();
+
+            $journalEntry = JournalEntry::where('reference_type', ReceivablePayment::class)->where('reference_id', $payment->id)->first();
+            if ($journalEntry) {
+                $this->journalService->reverse(
+                    journalEntryID: $journalEntry->id,
+                    date: null,
+                    description: 'Void Pembayaran Piutang #' . $payment->number
+                );
+            }
+
+            // The cash transaction points at the invoice, so its description is what ties it to this payment
+            CashTransaction::where('reference_type', SalesInvoice::class)
+                ->where('reference_id', $payment->reference_id)
+                ->where('description', 'Pembayaran Piutang #' . $payment->number)
+                ->first()
+                ?->update(['status' => CashTransactionStatusEnum::CANCELLED->value]);
+
+            $payment->update(['voided_at' => now()]);
+        });
     }
 
     private function postPaymentJournal(ReceivablePayment $payment)

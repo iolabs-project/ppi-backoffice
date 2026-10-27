@@ -8,7 +8,7 @@
         $partial = ExpenseStatus::PARTIAL->value;
         $paymentMethodLabels = ['cash' => 'Cash', 'bank_transfer' => 'Bank Transfer', 'credit_card' => 'Credit Card'];
         $costTotal = $expense->costs->sum('amount');
-        $paidTotal = $expense->payments->sum('amount');
+        $paidTotal = $expense->payments->whereNull('voided_at')->sum('amount');
     @endphp
     <div x-data="detailPage()" class="order-page">
         <div class="order-hd order-hd--start">
@@ -184,12 +184,17 @@
                         @forelse ($expense->payments as $i => $payment)
                             <tr>
                                 <td>{{ $i + 1 }}</td>
-                                <td class="mono" style="font-weight:600;">{{ $payment->number }}</td>
+                                <td class="mono" style="font-weight:600; white-space:nowrap;">
+                                    {{ $payment->number }}
+                                    @if ($payment->voided_at)
+                                        <span class="chip chip-bad"><span class="chip-dot dot-bad"></span>Void</span>
+                                    @endif
+                                </td>
                                 <td style="color:var(--ink-3);">{{ \Illuminate\Support\Carbon::parse($payment->payment_date)->format('d/m/Y') }}</td>
                                 <td>{{ $payment->account ? $payment->account->code . ' - ' . $payment->account->name : '—' }}</td>
                                 <td>{{ $paymentMethodLabels[$payment->payment_method] ?? $payment->payment_method }}</td>
                                 <td class="mono" style="font-size:11.5px; color:var(--ink-4);">{{ $payment->reference_number ?: '—' }}</td>
-                                <td class="num" style="text-align:right; font-weight:600;">{{ number_format($payment->amount, 2) }}</td>
+                                <td class="num" style="text-align:right; font-weight:600; {{ $payment->voided_at ? 'text-decoration:line-through; color:var(--ink-4);' : '' }}">{{ number_format($payment->amount, 2) }}</td>
                             </tr>
                         @empty
                             <tr>

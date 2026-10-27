@@ -24,12 +24,14 @@ class ReceivablePayment extends Model
         'reference_number',
         'amount',
         'note',
+        'voided_at',
         'created_by',
     ];
 
     protected $casts = [
         'payment_date' => 'date:Y-m-d',
         'amount' => 'double',
+        'voided_at' => 'datetime',
     ];
 
     public function company()
