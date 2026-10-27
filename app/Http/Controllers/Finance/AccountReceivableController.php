@@ -102,4 +102,23 @@ class AccountReceivableController extends Controller
             return response()->json(['message' => 'Terjadi kesalahan saat mencoba menambahkan pembayaran. Silakan coba lagi.'], 500);
         }
     }
+
+    public function void(Request $request, int $payment)
+    {
+        try {
+            $this->accountReceivableService->voidPayment($payment);
+            return response()->json(['message' => 'Pembayaran berhasil di-void.']);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => collect($e->errors())->flatten()->first() ?? 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Error Finance/AccountReceivableController@void: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $this->loggableRequest($request),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => 'Terjadi kesalahan saat mencoba void pembayaran. Silakan coba lagi.'], 500);
+        }
+    }
 }

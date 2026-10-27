@@ -11,7 +11,9 @@ use App\Enums\ExpenseStatus;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Enums\PayablePaymentReferenceTypeEnum;
 use App\Models\AccountSetting;
+use App\Models\CashTransaction;
 use App\Models\Expense;
+use App\Models\JournalEntry;
 use App\Models\PayablePayment;
 use App\Models\PurchaseInvoice;
 use Illuminate\Http\Request;
@@ -158,6 +160,7 @@ class AccountPayableService
                 'reference_number',
                 'amount',
                 'note',
+                'voided_at',
                 'created_by'
             );
 
@@ -235,6 +238,45 @@ class AccountPayableService
             $this->postCashTransaction($payment);
             $this->postPaymentJournal($payment);
         }), 'Pembayaran ini sudah tercatat.');
+    }
+
+    public function voidPayment(int $paymentID)
+    {
+        DB::transaction(function () use ($paymentID) {
+            $payment = PayablePayment::lockForUpdate()->findOrFail($paymentID);
+            if ($payment->voided_at) {
+                throw ValidationException::withMessages(['error' => 'Pembayaran ini sudah di-void.']);
+            }
+
+            $model = PayablePaymentReferenceTypeEnum::from($payment->reference_type)->model();
+            $statuses = $model === PurchaseInvoice::class ? PurchaseInvoiceStatus::class : ExpenseStatus::class;
+            $invoice = $model::lockForUpdate()->findOrFail($payment->reference_id);
+            if (!in_array($invoice->status, [$statuses::PARTIAL->value, $statuses::PAID->value], true)) {
+                throw ValidationException::withMessages(['error' => 'Pembayaran hanya dapat di-void untuk tagihan yang berstatus Partial atau Paid.']);
+            }
+
+            $invoice->remaining_amount = min($invoice->total_amount, round($invoice->remaining_amount + $payment->amount, 4));
+            $invoice->status = $invoice->remaining_amount < $invoice->total_amount ? $statuses::PARTIAL->value : $statuses::OPEN->value;
+            $invoice->save();
+
+            $journalEntry = JournalEntry::where('reference_type', PayablePayment::class)->where('reference_id', $payment->id)->first();
+            if ($journalEntry) {
+                $this->journalService->reverse(
+                    journalEntryID: $journalEntry->id,
+                    date: null,
+                    description: 'Void Pembayaran Hutang #' . $payment->number
+                );
+            }
+
+            // The cash transaction points at the invoice, so its description is what ties it to this payment
+            CashTransaction::where('reference_type', $model)
+                ->where('reference_id', $payment->reference_id)
+                ->where('description', 'Pembayaran Hutang #' . $payment->number)
+                ->first()
+                ?->update(['status' => CashTransactionStatusEnum::CANCELLED->value]);
+
+            $payment->update(['voided_at' => now()]);
+        });
     }
 
     private function postPaymentJournal(PayablePayment $payment)
