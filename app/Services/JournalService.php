@@ -47,21 +47,6 @@ class JournalService
         });
     }
 
-    public function cancel(int $journalEntryId)
-    {
-        $journalEntry = JournalEntry::findOrFail($journalEntryId);
-
-        if ($journalEntry->status === 'cancelled') {
-            throw ValidationException::withMessages(['error' => 'Jurnal sudah dibatalkan.']);
-        }
-
-        if ($journalEntry->status === 'posted') {
-            throw ValidationException::withMessages(['error' => 'Tidak dapat membatalkan jurnal yang sudah diposting.']);
-        }
-
-        $journalEntry->update(['status' => 'cancelled']);
-    }
-
     public function reverse(int $journalEntryID, string | null $date, string | null $description)
     {
         $originalEntry = JournalEntry::with('items')->findOrFail($journalEntryID);

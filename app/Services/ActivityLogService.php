@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\Models\Activity;
@@ -39,18 +38,5 @@ class ActivityLogService
         
         $query = $query->orderBy('created_at', 'desc')->paginate($request->input('per_page', 15));
         return $query;
-    }
-    public function store(Model $performedOn, string $event, string $description)
-    {
-        $properties = [];
-
-        if ($performedOn->wasChanged()) {
-            $properties = $performedOn->getChanges();
-            dd($properties);
-        }
-
-        activity()->performedOn($performedOn)
-            ->event($event)
-            ->log($description);
     }
 }

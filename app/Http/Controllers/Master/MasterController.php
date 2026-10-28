@@ -8,7 +8,6 @@ use App\Models\Unit;
 use App\Services\Master\AccountService;
 use App\Services\Master\AccountSettingService;
 use App\Services\Master\ContactService;
-use App\Services\ErpDataService;
 use App\Services\Master\ProductService;
 use App\Services\Master\RoleService;
 use Spatie\Permission\Models\Permission;
@@ -37,7 +36,6 @@ class MasterController extends Controller
             'breadcrumb'           => [['label' => 'Master Data']],
             'accountCategories'    => $accountService->fetchAccountCategoryData(),
             'userRoles'            => $roleService->fetchRoleData(),
-            'roles'                => ErpDataService::roles(),
             'roleList'             => $roleList,
             'permissionTree'       => $permissionTree,
             'units'                => Unit::whereNull('deleted_at')->select('id', 'name', 'symbol')->get(),

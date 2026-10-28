@@ -16,6 +16,7 @@ use App\Models\PurchaseInvoice;
 use App\Models\PurchaseOrder;
 use App\Models\SalesInvoice;
 use App\Models\SalesOrder;
+use Illuminate\Support\Carbon;
 
 class DashboardService
 {
@@ -275,7 +276,7 @@ class DashboardService
             ->where('sales_invoices.remaining_amount', '>', 0)
             ->whereNotIn('sales_invoices.status', [SalesInvoiceStatus::DRAFT->value, SalesInvoiceStatus::CANCELLED->value, SalesInvoiceStatus::PAID->value])
             ->join('contacts', 'contacts.id', '=', 'sales_invoices.customer_id')
-            ->selectRaw('sales_invoices.id, sales_invoices.number, sales_invoices.due_date, sales_invoices.remaining_amount, contacts.name as contact_name, DATEDIFF(?, sales_invoices.due_date) as days_overdue', [$today])
+            ->selectRaw('sales_invoices.id, sales_invoices.number, sales_invoices.due_date, sales_invoices.remaining_amount, contacts.name as contact_name')
             ->orderBy('sales_invoices.due_date')
             ->limit(5)
             ->get()
@@ -285,7 +286,7 @@ class DashboardService
                 'contact'  => $inv->contact_name,
                 'due_date' => $inv->due_date,
                 'amount'   => $inv->remaining_amount,
-                'days'     => $inv->days_overdue,
+                'days'     => (int) Carbon::parse($inv->due_date)->diffInDays($today),
                 'type'     => 'Piutang',
                 'url'      => route('finances.account_receivables.show', ['id' => $inv->id, 'reference_type' => 'sales_invoice']),
             ]);
@@ -295,7 +296,7 @@ class DashboardService
             ->where('purchase_invoices.remaining_amount', '>', 0)
             ->whereNotIn('purchase_invoices.status', [PurchaseInvoiceStatus::DRAFT->value, PurchaseInvoiceStatus::CANCELLED->value, PurchaseInvoiceStatus::PAID->value])
             ->join('contacts', 'contacts.id', '=', 'purchase_invoices.supplier_id')
-            ->selectRaw('purchase_invoices.id, purchase_invoices.number, purchase_invoices.due_date, purchase_invoices.remaining_amount, contacts.name as contact_name, DATEDIFF(?, purchase_invoices.due_date) as days_overdue', [$today])
+            ->selectRaw('purchase_invoices.id, purchase_invoices.number, purchase_invoices.due_date, purchase_invoices.remaining_amount, contacts.name as contact_name')
             ->orderBy('purchase_invoices.due_date')
             ->limit(5)
             ->get()
@@ -305,16 +306,17 @@ class DashboardService
                 'contact'  => $inv->contact_name,
                 'due_date' => $inv->due_date,
                 'amount'   => $inv->remaining_amount,
-                'days'     => $inv->days_overdue,
+                'days'     => (int) Carbon::parse($inv->due_date)->diffInDays($today),
                 'type'     => 'Utang',
                 'url'      => route('finances.account_payables.show', ['id' => $inv->id, 'reference_type' => 'purchase_invoice']),
             ]);
 
         $expenseOverdue = Expense::where('expenses.company_id', $companyId)
+            ->where('expenses.due_date', '<', $today)
             ->where('expenses.remaining_amount', '>', 0)
             ->whereNotIn('expenses.status', [ExpenseStatus::DRAFT->value, ExpenseStatus::CANCELLED->value, ExpenseStatus::PAID->value])
             ->join('contacts', 'contacts.id', '=', 'expenses.contact_id')
-            ->selectRaw('expenses.id, expenses.number, expenses.due_date, expenses.remaining_amount, contacts.name as contact_name, DATEDIFF(?, expenses.due_date) as days_overdue', [$today])
+            ->selectRaw('expenses.id, expenses.number, expenses.due_date, expenses.remaining_amount, contacts.name as contact_name')
             ->orderBy('expenses.due_date')
             ->limit(5)
             ->get()
@@ -324,7 +326,7 @@ class DashboardService
                 'contact'  => $inv->contact_name,
                 'due_date' => $inv->due_date,
                 'amount'   => $inv->remaining_amount,
-                'days'     => $inv->days_overdue,
+                'days'     => (int) Carbon::parse($inv->due_date)->diffInDays($today),
                 'type'     => 'Utang',
                 'url'      => route('finances.account_payables.show', ['id' => $inv->id, 'reference_type' => 'expense']),
             ]);

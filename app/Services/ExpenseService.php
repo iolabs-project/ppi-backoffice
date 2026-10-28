@@ -326,15 +326,6 @@ class ExpenseService
         });
     }
 
-    public function openExpense(int $id)
-    {
-        $expense = Expense::findOrFail($id);
-        abort_unless_can_become($expense->status, ExpenseStatus::OPEN->value, 'Biaya');
-        $expense->update(['status' => ExpenseStatus::OPEN->value]);
-
-        // TODO: Create journal entry for the expense
-    }
-
     public function cancelExpense(int $id)
     {
         $expense = Expense::findOrFail($id);

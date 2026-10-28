@@ -49,46 +49,6 @@ class ReportService
         return $query;
     }
 
-    public function fetchGeneralLedgerData(Request $request)
-    {
-        $query = DB::table('journal_entry_items', 'jei')
-            ->select(
-                'je.journal_date',
-                'je.number as journal_number',
-                'coa.name as account_name',
-                'coa.code as account_code',
-                'jei.debit',
-                'jei.credit',
-                'jei.description as item_description',
-            )
-            ->join('journal_entries as je', 'jei.journal_entry_id', '=', 'je.id')
-            ->join('chart_of_accounts as coa', 'jei.account_id', '=', 'coa.id');
-
-        if ($request->filled('account_id')) {
-            $query->where('jei.account_id', $request->input('account_id'));
-        }
-
-        if ($request->filled('start_date')) {
-            $query->where('je.journal_date', '>=', $request->input('start_date'));
-        }
-
-        if ($request->filled('end_date')) {
-            $query->where('je.journal_date', '<=', $request->input('end_date'));
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('je.number', 'like', "%{$search}%")
-                    ->orWhere('coa.name', 'like', "%{$search}%")
-                    ->orWhere('coa.code', 'like', "%{$search}%");
-            });
-        }
-
-        $query = $query->orderBy('je.journal_date', 'desc')->orderBy('je.number', 'desc')->paginate($request->input('per_page', 10));
-        return $query;
-    }
-
     public function fetchProfitLossTableData(Request $request, int $companyID)
     {
         $sectionCategoryMap = [

@@ -32,7 +32,6 @@
                 accountCategoriesAll: @json($accountCategories),
                 contactOptions: @json($contactOptions),
                 userRoles: @json($userRoles),
-                rolesAll: @json($roles),
             };
         }
 
