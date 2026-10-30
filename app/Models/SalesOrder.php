@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Concerns\LogsModelActivity;
+use App\Enums\DeliveryOrderStatus;
+use App\Enums\RoleEnum;
 use App\Enums\SalesOrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -65,7 +67,11 @@ class SalesOrder extends Model
 
     public function getIsCancellableAttribute()
     {
-        return $this->status === SalesOrderStatus::DRAFT->value || ($this->status === SalesOrderStatus::OPEN->value && $this->deliveryOrders->isEmpty());
+        // Only Super Admin may cancel an open SO, and only while it has no active delivery
+        return $this->status === SalesOrderStatus::DRAFT->value
+            || ($this->status === SalesOrderStatus::OPEN->value
+                && auth()->user()?->hasRole(RoleEnum::SUPER_ADMIN->value)
+                && $this->deliveryOrders->where('status', '<>', DeliveryOrderStatus::CANCELLED->value)->isEmpty());
     }
 
     public function getIsDeliverableAttribute()

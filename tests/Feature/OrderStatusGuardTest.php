@@ -16,6 +16,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Role;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 uses(RefreshDatabase::class);
 
@@ -101,8 +103,45 @@ test('an open sales order with a delivery cannot be cancelled', function () {
         'company_id' => $companyID, 'sales_order_id' => $salesOrderID, 'customer_id' => $customerID,
         'warehouse_id' => $warehouseID, 'number' => 'DO-1', 'delivery_date' => now(), 'status' => 'draft', 'created_by' => $userID,
     ]);
+    $user = User::find($userID);
+    $user->assignRole(Role::create(['name' => 'Super Admin', 'guard_name' => 'web']));
+    test()->actingAs($user);
 
     expect(fn() => app(SalesOrderService::class)->changeSalesOrderStatus($salesOrderID, SalesOrderStatus::CANCELLED->value))
         ->toThrow(ValidationException::class);
     expect(DB::table('sales_orders')->where('id', $salesOrderID)->value('status'))->toBe(SalesOrderStatus::OPEN->value);
 });
+
+test('only Super Admin can cancel an open order', function (string $table, string $service, string $method) {
+    [$companyID, $userID] = orderBasics();
+    $orderID = DB::table($table)->insertGetId([
+        'company_id' => $companyID, 'number' => 'X-1', 'order_date' => now(), 'status' => 'open', 'created_by' => $userID,
+    ]);
+    $user = User::find($userID);
+    $user->assignRole(Role::create(['name' => 'Admin', 'guard_name' => 'web']));
+    test()->actingAs($user);
+
+    expect(fn() => app($service)->{$method}($orderID, 'cancelled'))->toThrow(HttpException::class);
+    expect(DB::table($table)->where('id', $orderID)->value('status'))->toBe('open');
+
+    $user->assignRole(Role::create(['name' => 'Super Admin', 'guard_name' => 'web']));
+    app($service)->{$method}($orderID, 'cancelled');
+    expect(DB::table($table)->where('id', $orderID)->value('status'))->toBe('cancelled');
+})->with([
+    'sales order' => ['sales_orders', SalesOrderService::class, 'changeSalesOrderStatus'],
+    'purchase order' => ['purchase_orders', PurchaseOrderService::class, 'changePurchaseOrderStatus'],
+]);
+
+test('a draft order can still be cancelled without Super Admin', function (string $table, string $service, string $method) {
+    [$companyID, $userID] = orderBasics();
+    $orderID = DB::table($table)->insertGetId([
+        'company_id' => $companyID, 'number' => 'X-1', 'order_date' => now(), 'status' => 'draft', 'created_by' => $userID,
+    ]);
+    test()->actingAs(User::find($userID));
+
+    app($service)->{$method}($orderID, 'cancelled');
+    expect(DB::table($table)->where('id', $orderID)->value('status'))->toBe('cancelled');
+})->with([
+    'sales order' => ['sales_orders', SalesOrderService::class, 'changeSalesOrderStatus'],
+    'purchase order' => ['purchase_orders', PurchaseOrderService::class, 'changePurchaseOrderStatus'],
+]);

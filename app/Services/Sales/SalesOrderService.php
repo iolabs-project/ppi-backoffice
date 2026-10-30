@@ -8,6 +8,7 @@ use App\Enums\AccountSettingEnum;
 use App\Enums\CashTransactionStatusEnum;
 use App\Enums\CashTransactionTypeEnum;
 use App\Enums\DeliveryOrderStatus;
+use App\Enums\RoleEnum;
 use App\Enums\SalesInvoiceStatus;
 use App\Enums\SalesOrderStatus;
 use App\Models\AccountSetting;
@@ -355,6 +356,8 @@ class SalesOrderService
         }
 
         if ($status === SalesOrderStatus::CANCELLED->value && $wasOpen) {
+            abort_unless(Auth::user()?->hasRole(RoleEnum::SUPER_ADMIN->value), 403, 'Hanya Super Admin yang dapat membatalkan SO berstatus Open.');
+
             $hasDeliveries = DeliveryOrder::where('sales_order_id', $salesOrder->id)
                 ->where('status', '!=', DeliveryOrderStatus::CANCELLED->value)
                 ->exists();

@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Models\Concerns\LogsModelActivity;
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\GoodsReceiptStatus;
 use App\Enums\PurchaseOrderStatus;
+use App\Enums\RoleEnum;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -64,7 +66,11 @@ class PurchaseOrder extends Model
 
     public function getIsCancellableAttribute()
     {
-        return $this->status === PurchaseOrderStatus::DRAFT->value || ($this->status === PurchaseOrderStatus::OPEN->value && $this->goodsReceipts->isEmpty());
+        // Only Super Admin may cancel an open PO, and only while it has no active goods receipt
+        return $this->status === PurchaseOrderStatus::DRAFT->value
+            || ($this->status === PurchaseOrderStatus::OPEN->value
+                && auth()->user()?->hasRole(RoleEnum::SUPER_ADMIN->value)
+                && $this->goodsReceipts->where('status', '<>', GoodsReceiptStatus::CANCELLED->value)->isEmpty());
     }
 
     public function getIsReceivableAttribute()

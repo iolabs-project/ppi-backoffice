@@ -11,6 +11,7 @@ use App\Enums\GoodsReceiptStatus;
 use App\Services\JournalService;
 use App\Enums\PurchaseInvoiceStatus;
 use App\Enums\PurchaseOrderStatus;
+use App\Enums\RoleEnum;
 use App\Models\AccountSetting;
 use App\Models\CashTransaction;
 use App\Models\JournalEntry;
@@ -330,6 +331,8 @@ class PurchaseOrderService
         }
 
         if ($status === PurchaseOrderStatus::CANCELLED->value && $wasOpen) {
+            abort_unless(Auth::user()?->hasRole(RoleEnum::SUPER_ADMIN->value), 403, 'Hanya Super Admin yang dapat membatalkan PO berstatus Open.');
+
             $hasGoodsReceipts = $purchaseOrder->goodsReceipts()
                 ->where('status', '!=', GoodsReceiptStatus::CANCELLED->value)
                 ->exists();
@@ -420,11 +423,13 @@ class PurchaseOrderService
             ->get();
 
         foreach ($journalEntries as $entry) {
-            $this->journalService->reverse(
-                journalEntryID: $entry->id,
-                date: null,
-                description: "Reversal of Journal Entry for Purchase Order #{$purchaseOrder->number}"
-            );
+            if ($entry->status === 'posted') {
+                $this->journalService->reverse(
+                    journalEntryID: $entry->id,
+                    date: null,
+                    description: "Reversal of Journal Entry for Purchase Order #{$purchaseOrder->number}"
+                );
+            }
         }
     }
 
