@@ -21,6 +21,13 @@
                 <template x-if="!contacts.some(k => !q || k.name.toLowerCase().includes(q.toLowerCase()))">
                     <div class="dropdown-empty">Tidak ditemukan</div>
                 </template>
+                @can('master.contacts.create')
+                    <div class="dropdown-item" style="color:var(--accent); font-weight:600;"
+                        @click="open=false; addContact(q); q=''">
+                        <x-misc.icon name="plus" :size="13" />
+                        <span x-text="q ? 'Tambah kontak &quot;' + q + '&quot;' : 'Tambah kontak baru'"></span>
+                    </div>
+                @endcan
             </x-misc.select>
         </x-misc.field>
 

@@ -35,6 +35,14 @@
                     return NumberUtils.formatNumericIntoMask(v);
                 },
 
+                async addContact(name) {
+                    const contact = await ContactUtils.quickAddWithType(name, ['supplier']);
+                    if (contact) {
+                        this.contacts.push(contact);
+                        this.contactSelected = contact;
+                        this.formData.contact_id = contact.id;
+                    }
+                },
                 initials(name) {
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
                 },

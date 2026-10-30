@@ -112,6 +112,14 @@
                         this.costsTotal();
                 },
 
+                async addContact(name) {
+                    const contact = await ContactUtils.quickAddWithType(name, ['supplier']);
+                    if (contact) {
+                        this.contacts.push(contact);
+                        this.contactSelected = contact;
+                        this.formData.contact_id = contact.id;
+                    }
+                },
                 initials(name) {
                     return name ? name.split(' ').slice(0, 2).map(w => w[0]).join('') : '?';
                 },
@@ -223,6 +231,13 @@
                         <template x-if="!contacts.some(c => !q || c.name.toLowerCase().includes(q.toLowerCase()))">
                             <div class="dropdown-empty">Tidak ditemukan</div>
                         </template>
+                        @can('master.contacts.create')
+                            <div class="dropdown-item" style="color:var(--accent); font-weight:600;"
+                                @click="open=false; addContact(q); q=''">
+                                <x-misc.icon name="plus" :size="13" />
+                                <span x-text="q ? 'Tambah kontak &quot;' + q + '&quot;' : 'Tambah kontak baru'"></span>
+                            </div>
+                        @endcan
                     </x-misc.select>
                 </x-misc.field>
 
