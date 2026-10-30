@@ -32,6 +32,10 @@
                         </a>
                     @endif
                 @endif
+                @if ($deliveryOrder->status === $finished && auth()->user()->can('sales.delivery-orders.delete') && auth()->user()->hasRole(\App\Enums\RoleEnum::SUPER_ADMIN->value))
+                    <button class="btn btn-ghost" @click="handleCancel({{ $deliveryOrder->id }})"><x-misc.icon
+                            name="x" :size="14" />Batal Pengiriman</button>
+                @endif
                 <a href="{{ route('sales.delivery_orders.print', $deliveryOrder->id) }}" target="_blank" rel="noopener" class="btn btn-ghost">
                     <x-misc.icon name="print" :size="14" />Cetak
                 </a>

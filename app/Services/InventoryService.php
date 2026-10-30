@@ -254,6 +254,92 @@ class InventoryService
         return $productBatch;
     }
 
+    // Puts back every batch the DO issued, at the cost it left the warehouse with
+    public function returnInventoryFromDO(DeliveryOrder $deliveryOrder): void
+    {
+        $issues = InventoryTransaction::where('reference_type', DeliveryOrder::class)
+            ->where('reference_id', $deliveryOrder->id)
+            ->where('direction', -1)
+            ->get();
+
+        foreach ($issues as $issue) {
+            ProductBatchStock::where('product_batch_id', $issue->product_batch_id)
+                ->where('warehouse_id', $issue->warehouse_id)
+                ->lockForUpdate()
+                ->first()
+                ->increment('quantity', $issue->quantity);
+
+            ProductStock::where('company_id', $issue->company_id)
+                ->where('warehouse_id', $issue->warehouse_id)
+                ->where('product_id', $issue->product_id)
+                ->lockForUpdate()
+                ->first()
+                ->increment('quantity', $issue->quantity);
+
+            $this->insertInventoryTransaction(
+                companyID: $issue->company_id,
+                warehouseID: $issue->warehouse_id,
+                productID: $issue->product_id,
+                productBatchID: $issue->product_batch_id,
+                type: InventoryTransactionTypeEnum::SALE->value,
+                direction: 1,
+                quantity: $issue->quantity,
+                unitCost: $issue->unit_cost,
+                referenceType: DeliveryOrder::class,
+                referenceID: $deliveryOrder->id,
+                transactionDate: now(),
+                note: 'Pembatalan Pengiriman Barang DO #' . $deliveryOrder->number,
+            );
+        }
+    }
+
+    // Takes the GR batches back out; refused once any of their stock was sold, moved, adjusted or reserved
+    public function removeInventoryFromGR(GoodsReceipt $goodsReceipt): void
+    {
+        $batches = ProductBatch::whereIn('goods_receipt_item_id', $goodsReceipt->items()->select('id'))->get();
+
+        foreach ($batches as $batch) {
+            $stocks = ProductBatchStock::where('product_batch_id', $batch->id)->lockForUpdate()->get();
+            $receivedStock = $stocks->firstWhere('warehouse_id', $goodsReceipt->warehouse_id);
+            $isUntouched = $receivedStock
+                && (float) $receivedStock->quantity === (float) $batch->initial_quantity
+                && (float) $receivedStock->reserved_quantity === 0.0
+                && (float) $stocks->where('warehouse_id', '<>', $goodsReceipt->warehouse_id)->sum('quantity') === 0.0;
+
+            if (!$isUntouched) {
+                throw ValidationException::withMessages([
+                    'status' => "Stok batch '{$batch->batch_number}' sudah terpakai, penerimaan barang tidak dapat dibatalkan.",
+                ]);
+            }
+        }
+
+        foreach ($batches as $batch) {
+            if ((float) $batch->initial_quantity <= 0) {
+                continue;
+            }
+
+            ProductBatchStock::where('product_batch_id', $batch->id)
+                ->where('warehouse_id', $goodsReceipt->warehouse_id)
+                ->update(['quantity' => 0]);
+
+            $this->insertInventoryTransaction(
+                companyID: $goodsReceipt->company_id,
+                warehouseID: $goodsReceipt->warehouse_id,
+                productID: $batch->product_id,
+                productBatchID: $batch->id,
+                type: InventoryTransactionTypeEnum::PURCHASE->value,
+                direction: -1,
+                quantity: $batch->initial_quantity,
+                unitCost: $batch->unit_cost,
+                referenceType: GoodsReceipt::class,
+                referenceID: $goodsReceipt->id,
+                transactionDate: now(),
+                note: 'Pembatalan Penerimaan Barang GR #' . $goodsReceipt->number,
+            );
+            $this->recalculateMovingAverageCost(companyID: $goodsReceipt->company_id, productID: $batch->product_id, warehouseID: $goodsReceipt->warehouse_id);
+        }
+    }
+
     public function transferInventoryBetweenWarehouses(WarehouseTransfer $warehouseTransfer, int $productID, int $fromProductBatchID, int $toWarehouseID, float $quantity): array
     {
         $fromWarehouseID = $warehouseTransfer->from_warehouse_id;

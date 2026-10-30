@@ -224,7 +224,7 @@ Draft → Open → Partial / Paid / Cancelled
 | `fetchPurchaseOrderByID(int)` | Full PO with items, costs, relationships (unit, creator) |
 | `storePurchaseOrder(Request)` | Creates PO + items + costs in transaction; calculates subtotal, discount, tax, total_amount |
 | `updatePurchaseOrder(Request, int)` | Updates PO + replaces items + costs (delete all + recreate) |
-| `changePurchaseOrderStatus(int, string)` | Status change used by open/close/cancel; opening posts the down payment, cancelling an open PO reverses it (Super Admin only) |
+| `changePurchaseOrderStatus(int, string)` | Status change used by open/close/cancel; opening posts the down payment, cancelling an open PO (Super Admin only) cancels its PIs and GRs, then reverses the down payment |
 | `fetchPOItemsForGoodsReceipt(int)` | PO items with remaining quantities for GR; maps product_code, product_name, unit |
 
 ### Goods Receipt (`GoodsReceiptService`)
@@ -238,7 +238,7 @@ Draft → Open → Partial / Paid / Cancelled
 | `saveDraftGoodsReceipt()` | Saves items/costs without inventory impact; calculates shrinkage = expected - received |
 | `finalizeGoodsReceipt()` | **Core logic**: batch validation, unit_cost calculation (qtyRatio/valueRatio), creates ProductBatch, InventoryTransaction (with stock_before/stock_after), updates PO received_quantity, auto-closes PO |
 | `validateBatchNumber(string, int, int): bool` | Checks if batch_number already exists per product per company |
-| `changeGoodsReceiptStatus(int, string)` | Simple status update |
+| `changeGoodsReceiptStatus(int, string)` | Status change; cancelling a finished GR (Super Admin only) removes its batches, received quantity and expenses and reverses its journal |
 | `fetchGRItemsForPurchaseInvoice(int)` | Finished GR items for PI creation; filters by purchase_order_id and finished status |
 
 ### Purchase Invoice (`PurchasingService`)
@@ -389,10 +389,17 @@ Older ERP-style routes under `/pembelian` prefix using `ErpDataService`:
    - Increments `PurchaseOrderItem.invoiced_quantity` for each item
    - Decrements `PurchaseOrder.down_payment_remaining_amount` by down_payment_amount
 8. **Cancellation Rules**:
-   - PO: Draft → Cancelled needs `purchasing.purchase-orders.delete`. Open → Cancelled is Super Admin only and refused while the PO has a non-cancelled GR or PI
+   - PO: Draft → Cancelled needs `purchasing.purchase-orders.delete`. Open → Cancelled is Super Admin only
+     - Refused while any PI has a payment (void the payments first)
+     - Cancels every PI (invoices first, they point at GR items), then every GR as below
      - Reverses the posted down payment journal and marks the down payment cash transaction cancelled
      - Closed/Cancelled POs cannot be cancelled
-   - GR: Simple status update (inventory reversal handled separately if finished)
+   - GR: Draft → Cancelled needs `purchasing.goods-receipts.delete`. Finished → Cancelled is Super Admin only and refused while a non-cancelled PI uses its items
+     - Refused once any of its batches was sold, transferred, adjusted or reserved (`InventoryService::removeInventoryFromGR`)
+     - Zeroes the batch stock and recalculates the moving average cost
+     - Decrements PO `received_quantity` by the expected quantity and reopens a Closed PO
+     - Cancels the expenses raised from its costs (matched by GR number); refused if one is paid
+     - Reverses the GR journal
    - PI: Only Draft or Open with total_amount == remaining_amount (no payments received)
      - Reverses PO invoiced_quantity (decrements)
      - Restores PO down_payment_remaining_amount

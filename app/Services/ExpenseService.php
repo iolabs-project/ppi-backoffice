@@ -326,6 +326,25 @@ class ExpenseService
         });
     }
 
+    // Cancels the expenses a DO/GR raised from its costs (linked by its number); paid ones must be voided first
+    public function cancelExpensesFromReference(string $referenceNumber): void
+    {
+        $expenses = Expense::where('company_id', config('context.selected_company_id'))
+            ->where('reference_number', $referenceNumber)
+            ->where('status', '<>', ExpenseStatus::CANCELLED->value)
+            ->get();
+
+        if ($expenses->whereIn('status', [ExpenseStatus::PARTIAL->value, ExpenseStatus::PAID->value])->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'status' => "Biaya dari #{$referenceNumber} sudah dibayar. Void pembayarannya terlebih dahulu.",
+            ]);
+        }
+
+        foreach ($expenses as $expense) {
+            $this->cancelExpense($expense->id);
+        }
+    }
+
     public function cancelExpense(int $id)
     {
         $expense = Expense::findOrFail($id);

@@ -159,6 +159,18 @@
                                                         </div>
                                                     </template>
                                                 @endif
+                                                @if (auth()->user()->can('purchasing.goods-receipts.delete') && auth()->user()->hasRole(\App\Enums\RoleEnum::SUPER_ADMIN->value))
+                                                    <template x-if="row.status === '{{ $finished }}'">
+                                                        <div>
+                                                            <div class="action-menu__divider"></div>
+                                                            <button class="action-menu__item action-menu__item--danger"
+                                                                @click.stop="handleCancel(row.id)">
+                                                                <x-misc.icon name="x" :size="14"
+                                                                    stroke="currentColor" />Batalkan Penerimaan
+                                                            </button>
+                                                        </div>
+                                                    </template>
+                                                @endif
                                                 <template
                                                     x-if="row.status === '{{ $finished }}' && invoicablePoIds.includes(row.purchase_order_id)">
                                                     <div>

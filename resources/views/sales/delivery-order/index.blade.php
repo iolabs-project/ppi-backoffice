@@ -156,6 +156,18 @@
                                                         </div>
                                                     </template>
                                                 @endif
+                                                @if (auth()->user()->can('sales.delivery-orders.delete') && auth()->user()->hasRole(\App\Enums\RoleEnum::SUPER_ADMIN->value))
+                                                    <template x-if="row.status === '{{ $finished }}'">
+                                                        <div>
+                                                            <div class="action-menu__divider"></div>
+                                                            <button class="action-menu__item action-menu__item--danger"
+                                                                @click.stop="handleCancel(row.id)">
+                                                                <x-misc.icon name="x" :size="14"
+                                                                    stroke="currentColor" />Batalkan Pengiriman
+                                                            </button>
+                                                        </div>
+                                                    </template>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>

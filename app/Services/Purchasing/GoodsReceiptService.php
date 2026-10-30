@@ -11,12 +11,14 @@ use App\Services\InventoryService;
 use App\Enums\GoodsReceiptStatus;
 use App\Enums\PurchaseOrderStatus;
 use App\Enums\PurchaseInvoiceStatus;
+use App\Enums\RoleEnum;
 use App\Models\AccountSetting;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptCost;
 use App\Models\GoodsReceiptItem;
 use App\Models\JournalEntry;
 use App\Models\ProductBatch;
+use App\Models\PurchaseInvoiceItem;
 use App\Services\Master\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -335,9 +337,34 @@ class GoodsReceiptService
     public function changeGoodsReceiptStatus(int $id, string $status): void
     {
         $goodsReceipt = GoodsReceipt::findOrFail($id);
-        abort_unless_can_become($goodsReceipt->status, $status, 'Penerimaan barang');
-        DB::transaction(function () use ($goodsReceipt, $status) {
-            if ($status === GoodsReceiptStatus::CANCELLED->value && $goodsReceipt->status === GoodsReceiptStatus::FINISHED->value) {
+        $cancelsFinished = $status === GoodsReceiptStatus::CANCELLED->value && $goodsReceipt->status === GoodsReceiptStatus::FINISHED->value;
+
+        // A finished GR is final for everyone else; Super Admin may undo it while nothing invoices it
+        if ($cancelsFinished) {
+            abort_unless(Auth::user()?->hasRole(RoleEnum::SUPER_ADMIN->value), 403, 'Hanya Super Admin yang dapat membatalkan penerimaan barang yang sudah selesai.');
+
+            $hasInvoices = PurchaseInvoiceItem::whereIn('goods_receipt_item_id', $goodsReceipt->items()->select('id'))
+                ->whereHas('purchaseInvoice', function ($query) {
+                    $query->where('status', '<>', PurchaseInvoiceStatus::CANCELLED->value);
+                })
+                ->exists();
+            if ($hasInvoices) {
+                throw ValidationException::withMessages([
+                    'status' => 'Penerimaan barang tidak dapat dibatalkan karena sudah memiliki tagihan.',
+                ]);
+            }
+        } else {
+            abort_unless_can_become($goodsReceipt->status, $status, 'Penerimaan barang');
+        }
+
+        DB::transaction(function () use ($goodsReceipt, $status, $cancelsFinished) {
+            if ($cancelsFinished) {
+                $this->inventoryService->removeInventoryFromGR($goodsReceipt);
+                foreach ($goodsReceipt->items as $item) {
+                    // Receiving counted the expected quantity, shrinkage included
+                    $this->purchaseOrderService->revertReceivedQuantity($item->purchase_order_item_id, $item->expected_quantity);
+                }
+                $this->expenseService->cancelExpensesFromReference($goodsReceipt->number);
                 $this->reverseGRJournal($goodsReceipt, 0);
             }
 

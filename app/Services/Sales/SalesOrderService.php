@@ -358,16 +358,15 @@ class SalesOrderService
         if ($status === SalesOrderStatus::CANCELLED->value && $wasOpen) {
             abort_unless(Auth::user()?->hasRole(RoleEnum::SUPER_ADMIN->value), 403, 'Hanya Super Admin yang dapat membatalkan SO berstatus Open.');
 
-            $hasDeliveries = DeliveryOrder::where('sales_order_id', $salesOrder->id)
-                ->where('status', '!=', DeliveryOrderStatus::CANCELLED->value)
-                ->exists();
-            $hasInvoices = SalesInvoice::where('sales_order_id', $salesOrder->id)
-                ->where('status', '!=', SalesInvoiceStatus::CANCELLED->value)
+            // Payments are voided by hand first, so cancelling never moves received cash silently
+            $hasPaidInvoices = SalesInvoice::where('sales_order_id', $salesOrder->id)
+                ->whereNotIn('status', [SalesInvoiceStatus::DRAFT->value, SalesInvoiceStatus::CANCELLED->value])
+                ->whereColumn('remaining_amount', '<', 'total_amount')
                 ->exists();
 
-            if ($hasDeliveries || $hasInvoices) {
+            if ($hasPaidInvoices) {
                 throw ValidationException::withMessages([
-                    'status' => 'SO tidak dapat dibatalkan karena sudah memiliki pengiriman atau tagihan.',
+                    'status' => 'SO tidak dapat dibatalkan karena tagihannya sudah memiliki pembayaran. Void pembayaran terlebih dahulu.',
                 ]);
             }
         }
@@ -379,6 +378,19 @@ class SalesOrderService
             }
 
             if ($status === SalesOrderStatus::CANCELLED->value && $wasOpen) {
+                // Invoices go first because they point at delivery items; both services depend on this one, so resolve them here
+                $salesInvoiceService = app(SalesInvoiceService::class);
+                SalesInvoice::where('sales_order_id', $salesOrder->id)
+                    ->where('status', '<>', SalesInvoiceStatus::CANCELLED->value)
+                    ->pluck('id')
+                    ->each(fn($salesInvoiceID) => $salesInvoiceService->cancelSalesInvoice($salesInvoiceID));
+
+                $deliveryOrderService = app(DeliveryOrderService::class);
+                DeliveryOrder::where('sales_order_id', $salesOrder->id)
+                    ->where('status', '<>', DeliveryOrderStatus::CANCELLED->value)
+                    ->pluck('id')
+                    ->each(fn($deliveryOrderID) => $deliveryOrderService->changeDeliveryOrderStatus($deliveryOrderID, DeliveryOrderStatus::CANCELLED->value));
+
                 $this->reverseSOJournal($salesOrder);
                 // The down payment cash row never posted its own journal (the SO journal covers it), so just mark it cancelled
                 CashTransaction::where('reference_type', SalesOrder::class)
@@ -471,6 +483,18 @@ class SalesOrderService
                 $query->whereColumn('shipped_quantity', '<', 'quantity');
             })
             ->update(['status' => SalesOrderStatus::CLOSED->value]);
+    }
+
+    // A cancelled DO gives its quantity back, which reopens an SO that shipping had closed
+    public function revertShippedQuantity(int $salesOrderItemID, float $shippedQuantity): void
+    {
+        $salesOrderItem = SalesOrderItem::findOrFail($salesOrderItemID);
+        $salesOrderItem->shipped_quantity -= $shippedQuantity;
+        $salesOrderItem->save();
+
+        SalesOrder::where('id', $salesOrderItem->sales_order_id)
+            ->where('status', SalesOrderStatus::CLOSED->value)
+            ->update(['status' => SalesOrderStatus::OPEN->value]);
     }
 
     public function updateInvoicedQuantity(int $salesOrderItemID, float $invoicedQuantity): void

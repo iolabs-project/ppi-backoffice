@@ -25,7 +25,7 @@
 
                 {{-- TODO: Add edit button --}}
                 
-                @if (auth()->user()->can('purchasing.goods-receipts.delete') && $goodsReceipt->status == $draft)
+                @if (auth()->user()->can('purchasing.goods-receipts.delete') && ($goodsReceipt->status == $draft || ($goodsReceipt->status == $finished && auth()->user()->hasRole(\App\Enums\RoleEnum::SUPER_ADMIN->value))))
                     <button class="btn btn-ghost" @click="handleCancel({{ $goodsReceipt->id }})"><x-misc.icon name="x"
                             :size="14" />Batal Penerimaan</button>
                 @endif

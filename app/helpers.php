@@ -98,7 +98,7 @@ if (!function_exists('abort_unless_can_become')) {
     /**
      * Status changes only move forward: a cancelled/closed document cannot be reopened, and a
      * document cannot be opened, closed or cancelled twice. Finished documents (receipts,
-     * deliveries) are final: cancelling one only reverses its journal, not the stock.
+     * deliveries) are final here; only their services let Super Admin cancel one, undoing its stock.
      */
     function abort_unless_can_become(?string $from, string $to, string $label): void
     {

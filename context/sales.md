@@ -227,7 +227,7 @@ Draft → Open → Partial / Paid / Cancelled
 | `fetchSalesOrderByID(int)` | Full SO with items, costs, charges, relationships (unit, creator) |
 | `storeSalesOrder(Request)` | Creates SO + items + costs + charges in transaction; calculates subtotal, discount, tax, total_amount |
 | `updateSalesOrder(Request, int)` | Updates SO + replaces items + costs + charges (delete all + recreate) |
-| `changeSalesOrderStatus(int, string)` | Status change used by open/close/cancel; opening posts the down payment, cancelling an open SO reverses it (Super Admin only) |
+| `changeSalesOrderStatus(int, string)` | Status change used by open/close/cancel; opening posts the down payment, cancelling an open SO (Super Admin only) cancels its SIs and DOs, then reverses the down payment |
 | `fetchSOItemsForDeliveryOrder(int)` | SO items with remaining quantities for DO; maps product_code, product_name, unit |
 
 ### Delivery Order (`DeliveryOrderService`)
@@ -241,7 +241,7 @@ Draft → Open → Partial / Paid / Cancelled
 | `updateDeliveryOrder(Request, int)` | Updates DO; delegates to `saveDraftDeliveryOrder()` or `finalizeDeliveryOrder()` based on status |
 | `saveDraftDeliveryOrder()` | Saves items/batches/costs without inventory impact |
 | `finalizeDeliveryOrder()` | **Core logic**: batch validation, stock check, decrements ProductBatch, creates InventoryTransaction (with stock_before/stock_after), updates SO shipped_quantity, auto-closes SO |
-| `changeDeliveryOrderStatus(int, string)` | Simple status update |
+| `changeDeliveryOrderStatus(int, string)` | Status change; cancelling a finished DO (Super Admin only) returns its stock, shipped quantity and expenses and reverses its journal |
 | `fetchDOItemsForSalesInvoice(int)` | Finished DO items for SI creation; filters by sales_order_id and finished status |
 
 ### Sales Invoice (`SalesInvoiceService`)
@@ -377,10 +377,16 @@ Used for number generation and company-scoped queries.
    - Increments `SalesOrderItem.invoiced_quantity` for each item
    - Decrements `SalesOrder.down_payment_remaining_amount` by down_payment_amount
 7. **Cancellation Rules**:
-   - SO: Draft → Cancelled needs `sales.sales-orders.delete`. Open → Cancelled is Super Admin only and refused while the SO has a non-cancelled DO or SI
+   - SO: Draft → Cancelled needs `sales.sales-orders.delete`. Open → Cancelled is Super Admin only
+     - Refused while any SI has a payment (void the payments first)
+     - Cancels every SI (invoices first, they point at DO items), then every DO as below
      - Reverses the posted down payment journal and marks the down payment cash transaction cancelled
      - Closed/Cancelled SOs cannot be cancelled
-   - DO: Simple status update (inventory reversal handled separately if finished)
+   - DO: Draft → Cancelled needs `sales.delivery-orders.delete`. Finished → Cancelled is Super Admin only and refused while a non-cancelled SI uses its items
+     - Puts the issued batches back (`InventoryService::returnInventoryFromDO`) at their issue cost
+     - Decrements SO `shipped_quantity` and reopens a Closed SO
+     - Cancels the expenses raised from its costs (matched by DO number); refused if one is paid
+     - Reverses the DO journal
    - SI: Only Draft or Open with total_amount == remaining_amount (no payments received)
      - Reverses SO invoiced_quantity (decrements)
      - Restores SO down_payment_remaining_amount

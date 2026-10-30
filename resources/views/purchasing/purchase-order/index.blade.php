@@ -465,6 +465,7 @@
                 async handleCancel(id) {
                     Swal.fire({
                         title: 'Apakah Anda yakin ingin membatalkan PO ini?',
+                        text: 'Penerimaan barang dan tagihan dari PO ini juga akan dibatalkan.',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Ya, batalkan',

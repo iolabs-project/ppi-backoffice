@@ -96,7 +96,7 @@ test('opening an empty draft order from the list is refused', function (string $
     'purchase order' => ['purchase_orders', PurchaseOrderService::class, 'changePurchaseOrderStatus'],
 ]);
 
-test('an open sales order with a delivery cannot be cancelled', function () {
+test('cancelling an open sales order also cancels its draft delivery', function () {
     [$companyID, $userID, $customerID, $warehouseID] = orderBasics();
     $salesOrderID = DB::table('sales_orders')->insertGetId([
         'company_id' => $companyID, 'customer_id' => $customerID, 'number' => 'SO-1',
@@ -110,9 +110,10 @@ test('an open sales order with a delivery cannot be cancelled', function () {
     $user->assignRole(Role::create(['name' => 'Super Admin', 'guard_name' => 'web']));
     test()->actingAs($user);
 
-    expect(fn() => app(SalesOrderService::class)->changeSalesOrderStatus($salesOrderID, SalesOrderStatus::CANCELLED->value))
-        ->toThrow(ValidationException::class);
-    expect(DB::table('sales_orders')->where('id', $salesOrderID)->value('status'))->toBe(SalesOrderStatus::OPEN->value);
+    app(SalesOrderService::class)->changeSalesOrderStatus($salesOrderID, SalesOrderStatus::CANCELLED->value);
+
+    expect(DB::table('sales_orders')->where('id', $salesOrderID)->value('status'))->toBe(SalesOrderStatus::CANCELLED->value)
+        ->and(DB::table('delivery_orders')->where('sales_order_id', $salesOrderID)->value('status'))->toBe('cancelled');
 });
 
 test('only Super Admin can cancel an open order', function (string $table, string $service, string $method) {

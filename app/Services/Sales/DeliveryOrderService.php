@@ -7,6 +7,7 @@ use App\Services\InventoryService;
 use App\Services\JournalService;
 use App\Enums\AccountSettingEnum;
 use App\Enums\DeliveryOrderStatus;
+use App\Enums\RoleEnum;
 use App\Enums\SalesInvoiceStatus;
 use App\Enums\SalesOrderStatus;
 use App\Models\AccountSetting;
@@ -318,9 +319,33 @@ class DeliveryOrderService
     public function changeDeliveryOrderStatus(int $id, string $status): void
     {
         $deliveryOrder = DeliveryOrder::findOrFail($id);
-        abort_unless_can_become($deliveryOrder->status, $status, 'Pengiriman barang');
-        DB::transaction(function () use ($deliveryOrder, $status) {
-            if ($status === DeliveryOrderStatus::CANCELLED->value && $deliveryOrder->status === DeliveryOrderStatus::FINISHED->value) {
+        $cancelsFinished = $status === DeliveryOrderStatus::CANCELLED->value && $deliveryOrder->status === DeliveryOrderStatus::FINISHED->value;
+
+        // A finished DO is final for everyone else; Super Admin may undo it while nothing invoices it
+        if ($cancelsFinished) {
+            abort_unless(Auth::user()?->hasRole(RoleEnum::SUPER_ADMIN->value), 403, 'Hanya Super Admin yang dapat membatalkan pengiriman yang sudah selesai.');
+
+            $hasInvoices = SalesInvoiceItem::whereIn('delivery_order_item_id', $deliveryOrder->items()->select('id'))
+                ->whereHas('salesInvoice', function ($query) {
+                    $query->where('status', '<>', SalesInvoiceStatus::CANCELLED->value);
+                })
+                ->exists();
+            if ($hasInvoices) {
+                throw ValidationException::withMessages([
+                    'status' => 'Pengiriman tidak dapat dibatalkan karena sudah memiliki tagihan.',
+                ]);
+            }
+        } else {
+            abort_unless_can_become($deliveryOrder->status, $status, 'Pengiriman barang');
+        }
+
+        DB::transaction(function () use ($deliveryOrder, $status, $cancelsFinished) {
+            if ($cancelsFinished) {
+                $this->inventoryService->returnInventoryFromDO($deliveryOrder);
+                foreach ($deliveryOrder->items as $item) {
+                    $this->salesOrderService->revertShippedQuantity($item->sales_order_item_id, $item->quantity);
+                }
+                $this->expenseService->cancelExpensesFromReference($deliveryOrder->number);
                 $this->reverseDOJournal($deliveryOrder);
             }
             $deliveryOrder->update(['status' => $status]);

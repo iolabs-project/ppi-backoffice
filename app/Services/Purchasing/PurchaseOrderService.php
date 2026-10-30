@@ -333,16 +333,15 @@ class PurchaseOrderService
         if ($status === PurchaseOrderStatus::CANCELLED->value && $wasOpen) {
             abort_unless(Auth::user()?->hasRole(RoleEnum::SUPER_ADMIN->value), 403, 'Hanya Super Admin yang dapat membatalkan PO berstatus Open.');
 
-            $hasGoodsReceipts = $purchaseOrder->goodsReceipts()
-                ->where('status', '!=', GoodsReceiptStatus::CANCELLED->value)
-                ->exists();
-            $hasInvoices = PurchaseInvoice::where('purchase_order_id', $purchaseOrder->id)
-                ->where('status', '!=', PurchaseInvoiceStatus::CANCELLED->value)
+            // Payments are voided by hand first, so cancelling never moves paid cash silently
+            $hasPaidInvoices = PurchaseInvoice::where('purchase_order_id', $purchaseOrder->id)
+                ->whereNotIn('status', [PurchaseInvoiceStatus::DRAFT->value, PurchaseInvoiceStatus::CANCELLED->value])
+                ->whereColumn('remaining_amount', '<', 'total_amount')
                 ->exists();
 
-            if ($hasGoodsReceipts || $hasInvoices) {
+            if ($hasPaidInvoices) {
                 throw ValidationException::withMessages([
-                    'status' => 'PO tidak dapat dibatalkan karena sudah memiliki penerimaan barang atau tagihan.',
+                    'status' => 'PO tidak dapat dibatalkan karena tagihannya sudah memiliki pembayaran. Void pembayaran terlebih dahulu.',
                 ]);
             }
         }
@@ -351,6 +350,21 @@ class PurchaseOrderService
             if ($status === PurchaseOrderStatus::OPEN->value && $hasDownPayment) {
                 $this->postCashTransaction($purchaseOrder);
                 $this->postPOJournal($purchaseOrder);
+            }
+
+            if ($status === PurchaseOrderStatus::CANCELLED->value && $wasOpen) {
+                // Invoices go first because they point at receipt items; both services depend on this one, so resolve them here
+                $purchaseInvoiceService = app(PurchaseInvoiceService::class);
+                PurchaseInvoice::where('purchase_order_id', $purchaseOrder->id)
+                    ->where('status', '<>', PurchaseInvoiceStatus::CANCELLED->value)
+                    ->pluck('id')
+                    ->each(fn($purchaseInvoiceID) => $purchaseInvoiceService->cancelPurchaseInvoice($purchaseInvoiceID));
+
+                $goodsReceiptService = app(GoodsReceiptService::class);
+                $purchaseOrder->goodsReceipts()
+                    ->where('status', '<>', GoodsReceiptStatus::CANCELLED->value)
+                    ->pluck('id')
+                    ->each(fn($goodsReceiptID) => $goodsReceiptService->changeGoodsReceiptStatus($goodsReceiptID, GoodsReceiptStatus::CANCELLED->value));
             }
 
             if ($status === PurchaseOrderStatus::CANCELLED->value && $wasOpen && $hasDownPayment) {
@@ -444,6 +458,18 @@ class PurchaseOrderService
                 $query->whereColumn('received_quantity', '<', 'quantity');
             })
             ->update(['status' => PurchaseOrderStatus::CLOSED->value]);
+    }
+
+    // A cancelled GR gives its quantity back, which reopens a PO that receiving had closed
+    public function revertReceivedQuantity(int $purchaseOrderItemID, float $receivedQuantity): void
+    {
+        $purchaseOrderItem = PurchaseOrderItem::findOrFail($purchaseOrderItemID);
+        $purchaseOrderItem->received_quantity -= $receivedQuantity;
+        $purchaseOrderItem->save();
+
+        PurchaseOrder::where('id', $purchaseOrderItem->purchase_order_id)
+            ->where('status', PurchaseOrderStatus::CLOSED->value)
+            ->update(['status' => PurchaseOrderStatus::OPEN->value]);
     }
 
     public function updateInvoicedQuantity(int $purchaseOrderItemID, float $invoicedQuantity): void
