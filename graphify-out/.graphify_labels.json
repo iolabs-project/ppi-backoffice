@@ -44,7 +44,6 @@
   "87": "require-dev",
   "88": "scripts",
   "97": "require",
-  "99": "ContactController",
   "101": "CashSendFormRequest",
   "104": "PurchaseOrderFormRequest",
   "106": "LimitsAmounts.php",
