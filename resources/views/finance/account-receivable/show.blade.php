@@ -260,13 +260,18 @@
                     return this.invoiceData.total_amount - this.paidTotal();
                 },
 
+                // Rounded to cents so float leftovers don't block paying off the full balance
+                roundedOutstanding() {
+                    return Math.round(this.outstandingAmount() * 100) / 100;
+                },
+
                 canPay() {
                     return this.outstandingAmount() > 0 && ['{{ $open }}', '{{ $partial }}'].includes(this.invoiceStatus);
                 },
 
                 // Mirror the status the backend sets after a payment, so the badge updates without a reload
                 syncStatus() {
-                    const outstanding = Math.round(this.outstandingAmount() * 100) / 100;
+                    const outstanding = this.roundedOutstanding();
                     if (outstanding <= 0) {
                         this.invoiceStatus = '{{ $paid }}';
                     } else if (outstanding < Number(this.invoiceData.total_amount)) {
@@ -279,7 +284,7 @@
                     this.form.account_id = null;
                     this.form.payment_method = 'cash';
                     this.form.reference_number = '';
-                    this.form.amount = '';
+                    this.form.amount = NumberUtils.formatNumericIntoMask(this.roundedOutstanding());
                     this.form.note = '';
                     this.form.idempotency_key = Date.now().toString(36) + Math.random().toString(36).slice(2);
                     this.modalOpen = true;
@@ -354,7 +359,7 @@
                         });
                         return;
                     }
-                    if (amount > this.outstandingAmount()) {
+                    if (amount > this.roundedOutstanding()) {
                         Toast.fire({
                             icon: 'error',
                             title: 'Jumlah pembayaran melebihi sisa tagihan.'
