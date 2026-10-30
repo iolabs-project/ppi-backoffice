@@ -9,12 +9,15 @@ use App\Http\Requests\Purchasing\PurchaseOrderFormRequest;
 use App\Http\Requests\Sales\DeliveryOrderFormRequest;
 use App\Http\Requests\Sales\SalesOrderFormRequest;
 use App\Models\User;
+use App\Services\Finance\CashService;
+use App\Services\JournalService;
 use App\Services\Purchasing\PurchaseOrderService;
 use App\Services\Sales\DeliveryOrderService;
 use App\Services\Sales\SalesOrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -144,4 +147,51 @@ test('a draft order can still be cancelled without Super Admin', function (strin
 })->with([
     'sales order' => ['sales_orders', SalesOrderService::class, 'changeSalesOrderStatus'],
     'purchase order' => ['purchase_orders', PurchaseOrderService::class, 'changePurchaseOrderStatus'],
+]);
+
+test('cancelling an open order reverses its down payment', function (string $table, string $itemTable, string $service, string $method, string $contactColumn, string $settingKey) {
+    [$companyID, $userID, $contactID, $warehouseID] = orderBasics();
+    $user = User::find($userID);
+    $user->assignRole(Role::create(['name' => 'Super Admin', 'guard_name' => 'web']));
+    test()->actingAs($user);
+
+    $categoryID = DB::table('account_categories')->insertGetId(['name' => 'Akun']);
+    [$cashID, $downPaymentID, $equityID] = collect(['1-1001', '1-1301', '3-1001'])
+        ->map(fn($code) => DB::table('chart_of_accounts')->insertGetId([
+            'company_id' => $companyID, 'category_id' => $categoryID, 'code' => $code, 'name' => $code,
+        ]))
+        ->all();
+    DB::table('account_settings')->insert(['company_id' => $companyID, 'account_id' => $downPaymentID, 'setting_key' => $settingKey]);
+    app(JournalService::class)->post(null, null, null, 'Modal awal', [
+        ['account_id' => $cashID, 'debit' => 1000],
+        ['account_id' => $equityID, 'credit' => 1000],
+    ]);
+
+    $unitID = DB::table('units')->insertGetId(['name' => 'Pcs', 'symbol' => 'pcs']);
+    $productCategoryID = DB::table('product_categories')->insertGetId(['company_id' => $companyID, 'name' => 'Umum']);
+    $productID = DB::table('products')->insertGetId([
+        'company_id' => $companyID, 'category_id' => $productCategoryID, 'unit_id' => $unitID,
+        'name' => 'Produk', 'code' => 'P-1', 'batch_prefix' => 'P',
+    ]);
+    $orderID = DB::table($table)->insertGetId([
+        'company_id' => $companyID, $contactColumn => $contactID, 'warehouse_id' => $warehouseID, 'number' => 'X-1',
+        'order_date' => now(), 'status' => 'draft', 'down_payment_amount' => 300, 'down_payment_remaining_amount' => 300,
+        'down_payment_account_id' => $cashID, 'created_by' => $userID,
+    ]);
+    DB::table($itemTable)->insert([
+        Str::singular($table) . '_id' => $orderID, 'product_id' => $productID, 'quantity' => 1, 'unit_price' => 1000,
+    ]);
+
+    app($service)->{$method}($orderID, 'open');
+    $openedBalance = app(CashService::class)->fetchAccountBalance($cashID);
+    app($service)->{$method}($orderID, 'cancelled');
+
+    expect($openedBalance)->not->toBe(1000.0)
+        ->and(app(CashService::class)->fetchAccountBalance($cashID))->toBe(1000.0)
+        ->and(app(CashService::class)->fetchAccountBalance($downPaymentID))->toBe(0.0)
+        ->and(DB::table('cash_transactions')->where('reference_id', $orderID)->value('status'))->toBe('cancelled')
+        ->and(DB::table($table)->where('id', $orderID)->value('status'))->toBe('cancelled');
+})->with([
+    'sales order' => ['sales_orders', 'sales_order_items', SalesOrderService::class, 'changeSalesOrderStatus', 'customer_id', 'sales_down_payment'],
+    'purchase order' => ['purchase_orders', 'purchase_order_items', PurchaseOrderService::class, 'changePurchaseOrderStatus', 'supplier_id', 'purchase_down_payment'],
 ]);

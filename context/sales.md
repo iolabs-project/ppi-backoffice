@@ -227,7 +227,7 @@ Draft → Open → Partial / Paid / Cancelled
 | `fetchSalesOrderByID(int)` | Full SO with items, costs, charges, relationships (unit, creator) |
 | `storeSalesOrder(Request)` | Creates SO + items + costs + charges in transaction; calculates subtotal, discount, tax, total_amount |
 | `updateSalesOrder(Request, int)` | Updates SO + replaces items + costs + charges (delete all + recreate) |
-| `changeSalesOrderStatus(int, string)` | Simple status update (used by open/close/cancel) |
+| `changeSalesOrderStatus(int, string)` | Status change used by open/close/cancel; opening posts the down payment, cancelling an open SO reverses it (Super Admin only) |
 | `fetchSOItemsForDeliveryOrder(int)` | SO items with remaining quantities for DO; maps product_code, product_name, unit |
 
 ### Delivery Order (`DeliveryOrderService`)
@@ -377,7 +377,9 @@ Used for number generation and company-scoped queries.
    - Increments `SalesOrderItem.invoiced_quantity` for each item
    - Decrements `SalesOrder.down_payment_remaining_amount` by down_payment_amount
 7. **Cancellation Rules**:
-   - SO: Simple status update (any status can be changed)
+   - SO: Draft → Cancelled needs `sales.sales-orders.delete`. Open → Cancelled is Super Admin only and refused while the SO has a non-cancelled DO or SI
+     - Reverses the posted down payment journal and marks the down payment cash transaction cancelled
+     - Closed/Cancelled SOs cannot be cancelled
    - DO: Simple status update (inventory reversal handled separately if finished)
    - SI: Only Draft or Open with total_amount == remaining_amount (no payments received)
      - Reverses SO invoiced_quantity (decrements)

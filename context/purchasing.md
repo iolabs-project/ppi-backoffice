@@ -224,7 +224,7 @@ Draft → Open → Partial / Paid / Cancelled
 | `fetchPurchaseOrderByID(int)` | Full PO with items, costs, relationships (unit, creator) |
 | `storePurchaseOrder(Request)` | Creates PO + items + costs in transaction; calculates subtotal, discount, tax, total_amount |
 | `updatePurchaseOrder(Request, int)` | Updates PO + replaces items + costs (delete all + recreate) |
-| `changePurchaseOrderStatus(int, string)` | Simple status update (used by open/close/cancel) |
+| `changePurchaseOrderStatus(int, string)` | Status change used by open/close/cancel; opening posts the down payment, cancelling an open PO reverses it (Super Admin only) |
 | `fetchPOItemsForGoodsReceipt(int)` | PO items with remaining quantities for GR; maps product_code, product_name, unit |
 
 ### Goods Receipt (`GoodsReceiptService`)
@@ -389,7 +389,9 @@ Older ERP-style routes under `/pembelian` prefix using `ErpDataService`:
    - Increments `PurchaseOrderItem.invoiced_quantity` for each item
    - Decrements `PurchaseOrder.down_payment_remaining_amount` by down_payment_amount
 8. **Cancellation Rules**:
-   - PO: Simple status update (any status can be changed)
+   - PO: Draft → Cancelled needs `purchasing.purchase-orders.delete`. Open → Cancelled is Super Admin only and refused while the PO has a non-cancelled GR or PI
+     - Reverses the posted down payment journal and marks the down payment cash transaction cancelled
+     - Closed/Cancelled POs cannot be cancelled
    - GR: Simple status update (inventory reversal handled separately if finished)
    - PI: Only Draft or Open with total_amount == remaining_amount (no payments received)
      - Reverses PO invoiced_quantity (decrements)
