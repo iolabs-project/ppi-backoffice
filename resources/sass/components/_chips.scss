@@ -25,7 +25,7 @@
 .chip-warn { background: var(--warn-bg); color: var(--warn); }
 .chip-bad  { background: var(--bad-bg);  color: var(--bad);  }
 .chip-info { background: var(--info-bg); color: var(--info); }
-.chip-accent { background: var(--accent-3); color: var(--accent); }
+.chip-accent { background: var(--accent-3); color: var(--accent-fg); }
 
 // Dot color variants
 .dot-ok      { background: var(--ok);   }

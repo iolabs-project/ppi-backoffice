@@ -54,7 +54,7 @@
                                 x-text="formatDateTime(log.created_at)"></td>
                                 <td>
                                     <span class="mono"
-                                        style="display:inline-flex; align-items:center; min-height:24px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r-chip); font-size:11.5px; font-weight:600; color:var(--accent); background:var(--accent-3);"
+                                        style="display:inline-flex; align-items:center; min-height:24px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r-chip); font-size:11.5px; font-weight:600; color:var(--accent-fg); background:var(--accent-3);"
                                         :style="log.subject && log.subject.number ? {} : { color: 'var(--ink-4)', background: 'var(--bg-2)' }"
                                         x-text="log.subject && log.subject.number ? log.subject.number : '—'"></span>
                                 </td>

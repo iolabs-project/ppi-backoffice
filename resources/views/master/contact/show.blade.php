@@ -273,7 +273,7 @@
                     <div class="produk-sidebar__row">
                         <span class="produk-sidebar__key">Email</span>
                         <span class="produk-sidebar__val"
-                            style="font-size:12px; color:var(--accent);">{{ $contact->email ?? '-' }}</span>
+                            style="font-size:12px; color:var(--accent-fg);">{{ $contact->email ?? '-' }}</span>
                     </div>
                     <div class="produk-sidebar__row">
                         <span class="produk-sidebar__key">Telepon</span>
@@ -285,22 +285,22 @@
                     <div class="produk-sidebar__row">
                         <span class="produk-sidebar__key">Alamat</span>
                         <span class="produk-sidebar__val"
-                            style="font-size:12px; color:var(--accent);">{{ $contact->address ?? '-' }}</span>
+                            style="font-size:12px; color:var(--accent-fg);">{{ $contact->address ?? '-' }}</span>
                     </div>
                     <div class="produk-sidebar__row">
                         <span class="produk-sidebar__key">Provinsi</span>
                         <span class="produk-sidebar__val"
-                            style="font-size:12px; color:var(--accent);">{{ $contact->state ?? '-' }}</span>
+                            style="font-size:12px; color:var(--accent-fg);">{{ $contact->state ?? '-' }}</span>
                     </div>
                     <div class="produk-sidebar__row">
                         <span class="produk-sidebar__key">Kota</span>
                         <span class="produk-sidebar__val"
-                            style="font-size:12px; color:var(--accent);">{{ $contact->city ?? '-' }}</span>
+                            style="font-size:12px; color:var(--accent-fg);">{{ $contact->city ?? '-' }}</span>
                     </div>
                     <div class="produk-sidebar__row">
                         <span class="produk-sidebar__key">Kode Pos</span>
                         <span class="produk-sidebar__val"
-                            style="font-size:12px; color:var(--accent);">{{ $contact->postal_code ?? '-' }}</span>
+                            style="font-size:12px; color:var(--accent-fg);">{{ $contact->postal_code ?? '-' }}</span>
                     </div>
                 </div>
 

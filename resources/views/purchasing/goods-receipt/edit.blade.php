@@ -452,7 +452,7 @@
         <div class="card card-bd--form">
             <div class="shipping-form-info">
                 <div class="display card-hd-title">Informasi Penerimaan</div>
-                <div class="shipping-form-info__sub"><span style="color:var(--accent);">*</span> Field terisi otomatis dari
+                <div class="shipping-form-info__sub"><span style="color:var(--accent-fg);">*</span> Field terisi otomatis dari
                     PO</div>
             </div>
             <div class="order-form-grid-3">

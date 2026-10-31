@@ -18,7 +18,7 @@
                 <div class="gudang-card__hd">
                     <div class="gudang-card__info">
                         <div class="gudang-card__icon">
-                            <x-misc.icon name="building" :size="18" stroke="var(--accent)" />
+                            <x-misc.icon name="building" :size="18" stroke="var(--accent-fg)" />
                         </div>
                         <div>
                             <div class="gudang-card__name" x-text="g.name"></div>

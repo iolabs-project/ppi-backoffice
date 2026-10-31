@@ -154,7 +154,7 @@
             </div>
 
             <div class="card produk-stat">
-                <div class="produk-stat__badge" style="background:oklch(0.92 0.06 45); color:oklch(0.45 0.14 45);">
+                <div class="produk-stat__badge" style="background:var(--accent-3); color:var(--accent-fg);">
                     {{ number_format($products->sum(fn($p) => $p->quantity * $p->average_unit_cost), 2) }}
                 </div>
                 <div class="produk-stat__label">Total Nilai Produk</div>

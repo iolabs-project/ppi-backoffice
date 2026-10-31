@@ -247,7 +247,7 @@
                     <div class="account-card__hd">
                         <div class="account-card__info">
                             <div class="account-card__icon">
-                                <x-misc.icon :name="'wallet'" :size="18" stroke="var(--accent)" />
+                                <x-misc.icon :name="'wallet'" :size="18" stroke="var(--accent-fg)" />
                             </div>
                             <div>
                                 <div class="account-card__name">{{ $account->name }}</div>

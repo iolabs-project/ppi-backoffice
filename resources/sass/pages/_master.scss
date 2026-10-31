@@ -258,7 +258,7 @@
   &--active {
     border-color: var(--accent);
     background: var(--accent-3);
-    color: var(--accent);
+    color: var(--accent-fg);
     font-weight: 600;
   }
 }
@@ -479,7 +479,7 @@
   height: 28px;
   border-radius: 9px;
   background: var(--accent-3);
-  color: var(--accent);
+  color: var(--accent-fg);
   display: grid;
   place-items: center;
   flex-shrink: 0;

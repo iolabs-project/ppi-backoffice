@@ -17,7 +17,7 @@
     <div class="card" style="overflow:hidden;">
         <div class="neraca-card-hd">
             <div class="display" style="font-weight:700; font-size:14px;">Aset</div>
-            <div class="num" style="font-weight:700; color:var(--accent);" x-text="formatCurrency(tableData.asset.total)"></div>
+            <div class="num" style="font-weight:700; color:var(--accent-fg);" x-text="formatCurrency(tableData.asset.total)"></div>
         </div>
         <div class="tbl-scroll">
             <table class="tbl">
@@ -110,7 +110,7 @@
         </div>
         <div class="card neraca-total-row">
             <span style="font-size:13px; font-weight:600;">Total Liabilitas + Ekuitas</span>
-            <span class="num" style="font-size:16px; font-weight:700; color:var(--accent);"
+            <span class="num" style="font-size:16px; font-weight:700; color:var(--accent-fg);"
                 x-text="formatCurrency(tableData.total_liabilities_and_equity)"></span>
         </div>
     </div>

@@ -401,7 +401,7 @@
                             <div class="dropdown-empty">Tidak ditemukan</div>
                         </template>
                         @can('master.contacts.create')
-                            <div class="dropdown-item" style="color:var(--accent); font-weight:600;"
+                            <div class="dropdown-item" style="color:var(--accent-fg); font-weight:600;"
                                 @click="open=false; addSupplier(q); q=''">
                                 <x-misc.icon name="plus" :size="13" />
                                 <span x-text="q ? 'Tambah supplier &quot;' + q + '&quot;' : 'Tambah supplier baru'"></span>

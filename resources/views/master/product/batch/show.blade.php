@@ -111,7 +111,7 @@
                 <div class="produk-stat__unit">{{ $product->unit->symbol }}</div>
             </div>
             <div class="card produk-stat">
-                <div class="produk-stat__badge" style="background:oklch(0.92 0.06 45); color:oklch(0.45 0.14 45);">
+                <div class="produk-stat__badge" style="background:var(--accent-3); color:var(--accent-fg);">
                     {{ number_format($totalReserved, 2) }}</div>
                 <div class="produk-stat__label">Dipesan (Reserved)</div>
                 <div class="produk-stat__unit">{{ $product->unit->symbol }}</div>
