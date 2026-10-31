@@ -483,7 +483,7 @@
                             <div class="dropdown-empty">Tidak ditemukan</div>
                         </template>
                         @can('master.contacts.create')
-                            <div class="dropdown-item" style="color:var(--accent); font-weight:600;"
+                            <div class="dropdown-item" style="color:var(--accent-fg); font-weight:600;"
                                 @click="open=false; addCustomer(q); q=''">
                                 <x-misc.icon name="plus" :size="13" />
                                 <span x-text="q ? 'Tambah customer &quot;' + q + '&quot;' : 'Tambah customer baru'"></span>
@@ -842,7 +842,7 @@
                         <div
                             style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; padding-top:6px; margin-top:4px; border-top:1px solid var(--line-2);">
                             <span>Estimasi Profit</span>
-                            <span class="num" style="color:var(--accent);"
+                            <span class="num" style="color:var(--accent-fg);"
                                 x-text="NumberUtils.formatNumericIntoMask(Math.round(estimatedProfit()))"></span>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:12px; padding-top:2px;">

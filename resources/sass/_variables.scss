@@ -10,10 +10,12 @@
   --ink-5:     #B6AC97;
   --line:      #E2DCCC;
   --line-2:    #D4CCB7;
-  --accent:    oklch(0.63 0.19 38);
-  --accent-2:  oklch(0.55 0.20 35);
-  --accent-3:  oklch(0.95 0.04 60);
-  --accent-ink:#FCFAF5;
+  --accent:    #F4B711;
+  --accent-2:  #E0A600;
+  --accent-3:  #FCEFC6;
+  --accent-ink:var(--ink);
+  // text/icons on light surfaces; yellow text is unreadable there
+  --accent-fg: var(--ink);
   --ok:        oklch(0.62 0.12 155);
   --ok-bg:     oklch(0.94 0.04 155);
   --warn:      oklch(0.72 0.13 80);

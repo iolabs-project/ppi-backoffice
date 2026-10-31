@@ -150,7 +150,7 @@
                         <div
                             style="display:flex; justify-content:space-between; padding:6px 0; font-size:{{ $bold ? 15 : 13 }}px; font-weight:{{ $bold ? 700 : 500 }}; {{ $bold ? 'border-top:1px solid var(--line-2); margin-top:8px; padding-top:12px;' : '' }}">
                             <span style="color:{{ $bold ? 'var(--ink)' : 'var(--ink-3)' }};">{{ $lbl }}</span>
-                            <span class="num" style="color:{{ $bold ? 'var(--accent)' : 'var(--ink)' }};">{{ number_format($val, 2) }}</span>
+                            <span class="num" style="color:{{ $bold ? 'var(--accent-fg)' : 'var(--ink)' }};">{{ number_format($val, 2) }}</span>
                         </div>
                     @endforeach
                 </div>

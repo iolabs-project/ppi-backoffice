@@ -5,7 +5,7 @@
     $dFg = $accent
         ? ($positive ? 'oklch(0.85 0.12 155)' : 'oklch(0.85 0.10 30)')
         : ($positive ? 'var(--ok)' : 'var(--bad)');
-    $spColor = $accent ? 'oklch(0.78 0.16 60)' : 'var(--accent)';
+    $spColor = 'var(--accent)';
 @endphp
 <div class="card kpi-card {{ $accent ? 'kpi-card--accent' : '' }}">
     <div class="kpi-card__hd">

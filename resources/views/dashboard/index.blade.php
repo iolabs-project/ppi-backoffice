@@ -101,7 +101,7 @@
                                     data-sales="{{ $d[1] }}" data-purchase="{{ $d[2] }}">
                                     <div class="bc__hover-label">
                                         <span class="bc__hover-label-val mono"
-                                            style="color:var(--accent)">{{ fmt_rp_short($d[1]) }}</span>
+                                            style="color:var(--accent-fg)">{{ fmt_rp_short($d[1]) }}</span>
                                         <span class="bc__hover-label-val mono"
                                             style="color:var(--ink-3)">{{ fmt_rp_short($d[2]) }}</span>
                                     </div>
@@ -176,7 +176,7 @@
                     @forelse ($recentActivities as $act)
                         <a href="{{ $act['url'] }}" class="dash-activity__item">
                             <div class="dash-activity__icon"
-                                style="background:{{ $act['color'] }}20; color:{{ $act['color'] }};">
+                                style="background:color-mix(in srgb, {{ $act['color'] }} 22%, transparent); color:var(--ink);">
                                 <x-misc.icon :name="$act['icon']" :size="14" />
                             </div>
                             <div class="dash-activity__info">

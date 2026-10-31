@@ -3,7 +3,7 @@
 <div class="coming-soon">
   <div class="coming-soon__inner">
     <div class="coming-soon__icon">
-      <x-misc.icon name="layers" :size="32" stroke="var(--accent)" />
+      <x-misc.icon name="layers" :size="32" stroke="var(--accent-fg)" />
     </div>
     <h2 class="display coming-soon__title">
       {{ $title ?? 'Segera Hadir' }}

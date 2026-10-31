@@ -165,10 +165,10 @@ class DashboardService
             ->first();
 
         return [
-            ['stage' => 'Sales Order',    'count' => (int) $soOpen->count,       'value' => (float) $soOpen->total,       'color' => 'oklch(0.85 0.06 60)'],
-            ['stage' => 'Pengiriman',     'count' => (int) $deliveries->count,   'value' => (float) $deliveries->total,   'color' => 'oklch(0.78 0.10 50)'],
-            ['stage' => 'Tagihan Terbit', 'count' => (int) $invoicesOpen->count, 'value' => (float) $invoicesOpen->total, 'color' => 'oklch(0.70 0.14 42)'],
-            ['stage' => 'Lunas',          'count' => (int) $invoicesPaid->count, 'value' => (float) $invoicesPaid->total, 'color' => 'oklch(0.62 0.18 38)'],
+            ['stage' => 'Sales Order',    'count' => (int) $soOpen->count,       'value' => (float) $soOpen->total,       'color' => '#FCEFC6'],
+            ['stage' => 'Pengiriman',     'count' => (int) $deliveries->count,   'value' => (float) $deliveries->total,   'color' => '#F8D570'],
+            ['stage' => 'Tagihan Terbit', 'count' => (int) $invoicesOpen->count, 'value' => (float) $invoicesOpen->total, 'color' => 'var(--accent)'],
+            ['stage' => 'Lunas',          'count' => (int) $invoicesPaid->count, 'value' => (float) $invoicesPaid->total, 'color' => 'var(--ink)'],
         ];
     }
 
@@ -230,7 +230,7 @@ class DashboardService
                 'status'  => $si->status,
                 'url'     => route('sales.sales_invoices.show', $si->id),
                 'icon'    => 'receipt',
-                'color'   => 'var(--good)',
+                'color'   => 'var(--ok)',
             ]);
 
         // Recent Expenses

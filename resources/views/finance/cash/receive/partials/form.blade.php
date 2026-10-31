@@ -22,7 +22,7 @@
                     <div class="dropdown-empty">Tidak ditemukan</div>
                 </template>
                 @can('master.contacts.create')
-                    <div class="dropdown-item" style="color:var(--accent); font-weight:600;"
+                    <div class="dropdown-item" style="color:var(--accent-fg); font-weight:600;"
                         @click="open=false; addContact(q); q=''">
                         <x-misc.icon name="plus" :size="13" />
                         <span x-text="q ? 'Tambah kontak &quot;' + q + '&quot;' : 'Tambah kontak baru'"></span>
