@@ -1,17 +1,17 @@
-# Graph Report - ppi-backoffice  (2026-10-31)
+# Graph Report - ppi-backoffice  (2026-11-03)
 
 ## Corpus Check
-- 369 files · ~148,017 words
+- 370 files · ~147,993 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 51 file(s) not represented in the graph (top: .scss 29, (none) 17, .graphify-bak 1)
 
 ## Summary
-- 2346 nodes · 4394 edges · 278 communities (99 shown, 179 thin omitted)
+- 2347 nodes · 4394 edges · 279 communities (99 shown, 180 thin omitted)
 - Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 397 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a2b0082f`
+- Built from commit: `5d089969`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -249,7 +249,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (278 total, 179 thin omitted)
+## Communities (279 total, 180 thin omitted)
 
 ### Community 0 - "package.json"
 Cohesion: 0.12
@@ -649,23 +649,23 @@ Nodes (4): AccountCategory, ChartOfAccount, Key Conventions, Enums (`app/Enums/`
 
 ## Knowledge Gaps
 - **213 isolated node(s):** `CASH_BANK`, `ACCOUNT_RECEIVABLE`, `INVENTORY`, `OTHER_CURRENT_ASSET`, `FIXED_ASSET` (+208 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1062 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **179 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1063 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **180 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `LogsModelActivity` connect `LogsModelActivity` to `PurchaseInvoice`, `AccountReceivableService.php`, `PurchaseOrder`, `Illuminate\Database\Eloquent\Model`, `ExpenseService.php`, `AccountService.php`, `AutoCodeAndPaymentTermTest.php`, `GoodsReceipt`, `Models (`app/Models/`)`, `DeliveryOrder`, `SalesOrder`, `DeliveryOrderCost`, `AccountPayableService.php`, `User`, `CashTransaction`, `GoodsReceiptItem`, `JournalEntry`, `SalesInvoiceItem`, `DeliveryOrderStatus`, `GoodsReceiptItem`, `InventoryTransaction`, `WarehouseTransfer`, `SalesInvoiceService.php`, `AccountSetting`?**
-  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **What connects `CASH_BANK`, `ACCOUNT_RECEIVABLE`, `INVENTORY` to the rest of the system?**
   _213 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `package.json` be split into smaller, more focused modules?**
   _Cohesion score 0.12121212121212122 - nodes in this community are weakly interconnected._
-- **Why does `User` connect `User` to `Illuminate\Foundation\Testing\RefreshDatabase`, `CascadeCancelTest.php`, `QaFixesTest.php`, `UserPasswordChangeTest.php`, `LogsModelActivity`, `InvoiceCancelAndPaymentTest.php`, `Illuminate\Support\Facades\DB`, `UserService.php`, `OrderStatusGuardTest.php`, `TotalsAndJournalTest.php`?**
-  _High betweenness centrality (0.029) - this node is a cross-community bridge._
-- **Should `PurchaseInvoice` be split into smaller, more focused modules?**
-  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
 - **Why does `GoodsReceiptStatus` connect `GoodsReceiptStatus` to `GoodsReceiptService.php`, `GoodsReceiptFormRequest`, `PurchaseOrderService.php`, `InventoryService.php`, `GoodsReceiptService`?**
   _High betweenness centrality (0.028) - this node is a cross-community bridge._
+- **Should `PurchaseInvoice` be split into smaller, more focused modules?**
+  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
+- **Why does `Controller` connect `Controller` to `PurchaseInvoiceService`, `ProductService`, `UserService`, `SalesInvoiceService`, `AccountReceivableService.php`, `OrderStatusGuardTest.php`, `PurchaseOrderController`, `DeliveryOrderService`, `GoodsReceiptService`, `SalesOrderStatus`, `ExpenseService`, `AccountPayableService.php`, `.index`, `BilledBy`, `SalesOrderService`, `Illuminate\Http\Request`, `AccountService`, `ContactService`, `WarehouseService`?**
+  _High betweenness centrality (0.026) - this node is a cross-community bridge._
 - **Should `web.php` be split into smaller, more focused modules?**
   _Cohesion score 0.045454545454545456 - nodes in this community are weakly interconnected._

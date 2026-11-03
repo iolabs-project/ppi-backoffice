@@ -51,6 +51,7 @@
   "72": "ActivityLogEventEnum",
   "76": "Purchasing Module Context",
   "77": "GoodsReceiptItem",
+  "79": "stock/index.blade.php",
   "81": "BilledBy",
   "84": "InventoryTransaction",
   "89": "SalesInvoiceStatus",
