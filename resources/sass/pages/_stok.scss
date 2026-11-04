@@ -1,0 +1,26 @@
+.stok-summary {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 14px;
+
+  @media screen and (max-width: $bp-tablet) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media screen and (max-width: $bp-mobile) { grid-template-columns: minmax(0, 1fr); }
+}
+
+// Per-warehouse breakdown under an expanded product row
+.stok-expand-btn {
+  display: inline-flex;
+  transition: transform .15s ease;
+
+  &--open { transform: rotate(90deg); }
+}
+
+.stok-detail-row > td {
+  background: var(--surface-2, #FAFAF9);
+  padding: 0 0 0 44px;
+}
+
+.stok-detail-tbl {
+  th, td { font-size: 12.5px; }
+  th { background: transparent; }
+}

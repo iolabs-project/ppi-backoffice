@@ -85,6 +85,9 @@ class PermissionSeeder extends Seeder
                     'edit',
                     'delete',
                 ],
+                'stocks' => [
+                    'view',
+                ],
             ],
 
             'master' => [

@@ -8,6 +8,7 @@ use App\Http\Controllers\Finance\ExpenseController;
 use App\Http\Controllers\Finance\AccountPayableController;
 use App\Http\Controllers\Finance\AccountReceivableController;
 use App\Http\Controllers\Finance\CashController;
+use App\Http\Controllers\Finance\StockController;
 use App\Http\Controllers\Master\AccountController;
 use App\Http\Controllers\Master\AccountSettingController;
 use App\Http\Controllers\Master\ContactController;
@@ -158,6 +159,10 @@ Route::middleware('auth')->group(function () {
             Route::post('/payments/{payment}/void', 'void')->middleware('permission:finances.receivables.delete')->name('void');
             Route::get('/{id}', 'show')->middleware('permission:finances.receivables.view')->name('show');
             Route::post('/{id}', 'store')->middleware('permission:finances.receivables.create')->name('store');
+        });
+        Route::prefix('stocks')->name('stocks.')->controller(StockController::class)->group(function () {
+            Route::get('/', 'index')->middleware('permission:finances.stocks.view')->name('index');
+            Route::get('/datatable', 'datatable')->middleware('permission:finances.stocks.view')->name('datatable');
         });
         Route::prefix('cash')->name('cash.')->controller(CashController::class)->group(function () {
             Route::get('/', 'index')->middleware('permission:finances.cash-bank.view')->name('index');

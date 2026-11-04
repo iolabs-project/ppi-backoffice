@@ -98,6 +98,94 @@ class InventoryService
         return $data;
     }
 
+    // Stock per product across every warehouse, unit cost weighted by quantity
+    public function fetchStockSummaryTableData(int $companyID, int $perPage, string | null $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $data = $this->buildStockSummaryQuery($companyID)
+            ->selectRaw('product_stocks.product_id')
+            ->selectRaw('COUNT(product_stocks.warehouse_id) as warehouse_count')
+            ->selectRaw('SUM(product_stocks.quantity) as quantity')
+            ->selectRaw('SUM(product_stocks.reserved_quantity) as reserved_quantity')
+            ->selectRaw('SUM(product_stocks.quantity * product_stocks.average_unit_cost) as total_value')
+            ->when($search !== null && $search !== '', function ($query) use ($search) {
+                $query->whereHas('product', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
+            ->with([
+                'product:id,code,name,unit_id',
+                'product.unit:id,name,symbol',
+            ])
+            ->groupBy('product_stocks.product_id')
+            ->orderBy('product_stocks.product_id')
+            ->paginate($perPage);
+
+        $warehouses = $this->buildStockSummaryQuery($companyID)
+            ->with('warehouse:id,name,code')
+            ->select('id', 'product_id', 'warehouse_id', 'quantity', 'reserved_quantity', 'average_unit_cost')
+            ->whereIn('product_id', $data->getCollection()->pluck('product_id'))
+            ->orderBy('warehouse_id')
+            ->get()
+            ->groupBy('product_id');
+
+        $data->getCollection()->transform(function ($row) use ($warehouses) {
+            $quantity = (float) $row->quantity;
+            $totalValue = (float) $row->total_value;
+
+            return [
+                'id' => $row->product_id,
+                'product' => $row->product,
+                'warehouse_count' => (int) $row->warehouse_count,
+                'quantity' => $quantity,
+                'reserved_quantity' => (float) $row->reserved_quantity,
+                'available_quantity' => $quantity - (float) $row->reserved_quantity,
+                'average_unit_cost' => $quantity > 0 ? $totalValue / $quantity : 0,
+                'total_value' => $totalValue,
+                'warehouses' => $warehouses->get($row->product_id, collect())->map(fn($stock) => [
+                    'id' => $stock->id,
+                    'warehouse' => $stock->warehouse,
+                    'quantity' => $stock->quantity,
+                    'reserved_quantity' => $stock->reserved_quantity,
+                    'available_quantity' => $stock->available_quantity,
+                    'average_unit_cost' => $stock->average_unit_cost,
+                    'total_value' => $stock->quantity * $stock->average_unit_cost,
+                ])->values(),
+            ];
+        });
+
+        return $data;
+    }
+
+    public function fetchStockSummary(int $companyID): array
+    {
+        $row = $this->buildStockSummaryQuery($companyID)
+            ->selectRaw('COUNT(DISTINCT product_stocks.product_id) as product_count')
+            ->selectRaw('COUNT(DISTINCT product_stocks.warehouse_id) as warehouse_count')
+            ->selectRaw('COALESCE(SUM(product_stocks.quantity * product_stocks.average_unit_cost), 0) as total_value')
+            ->first();
+
+        return [
+            'product_count' => (int) $row->product_count,
+            'warehouse_count' => (int) $row->warehouse_count,
+            'total_value' => (float) $row->total_value,
+        ];
+    }
+
+    // On-hand stock rows of active products in active warehouses
+    private function buildStockSummaryQuery(int $companyID)
+    {
+        return ProductStock::query()
+            ->where('product_stocks.company_id', $companyID)
+            ->where('product_stocks.quantity', '>', 0)
+            ->whereHas('product', function ($query) {
+                $query->whereNull('deleted_at');
+            })
+            ->whereHas('warehouse', function ($query) {
+                $query->whereNull('deleted_at');
+            });
+    }
+
     public function fetchInventoryBatches(int $companyID, int | null $warehouseID = null, array $productIDs = [], bool | null $onlyAvailable = null): Collection
     {
         return $this->buildInventoryBatchStockQuery($companyID, $warehouseID, $productIDs, $onlyAvailable)
