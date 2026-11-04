@@ -792,9 +792,9 @@
     "semantic_hash": ""
   },
   "app/Services/InventoryService.php": {
-    "mtime": 1793386263.8382857,
-    "seen": 1793386502.3102334,
-    "ast_hash": "7af9389812cbea68d3df954073f77f53",
+    "mtime": 1793710160.4801755,
+    "seen": 1793710349.1362572,
+    "ast_hash": "a01ba7d3d1d48b37fb71ee2f853dbb0f",
     "semantic_hash": ""
   },
   "app/Services/JournalService.php": {
@@ -1290,10 +1290,10 @@
     "semantic_hash": "161f601f4121dcb1da2cfa265a27dc2e"
   },
   "database/seeders/PermissionSeeder.php": {
-    "mtime": 1790610153.6641624,
-    "seen": 1793384827.676162,
-    "ast_hash": "2ea7aee0c59f20ce0842126695eb8c79",
-    "semantic_hash": "2ea7aee0c59f20ce0842126695eb8c79"
+    "mtime": 1793710175.8653603,
+    "seen": 1793710349.1364074,
+    "ast_hash": "2e2c54e4b66fe05b6719462ab76bbca8",
+    "semantic_hash": ""
   },
   "database/seeders/RoleSeeder.php": {
     "mtime": 1792866682.3764813,
@@ -1428,9 +1428,9 @@
     "semantic_hash": "b13f6389f477327f73ad6314e7fbab7e"
   },
   "resources/views/components/navbar/sidebar.blade.php": {
-    "mtime": 1793470393.5610003,
-    "seen": 1793709204.3823476,
-    "ast_hash": "6ab1b8c072ef09ff34afa16bfaff461d",
+    "mtime": 1793710176.4180157,
+    "seen": 1793710349.1364508,
+    "ast_hash": "e613ac33a8bac37c9bd196fbfe90e9ee",
     "semantic_hash": ""
   },
   "resources/views/components/navbar/topbar.blade.php": {
@@ -2022,9 +2022,9 @@
     "semantic_hash": "6a8dae18a01d2b76408ff3bf6345c61b"
   },
   "routes/web.php": {
-    "mtime": 1793204817.079951,
-    "seen": 1793384827.6763322,
-    "ast_hash": "c63c5c669414ab8a62a6db95ee61956e",
+    "mtime": 1793710175.4830432,
+    "seen": 1793710349.1366282,
+    "ast_hash": "83582a42519820a8a3893359782cb99a",
     "semantic_hash": ""
   },
   "tests/Feature/AutoCodeAndPaymentTermTest.php": {
@@ -2262,9 +2262,21 @@
     "semantic_hash": ""
   },
   "resources/views/finance/stock/index.blade.php": {
-    "mtime": 1793709177.3813694,
-    "seen": 1793709204.382399,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "mtime": 1793710241.9152453,
+    "seen": 1793710349.1365023,
+    "ast_hash": "84f8150243818db420ffa86ba1ee3c05",
+    "semantic_hash": ""
+  },
+  "app/Http/Controllers/Finance/StockController.php": {
+    "mtime": 1793710174.4193647,
+    "seen": 1793710349.1360695,
+    "ast_hash": "221a3f3e2a8d0ca5daf11f3e87a853b5",
+    "semantic_hash": ""
+  },
+  "tests/Feature/StockPageTest.php": {
+    "mtime": 1793710257.5562632,
+    "seen": 1793710349.136654,
+    "ast_hash": "89feb3c3734c2a2c7e909c15e808fb0b",
     "semantic_hash": ""
   }
 }

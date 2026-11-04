@@ -1,17 +1,17 @@
 # Graph Report - ppi-backoffice  (2026-11-03)
 
 ## Corpus Check
-- 370 files · ~147,993 words
+- 372 files · ~149,371 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 51 file(s) not represented in the graph (top: .scss 29, (none) 17, .graphify-bak 1)
+- Unclassified: 52 file(s) not represented in the graph (top: .scss 30, (none) 17, .graphify-bak 1)
 
 ## Summary
-- 2347 nodes · 4394 edges · 279 communities (99 shown, 180 thin omitted)
-- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 397 edges (avg confidence: 0.87)
+- 2369 nodes · 4437 edges · 284 communities (105 shown, 179 thin omitted)
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 399 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5d089969`
+- Built from commit: `fa12ce40`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,6 +21,7 @@
 - PurchaseInvoiceService
 - ProductService
 - AccountCategoryEnum
+- Illuminate\Foundation\Http\FormRequest
 - AccountSettingEnum
 - helpers.php
 - CascadeCancelTest.php
@@ -37,8 +38,8 @@
 - Illuminate\Support\Facades\DB
 - AccountReceivableService.php
 - StockAdjustmentService.php
-- OrderStatusGuardTest.php
-- PurchaseOrderController
+- abort_unless_draft
+- PurchaseOrderService
 - CashService.php
 - Illuminate\Support\Collection
 - DeliveryOrderService
@@ -46,25 +47,26 @@
 - GoodsReceiptService
 - ExpenseService.php
 - GoodsReceiptService.php
-- AutoCodeAndPaymentTermTest.php
-- GoodsReceipt
+- ProductService.php
+- CashController
 - SalesOrderStatus
-- Models (`app/Models/`)
-- PurchaseInvoiceService.php
+- AccountReceivableController.php
+- AccountPayableService.php
 - Spatie\Permission\Models\Permission
 - PaymentTerm
+- SalesOrderService.php
 - DeliveryOrder
 - ExpenseService
 - SalesOrder
 - SalesInvoice
 - QaFixesTest.php
-- DeliveryOrderService.php
 - ExpenseStatus
 - DeliveryOrderCost
-- AccountPayableService.php
+- AccountPayableService
 - bootstrap/app.php
 - User
 - .lineTotal
+- UserService.php
 - Illuminate\Database\Migrations\Migration
 - CashTransaction
 - AccountReceivableStatusEnum
@@ -76,10 +78,11 @@
 - ReportTypeEnum
 - Illuminate\Support\Facades\Schema
 - SalesOrderFormRequest
-- JournalEntry
+- OrderStatusGuardTest.php
 - PurchaseOrderStatus
 - Payment Module Context
-- SalesInvoiceItem
+- RoleEnum
+- CashController.php
 - PurchaseInvoiceStatus
 - ActivityLogEventEnum
 - CashTransactionTypeEnum
@@ -88,12 +91,13 @@
 - Purchasing Module Context
 - GoodsReceiptItem
 - UserPasswordChangeTest.php
+- stock/index.blade.php
 - CashTransactionStatusEnum
 - BilledBy
 - README.md
 - CashFormRequest
 - InventoryTransaction
-- WarehouseTransfer
+- NumberingService
 - composer.json
 - require-dev
 - scripts
@@ -101,22 +105,27 @@
 - SalesOrderService
 - TotalsAndJournalTest.php
 - Illuminate\Http\Request
-- FormRequestRulesTest.php
+- AppServiceProvider.php
 - SalesInvoiceService.php
 - AccountService
 - require
 - AccountSetting
 - ContactService
+- AccountPayableStatusEnum
+- GoodsReceiptFormRequestTest.php
+- .storeSalesInvoice
 - PurchaseOrderFormRequest
 - bootstrap.js
 - LimitsAmounts.php
-- InventoryTransactionTypeEnum
+- CashReceiveFormRequest
 - config
 - 2026_07_06_065924_create_sales_orders_table.php
 - 2026_07_06_114637_create_delivery_orders_table.php
+- StockPageTest.php
 - export.js
 - PurchaseInvoiceFormRequest
 - 2026_07_27_125404_create_expenses_table.php
+- .fetchSOItemsForDeliveryOrder
 - 2026_06_23_073413_create_product_batches_table.php
 - WarehouseService
 - JournalEntryStatusEnum
@@ -124,6 +133,8 @@
 - 2026_06_22_121951_create_companies_table.php
 - 2026_06_23_073840_create_inventory_transactions_table.php
 - 2026_07_09_033233_create_account_mappings_table.php
+- AccountFormRequest
+- Validation Rules
 - psr-4
 - 0001_01_01_000000_create_users_table.php
 - 2026_06_23_090155_create_purchase_orders_table.php
@@ -132,7 +143,8 @@
 - CLAUDE.md
 - AccountReceivableService.php
 - GoodsReceiptFormRequest
-- JournalService.php
+- JournalService
+- Routes (`routes/web.php`)
 - 0001_01_01_000001_create_cache_table.php
 - 2026_06_27_201437_add_goods_receipt_item_id_column_to_product_batches_table.php
 - 2026_07_08_064724_add_contact_id_column_to_users_table.php
@@ -147,7 +159,6 @@
 - 2026_06_23_072523_create_product_categories_table.php
 - 2026_06_23_073116_create_products_table.php
 - 2026_06_23_074424_create_contacts_table.php
-- .fetchPOItemsForGoodsReceipt
 - 2026_07_28_112509_create_account_settings_table.php
 - 2026_08_09_011515_create_cash_transactions_table.php
 - 2026_08_04_143524_create_receivable_payments_table.php
@@ -218,14 +229,12 @@
 - expense/show.blade.php
 - AccountService.php
 - AccountSettingFormRequest
-- StockAdjustmentFormRequest
-- WarehouseTransferFormRequest
 - 2026_08_04_143434_create_payable_payments_table.php
 
 ## God Nodes (most connected - your core abstractions)
 1. `LogsModelActivity` - 87 edges
-2. `Controller` - 53 edges
-3. `InventoryService` - 46 edges
+2. `Controller` - 55 edges
+3. `InventoryService` - 52 edges
 4. `AccountService` - 45 edges
 5. `JournalService` - 42 edges
 6. `AccountSettingEnum` - 40 edges
@@ -235,40 +244,44 @@
 10. `CashService` - 33 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Enum (`app/Enums/`)` --references--> `ExpenseStatus`  [INFERRED]
-  context/expense.md → app/Enums/ExpenseStatus.php
+- `Controller (`app/Http/Controllers/`)` --references--> `ExpenseController`  [INFERRED]
+  context/expense.md → app/Http/Controllers/Finance/ExpenseController.php
+- `Service (`app/Services/`)` --references--> `ExpenseService`  [INFERRED]
+  context/expense.md → app/Services/ExpenseService.php
 - `Enums (`app/Enums/`)` --references--> `DeliveryOrderStatus`  [INFERRED]
   context/sales.md → app/Enums/DeliveryOrderStatus.php
+- `Enum (`app/Enums/`)` --references--> `ExpenseStatus`  [INFERRED]
+  context/expense.md → app/Enums/ExpenseStatus.php
 - `Key Dependencies` --references--> `PaymentTerm`  [INFERRED]
   context/expense.md → app/Enums/PaymentTerm.php
-- `Enums (`app/Enums/`)` --references--> `PaymentTerm`  [INFERRED]
-  context/purchasing.md → app/Enums/PaymentTerm.php
-- `Enums (`app/Enums/`)` --references--> `PaymentTerm`  [INFERRED]
-  context/sales.md → app/Enums/PaymentTerm.php
 
 ## Import Cycles
 - None detected.
 
-## Communities (279 total, 180 thin omitted)
+## Communities (284 total, 179 thin omitted)
 
 ### Community 0 - "package.json"
 Cohesion: 0.12
 Nodes (20): devDependencies, axios@^1.18.0, concurrently@^9.0.1, laravel-vite-plugin@^2.0.0, sass-embedded@^1.99.0, tailwindcss@^4.0.0, @tailwindcss/vite@^4.0.0, vite@^7.0.7 (+12 more)
 
 ### Community 1 - "PurchaseInvoice"
-Cohesion: 0.14
-Nodes (3): PurchaseInvoice, {closure#11}(), Purchase Invoice (`PurchasingService`)
+Cohesion: 0.09
+Nodes (4): PurchaseInvoice, {closure#11}(), Key Service Methods, Purchase Invoice (`PurchasingService`)
 
 ### Community 4 - "ProductService"
-Cohesion: 0.10
+Cohesion: 0.08
 Nodes (5): ProductBatchController, ProductCategoryController, ProductController, ProductFormRequest, ProductService
 
 ### Community 5 - "AccountCategoryEnum"
 Cohesion: 0.11
 Nodes (18): AccountCategoryEnum, ACCOUNT_PAYABLE, ACCOUNT_RECEIVABLE, ACCUMULATED_DEPRECIATION_AMORTIZATION, CASH_BANK, COST_OF_GOODS_SOLD, CREDIT_CARD, EQUITY (+10 more)
 
+### Community 6 - "Illuminate\Foundation\Http\FormRequest"
+Cohesion: 0.14
+Nodes (3): LimitsAmounts, StockAdjustmentFormRequest, WarehouseTransferFormRequest
+
 ### Community 7 - "AccountSettingEnum"
-Cohesion: 0.07
+Cohesion: 0.08
 Nodes (23): AccountSettingEnum, ACCOUNT_PAYABLE, ACCOUNT_RECEIVABLE, BANK, CASH, COGS, GRNI, INPUT_TAX (+15 more)
 
 ### Community 8 - "helpers.php"
@@ -280,7 +293,7 @@ Cohesion: 0.23
 Nodes (9): cascadeBasics(), {closure#2}(), {closure#3}(), {closure#5}(), {closure#7}(), {closure#8}(), {closure#9}(), finishedDeliveryFixture() (+1 more)
 
 ### Community 10 - "InventoryService"
-Cohesion: 0.17
+Cohesion: 0.12
 Nodes (3): InventoryService, {closure#1}(), WarehouseTransferService
 
 ### Community 12 - "UserService"
@@ -288,116 +301,108 @@ Cohesion: 0.17
 Nodes (3): UserController, UserFormRequest, UserService
 
 ### Community 15 - "Controller"
-Cohesion: 0.07
-Nodes (6): LoginController, Controller, DashboardController, ProductOptionController, WarehouseTransferController, AccountReceivableFormRequest
+Cohesion: 0.08
+Nodes (6): LoginController, Controller, DashboardController, StockController, AccountController, ProductOptionController
 
 ### Community 16 - "Illuminate\Database\Schema\Blueprint"
 Cohesion: 0.12
 Nodes (13): {closure#1}(), {closure#2}(), {closure#3}(), {closure#1}(), {closure#2}(), {closure#3}(), {closure#1}(), {closure#2}() (+5 more)
 
 ### Community 17 - "Sales Module Context"
-Cohesion: 0.07
-Nodes (26): Charge Fields, Configuration, Context Config (`config/context.php`), Cost/Charge Flow, Cost & Charge Handling, Cost Fields, Database Schema (Migrations), Delivery Order Update (non-draft) (+18 more)
+Cohesion: 0.12
+Nodes (15): Configuration, Context Config (`config/context.php`), Database Schema (Migrations), Delivery Orders, Dependencies, External Services Used, Key Business Rules, Key Service Methods (+7 more)
 
 ### Community 18 - "Illuminate\Database\Eloquent\Model"
 Cohesion: 0.11
-Nodes (7): AccountMapping, CashTransactionItem, Company, ExpenseItem, JournalEntryItem, Unit, UserCompany
+Nodes (9): AccountCategory, AccountMapping, Company, ProductCategory, ProductTransaction, SalesOrderCharge, Unit, UserCompany (+1 more)
 
 ### Community 19 - "LogsModelActivity"
 Cohesion: 0.09
-Nodes (6): CashTransactionCost, LogsModelActivity, ExpenseCost, ProductStock, ProductTransaction, WarehouseTransferItem
+Nodes (7): CashTransactionCost, LogsModelActivity, Contact, ExpenseCost, ExpenseItem, JournalEntryItem, ProductStock
 
 ### Community 20 - "SalesInvoiceService"
-Cohesion: 0.12
-Nodes (6): SalesInvoiceController, SalesInvoiceFormRequest, SalesInvoiceService, Controllers (`app/Http/Controllers/Sales/`), Module Structure, Services (`app/Services/Sales/`)
+Cohesion: 0.18
+Nodes (5): SalesInvoiceController, SalesInvoiceService, Controllers (`app/Http/Controllers/Sales/`), Module Structure, Services (`app/Services/Sales/`)
 
 ### Community 21 - "Illuminate\Support\Facades\DB"
 Cohesion: 0.12
 Nodes (7): AccountSettingSeeder, COASeeder, ContactSeeder, DashboardDummySeeder, DatabaseSeeder, InventorySeeder, UserCompanySeeder
 
 ### Community 22 - "AccountReceivableService.php"
-Cohesion: 0.13
+Cohesion: 0.15
 Nodes (7): AccountReceivableController, AccountReceivableService, {closure#5}(), Controllers (`app/Http/Controllers/Finance/`), Models (`app/Models/`), Module Structure, Services (`app/Services/Finance/`)
 
-### Community 24 - "OrderStatusGuardTest.php"
-Cohesion: 0.05
-Nodes (13): abort_unless_draft(), CashController, CashReceiveFormRequest, CashSendFormRequest, CashTransferFormRequest, CashService, {closure#10}(), {closure#12}() (+5 more)
+### Community 25 - "PurchaseOrderService"
+Cohesion: 0.13
+Nodes (4): PurchaseOrderController, {closure#5}(), PurchaseOrderService, Purchase Order (`PurchaseOrderService`)
 
 ### Community 26 - "CashService.php"
-Cohesion: 0.14
-Nodes (3): {closure#6}(), {closure#7}(), NumberingService
+Cohesion: 0.10
+Nodes (3): AccountSetting, CashTransactionItem, JournalEntry
 
 ### Community 27 - "Illuminate\Support\Collection"
 Cohesion: 0.15
-Nodes (5): PrintDocument, Delivery Order, Sales Invoice, Sales Order, Views (`resources/views/sales/`)
+Nodes (5): PrintDocument, Goods Receipt, Purchase Invoice, Purchase Order, Views (`resources/views/purchasing/`)
 
 ### Community 28 - "DeliveryOrderService"
-Cohesion: 0.22
+Cohesion: 0.19
 Nodes (3): DeliveryOrderController, DeliveryOrderService, Delivery Order (`DeliveryOrderService`)
 
 ### Community 29 - "InventoryService.php"
-Cohesion: 0.08
-Nodes (4): {closure#10}(), ProductBatchStock, {closure#12}(), {closure#9}()
+Cohesion: 0.05
+Nodes (13): InventoryTransactionTypeEnum, ADJUSTMENT_MINUS, ADJUSTMENT_PLUS, COST_ADJUSTMENT, OPENING, PURCHASE, SALE, TRANSFER_IN (+5 more)
 
 ### Community 30 - "GoodsReceiptService"
-Cohesion: 0.15
-Nodes (5): GoodsReceiptController, JournalService, GoodsReceiptService, PurchaseOrderService, Purchase Order (`PurchaseOrderService`)
+Cohesion: 0.09
+Nodes (8): GoodsReceiptController, GoodsReceipt, {closure#16}(), {closure#7}(), {closure#9}(), GoodsReceiptService, Goods Receipt (`GoodsReceiptService`), Inventory Integration (Goods Receipt Finalize)
 
 ### Community 31 - "ExpenseService.php"
-Cohesion: 0.09
-Nodes (10): PayablePaymentReferenceTypeEnum, EXPENSE, PURCHASE_INVOICE, Expense, {closure#2}(), {closure#3}(), {closure#4}(), {closure#5}() (+2 more)
-
-### Community 34 - "GoodsReceipt"
 Cohesion: 0.12
-Nodes (7): GoodsReceipt, {closure#7}(), {closure#9}(), Auto-Creation from Other Modules, From Goods Receipt (`storeExpenseFromGoodsReceipt`), Goods Receipt (`GoodsReceiptService`), Key Service Methods
+Nodes (9): PayablePaymentReferenceTypeEnum, EXPENSE, PURCHASE_INVOICE, Expense, {closure#2}(), {closure#3}(), {closure#4}(), {closure#5}() (+1 more)
 
 ### Community 35 - "SalesOrderStatus"
 Cohesion: 0.20
 Nodes (6): {closure#1}(), SalesOrderStatus, CANCELLED, CLOSED, DRAFT, OPEN
 
-### Community 36 - "Models (`app/Models/`)"
-Cohesion: 0.09
-Nodes (6): DeliveryOrderItem, SalesInvoiceCharge, SalesOrderCharge, SalesOrderCost, SalesOrderItem, Models (`app/Models/`)
-
-### Community 38 - "Spatie\Permission\Models\Permission"
-Cohesion: 0.12
-Nodes (6): RoleEnum, ACCOUNTING, ADMIN, SUPER_ADMIN, PermissionSeeder, RoleSeeder
+### Community 36 - "AccountReceivableController.php"
+Cohesion: 0.15
+Nodes (5): AccountReceivableFormRequest, SalesInvoiceFormRequest, {closure#2}(), {closure#3}(), rulesForRoute()
 
 ### Community 39 - "PaymentTerm"
 Cohesion: 0.17
 Nodes (10): {closure#1}(), {closure#2}(), PaymentTerm, CASH, COD, CUSTOM, NET_14, NET_30 (+2 more)
 
-### Community 41 - "DeliveryOrder"
-Cohesion: 0.15
-Nodes (4): DeliveryOrder, {closure#5}(), From Delivery Order (`storeExpenseFromDeliveryOrder`), Inventory Integration (Delivery Order Finalize)
+### Community 40 - "SalesOrderService.php"
+Cohesion: 0.16
+Nodes (4): {closure#10}(), {closure#6}(), {closure#8}(), {closure#9}()
 
-### Community 42 - "ExpenseService"
-Cohesion: 0.13
-Nodes (7): ExpenseController, ExpenseService, Controller (`app/Http/Controllers/`), Enum (`app/Enums/`), Models (`app/Models/`), Module Structure, Service (`app/Services/`)
+### Community 41 - "DeliveryOrder"
+Cohesion: 0.12
+Nodes (5): DeliveryOrder, {closure#11}(), {closure#5}(), From Delivery Order (`storeExpenseFromDeliveryOrder`), Inventory Integration (Delivery Order Finalize)
 
 ### Community 45 - "QaFixesTest.php"
-Cohesion: 0.14
+Cohesion: 0.12
 Nodes (6): run_once(), cashBasics(), {closure#2}(), {closure#4}(), {closure#6}(), {closure#8}()
 
 ### Community 47 - "ExpenseStatus"
-Cohesion: 0.24
-Nodes (7): {closure#1}(), ExpenseStatus, CANCELLED, DRAFT, OPEN, PAID, PARTIAL
+Cohesion: 0.15
+Nodes (12): {closure#1}(), ExpenseStatus, CANCELLED, DRAFT, OPEN, PAID, PARTIAL, Controller (`app/Http/Controllers/`) (+4 more)
 
 ### Community 48 - "DeliveryOrderCost"
 Cohesion: 0.17
 Nodes (6): DeliveryOrderCost, DeliveryOrderItemBatch, 1. Sales Order (SO), 2. Delivery Order (DO), 3. Sales Invoice (SI), Business Flow
 
-### Community 49 - "AccountPayableService.php"
-Cohesion: 0.05
-Nodes (13): AccountPayableStatusEnum, CANCELLED, DRAFT, OPEN, PAID, PARTIAL, {closure#1}(), AccountPayableController (+5 more)
+### Community 49 - "AccountPayableService"
+Cohesion: 0.13
+Nodes (4): AccountPayableController, AccountPayableFormRequest, AccountPayableService, {closure#6}()
 
 ### Community 50 - "bootstrap/app.php"
 Cohesion: 0.18
 Nodes (4): EnsureUserIsActive, ReportPermissionMiddleware, {closure#1}(), {closure#2}()
 
 ### Community 52 - ".lineTotal"
-Cohesion: 0.15
-Nodes (15): DocumentTotals, {closure#10}(), {closure#8}(), {closure#10}(), {closure#6}(), {closure#7}(), {closure#9}(), {closure#6}() (+7 more)
+Cohesion: 0.13
+Nodes (13): DocumentTotals, {closure#10}(), {closure#8}(), {closure#6}(), {closure#10}(), {closure#6}(), {closure#7}(), {closure#9}() (+5 more)
 
 ### Community 54 - "Illuminate\Database\Migrations\Migration"
 Cohesion: 0.12
@@ -408,11 +413,11 @@ Cohesion: 0.20
 Nodes (7): AccountReceivableStatusEnum, CANCELLED, DRAFT, OPEN, PAID, PARTIAL, {closure#1}()
 
 ### Community 57 - "Expense Module Context"
-Cohesion: 0.15
-Nodes (12): Amount Calculation, Database Schema, Draft status (`store` / `update`), Expense Module Context, Key Dependencies, Number Generation, Open status (`store` / `update`), Overview (+4 more)
+Cohesion: 0.12
+Nodes (14): Amount Calculation, Auto-Creation from Other Modules, Database Schema, Draft status (`store` / `update`), Expense Module Context, From Goods Receipt (`storeExpenseFromGoodsReceipt`), Key Dependencies, Number Generation (+6 more)
 
 ### Community 60 - ".index"
-Cohesion: 0.16
+Cohesion: 0.15
 Nodes (5): AccountSettingController, MasterController, RoleController, AccountSettingService, RoleService
 
 ### Community 61 - "form-validation.js"
@@ -427,6 +432,10 @@ Nodes (9): ReportTypeEnum, ACTIVITY_LOG, BALANCE_SHEET, CASH_FLOW, EXECUTIVE, JO
 Cohesion: 0.15
 Nodes (4): {closure#1}(), {closure#1}(), {closure#1}(), {closure#2}()
 
+### Community 65 - "OrderStatusGuardTest.php"
+Cohesion: 0.17
+Nodes (7): {closure#10}(), {closure#12}(), {closure#13}(), {closure#5}(), {closure#7}(), {closure#9}(), orderBasics()
+
 ### Community 66 - "PurchaseOrderStatus"
 Cohesion: 0.22
 Nodes (6): {closure#1}(), PurchaseOrderStatus, CANCELLED, CLOSED, DRAFT, OPEN
@@ -434,6 +443,10 @@ Nodes (6): {closure#1}(), PurchaseOrderStatus, CANCELLED, CLOSED, DRAFT, OPEN
 ### Community 67 - "Payment Module Context"
 Cohesion: 0.17
 Nodes (11): Business Logic, Database Schema, Invoice Status Affected, Overview, Payment Module Context, Payment Number Generation, Purchase Payments, Routes (+3 more)
+
+### Community 68 - "RoleEnum"
+Cohesion: 0.14
+Nodes (4): RoleEnum, ACCOUNTING, ADMIN, SUPER_ADMIN
 
 ### Community 70 - "PurchaseInvoiceStatus"
 Cohesion: 0.20
@@ -456,8 +469,8 @@ Cohesion: 0.16
 Nodes (9): {closure#1}(), GoodsReceiptStatus, CANCELLED, DRAFT, FINISHED, Controllers (`app/Http/Controllers/Purchasing/`), Enums (`app/Enums/`), Module Structure (+1 more)
 
 ### Community 76 - "Purchasing Module Context"
-Cohesion: 0.07
-Nodes (25): Configuration, Context Config (`config/context.php`), Cost Fields, Cost Flow, Cost Handling, Database Schema (Migrations), Dependencies, Goods Receipt Update (non-draft) (+17 more)
+Cohesion: 0.08
+Nodes (24): Configuration, Context Config (`config/context.php`), Cost Fields, Cost Flow, Cost Handling, Database Schema (Migrations), Dependencies, Goods Receipt Update (non-draft) (+16 more)
 
 ### Community 77 - "GoodsReceiptItem"
 Cohesion: 0.11
@@ -468,8 +481,8 @@ Cohesion: 0.36
 Nodes (8): actingUserWithEditPermission(), {closure#1}(), {closure#2}(), {closure#3}(), {closure#4}(), {closure#5}(), {closure#6}(), {closure#7}()
 
 ### Community 80 - "CashTransactionStatusEnum"
-Cohesion: 0.18
-Nodes (6): CashTransactionStatusEnum, CANCELLED, DRAFT, POSTED, {closure#1}(), LimitsAmounts
+Cohesion: 0.28
+Nodes (5): CashTransactionStatusEnum, CANCELLED, DRAFT, POSTED, {closure#1}()
 
 ### Community 81 - "BilledBy"
 Cohesion: 0.24
@@ -480,8 +493,12 @@ Cohesion: 0.22
 Nodes (8): About Laravel, Code of Conduct, Contributing, Laravel Sponsors, Learning Laravel, License, Premium Partners, Security Vulnerabilities
 
 ### Community 84 - "InventoryTransaction"
-Cohesion: 0.07
-Nodes (8): GoodsReceiptCost, InventoryTransaction, ProductBatch, ProductCategory, 1. Purchase Order (PO), 2. Goods Receipt (GR), 3. Purchase Invoice (PI), Business Flow
+Cohesion: 0.12
+Nodes (6): GoodsReceiptCost, InventoryTransaction, 1. Purchase Order (PO), 2. Goods Receipt (GR), 3. Purchase Invoice (PI), Business Flow
+
+### Community 85 - "NumberingService"
+Cohesion: 0.08
+Nodes (5): Warehouse, WarehouseTransfer, WarehouseTransferItem, NumberingService, {closure#4}()
 
 ### Community 86 - "composer.json"
 Cohesion: 0.22
@@ -500,48 +517,48 @@ Cohesion: 0.20
 Nodes (7): {closure#1}(), SalesInvoiceStatus, CANCELLED, DRAFT, OPEN, PAID, PARTIAL
 
 ### Community 91 - "SalesOrderService"
-Cohesion: 0.11
-Nodes (6): SalesOrderController, {closure#7}(), SalesOrderService, Key Service Methods, Sales Invoice (`SalesInvoiceService`), Sales Order (`SalesOrderService`)
+Cohesion: 0.13
+Nodes (3): SalesOrderController, SalesOrderService, Sales Order (`SalesOrderService`)
 
 ### Community 92 - "TotalsAndJournalTest.php"
 Cohesion: 0.29
 Nodes (5): {closure#3}(), {closure#4}(), {closure#6}(), {closure#8}(), journalBasics()
 
 ### Community 93 - "Illuminate\Http\Request"
-Cohesion: 0.08
-Nodes (5): ReportController, ActivityLogService, ReportService, GET /user(), POST /logout()
-
-### Community 94 - "FormRequestRulesTest.php"
-Cohesion: 0.11
-Nodes (9): AppServiceProvider, {closure#2}(), {closure#3}(), rulesForRoute(), {closure#2}(), {closure#3}(), {closure#4}(), {closure#5}() (+1 more)
+Cohesion: 0.17
+Nodes (4): ReportController, ActivityLogService, ReportService, POST /logout()
 
 ### Community 95 - "SalesInvoiceService.php"
-Cohesion: 0.11
-Nodes (3): SalesInvoice, {closure#5}(), {closure#9}()
-
-### Community 96 - "AccountService"
-Cohesion: 0.18
-Nodes (3): AccountController, AccountFormRequest, AccountService
+Cohesion: 0.05
+Nodes (9): DeliveryOrderItem, SalesInvoice, SalesInvoiceCharge, SalesInvoiceItem, SalesOrderCost, SalesOrderItem, {closure#5}(), {closure#9}() (+1 more)
 
 ### Community 97 - "require"
 Cohesion: 0.25
 Nodes (8): require, laravel/framework, laravel/sanctum, laravel/tinker, php, spatie/laravel-activitylog, spatie/laravel-permission, tightenco/ziggy
 
 ### Community 98 - "AccountSetting"
-Cohesion: 0.11
-Nodes (4): AccountSetting, StockAdjustment, StockAdjustmentItem, Warehouse
+Cohesion: 0.12
+Nodes (4): ProductBatch, StockAdjustment, StockAdjustmentItem, {closure#1}()
 
 ### Community 99 - "ContactService"
 Cohesion: 0.11
 Nodes (3): ContactController, ContactFormRequest, ContactService
 
+### Community 100 - "AccountPayableStatusEnum"
+Cohesion: 0.20
+Nodes (7): AccountPayableStatusEnum, CANCELLED, DRAFT, OPEN, PAID, PARTIAL, {closure#1}()
+
+### Community 101 - "GoodsReceiptFormRequestTest.php"
+Cohesion: 0.39
+Nodes (5): {closure#2}(), {closure#3}(), {closure#4}(), {closure#5}(), goodsReceiptErrors()
+
+### Community 102 - ".storeSalesInvoice"
+Cohesion: 0.29
+Nodes (5): Charge Fields, Cost/Charge Flow, Cost & Charge Handling, Cost Fields, Key Behaviors
+
 ### Community 105 - "bootstrap.js"
 Cohesion: 0.25
 Nodes (7): dependencies, sweetalert2@^11.26.25, xlsx@https://cdn.sheetjs.com/xlsx-0.20.3/x..., axios, sweetalert2, xlsx, BaseToast
-
-### Community 107 - "InventoryTransactionTypeEnum"
-Cohesion: 0.20
-Nodes (9): InventoryTransactionTypeEnum, ADJUSTMENT_MINUS, ADJUSTMENT_PLUS, COST_ADJUSTMENT, OPENING, PURCHASE, SALE, TRANSFER_IN (+1 more)
 
 ### Community 108 - "config"
 Cohesion: 0.29
@@ -555,6 +572,10 @@ Nodes (4): {closure#1}(), {closure#2}(), {closure#3}(), {closure#4}()
 Cohesion: 0.29
 Nodes (4): {closure#1}(), {closure#2}(), {closure#3}(), {closure#4}()
 
+### Community 111 - "StockPageTest.php"
+Cohesion: 0.53
+Nodes (4): {closure#2}(), {closure#3}(), {closure#4}(), stockBasics()
+
 ### Community 112 - "export.js"
 Cohesion: 0.32
 Nodes (3): exportXlsx(), today(), toNumber()
@@ -563,13 +584,21 @@ Nodes (3): exportXlsx(), today(), toNumber()
 Cohesion: 0.33
 Nodes (3): {closure#1}(), {closure#2}(), {closure#3}()
 
+### Community 115 - ".fetchSOItemsForDeliveryOrder"
+Cohesion: 0.40
+Nodes (4): Delivery Order, Sales Invoice, Sales Order, Views (`resources/views/sales/`)
+
 ### Community 117 - "WarehouseService"
-Cohesion: 0.14
-Nodes (4): StockAdjustmentController, WarehouseController, WarehouseFormRequest, WarehouseService
+Cohesion: 0.12
+Nodes (5): StockAdjustmentController, WarehouseController, WarehouseTransferController, WarehouseFormRequest, WarehouseService
 
 ### Community 118 - "JournalEntryStatusEnum"
 Cohesion: 0.28
 Nodes (5): {closure#1}(), JournalEntryStatusEnum, CANCELLED, DRAFT, POSTED
+
+### Community 126 - "Validation Rules"
+Cohesion: 0.50
+Nodes (4): Delivery Order Update (non-draft), Sales Invoice Update (non-draft), Sales Order Store/Update, Validation Rules
 
 ### Community 127 - "psr-4"
 Cohesion: 0.33
@@ -591,6 +620,18 @@ Nodes (3): {closure#1}(), {closure#2}(), {closure#3}()
 Cohesion: 0.33
 Nodes (3): {closure#1}(), {closure#2}(), {closure#3}()
 
+### Community 133 - "AccountReceivableService.php"
+Cohesion: 0.13
+Nodes (4): ReceivablePayment, {closure#6}(), {closure#6}(), {closure#7}()
+
+### Community 135 - "JournalService"
+Cohesion: 0.24
+Nodes (4): CashService, {closure#1}(), {closure#2}(), JournalService
+
+### Community 136 - "Routes (`routes/web.php`)"
+Cohesion: 0.50
+Nodes (4): Delivery Orders (`sales.delivery_orders.*`), Routes (`routes/web.php`), Sales Invoices (`sales.sales_invoices.*`), Sales Orders (`sales.sales_orders.*`)
+
 ### Community 148 - "InvoiceCancelAndPaymentTest.php"
 Cohesion: 0.20
 Nodes (9): ReceivablePaymentReferenceTypeEnum, SALES_INVOICE, {closure#1}(), {closure#2}(), {closure#5}(), {closure#7}(), paymentAccounts(), paymentRequest() (+1 more)
@@ -598,10 +639,6 @@ Nodes (9): ReceivablePaymentReferenceTypeEnum, SALES_INVOICE, {closure#1}(), {cl
 ### Community 152 - "contact.js"
 Cohesion: 0.60
 Nodes (4): quickAdd(), quickAddWithType(), storeContact(), TYPE_LABELS
-
-### Community 157 - ".fetchPOItemsForGoodsReceipt"
-Cohesion: 0.40
-Nodes (4): Goods Receipt, Purchase Invoice, Purchase Order, Views (`resources/views/purchasing/`)
 
 ### Community 159 - "2026_08_09_011515_create_cash_transactions_table.php"
 Cohesion: 0.33
@@ -643,29 +680,25 @@ Nodes (3): autoload-dev, psr-4, Tests\\
 Cohesion: 0.67
 Nodes (3): extra, laravel, dont-discover
 
-### Community 287 - "AccountService.php"
-Cohesion: 0.20
-Nodes (4): AccountCategory, ChartOfAccount, Key Conventions, Enums (`app/Enums/`)
-
 ## Knowledge Gaps
-- **213 isolated node(s):** `CASH_BANK`, `ACCOUNT_RECEIVABLE`, `INVENTORY`, `OTHER_CURRENT_ASSET`, `FIXED_ASSET` (+208 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1063 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **180 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **214 isolated node(s):** `CASH_BANK`, `ACCOUNT_RECEIVABLE`, `INVENTORY`, `OTHER_CURRENT_ASSET`, `FIXED_ASSET` (+209 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1072 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **179 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `LogsModelActivity` connect `LogsModelActivity` to `PurchaseInvoice`, `AccountReceivableService.php`, `PurchaseOrder`, `Illuminate\Database\Eloquent\Model`, `ExpenseService.php`, `AccountService.php`, `AutoCodeAndPaymentTermTest.php`, `GoodsReceipt`, `Models (`app/Models/`)`, `DeliveryOrder`, `SalesOrder`, `DeliveryOrderCost`, `AccountPayableService.php`, `User`, `CashTransaction`, `GoodsReceiptItem`, `JournalEntry`, `SalesInvoiceItem`, `DeliveryOrderStatus`, `GoodsReceiptItem`, `InventoryTransaction`, `WarehouseTransfer`, `SalesInvoiceService.php`, `AccountSetting`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+- **Why does `JournalService` connect `JournalService` to `PurchaseInvoice`, `PurchaseInvoiceService`, `AccountReceivableService.php`, `CascadeCancelTest.php`, `InventoryService`, `SalesInvoiceService`, `InvoiceCancelAndPaymentTest.php`, `AccountReceivableService.php`, `StockAdjustmentService.php`, `PurchaseOrderService`, `CashService.php`, `DeliveryOrderService`, `GoodsReceiptService`, `GoodsReceiptService.php`, `AccountPayableService.php`, `SalesOrderService.php`, `ExpenseService`, `DeliveryOrderService.php`, `AccountPayableService`, `.lineTotal`, `OrderStatusGuardTest.php`, `PurchaseOrderService.php`, `SalesOrderService`, `TotalsAndJournalTest.php`, `SalesInvoiceService.php`, `AccountSetting`?**
+  _High betweenness centrality (0.034) - this node is a cross-community bridge._
 - **What connects `CASH_BANK`, `ACCOUNT_RECEIVABLE`, `INVENTORY` to the rest of the system?**
-  _213 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _214 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `package.json` be split into smaller, more focused modules?**
   _Cohesion score 0.12121212121212122 - nodes in this community are weakly interconnected._
-- **Why does `GoodsReceiptStatus` connect `GoodsReceiptStatus` to `GoodsReceiptService.php`, `GoodsReceiptFormRequest`, `PurchaseOrderService.php`, `InventoryService.php`, `GoodsReceiptService`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+- **Why does `Sales Module Context` connect `Sales Module Context` to `.storeSalesInvoice`, `Routes (`routes/web.php`)`, `DeliveryOrder`, `DeliveryOrderCost`, `.fetchSOItemsForDeliveryOrder`, `SalesInvoiceService`, `Validation Rules`?**
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
 - **Should `PurchaseInvoice` be split into smaller, more focused modules?**
-  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
-- **Why does `Controller` connect `Controller` to `PurchaseInvoiceService`, `ProductService`, `UserService`, `SalesInvoiceService`, `AccountReceivableService.php`, `OrderStatusGuardTest.php`, `PurchaseOrderController`, `DeliveryOrderService`, `GoodsReceiptService`, `SalesOrderStatus`, `ExpenseService`, `AccountPayableService.php`, `.index`, `BilledBy`, `SalesOrderService`, `Illuminate\Http\Request`, `AccountService`, `ContactService`, `WarehouseService`?**
-  _High betweenness centrality (0.026) - this node is a cross-community bridge._
+  _Cohesion score 0.08666666666666667 - nodes in this community are weakly interconnected._
+- **Why does `LogsModelActivity` connect `LogsModelActivity` to `PurchaseInvoice`, `AccountReceivableService.php`, `PurchaseOrder`, `Illuminate\Database\Eloquent\Model`, `CashService.php`, `GoodsReceiptService`, `ExpenseService.php`, `AccountService.php`, `ProductService.php`, `AccountPayableService.php`, `DeliveryOrder`, `SalesOrder`, `DeliveryOrderCost`, `User`, `CashTransaction`, `GoodsReceiptItem`, `RoleEnum`, `DeliveryOrderStatus`, `GoodsReceiptItem`, `InventoryTransaction`, `NumberingService`, `SalesInvoiceService.php`, `AccountSetting`?**
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
 - **Should `web.php` be split into smaller, more focused modules?**
-  _Cohesion score 0.045454545454545456 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.044444444444444446 - nodes in this community are weakly interconnected._
