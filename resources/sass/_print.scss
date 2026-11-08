@@ -18,7 +18,7 @@
   body::before { display: none; } // paper texture overlay
 
   .sidebar, .submenu-panel, .submenu-backdrop, .topbar,
-  .utab, .table-pagination, .btn, .table-toolbar, .filter-pills { display: none !important; }
+  .utab, .table-pagination, .btn, .table-toolbar, .filter-pills, .report-period { display: none !important; }
 
   .print-header {
     display: block;

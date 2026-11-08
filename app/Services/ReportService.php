@@ -131,7 +131,9 @@ class ReportService
 
     public function fetchBalanceSheetData(Request $request, int $companyID)
     {
-        $asOfDate = $request->input('as_of_date', now()->format('Y-m-d'));
+        // Balances as of end_date; start_date only splits profit into this period and the periods before it
+        $asOfDate = $request->input('end_date', now()->format('Y-m-d'));
+        $startDate = $request->input('start_date');
 
         $sectionCategoryMap = [
             AccountCategoryEnum::CASH_BANK->value => 'asset',
@@ -181,21 +183,31 @@ class ReportService
         $liability = $sections['liability'] ?? $emptySection;
         $equity = $sections['equity'] ?? $emptySection;
 
-        $currentEarnings = $this->calculateNetIncomeAsOf($companyID, $asOfDate);
+        $totalEarnings = $this->calculateNetIncomeAsOf($companyID, $asOfDate);
+        $priorEarnings = $startDate
+            ? $this->calculateNetIncomeAsOf($companyID, Carbon::parse($startDate)->subDay()->format('Y-m-d'))
+            : 0;
 
-        $equityAccounts = $equity['accounts']->push([
+        $earningsRow = fn (string $name, float $balance): array => [
             'account_id' => null,
             'account_code' => null,
-            'account_name' => 'Laba Tahun Berjalan',
+            'account_name' => $name,
             'debit' => 0,
             'credit' => 0,
-            'balance' => $currentEarnings,
-        ])->values();
+            'balance' => $balance,
+        ];
 
-        $equityTotal = $equity['total'] + $currentEarnings;
+        $equityAccounts = $equity['accounts'];
+        if ($startDate) {
+            $equityAccounts->push($earningsRow('Laba Periode Sebelumnya', $priorEarnings));
+        }
+        $equityAccounts = $equityAccounts->push($earningsRow('Laba Periode Berjalan', $totalEarnings - $priorEarnings))->values();
+
+        $equityTotal = $equity['total'] + $totalEarnings;
 
         return [
-            'as_of_date' => $asOfDate,
+            'start_date' => $startDate,
+            'end_date' => $asOfDate,
             'asset' => $asset,
             'liability' => $liability,
             'equity' => [
@@ -325,7 +337,7 @@ class ReportService
         $netProfit = $profitLoss['net_profit'];
         $expenses = $grossProfit - $netProfit;
 
-        $balanceSheetRequest = Request::create('', 'GET', ['as_of_date' => $endDate]);
+        $balanceSheetRequest = Request::create('', 'GET', ['end_date' => $endDate]);
         $balanceSheet = $this->fetchBalanceSheetData($balanceSheetRequest, $companyID);
 
         $totalAsset = $balanceSheet['asset']['total'];

@@ -3,16 +3,7 @@
     <div class="card-hd-2" style="margin-bottom:12px;">
         <div class="display card-hd-title">Arus Kas</div>
         <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
-            <label class="report-date">
-                <span>Dari</span>
-                <input type="date" class="filter-panel__input" x-model="filter.start_date"
-                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
-            </label>
-            <label class="report-date">
-                <span>Sampai</span>
-                <input type="date" class="filter-panel__input" x-model="filter.end_date"
-                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
-            </label>
+            <x-report.date-range />
             <button class="btn btn-ghost btn-sm" type="button" @click="window.print()"><x-misc.icon name="print" :size="13" />Cetak</button>
             <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>

@@ -3,11 +3,7 @@
     <div class="card-hd-2" style="margin-bottom:12px;">
         <div class="display card-hd-title">Neraca</div>
         <div class="order-actions" style="display:flex; align-items:center; gap:8px;">
-            <label class="report-date">
-                <span>Per Tanggal</span>
-                <input type="date" class="filter-panel__input" x-model="filter.as_of_date"
-                    x-on:change="fetchData()" style="height:28px; font-size:12px;">
-            </label>
+            <x-report.date-range />
             <button class="btn btn-ghost btn-sm" type="button" @click="window.print()"><x-misc.icon name="print" :size="13" />Cetak</button>
             <button class="btn btn-ghost btn-sm" type="button" @click="exportXlsx()"><x-misc.icon name="download" :size="13" />Ekspor</button>
         </div>
@@ -132,7 +128,7 @@
                         await ExportUtils.exportXlsx({
                             filename: 'Neraca',
                             title: 'Neraca',
-                            subtitle: 'Per tanggal ' + this.filter.as_of_date,
+                            subtitle: ExportUtils.describeFilters({ from: this.filter.start_date, to: this.filter.end_date }),
                             columns: [
                                 { header: 'Kode', value: r => r.code },
                                 { header: 'Akun', value: r => r.name },
@@ -149,7 +145,6 @@
                 },
 
                 tableData: {
-                    as_of_date: null,
                     asset: {
                         accounts: [],
                         total: 0,
@@ -166,7 +161,8 @@
                 },
                 filter: {
                     search: '',
-                    as_of_date: '{{ now()->format('Y-m-d') }}',
+                    start_date: '{{ now()->startOfMonth()->format('Y-m-d') }}',
+                    end_date: '{{ now()->endOfMonth()->format('Y-m-d') }}',
                 },
                 loading: false,
 
@@ -186,7 +182,8 @@
                         const r = await axios.get(route('reports.balance_sheet.datatable'), {
                             params: {
                                 search: this.filter.search,
-                                as_of_date: this.filter.as_of_date,
+                                start_date: this.filter.start_date,
+                                end_date: this.filter.end_date,
                             }
                         });
                         this.tableData = r.data;
