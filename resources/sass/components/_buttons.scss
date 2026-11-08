@@ -30,7 +30,7 @@
   color: var(--ink);
   border-color: var(--line-2);
 
-  &:hover { background: var(--bg-2); border-color: var(--ink-4); }
+  &:hover { background-color: var(--bg-2); border-color: var(--ink-4); } // color only: keeps the select chevron
 }
 
 .btn-dark {
